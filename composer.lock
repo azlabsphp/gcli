@@ -72,12 +72,12 @@
             "source": {
                 "type": "git",
                 "url": "git@github.com:liksoft/drewlabs-php-code-generator.git",
-                "reference": "5739e5ab12f0002df3eb29187d586944c144de9c"
+                "reference": "4708ab066964e4251169358726b0a47036d3b5cf"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/liksoft/drewlabs-php-code-generator/zipball/5739e5ab12f0002df3eb29187d586944c144de9c",
-                "reference": "5739e5ab12f0002df3eb29187d586944c144de9c",
+                "url": "https://api.github.com/repos/liksoft/drewlabs-php-code-generator/zipball/4708ab066964e4251169358726b0a47036d3b5cf",
+                "reference": "4708ab066964e4251169358726b0a47036d3b5cf",
                 "shasum": ""
             },
             "require": {
@@ -105,7 +105,7 @@
                 "source": "https://github.com/liksoft/drewlabs-php-code-generator/tree/v1.0",
                 "issues": "https://github.com/liksoft/drewlabs-php-code-generator/issues"
             },
-            "time": "2021-08-18T21:33:39+00:00"
+            "time": "2021-08-18T22:15:12+00:00"
         },
         {
             "name": "drewlabs/contracts",
