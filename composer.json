@@ -1,0 +1,72 @@
+{
+    "name": "drewlabs/component-generators",
+    "type": "library",
+    "require-dev": {
+        "phpunit/phpunit": "^9.5",
+        "drewlabs/database": "v3.1.x-dev",
+        "illuminate/support": "^5.0|^6.0|^7.0|^8.0",
+        "drewlabs/http": "v3.1.x-dev",
+        "drewlabs/helpers": "v3.1.x-dev"
+    },
+    "license": "MIT",
+    "autoload": {
+        "psr-4": {
+            "Drewlabs\\ComponentGenerators\\": "src/",
+            "App\\": "./examples/src/app"
+        }
+    },
+    "authors": [
+        {
+            "name": "azandrew-sidoine",
+            "email": "asmyns.platonnas29@gmail.com"
+        }
+    ],
+    "minimum-stability": "stable",
+    "require": {
+        "php": "^7.3|^8.0",
+        "drewlabs/contracts": "v1.0.x-dev",
+        "drewlabs/core": "v1.0.x-dev",
+        "drewlabs/core-helpers": "v1.0.x-dev",
+        "drewlabs/code-generator": "v1.0.x-dev",
+        "drewlabs/filesystem": "V1.0.x-dev",
+        "drewlabs/psr7-stream": "v1.0.x-dev"
+    },
+    "repositories": [
+        {
+            "type": "vcs",
+            "url": "git@github.com:liksoft/drewlabs-php-contracts.git"
+        },
+        {
+            "type": "vcs",
+            "url": "git@github.com:liksoft/drewlabs-php-core.git"
+        },
+        {
+            "type": "vcs",
+            "url": "git@github.com:liksoft/drewlabs-php-core-helpers.git"
+        },
+        {
+            "type": "vcs",
+            "url": "git@github.com:liksoft/drewlabs-php-code-generator.git"
+        },
+        {
+            "type": "vcs",
+            "url": "git@github.com:liksoft/drewlabs-php-filesystem.git"
+        },
+        {
+            "type": "vcs",
+            "url": "git@github.com:liksoft/drewlabs-psr7-stream.git"
+        },
+        {
+            "type": "vcs",
+            "url": "git@github.com:liksoft/drewlabs-php-packages-database.git"
+        },
+        {
+            "type": "vcs",
+            "url": "git@github.com:liksoft/drewlabs-helpers.git"
+        },
+        {
+            "type": "vcs",
+            "url": "git@github.com:liksoft/drewlabs-laravel-http.git"
+        }
+    ]
+}

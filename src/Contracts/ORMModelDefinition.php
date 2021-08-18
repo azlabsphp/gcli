@@ -1,0 +1,51 @@
+<?php
+
+declare(strict_types=1);
+
+/*
+ * This file is part of the Drewlabs package.
+ *
+ * (c) Sidoine Azandrew <azandrewdevelopper@gmail.com>
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
+
+namespace Drewlabs\ComponentGenerators\Contracts;
+
+interface ORMModelDefinition
+{
+    /**
+     * Returns the model primary key.
+     */
+    public function primaryKey(): ?string;
+
+    /**
+     * Returns the model name.
+     */
+    public function name(): ?string;
+
+    /**
+     * Returns the model associated table name.
+     */
+    public function table(): ?string;
+
+    /**
+     * Returns the list of columns definitions.
+     *
+     * @return ORMModelColumnDefintion[]
+     */
+    public function columns(): array;
+
+    /**
+     * Indicates whether the primary key is auto incrementable.
+     */
+    public function shouldAutoIncrements(): bool;
+
+    /**
+     * Returns the namespace of the current model definition.
+     *
+     * @return string
+     */
+    public function namespace(): ?string;
+}
