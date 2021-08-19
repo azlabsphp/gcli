@@ -64,16 +64,19 @@ final class HumanService implements ActionHandler
 		switch (strtoupper($action->type())) {
 			case "CREATE":
 				//Create handler code goes here
-				return ActionResult($this->dbManager->create(...$payload, $callback));
+				$payload = null !== $callback ? array_merge($payload, [$callback]) : $payload;
+				return ActionResult($this->dbManager->create(...$payload));
 			case "UPDATE":
 				//Update handler code goes here
-				return ActionResult($this->dbManager->update(...$payload, $callback));
+				$payload = null !== $callback ? array_merge($payload, [$callback]) : $payload;
+				return ActionResult($this->dbManager->update(...$payload));
 			case "DELETE":
 				//Delete handler code goes here
 				return ActionResult($this->dbManager->delete(...$payload));
 			case "SELECT":
 				//Select handler code goes here
-				return ActionResult($this->dbManager->select(...$payload, $callback));
+				$payload = null !== $callback ? array_merge($payload, [$callback]) : $payload;
+				return ActionResult($this->dbManager->select(...$payload));
 			default:
 				//Provides default handler or throws exception
 				throw new InvalidActionException("This " . __CLASS__ . " can only handle CREATE,DELETE,UPDATE AND SELECT actions");
