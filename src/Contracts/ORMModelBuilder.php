@@ -13,7 +13,7 @@ declare(strict_types=1);
 
 namespace Drewlabs\ComponentGenerators\Contracts;
 
-interface ORMModelBuilder
+interface ORMModelBuilder extends ComponentBuilder
 {
     /**
      * Set the table binded to the Model/Entity.
