@@ -17,6 +17,8 @@ use Drewlabs\CodeGenerator\Contracts\Blueprint;
 use Drewlabs\CodeGenerator\Models\PHPClass;
 use Drewlabs\CodeGenerator\Models\PHPClassMethod;
 use Drewlabs\CodeGenerator\Models\PHPClassProperty;
+use function Drewlabs\CodeGenerator\Proxy\PHPClassMethod;
+use function Drewlabs\CodeGenerator\Proxy\PHPVariable;
 use Drewlabs\CodeGenerator\Types\PHPTypesModifiers;
 use Drewlabs\ComponentGenerators\Contracts\ComponentBuilder;
 use Drewlabs\ComponentGenerators\Contracts\EloquentORMModelBuilder as ContractsEloquentORMModel;
@@ -34,16 +36,14 @@ use Drewlabs\Contracts\Data\Model\Relatable;
 use Drewlabs\Contracts\Validator\CoreValidatable;
 use Drewlabs\Contracts\Validator\Validatable;
 use Drewlabs\Packages\Database\Traits\Model;
+
 use Illuminate\Database\Eloquent\Model as EloquentModel;
 use Illuminate\Support\Pluralizer;
 
-use function Drewlabs\CodeGenerator\Proxy\PHPClassMethod;
-use function Drewlabs\CodeGenerator\Proxy\PHPVariable;
-
 class EloquentORMModelBuilder implements ContractsEloquentORMModel, ComponentBuilder
 {
-    use HasNamespaceAttribute;
     use HasNameAttribute;
+    use HasNamespaceAttribute;
     use ViewModelBuilder;
 
     /**
@@ -120,8 +120,8 @@ class EloquentORMModelBuilder implements ContractsEloquentORMModel, ComponentBui
     private $relationMethods_ = [];
 
     /**
-     * Specify that the model act like a view model
-     * 
+     * Specify that the model act like a view model.
+     *
      * @var false
      */
     private $isViewModel_ = false;
@@ -231,13 +231,14 @@ class EloquentORMModelBuilder implements ContractsEloquentORMModel, ComponentBui
     }
 
     /**
-     * Creates the model as a view model
-     * 
-     * @return self 
+     * Creates the model as a view model.
+     *
+     * @return self
      */
     public function asViewModel()
     {
         $this->isViewModel_ = true;
+
         return $this->addFileInputTraits()
             ->addAuthenticatableTraits()
             ->addFileInputTraits()
@@ -246,7 +247,6 @@ class EloquentORMModelBuilder implements ContractsEloquentORMModel, ComponentBui
 
     public function build()
     {
-
         $component = (new PHPClass($this->name_));
         if ($this->isViewModel_) {
             /**
@@ -266,7 +266,7 @@ class EloquentORMModelBuilder implements ContractsEloquentORMModel, ComponentBui
                     PHPTypesModifiers::PUBLIC,
                     'Returns a fluent validation rules'
                 ))->addContents(
-                    "return " . PHPVariable('rules', null, $this->rules_ ?? [])->asRValue()->__toString()
+                    'return '.PHPVariable('rules', null, $this->rules_ ?? [])->asRValue()->__toString()
                 )
             );
             if (!$this->isSingleActionValidator_) {
@@ -282,7 +282,7 @@ class EloquentORMModelBuilder implements ContractsEloquentORMModel, ComponentBui
                             'array<string,string|string[]>',
                             PHPTypesModifiers::PUBLIC,
                             'Returns a fluent validation rules applied during update actions'
-                        )->addContents("return " . PHPVariable('rules', null, $this->rules_ ?? [])->asRValue()->__toString())
+                        )->addContents('return '.PHPVariable('rules', null, $this->rules_ ?? [])->asRValue()->__toString())
                     );
             } else {
                 /**
@@ -295,12 +295,12 @@ class EloquentORMModelBuilder implements ContractsEloquentORMModel, ComponentBui
 
         // If should add authenticatableTrait
         if ($this->hasAuthenticatableTraits_) {
-            $component = $component->addTrait("\\Drewlabs\\Core\\Validator\\Traits\\HasAuthenticatable");
+            $component = $component->addTrait('\\Drewlabs\\Core\\Validator\\Traits\\HasAuthenticatable');
         }
 
         // Add File inputs traits
         if ($this->hasFileInputsTraits_) {
-            $component = $component->addTrait("\\Drewlabs\\Core\\Validator\\Traits\\HasFileInputs");
+            $component = $component->addTrait('\\Drewlabs\\Core\\Validator\\Traits\\HasFileInputs');
         }
 
         // Add inputs traits
@@ -308,7 +308,7 @@ class EloquentORMModelBuilder implements ContractsEloquentORMModel, ComponentBui
             /**
              * @var BluePrint
              */
-            $component = $component->addTrait("\\Drewlabs\\Core\\Validator\\Traits\\HasInputs");
+            $component = $component->addTrait('\\Drewlabs\\Core\\Validator\\Traits\\HasInputs');
         }
         $component->setBaseClass(EloquentModel::class)
             ->asFinal()

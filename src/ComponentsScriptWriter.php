@@ -16,8 +16,8 @@ namespace Drewlabs\ComponentGenerators;
 use Drewlabs\ComponentGenerators\Contracts\ScriptWriter;
 use Drewlabs\ComponentGenerators\Contracts\Writable;
 use function Drewlabs\Filesystem\Proxy\LocalFileSystem;
-use League\Flysystem\Config;
 
+use League\Flysystem\Config;
 use League\Flysystem\FilesystemAdapter;
 
 class ComponentsScriptWriter implements ScriptWriter

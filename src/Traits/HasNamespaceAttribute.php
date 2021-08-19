@@ -49,6 +49,11 @@ trait HasNamespaceAttribute
         return $this;
     }
 
+    public function namespace(): ?string
+    {
+        return $this->namespace_;
+    }
+
     private function createPathFromNamespace(string $namespace)
     {
         $folders = drewlabs_core_strings_to_array($namespace, '\\');
@@ -61,10 +66,5 @@ trait HasNamespaceAttribute
         $this->setWritePath($path);
 
         return $this;
-    }
-
-    public function namespace(): ?string
-    {
-        return $this->namespace_;
     }
 }

@@ -33,8 +33,8 @@ use Illuminate\Support\Pluralizer;
 
 class ControllerClassBuilder implements ContractsControllerBuilder
 {
-    use HasNamespaceAttribute;
     use HasNameAttribute;
+    use HasNamespaceAttribute;
 
     private const DEFAULT_NAME = 'TestsController';
 
@@ -142,6 +142,7 @@ class ControllerClassBuilder implements ContractsControllerBuilder
         if (drewlabs_core_strings_contains($serviceClass, '\\')) {
             $this->serviceClass_ = $serviceClass;
         }
+
         return $this;
     }
 

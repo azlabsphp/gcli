@@ -46,9 +46,9 @@ interface ORMModelBuilder
     public function doesNotAutoIncrements();
 
     /**
-     * Creates the model as a view model
-     * 
-     * @return self 
+     * Creates the model as a view model.
+     *
+     * @return self
      */
     public function asViewModel();
 }

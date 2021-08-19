@@ -13,6 +13,7 @@ declare(strict_types=1);
 
 namespace Drewlabs\ComponentGenerators\Builders;
 
+use Drewlabs\CodeGenerator\Contracts\Blueprint;
 use Drewlabs\CodeGenerator\Contracts\CallableInterface;
 use Drewlabs\CodeGenerator\Models\PHPClass;
 use Drewlabs\CodeGenerator\Models\PHPClassMethod;
@@ -25,22 +26,19 @@ use Drewlabs\ComponentGenerators\Traits\HasNameAttribute;
 use Drewlabs\ComponentGenerators\Traits\HasNamespaceAttribute;
 use Drewlabs\Contracts\Data\DML\DMLProvider;
 use Drewlabs\Contracts\Support\Actions\Action;
-use Drewlabs\Contracts\Support\Actions\ActionResult;
-use Illuminate\Support\Pluralizer;
-use Drewlabs\CodeGenerator\Contracts\Blueprint;
 use Drewlabs\Contracts\Support\Actions\ActionHandler;
 use Drewlabs\Contracts\Support\Actions\ActionPayload;
+use Drewlabs\Contracts\Support\Actions\ActionResult;
 use Drewlabs\Contracts\Support\Actions\Exceptions\InvalidActionException;
 use Drewlabs\Packages\Database\EloquentDMLManager;
+use Illuminate\Support\Pluralizer;
 
-
-/** @package Drewlabs\ComponentGenerators\Builders */
 class ServiceClassBuilder implements ComponentBuilder
 {
-    use HasNamespaceAttribute;
     use HasNameAttribute;
+    use HasNamespaceAttribute;
 
-    const ACTION_RESULT_FUNCTION_PATH = 'Drewlabs\\Core\\Support\\Proxy\\ActionResult';
+    public const ACTION_RESULT_FUNCTION_PATH = 'Drewlabs\\Core\\Support\\Proxy\\ActionResult';
 
     /**
      * @var string
@@ -60,7 +58,6 @@ class ServiceClassBuilder implements ComponentBuilder
     private const DEFAULT_NAMESPACE = 'App\\Services';
 
     /**
-     * 
      * @var bool
      */
     private $asCRUD_ = false;
@@ -89,30 +86,32 @@ class ServiceClassBuilder implements ComponentBuilder
         $is_class_path = drewlabs_core_strings_contains($model, '\\'); // && class_exists($model); To uncomment if there is need to validate class existence
         $model_name = 'Test';
         $model_name = $is_class_path ? array_reverse(explode('\\', $model))[0] : (drewlabs_core_strings_contains($model, '\\') ? array_reverse(explode('\\', $model))[0] : $model);
-        $name = drewlabs_core_strings_as_camel_case(Pluralizer::singular($model_name)) . 'Service';
+        $name = drewlabs_core_strings_as_camel_case(Pluralizer::singular($model_name)).'Service';
         $this->setName($name);
+
         return $this;
     }
 
     /**
-     * Indicates to generate a simple Model service that will be usable with minimum modification
-     * 
-     * @return self 
+     * Indicates to generate a simple Model service that will be usable with minimum modification.
+     *
+     * @return self
      */
     public function asCRUDService()
     {
         $this->asCRUD_ = true;
+
         return $this;
     }
 
     public function build()
     {
         $handlMethodLines = [
-            $this->asCRUD_ ? "\$payload = \$action->payload()" : null,
-            $this->asCRUD_ ? "\$payload = \$payload instanceof ActionPayload ? \$payload->toArray() : (is_array(\$payload) ? \$payload : [])" : null,
-            $this->asCRUD_ ? "" : null,
-            "// Handle switch statements",
-            "switch (strtoupper(\$action->type())) {",
+            $this->asCRUD_ ? '$payload = $action->payload()' : null,
+            $this->asCRUD_ ? '$payload = $payload instanceof ActionPayload ? $payload->toArray() : (is_array($payload) ? $payload : [])' : null,
+            $this->asCRUD_ ? '' : null,
+            '// Handle switch statements',
+            'switch (strtoupper($action->type())) {',
             "\tcase \"CREATE\":",
             "\t\t//Create handler code goes here",
             $this->asCRUD_ ? "\t\t\$payload = null !== \$callback ? array_merge(\$payload, [\$callback]) : \$payload" : null,
@@ -131,7 +130,7 @@ class ServiceClassBuilder implements ComponentBuilder
             "\tdefault:",
             "\t\t//Provides default handler or throws exception",
             $this->asCRUD_ ? "\t\tthrow new InvalidActionException(\"This \" . __CLASS__ . \" can only handle CREATE,DELETE,UPDATE AND SELECT actions\")" : "\t\treturn",
-            "}"
+            '}',
         ];
         /**
          * @var BluePrint|PHPClass
@@ -165,20 +164,20 @@ class ServiceClassBuilder implements ComponentBuilder
                             'manager',
                             DMLProvider::class,
                             null
-                        ))->asOptional()
+                        ))->asOptional(),
                     ],
                     'self',
                     PHPTypesModifiers::PUBLIC,
                     'Creates an instance of the Service'
                 ))->addLine(
-                    "\$this->dbManager = \$manager ?? new EloquentDMLManager(Test::class)"
+                    '$this->dbManager = $manager ?? new EloquentDMLManager(Test::class)'
                 )
             )
             // Add Handler method
             ->addMethod(
-                array_reduce(array_filter($handlMethodLines, function ($line) {
+                array_reduce(array_filter($handlMethodLines, static function ($line) {
                     return null !== $line;
-                }), function (CallableInterface $carry, $curr) {
+                }), static function (CallableInterface $carry, $curr) {
                     return $carry->addLine($curr);
                 }, (new PHPClassMethod(
                     'handle',
@@ -190,7 +189,7 @@ class ServiceClassBuilder implements ComponentBuilder
                         (new PHPFunctionParameter(
                             'callback',
                             '\Closure',
-                        ))->asOptional()
+                        ))->asOptional(),
                     ],
                     ActionResult::class,
                     PHPTypesModifiers::PUBLIC,
