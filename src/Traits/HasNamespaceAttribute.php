@@ -62,4 +62,9 @@ trait HasNamespaceAttribute
 
         return $this;
     }
+
+    public function namespace(): ?string
+    {
+        return $this->namespace_;
+    }
 }

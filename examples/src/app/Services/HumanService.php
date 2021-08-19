@@ -12,13 +12,18 @@
 namespace App\Services;
 
 use Drewlabs\Packages\Database\EloquentDMLManager;
+use Drewlabs\Contracts\Support\Actions\ActionPayload;
+use Drewlabs\Contracts\Support\Actions\Exceptions\InvalidActionException;
 use Drewlabs\Contracts\Support\Actions\ActionHandler;
 use Drewlabs\Contracts\Data\DML\DMLProvider;
-use Drewlabs\Contracts\Support\Actions\ActionResult;
+use Drewlabs\Contracts\Support\Actions\ActionResult as ActionsActionResult;
 use Drewlabs\Contracts\Support\Actions\Action;
 use Closure;
 
-final class PersonService implements ActionHandler
+// Function import statements
+use function Drewlabs\Core\Support\Proxy\ActionResult;
+
+final class HumanService implements ActionHandler
 {
 
 	/**
@@ -47,28 +52,31 @@ final class PersonService implements ActionHandler
 	 * @param Action action
 	 * @param Closure callback
 	 *
-	 * @return ActionResult
+	 * @return ActionsActionResult
 	 */
 	public function handle(Action $action, Closure $callback = null)
 	{
 		# code...
+		$payload = $action->payload();
+		$payload = $payload instanceof ActionPayload ? $payload->toArray() : (is_array($payload) ? $payload : []);
+		
 		// Handle switch statements
 		switch (strtoupper($action->type())) {
 			case "CREATE":
 				//Create handler code goes here
-				return;
+				return ActionResult($this->dbManager->create(...$payload, $callback));
 			case "UPDATE":
 				//Update handler code goes here
-				return;
+				return ActionResult($this->dbManager->update(...$payload, $callback));
 			case "DELETE":
 				//Delete handler code goes here
-				return;
+				return ActionResult($this->dbManager->delete(...$payload));
 			case "SELECT":
 				//Select handler code goes here
-				return;
+				return ActionResult($this->dbManager->select(...$payload, $callback));
 			default:
 				//Provides default handler or throws exception
-				return;
+				throw new InvalidActionException("This " . __CLASS__ . " can only handle CREATE,DELETE,UPDATE AND SELECT actions");
 		}
 	}
 

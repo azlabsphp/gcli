@@ -26,20 +26,25 @@ use Drewlabs\ComponentGenerators\Exceptions\BuildErrorException;
 use Drewlabs\ComponentGenerators\PHP\PHPScriptFile;
 use Drewlabs\ComponentGenerators\Traits\HasNameAttribute;
 use Drewlabs\ComponentGenerators\Traits\HasNamespaceAttribute;
-use Drewlabs\ComponentGenerators\Traits\HasPathAttribute;
+use Drewlabs\ComponentGenerators\Traits\ViewModelBuilder;
 use Drewlabs\Contracts\Data\Model\ActiveModel;
 use Drewlabs\Contracts\Data\Model\GuardedModel;
 use Drewlabs\Contracts\Data\Model\Parseable;
 use Drewlabs\Contracts\Data\Model\Relatable;
+use Drewlabs\Contracts\Validator\CoreValidatable;
+use Drewlabs\Contracts\Validator\Validatable;
 use Drewlabs\Packages\Database\Traits\Model;
 use Illuminate\Database\Eloquent\Model as EloquentModel;
 use Illuminate\Support\Pluralizer;
 
+use function Drewlabs\CodeGenerator\Proxy\PHPClassMethod;
+use function Drewlabs\CodeGenerator\Proxy\PHPVariable;
+
 class EloquentORMModelBuilder implements ContractsEloquentORMModel, ComponentBuilder
 {
     use HasNamespaceAttribute;
-    use HasPathAttribute;
     use HasNameAttribute;
+    use ViewModelBuilder;
 
     /**
      * @var string
@@ -113,6 +118,13 @@ class EloquentORMModelBuilder implements ContractsEloquentORMModel, ComponentBui
      * @var array
      */
     private $relationMethods_ = [];
+
+    /**
+     * Specify that the model act like a view model
+     * 
+     * @var false
+     */
+    private $isViewModel_ = false;
 
     public function __construct(
         ORMModelDefinition $defintion,
@@ -218,13 +230,87 @@ class EloquentORMModelBuilder implements ContractsEloquentORMModel, ComponentBui
         return $this;
     }
 
+    /**
+     * Creates the model as a view model
+     * 
+     * @return self 
+     */
+    public function asViewModel()
+    {
+        $this->isViewModel_ = true;
+        return $this->addFileInputTraits()
+            ->addAuthenticatableTraits()
+            ->addFileInputTraits()
+            ->addAuthenticatableTraits();
+    }
+
     public function build()
     {
-        /**
-         * @var BluePrint
-         */
-        $model = (new PHPClass($this->name_))
-            ->setBaseClass(EloquentModel::class)
+
+        $component = (new PHPClass($this->name_));
+        if ($this->isViewModel_) {
+            /**
+             * @var BluePrint|PHPClass
+             */
+            $component = $component->addMethod(PHPClassMethod(
+                'rules',
+                [],
+                'array<string,string|string[]>',
+                PHPTypesModifiers::PUBLIC,
+                'Returns a fluent validation rules'
+            ))->addMethod(
+                (PHPClassMethod(
+                    'messages',
+                    [],
+                    'array<string,string|string[]>',
+                    PHPTypesModifiers::PUBLIC,
+                    'Returns a fluent validation rules'
+                ))->addContents(
+                    "return " . PHPVariable('rules', null, $this->rules_ ?? [])->asRValue()->__toString()
+                )
+            );
+            if (!$this->isSingleActionValidator_) {
+                /**
+                 * @var BluePrint|PHPClass
+                 */
+                $component = $component
+                    ->addImplementation(Validatable::class)
+                    ->addMethod(
+                        PHPClassMethod(
+                            'updateRules',
+                            [],
+                            'array<string,string|string[]>',
+                            PHPTypesModifiers::PUBLIC,
+                            'Returns a fluent validation rules applied during update actions'
+                        )->addContents("return " . PHPVariable('rules', null, $this->rules_ ?? [])->asRValue()->__toString())
+                    );
+            } else {
+                /**
+                 * @var Blueprint
+                 */
+                $component = $component
+                    ->addImplementation(CoreValidatable::class);
+            }
+        }
+
+        // If should add authenticatableTrait
+        if ($this->hasAuthenticatableTraits_) {
+            $component = $component->addTrait("\\Drewlabs\\Core\\Validator\\Traits\\HasAuthenticatable");
+        }
+
+        // Add File inputs traits
+        if ($this->hasFileInputsTraits_) {
+            $component = $component->addTrait("\\Drewlabs\\Core\\Validator\\Traits\\HasFileInputs");
+        }
+
+        // Add inputs traits
+        if ($this->hasInputsTraits_) {
+            /**
+             * @var BluePrint
+             */
+            $component = $component->addTrait("\\Drewlabs\\Core\\Validator\\Traits\\HasInputs");
+        }
+        $component->setBaseClass(EloquentModel::class)
             ->asFinal()
             ->addTrait(Model::class)
             // Model associated table
@@ -299,7 +385,7 @@ class EloquentORMModelBuilder implements ContractsEloquentORMModel, ComponentBui
             ->addToNamespace($this->namespace_ ?? self::DEFAULT_NAMESPACE);
 
         if (!$this->autoIncrements_) {
-            $model = $model->addProperty(
+            $component = $component->addProperty(
                 new PHPClassProperty(
                     'incrementing',
                     'bool',
@@ -311,7 +397,7 @@ class EloquentORMModelBuilder implements ContractsEloquentORMModel, ComponentBui
         }
 
         if (!$this->hasTimestamps_) {
-            $model = $model->addProperty(
+            $component = $component->addProperty(
                 new PHPClassProperty(
                     'timestamps',
                     'bool',
@@ -323,7 +409,10 @@ class EloquentORMModelBuilder implements ContractsEloquentORMModel, ComponentBui
         }
 
         // Add implementations
-        $this->component_ = array_reduce([
+        /**
+         * @var BluePrint
+         */
+        $component = array_reduce([
             ActiveModel::class,
             Parseable::class,
             Relatable::class,
@@ -332,12 +421,14 @@ class EloquentORMModelBuilder implements ContractsEloquentORMModel, ComponentBui
             $carry = $carry->addImplementation($curr);
 
             return $carry;
-        }, $model);
+        }, $component);
+
+        $this->component_ = $component;
 
         // Returns the builded component
         return new PHPScriptFile(
-            $this->component_->getName(),
-            $this->component_,
+            $component->getName(),
+            $component,
             $this->path_ ?? self::DEFAULT_PATH
         );
     }

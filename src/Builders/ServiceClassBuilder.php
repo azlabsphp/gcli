@@ -33,11 +33,14 @@ use Drewlabs\Contracts\Support\Actions\ActionPayload;
 use Drewlabs\Contracts\Support\Actions\Exceptions\InvalidActionException;
 use Drewlabs\Packages\Database\EloquentDMLManager;
 
+
 /** @package Drewlabs\ComponentGenerators\Builders */
 class ServiceClassBuilder implements ComponentBuilder
 {
     use HasNamespaceAttribute;
     use HasNameAttribute;
+
+    const ACTION_RESULT_FUNCTION_PATH = 'Drewlabs\\Core\\Support\\Proxy\\ActionResult';
 
     /**
      * @var string
@@ -57,24 +60,10 @@ class ServiceClassBuilder implements ComponentBuilder
     private const DEFAULT_NAMESPACE = 'App\\Services';
 
     /**
-     * Service class Name
-     * 
-     * @var string
-     */
-    private $name_;
-
-    /**
-     * Path to the service file
-     * 
-     * @var string
-     */
-    private $path_;
-
-    /**
      * 
      * @var bool
      */
-    private $asCRUD_;
+    private $asCRUD_ = false;
 
     public function __construct(
         ?string $name = null,
@@ -126,16 +115,16 @@ class ServiceClassBuilder implements ComponentBuilder
             "switch (strtoupper(\$action->type())) {",
             "\tcase \"CREATE\":",
             "\t\t//Create handler code goes here",
-            $this->asCRUD_ ? "\t\treturn \$this->dbManager->create(...\$payload, \$callback)" : "\t\treturn",
+            $this->asCRUD_ ? "\t\treturn ActionResult(\$this->dbManager->create(...\$payload, \$callback))" : "\t\treturn",
             "\tcase \"UPDATE\":",
             "\t\t//Update handler code goes here",
-            $this->asCRUD_ ? "\t\treturn \$this->dbManager->update(...\$payload, \$callback)" : "\t\treturn",
+            $this->asCRUD_ ? "\t\treturn ActionResult(\$this->dbManager->update(...\$payload, \$callback))" : "\t\treturn",
             "\tcase \"DELETE\":",
             "\t\t//Delete handler code goes here",
-            $this->asCRUD_ ? "\t\treturn \$this->dbManager->delete(...\$payload)" : "\t\treturn",
+            $this->asCRUD_ ? "\t\treturn ActionResult(\$this->dbManager->delete(...\$payload))" : "\t\treturn",
             "\tcase \"SELECT\":",
             "\t\t//Select handler code goes here",
-            $this->asCRUD_ ? "\t\treturn \$this->dbManager->select(...\$payload, \$callback)" : "\t\treturn",
+            $this->asCRUD_ ? "\t\treturn ActionResult(\$this->dbManager->select(...\$payload, \$callback))" : "\t\treturn",
             "\tdefault:",
             "\t\t//Provides default handler or throws exception",
             $this->asCRUD_ ? "\t\tthrow new InvalidActionException(\"This \" . __CLASS__ . \" can only handle CREATE,DELETE,UPDATE AND SELECT actions\")" : "\t\treturn",
@@ -149,6 +138,7 @@ class ServiceClassBuilder implements ComponentBuilder
 
         if ($this->asCRUD_) {
             $component = $component->addClassPath(ActionPayload::class)
+                ->addFunctionPath(self::ACTION_RESULT_FUNCTION_PATH)
                 ->addClassPath(InvalidActionException::class);
         }
 

@@ -72,12 +72,12 @@
             "source": {
                 "type": "git",
                 "url": "git@github.com:liksoft/drewlabs-php-code-generator.git",
-                "reference": "4708ab066964e4251169358726b0a47036d3b5cf"
+                "reference": "c74ff920b49cb03e72e0297180ba1bad718088da"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/liksoft/drewlabs-php-code-generator/zipball/4708ab066964e4251169358726b0a47036d3b5cf",
-                "reference": "4708ab066964e4251169358726b0a47036d3b5cf",
+                "url": "https://api.github.com/repos/liksoft/drewlabs-php-code-generator/zipball/c74ff920b49cb03e72e0297180ba1bad718088da",
+                "reference": "c74ff920b49cb03e72e0297180ba1bad718088da",
                 "shasum": ""
             },
             "require": {
@@ -89,7 +89,10 @@
             "autoload": {
                 "psr-4": {
                     "Drewlabs\\CodeGenerator\\": "src/"
-                }
+                },
+                "files": [
+                    "./src/proxies.php"
+                ]
             },
             "license": [
                 "MIT"
@@ -105,7 +108,7 @@
                 "source": "https://github.com/liksoft/drewlabs-php-code-generator/tree/v1.0",
                 "issues": "https://github.com/liksoft/drewlabs-php-code-generator/issues"
             },
-            "time": "2021-08-18T22:15:12+00:00"
+            "time": "2021-08-19T20:29:28+00:00"
         },
         {
             "name": "drewlabs/contracts",
@@ -113,12 +116,12 @@
             "source": {
                 "type": "git",
                 "url": "git@github.com:liksoft/drewlabs-php-contracts.git",
-                "reference": "bd15aa8a4837c5d7169ce753a0ca5f7d6f6e29e9"
+                "reference": "e12f20358b7c6bc284808b201c77abc88f109c38"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/liksoft/drewlabs-php-contracts/zipball/bd15aa8a4837c5d7169ce753a0ca5f7d6f6e29e9",
-                "reference": "bd15aa8a4837c5d7169ce753a0ca5f7d6f6e29e9",
+                "url": "https://api.github.com/repos/liksoft/drewlabs-php-contracts/zipball/e12f20358b7c6bc284808b201c77abc88f109c38",
+                "reference": "e12f20358b7c6bc284808b201c77abc88f109c38",
                 "shasum": ""
             },
             "require": {
@@ -149,7 +152,7 @@
             "support": {
                 "source": "https://github.com/liksoft/drewlabs-php-contracts/tree/v1.0"
             },
-            "time": "2021-08-18T22:08:35+00:00"
+            "time": "2021-08-19T15:07:51+00:00"
         },
         {
             "name": "drewlabs/core",
@@ -157,12 +160,12 @@
             "source": {
                 "type": "git",
                 "url": "git@github.com:liksoft/drewlabs-php-core.git",
-                "reference": "fe89f3360362461ea5791cce59350dc9f91a1c15"
+                "reference": "d16473973b8d0eca7b08ae436ce51a014861c232"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/liksoft/drewlabs-php-core/zipball/fe89f3360362461ea5791cce59350dc9f91a1c15",
-                "reference": "fe89f3360362461ea5791cce59350dc9f91a1c15",
+                "url": "https://api.github.com/repos/liksoft/drewlabs-php-core/zipball/d16473973b8d0eca7b08ae436ce51a014861c232",
+                "reference": "d16473973b8d0eca7b08ae436ce51a014861c232",
                 "shasum": ""
             },
             "require": {
@@ -189,7 +192,8 @@
                     "Drewlabs\\Core\\": "src/"
                 },
                 "files": [
-                    "./src/helpers.php"
+                    "./src/helpers.php",
+                    "./src/proxies.php"
                 ],
                 "optimize-autoloader": true
             },
@@ -211,7 +215,7 @@
             "support": {
                 "source": "https://github.com/liksoft/drewlabs-php-core/tree/v1.0"
             },
-            "time": "2021-08-18T20:50:01+00:00"
+            "time": "2021-08-19T17:30:05+00:00"
         },
         {
             "name": "drewlabs/core-helpers",
