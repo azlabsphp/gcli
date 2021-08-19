@@ -1,8 +1,8 @@
 # List of Todos
 
-- Write a generated code writer []
-- Write a model database model generator class []
-- Write a Validatable Model generator class
-- Write a controller generator class []
-- Write a service generator class []
+- Write a generated code writer [x]
+- Write a model database model generator class [x]
+- Write a Validatable Model generator class [x]
+- Write a controller generator class [.] - `Write crud controller code generation logic`
+- Write a service generator class [x]
 - Write a Illuminate command generator class []
