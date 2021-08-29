@@ -3,6 +3,7 @@
 namespace Drewlabs\ComponentGenerators\Proxy;
 
 use Drewlabs\ComponentGenerators\Builders\ControllerClassBuilder;
+use Drewlabs\ComponentGenerators\Builders\DataTransfertClassBuilder;
 use Drewlabs\ComponentGenerators\Builders\EloquentORMModelBuilder;
 use Drewlabs\ComponentGenerators\Builders\ServiceClassBuilder;
 use Drewlabs\ComponentGenerators\Builders\ViewModelClassBuilder;
@@ -119,4 +120,16 @@ function ViewModelBuilder(
         $namespace,
         $path
     );
+}
+
+/**
+ * Provides a proxy function to the  {@link \Drewlabs\ComponentGenerators\Builders\DataTransfertClassBuilder} constructor
+ * 
+ * @param string|null $name 
+ * @param array $json_attributes 
+ * @return DataTransfertClassBuilder 
+ */
+function DataTransfertClassBuilder(string $name = null, array $json_attributes = [])
+{
+    return new DataTransfertClassBuilder($name, $json_attributes);
 }

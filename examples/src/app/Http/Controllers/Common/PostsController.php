@@ -44,9 +44,9 @@ final class PostsController
 	/**
 	 * Create a new Http Controller class
 	 * 
-	 * @param Validator validator
-	 * @param IActionResponseHandler response
-	 * @param PersonsService service
+	 * @param Validator $validator
+	 * @param IActionResponseHandler $response
+	 * @param PersonsService $service
 	 *
 	 * @return self
 	 */
@@ -60,7 +60,7 @@ final class PostsController
 	/**
 	 * Handles http request action
 	 * 
-	 * @param Request request
+	 * @param Request $request
 	 *
 	 * @return Response
 	 */

@@ -72,12 +72,12 @@
             "source": {
                 "type": "git",
                 "url": "git@github.com:liksoft/drewlabs-php-code-generator.git",
-                "reference": "c74ff920b49cb03e72e0297180ba1bad718088da"
+                "reference": "bfd3fbec01048ab04a85acac6b3ac911f4718823"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/liksoft/drewlabs-php-code-generator/zipball/c74ff920b49cb03e72e0297180ba1bad718088da",
-                "reference": "c74ff920b49cb03e72e0297180ba1bad718088da",
+                "url": "https://api.github.com/repos/liksoft/drewlabs-php-code-generator/zipball/bfd3fbec01048ab04a85acac6b3ac911f4718823",
+                "reference": "bfd3fbec01048ab04a85acac6b3ac911f4718823",
                 "shasum": ""
             },
             "require": {
@@ -108,7 +108,7 @@
                 "source": "https://github.com/liksoft/drewlabs-php-code-generator/tree/v1.0",
                 "issues": "https://github.com/liksoft/drewlabs-php-code-generator/issues"
             },
-            "time": "2021-08-19T20:29:28+00:00"
+            "time": "2021-08-28T23:41:42+00:00"
         },
         {
             "name": "drewlabs/contracts",
@@ -116,12 +116,12 @@
             "source": {
                 "type": "git",
                 "url": "git@github.com:liksoft/drewlabs-php-contracts.git",
-                "reference": "e12f20358b7c6bc284808b201c77abc88f109c38"
+                "reference": "f24a7f6a984d05584f9645e1fd386c9f0d3431f4"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/liksoft/drewlabs-php-contracts/zipball/e12f20358b7c6bc284808b201c77abc88f109c38",
-                "reference": "e12f20358b7c6bc284808b201c77abc88f109c38",
+                "url": "https://api.github.com/repos/liksoft/drewlabs-php-contracts/zipball/f24a7f6a984d05584f9645e1fd386c9f0d3431f4",
+                "reference": "f24a7f6a984d05584f9645e1fd386c9f0d3431f4",
                 "shasum": ""
             },
             "require": {
@@ -152,7 +152,7 @@
             "support": {
                 "source": "https://github.com/liksoft/drewlabs-php-contracts/tree/v1.0"
             },
-            "time": "2021-08-19T15:07:51+00:00"
+            "time": "2021-08-20T11:21:28+00:00"
         },
         {
             "name": "drewlabs/core",
@@ -160,12 +160,12 @@
             "source": {
                 "type": "git",
                 "url": "git@github.com:liksoft/drewlabs-php-core.git",
-                "reference": "d16473973b8d0eca7b08ae436ce51a014861c232"
+                "reference": "bd4bdcf514d9a9158e62b590134b410753276df4"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/liksoft/drewlabs-php-core/zipball/d16473973b8d0eca7b08ae436ce51a014861c232",
-                "reference": "d16473973b8d0eca7b08ae436ce51a014861c232",
+                "url": "https://api.github.com/repos/liksoft/drewlabs-php-core/zipball/bd4bdcf514d9a9158e62b590134b410753276df4",
+                "reference": "bd4bdcf514d9a9158e62b590134b410753276df4",
                 "shasum": ""
             },
             "require": {
@@ -189,7 +189,9 @@
             },
             "autoload": {
                 "psr-4": {
-                    "Drewlabs\\Core\\": "src/"
+                    "Drewlabs\\Core\\": "src/",
+                    "Drewlabs\\Support\\": "src/Support",
+                    "Drewlabs\\Core\\Support\\": "src/Support"
                 },
                 "files": [
                     "./src/helpers.php",
@@ -215,7 +217,7 @@
             "support": {
                 "source": "https://github.com/liksoft/drewlabs-php-core/tree/v1.0"
             },
-            "time": "2021-08-19T17:30:05+00:00"
+            "time": "2021-08-29T00:50:13+00:00"
         },
         {
             "name": "drewlabs/core-helpers",
@@ -292,12 +294,12 @@
             "source": {
                 "type": "git",
                 "url": "git@github.com:liksoft/drewlabs-php-filesystem.git",
-                "reference": "951b3a232e10e0d3f830e690537c06b9708de615"
+                "reference": "4ce9985e2b5f491c4bbcaaeb2911bd34b469f584"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/liksoft/drewlabs-php-filesystem/zipball/951b3a232e10e0d3f830e690537c06b9708de615",
-                "reference": "951b3a232e10e0d3f830e690537c06b9708de615",
+                "url": "https://api.github.com/repos/liksoft/drewlabs-php-filesystem/zipball/4ce9985e2b5f491c4bbcaaeb2911bd34b469f584",
+                "reference": "4ce9985e2b5f491c4bbcaaeb2911bd34b469f584",
                 "shasum": ""
             },
             "require": {
@@ -338,7 +340,7 @@
                 "source": "https://github.com/liksoft/drewlabs-php-filesystem/tree/v1.0",
                 "issues": "https://github.com/liksoft/drewlabs-php-filesystem/issues"
             },
-            "time": "2021-08-17T20:27:38+00:00"
+            "time": "2021-08-21T10:01:04+00:00"
         },
         {
             "name": "drewlabs/psr7-stream",
@@ -1459,16 +1461,16 @@
     "packages-dev": [
         {
             "name": "composer/package-versions-deprecated",
-            "version": "1.11.99.2",
+            "version": "1.11.99.3",
             "source": {
                 "type": "git",
                 "url": "https://github.com/composer/package-versions-deprecated.git",
-                "reference": "c6522afe5540d5fc46675043d3ed5a45a740b27c"
+                "reference": "fff576ac850c045158a250e7e27666e146e78d18"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/composer/package-versions-deprecated/zipball/c6522afe5540d5fc46675043d3ed5a45a740b27c",
-                "reference": "c6522afe5540d5fc46675043d3ed5a45a740b27c",
+                "url": "https://api.github.com/repos/composer/package-versions-deprecated/zipball/fff576ac850c045158a250e7e27666e146e78d18",
+                "reference": "fff576ac850c045158a250e7e27666e146e78d18",
                 "shasum": ""
             },
             "require": {
@@ -1512,7 +1514,7 @@
             "description": "Composer plugin that provides efficient querying for installed package versions (no runtime IO)",
             "support": {
                 "issues": "https://github.com/composer/package-versions-deprecated/issues",
-                "source": "https://github.com/composer/package-versions-deprecated/tree/1.11.99.2"
+                "source": "https://github.com/composer/package-versions-deprecated/tree/1.11.99.3"
             },
             "funding": [
                 {
@@ -1528,7 +1530,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2021-05-24T07:46:03+00:00"
+            "time": "2021-08-17T13:49:14+00:00"
         },
         {
             "name": "doctrine/cache",
@@ -2045,12 +2047,12 @@
             "source": {
                 "type": "git",
                 "url": "git@github.com:liksoft/drewlabs-php-packages-database.git",
-                "reference": "ccb5260cc7e9ffb4202f63d1aa3ce2e26e516fbb"
+                "reference": "731b3e6eb241f33986123a2a30cca06410f02af6"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/liksoft/drewlabs-php-packages-database/zipball/ccb5260cc7e9ffb4202f63d1aa3ce2e26e516fbb",
-                "reference": "ccb5260cc7e9ffb4202f63d1aa3ce2e26e516fbb",
+                "url": "https://api.github.com/repos/liksoft/drewlabs-php-packages-database/zipball/731b3e6eb241f33986123a2a30cca06410f02af6",
+                "reference": "731b3e6eb241f33986123a2a30cca06410f02af6",
                 "shasum": ""
             },
             "require": {
@@ -2108,7 +2110,7 @@
             "support": {
                 "source": "https://github.com/liksoft/drewlabs-php-packages-database/tree/v3.1"
             },
-            "time": "2021-08-18T20:35:24+00:00"
+            "time": "2021-08-29T00:27:19+00:00"
         },
         {
             "name": "drewlabs/helpers",
@@ -2163,12 +2165,12 @@
             "source": {
                 "type": "git",
                 "url": "git@github.com:liksoft/drewlabs-laravel-http.git",
-                "reference": "c475bc00193c606552b12ad6c50063b0c195202c"
+                "reference": "095c411e4589988b1dffc2b300dcb35a0c6c89da"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/liksoft/drewlabs-laravel-http/zipball/c475bc00193c606552b12ad6c50063b0c195202c",
-                "reference": "c475bc00193c606552b12ad6c50063b0c195202c",
+                "url": "https://api.github.com/repos/liksoft/drewlabs-laravel-http/zipball/095c411e4589988b1dffc2b300dcb35a0c6c89da",
+                "reference": "095c411e4589988b1dffc2b300dcb35a0c6c89da",
                 "shasum": ""
             },
             "require": {
@@ -2212,20 +2214,20 @@
             "support": {
                 "source": "https://github.com/liksoft/drewlabs-laravel-http/tree/v3.1"
             },
-            "time": "2021-08-18T19:41:28+00:00"
+            "time": "2021-08-20T12:22:11+00:00"
         },
         {
             "name": "illuminate/collections",
-            "version": "v8.55.0",
+            "version": "v8.57.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/illuminate/collections.git",
-                "reference": "c768da2752d451d4a3b319433f29249d0898d6a4"
+                "reference": "673d71d9db2827b04c096c4fe9739edddea14ac4"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/illuminate/collections/zipball/c768da2752d451d4a3b319433f29249d0898d6a4",
-                "reference": "c768da2752d451d4a3b319433f29249d0898d6a4",
+                "url": "https://api.github.com/repos/illuminate/collections/zipball/673d71d9db2827b04c096c4fe9739edddea14ac4",
+                "reference": "673d71d9db2827b04c096c4fe9739edddea14ac4",
                 "shasum": ""
             },
             "require": {
@@ -2266,11 +2268,11 @@
                 "issues": "https://github.com/laravel/framework/issues",
                 "source": "https://github.com/laravel/framework"
             },
-            "time": "2021-08-09T13:34:10+00:00"
+            "time": "2021-08-25T13:02:21+00:00"
         },
         {
             "name": "illuminate/container",
-            "version": "v8.55.0",
+            "version": "v8.57.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/illuminate/container.git",
@@ -2321,16 +2323,16 @@
         },
         {
             "name": "illuminate/contracts",
-            "version": "v8.55.0",
+            "version": "v8.57.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/illuminate/contracts.git",
-                "reference": "1a448a53bed5b3399a699321815953594aa72b40"
+                "reference": "7354badf7b57eae805a56d1163fb023e0f58a639"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/illuminate/contracts/zipball/1a448a53bed5b3399a699321815953594aa72b40",
-                "reference": "1a448a53bed5b3399a699321815953594aa72b40",
+                "url": "https://api.github.com/repos/illuminate/contracts/zipball/7354badf7b57eae805a56d1163fb023e0f58a639",
+                "reference": "7354badf7b57eae805a56d1163fb023e0f58a639",
                 "shasum": ""
             },
             "require": {
@@ -2365,20 +2367,20 @@
                 "issues": "https://github.com/laravel/framework/issues",
                 "source": "https://github.com/laravel/framework"
             },
-            "time": "2021-08-13T13:58:11+00:00"
+            "time": "2021-08-24T21:29:28+00:00"
         },
         {
             "name": "illuminate/database",
-            "version": "v8.55.0",
+            "version": "v8.57.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/illuminate/database.git",
-                "reference": "6bdddd64ca9305db0e9d75b917378d159fa5807e"
+                "reference": "828d1cd4ee824c405f6edc52ab3d333b549be4ee"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/illuminate/database/zipball/6bdddd64ca9305db0e9d75b917378d159fa5807e",
-                "reference": "6bdddd64ca9305db0e9d75b917378d159fa5807e",
+                "url": "https://api.github.com/repos/illuminate/database/zipball/828d1cd4ee824c405f6edc52ab3d333b549be4ee",
+                "reference": "828d1cd4ee824c405f6edc52ab3d333b549be4ee",
                 "shasum": ""
             },
             "require": {
@@ -2433,11 +2435,11 @@
                 "issues": "https://github.com/laravel/framework/issues",
                 "source": "https://github.com/laravel/framework"
             },
-            "time": "2021-08-17T13:51:48+00:00"
+            "time": "2021-08-26T14:48:34+00:00"
         },
         {
             "name": "illuminate/filesystem",
-            "version": "v8.55.0",
+            "version": "v8.57.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/illuminate/filesystem.git",
@@ -2499,16 +2501,16 @@
         },
         {
             "name": "illuminate/http",
-            "version": "v8.55.0",
+            "version": "v8.57.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/illuminate/http.git",
-                "reference": "f271f9743834f59209c30cb42acf3b7b2c65271f"
+                "reference": "26b21dcf4c34e014b4272ccb4a3f985f04062826"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/illuminate/http/zipball/f271f9743834f59209c30cb42acf3b7b2c65271f",
-                "reference": "f271f9743834f59209c30cb42acf3b7b2c65271f",
+                "url": "https://api.github.com/repos/illuminate/http/zipball/26b21dcf4c34e014b4272ccb4a3f985f04062826",
+                "reference": "26b21dcf4c34e014b4272ccb4a3f985f04062826",
                 "shasum": ""
             },
             "require": {
@@ -2553,11 +2555,11 @@
                 "issues": "https://github.com/laravel/framework/issues",
                 "source": "https://github.com/laravel/framework"
             },
-            "time": "2021-08-16T21:53:29+00:00"
+            "time": "2021-08-25T13:04:37+00:00"
         },
         {
             "name": "illuminate/macroable",
-            "version": "v8.55.0",
+            "version": "v8.57.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/illuminate/macroable.git",
@@ -2603,7 +2605,7 @@
         },
         {
             "name": "illuminate/pagination",
-            "version": "v8.55.0",
+            "version": "v8.57.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/illuminate/pagination.git",
@@ -2653,7 +2655,7 @@
         },
         {
             "name": "illuminate/pipeline",
-            "version": "v8.55.0",
+            "version": "v8.57.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/illuminate/pipeline.git",
@@ -2701,16 +2703,16 @@
         },
         {
             "name": "illuminate/routing",
-            "version": "v8.55.0",
+            "version": "v8.57.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/illuminate/routing.git",
-                "reference": "adce5e57ce9c930db24bd23f88d09fa15c939c41"
+                "reference": "d70a3da4cb613edfe1c0fd4cf1bc06aea8e35e30"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/illuminate/routing/zipball/adce5e57ce9c930db24bd23f88d09fa15c939c41",
-                "reference": "adce5e57ce9c930db24bd23f88d09fa15c939c41",
+                "url": "https://api.github.com/repos/illuminate/routing/zipball/d70a3da4cb613edfe1c0fd4cf1bc06aea8e35e30",
+                "reference": "d70a3da4cb613edfe1c0fd4cf1bc06aea8e35e30",
                 "shasum": ""
             },
             "require": {
@@ -2760,11 +2762,11 @@
                 "issues": "https://github.com/laravel/framework/issues",
                 "source": "https://github.com/laravel/framework"
             },
-            "time": "2021-08-12T12:54:45+00:00"
+            "time": "2021-08-19T14:51:55+00:00"
         },
         {
             "name": "illuminate/session",
-            "version": "v8.55.0",
+            "version": "v8.57.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/illuminate/session.git",
@@ -2820,16 +2822,16 @@
         },
         {
             "name": "illuminate/support",
-            "version": "v8.55.0",
+            "version": "v8.57.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/illuminate/support.git",
-                "reference": "fa99f391a9f51b3c6ea32a87f89fb89f5ed91211"
+                "reference": "5e8f059a5d1f298324e847822b997778a3472128"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/illuminate/support/zipball/fa99f391a9f51b3c6ea32a87f89fb89f5ed91211",
-                "reference": "fa99f391a9f51b3c6ea32a87f89fb89f5ed91211",
+                "url": "https://api.github.com/repos/illuminate/support/zipball/5e8f059a5d1f298324e847822b997778a3472128",
+                "reference": "5e8f059a5d1f298324e847822b997778a3472128",
                 "shasum": ""
             },
             "require": {
@@ -2884,7 +2886,7 @@
                 "issues": "https://github.com/laravel/framework/issues",
                 "source": "https://github.com/laravel/framework"
             },
-            "time": "2021-08-16T13:24:30+00:00"
+            "time": "2021-08-25T13:04:37+00:00"
         },
         {
             "name": "myclabs/deep-copy",
@@ -2946,16 +2948,16 @@
         },
         {
             "name": "nesbot/carbon",
-            "version": "2.51.1",
+            "version": "2.52.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/briannesbitt/Carbon.git",
-                "reference": "8619c299d1e0d4b344e1f98ca07a1ce2cfbf1922"
+                "reference": "369c0e2737c56a0f39c946dd261855255a6fccbe"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/briannesbitt/Carbon/zipball/8619c299d1e0d4b344e1f98ca07a1ce2cfbf1922",
-                "reference": "8619c299d1e0d4b344e1f98ca07a1ce2cfbf1922",
+                "url": "https://api.github.com/repos/briannesbitt/Carbon/zipball/369c0e2737c56a0f39c946dd261855255a6fccbe",
+                "reference": "369c0e2737c56a0f39c946dd261855255a6fccbe",
                 "shasum": ""
             },
             "require": {
@@ -3036,7 +3038,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2021-07-28T13:16:28+00:00"
+            "time": "2021-08-14T19:10:52+00:00"
         },
         {
             "name": "nikic/php-parser",

@@ -36,8 +36,8 @@ final class PeopleController
 	/**
 	 * Create a new Http Controller class
 	 * 
-	 * @param Validator validator
-	 * @param IActionResponseHandler response
+	 * @param Validator $validator
+	 * @param IActionResponseHandler $response
 	 *
 	 * @return self
 	 */
@@ -52,8 +52,8 @@ final class PeopleController
 	 * Display or Returns a list of items
 	 * @Route /GET /people[/{$id}]
 	 * 
-	 * @param Request request
-	 * @param string id
+	 * @param Request $request
+	 * @param string $id
 	 *
 	 * @return JsonResponse
 	 */
@@ -72,12 +72,12 @@ final class PeopleController
 	 * Display or Returns an item matching the specified id
 	 * @Route /GET /people/{$id}
 	 * 
-	 * @param Request request
-	 * @param mixed id
+	 * @param Request $request
+	 * @param mixed $id
 	 *
 	 * @return JsonResponse
 	 */
-	public function show(Request $request,  $id)
+	public function show(Request $request, $id)
 	{
 		# code...
 			// Code goes here...
@@ -88,7 +88,7 @@ final class PeopleController
 	 * Stores a new item in the storage
 	 * @Route /POST /people
 	 * 
-	 * @param Request request
+	 * @param Request $request
 	 *
 	 * @return JsonResponse
 	 */
@@ -116,12 +116,12 @@ final class PeopleController
 	 * @Route /PUT /people/{id}
 	 * @Route /PATCH /people/{id}
 	 * 
-	 * @param Request request
-	 * @param mixed id
+	 * @param Request $request
+	 * @param mixed $id
 	 *
 	 * @return JsonResponse
 	 */
-	public function update(Request $request,  $id)
+	public function update(Request $request, $id)
 	{
 		# code...
 		try {
@@ -145,12 +145,12 @@ final class PeopleController
 	 * Remove the specified resource from storage.
 	 * @Route /DELETE /people/{id}
 	 * 
-	 * @param Request request
-	 * @param mixed id
+	 * @param Request $request
+	 * @param mixed $id
 	 *
 	 * @return JsonResponse
 	 */
-	public function destroy(Request $request,  $id)
+	public function destroy(Request $request, $id)
 	{
 		# code...
 		try {

@@ -31,7 +31,7 @@ final class PersonService implements ActionHandler
 	/**
 	 * Creates an instance of the Service
 	 * 
-	 * @param DMLProvider manager
+	 * @param DMLProvider $manager
 	 *
 	 * @return self
 	 */
@@ -44,8 +44,8 @@ final class PersonService implements ActionHandler
 	/**
 	 * {@inheritDoc}
 	 * 
-	 * @param Action action
-	 * @param Closure callback
+	 * @param Action $action
+	 * @param Closure $callback
 	 *
 	 * @return ActionResult
 	 */

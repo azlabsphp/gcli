@@ -59,6 +59,7 @@ final class Person extends EloquentModel implements ActiveModel, Parseable, Rela
 	protected $fillable = [
 		"firstname",
 		"lastname",
+		"phone_number",
 	];
 
 	/**
