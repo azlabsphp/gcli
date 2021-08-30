@@ -12,6 +12,7 @@
 namespace App\Services;
 
 use Drewlabs\Packages\Database\EloquentDMLManager;
+use App\Models\Person;
 use Drewlabs\Contracts\Support\Actions\ActionHandler;
 use Drewlabs\Contracts\Data\DML\DMLProvider;
 use Drewlabs\Contracts\Support\Actions\ActionResult;
@@ -38,7 +39,7 @@ final class PersonService implements ActionHandler
 	public function __construct(DMLProvider $manager = null)
 	{
 		# code...
-		$this->dbManager = $manager ?? new EloquentDMLManager(Test::class);
+		$this->dbManager = $manager ?? new EloquentDMLManager(Person::class);
 	}
 
 	/**

@@ -38,7 +38,7 @@ class ServiceClassBuilder implements ComponentBuilder
     use HasNameAttribute;
     use HasNamespaceAttribute;
 
-    public const ACTION_RESULT_FUNCTION_PATH = 'Drewlabs\\Core\\Support\\Proxy\\ActionResult';
+    public const ACTION_RESULT_FUNCTION_PATH = 'Drewlabs\\Support\\Proxy\\ActionResult';
 
     /**
      * @var string
@@ -62,6 +62,20 @@ class ServiceClassBuilder implements ComponentBuilder
      */
     private $asCRUD_ = false;
 
+    /**
+     * List of classes to imports
+     * 
+     * @var array
+     */
+    private $classPaths_ = [];
+
+    /**
+     * The name of the model the service will be bound to
+     * 
+     * @var string
+     */
+    private $modelName_ = 'Test';
+
     public function __construct(
         ?string $name = null,
         ?string $namespace = null,
@@ -78,15 +92,20 @@ class ServiceClassBuilder implements ComponentBuilder
         $this->setNamespace($namespace ?? self::DEFAULT_NAMESPACE);
     }
 
-    public function bindModel(string $model)
+    public function bindModel(string $classPath)
     {
-        if (empty($model)) {
+        if (empty($classPath)) {
             return $this;
         }
-        $is_class_path = drewlabs_core_strings_contains($model, '\\'); // && class_exists($model); To uncomment if there is need to validate class existence
-        $model_name = 'Test';
-        $model_name = $is_class_path ? array_reverse(explode('\\', $model))[0] : (drewlabs_core_strings_contains($model, '\\') ? array_reverse(explode('\\', $model))[0] : $model);
-        $name = drewlabs_core_strings_as_camel_case(Pluralizer::singular($model_name)).'Service';
+        $is_class_path = drewlabs_core_strings_contains($classPath, '\\'); // && class_exists($model); To uncomment if there is need to validate class existence
+        if ($is_class_path) {
+            $this->modelName_ = array_reverse(explode('\\', $classPath))[0];
+            // Add the model class to the list of class paths
+            $this->classPaths_[$classPath] = $classPath;
+        } else {
+            $this->modelName_ = $classPath;
+        }
+        $name = drewlabs_core_strings_as_camel_case(Pluralizer::singular($this->modelName_)) . 'Service';
         $this->setName($name);
 
         return $this;
@@ -138,6 +157,10 @@ class ServiceClassBuilder implements ComponentBuilder
         $component = (new PHPClass($this->name_ ?? self::DEFAULT_NAME))
             ->addClassPath(EloquentDMLManager::class);
 
+        foreach ($this->classPaths_ ?? [] as $value) {
+            $component = $component->addClassPath($value);
+        }
+
         if ($this->asCRUD_) {
             $component = $component->addClassPath(ActionPayload::class)
                 ->addFunctionPath(self::ACTION_RESULT_FUNCTION_PATH)
@@ -170,7 +193,7 @@ class ServiceClassBuilder implements ComponentBuilder
                     PHPTypesModifiers::PUBLIC,
                     'Creates an instance of the Service'
                 ))->addLine(
-                    '$this->dbManager = $manager ?? new EloquentDMLManager(Test::class)'
+                    "\$this->dbManager = \$manager ?? new EloquentDMLManager($this->modelName_::class)"
                 )
             )
             // Add Handler method

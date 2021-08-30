@@ -72,12 +72,12 @@
             "source": {
                 "type": "git",
                 "url": "git@github.com:liksoft/drewlabs-php-code-generator.git",
-                "reference": "bfd3fbec01048ab04a85acac6b3ac911f4718823"
+                "reference": "3c18c762fa31aa23e709583e7eede78463a8afe2"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/liksoft/drewlabs-php-code-generator/zipball/bfd3fbec01048ab04a85acac6b3ac911f4718823",
-                "reference": "bfd3fbec01048ab04a85acac6b3ac911f4718823",
+                "url": "https://api.github.com/repos/liksoft/drewlabs-php-code-generator/zipball/3c18c762fa31aa23e709583e7eede78463a8afe2",
+                "reference": "3c18c762fa31aa23e709583e7eede78463a8afe2",
                 "shasum": ""
             },
             "require": {
@@ -108,7 +108,7 @@
                 "source": "https://github.com/liksoft/drewlabs-php-code-generator/tree/v1.0",
                 "issues": "https://github.com/liksoft/drewlabs-php-code-generator/issues"
             },
-            "time": "2021-08-28T23:41:42+00:00"
+            "time": "2021-08-30T10:22:15+00:00"
         },
         {
             "name": "drewlabs/contracts",
@@ -160,12 +160,12 @@
             "source": {
                 "type": "git",
                 "url": "git@github.com:liksoft/drewlabs-php-core.git",
-                "reference": "bd4bdcf514d9a9158e62b590134b410753276df4"
+                "reference": "1d69be926d8ef9b6ad63f06365bcb3b89ff450a5"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/liksoft/drewlabs-php-core/zipball/bd4bdcf514d9a9158e62b590134b410753276df4",
-                "reference": "bd4bdcf514d9a9158e62b590134b410753276df4",
+                "url": "https://api.github.com/repos/liksoft/drewlabs-php-core/zipball/1d69be926d8ef9b6ad63f06365bcb3b89ff450a5",
+                "reference": "1d69be926d8ef9b6ad63f06365bcb3b89ff450a5",
                 "shasum": ""
             },
             "require": {
@@ -217,7 +217,7 @@
             "support": {
                 "source": "https://github.com/liksoft/drewlabs-php-core/tree/v1.0"
             },
-            "time": "2021-08-29T00:50:13+00:00"
+            "time": "2021-08-30T10:03:59+00:00"
         },
         {
             "name": "drewlabs/core-helpers",

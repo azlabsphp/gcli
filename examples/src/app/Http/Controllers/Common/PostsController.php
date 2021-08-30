@@ -11,7 +11,8 @@
 
 namespace App\Http\Controllers\Common;
 
-use App\Services\PersonsService;
+use App\Services\PersonService;
+use Drewlabs\Contracts\Support\Actions\ActionHandler;
 use Drewlabs\Contracts\Validator\Validator;
 use Drewlabs\Packages\Http\Contracts\IActionResponseHandler;
 use Illuminate\Http\Response;
@@ -23,7 +24,7 @@ final class PostsController
 	/**
 	 * Injected instance of MVC service
 	 * 
-	 * @var PersonsService
+	 * @var ActionHandler
 	 */
 	private $service;
 
@@ -42,19 +43,20 @@ final class PostsController
 	private $response;
 
 	/**
-	 * Create a new Http Controller class
+	 * Class instance initializer
 	 * 
 	 * @param Validator $validator
 	 * @param IActionResponseHandler $response
-	 * @param PersonsService $service
+	 * @param ActionHandler $service
 	 *
 	 * @return self
 	 */
-	public function __construct(Validator $validator, IActionResponseHandler $response, PersonsService $service)
+	public function __construct(Validator $validator, IActionResponseHandler $response, ActionHandler $service)
 	{
 		# code...
 		$this->validator = $validator;
 		$this->response = $response;
+		$this->service = $service ?? new PersonService();
 	}
 
 	/**

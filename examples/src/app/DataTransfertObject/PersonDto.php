@@ -11,9 +11,9 @@
 
 namespace App\DataTransfertObject;
 
-use Drewlabs\Support\Immutable\ValueObject;
+use Drewlabs\Support\Immutable\ModelValueObject;
 
-class PersonDto extends ValueObject
+class PersonDto extends ModelValueObject
 {
 
 	/**

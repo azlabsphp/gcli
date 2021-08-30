@@ -11,13 +11,28 @@
 
 namespace App\Http\Controllers;
 
+use App\Services\PersonService;
+use App\Models\Person;
+use App\DataTransfertObject\PersonDto;
+use Drewlabs\Core\Validator\Exceptions\ValidationException;
+use Drewlabs\Contracts\Support\Actions\ActionHandler;
 use Drewlabs\Contracts\Validator\Validator;
 use Drewlabs\Packages\Http\Contracts\IActionResponseHandler;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
+// Function import statements
+use function Drewlabs\Support\Proxy\Action;
+
 final class PeopleController
 {
+
+	/**
+	 * Injected instance of MVC service
+	 * 
+	 * @var ActionHandler
+	 */
+	private $service;
 
 	/**
 	 * Injected instance of the validator class
@@ -34,18 +49,27 @@ final class PeopleController
 	private $response;
 
 	/**
-	 * Create a new Http Controller class
+	 * Resource primary key name
+	 * 
+	 * @var string
+	 */
+	private const RESOURCE_PRIMARY_KEY = "id";
+
+	/**
+	 * Class instance initializer
 	 * 
 	 * @param Validator $validator
 	 * @param IActionResponseHandler $response
+	 * @param ActionHandler $service
 	 *
 	 * @return self
 	 */
-	public function __construct(Validator $validator, IActionResponseHandler $response)
+	public function __construct(Validator $validator, IActionResponseHandler $response, ActionHandler $service = null)
 	{
 		# code...
 		$this->validator = $validator;
 		$this->response = $response;
+		$this->service = $service ?? new PersonService();
 	}
 
 	/**
@@ -63,9 +87,21 @@ final class PeopleController
 		if (!is_null($id)) {
 			return $this->show($request, $id);
 		}
-		
-			// Code goes here...
-		
+		// TODO : Provides policy handlers
+		$tranformFunc_ = function ($items) {
+			return map_query_result($items, function ($value) {
+				return $value ? (new PersonDto)->withModel($value) : $value;
+			});
+		};
+		$filters = drewlabs_databse_parse_client_request_query(new Person, $request);;
+		$result = $this->service->handle(
+			Action([
+				'type' => 'SELECT',
+				'payload_' => $request->has('per_page') ? [$filters, (int)$request->get('per_page'), $request->has('page') ? (int)$request->get('page') : null] : [$filters],
+			]),
+			$tranformFunc_
+		);
+		return $this->response->ok($result);
 	}
 
 	/**
@@ -80,8 +116,14 @@ final class PeopleController
 	public function show(Request $request, $id)
 	{
 		# code...
-			// Code goes here...
-		
+		// TODO: Provide Policy handlers if required
+		$result = $this->service->handle(Action([
+			'type' => 'SELECT',
+			'payload_' => [$id],
+		]), function ($value) {
+			return null !== $value ? new PersonDto($value->toArray()) : $value;
+		});
+		return $this->response->ok($result);
 	}
 
 	/**
@@ -97,14 +139,30 @@ final class PeopleController
 		# code...
 		try {
 			// validate request inputs
-			// Use your custom validation rules here
-			$validator = $this->validator->validate([], $request->all());
-			if ($validator->fails()) {
-				return $this->response->badRequest($validator->errors());
-			}
-		
-			// Code goes here...
-		
+			$result = $this->validator->validate([], $request->all(), function () use ($request) {
+				// After validation logic goes here...
+				return $this->service->handle(Action([
+					'type' => 'CREATE',
+					'payload_' => [
+						$request->all(),
+						$request->has(self::RESOURCE_PRIMARY_KEY) ?
+							[
+								'upsert' => true,
+								'upsert_conditions' => [
+									self::RESOURCE_PRIMARY_KEY => $request->get(self::RESOURCE_PRIMARY_KEY),
+								],
+							] :
+							[]
+					],
+				]), function ($value) {
+					return null !== $value ? new PersonDto($value->toArray()) : $value;
+				});
+			});
+
+			return $this->response->ok($result);
+		} catch (ValidationException $e) {
+			// Return failure response to request client
+			return $this->response->badRequest($e->getErrors());
 		} catch (\Exception $e) {
 			// Return failure response to request client
 			return $this->response->error($e);
@@ -128,13 +186,20 @@ final class PeopleController
 			$request = $request->merge(["id" => $id]);
 			// validate request inputs
 			// Use your custom validation rules here
-			$validator = $this->validator->setUpdate(true)->validate([], $request->all());
-			if ($validator->fails()) {
-				return $this->response->badRequest($validator->errors());
-			}
-		
-			// Code goes here...
-		
+			$result = $this->validator->setUpdate(true)->validate([], $request->all(), function () use ($id, $request) {
+				// After validation logic goes here...
+				return $this->service->handle(Action([
+					'type' => 'UPDATE',
+					'payload_' => [$id, $request->all()],
+				]), function ($value) {
+					return null !== $value ? new PersonDto($value->toArray()) : $value;
+				});
+			});
+
+			return $this->response->ok($result);
+		} catch (ValidationException $e) {
+			// Return failure response to request client
+			return $this->response->badRequest($e->getErrors());
 		} catch (\Exception $e) {
 			// Return failure response to request client
 			return $this->response->error($e);
@@ -153,12 +218,11 @@ final class PeopleController
 	public function destroy(Request $request, $id)
 	{
 		# code...
-		try {
-			// Code goes here ...
-		} catch (\Exception $e) {
-			// Return failure response to request client
-			return $this->response->error($e);
-		}
+		// TODO: Provide Policy handlers if required
+		$result = $this->service->handle(Action([
+			'type' => 'DELETE',
+			'payload_' => [$id],
+		]));
+		return $this->response->ok($result);
 	}
-
 }

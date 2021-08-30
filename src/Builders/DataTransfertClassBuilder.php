@@ -11,6 +11,7 @@ use Drewlabs\Contracts\Data\Model\Parseable;
 use Drewlabs\Support\Immutable\ValueObject;
 use Illuminate\Support\Pluralizer;
 use Drewlabs\CodeGenerator\Contracts\Blueprint;
+use Drewlabs\Support\Immutable\ModelValueObject;
 
 use function Drewlabs\CodeGenerator\Proxy\PHPClass;
 use function Drewlabs\CodeGenerator\Proxy\PHPClassMethod;
@@ -142,7 +143,7 @@ class DataTransfertClassBuilder implements ComponentBuilder
          * @var BluePrint
          */
         $component = (PHPClass($this->name_ ?? self::DEFAULT_NAME))
-            ->setBaseClass(ValueObject::class)
+            ->setBaseClass(ModelValueObject::class)
             ->addMethod(
                 PHPClassMethod(
                     'getJsonableAttributes',

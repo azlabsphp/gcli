@@ -36,14 +36,22 @@ interface ControllerBuilder extends ComponentBuilder
      *
      * @return self
      */
-    public function bindModel(string $model, $asViewModelClass = false);
+    public function bindModel(string $value, $asViewModelClass = false);
 
     /**
      * Bind a view model to the controller that will be used for validation.
      *
      * @return self
      */
-    public function bindViewModelClass(string $viewModelClass);
+    public function bindViewModel(string $viewModelClass);
+
+    /**
+     * Bind a service class definition to the controller
+     * 
+     * @param string $serviceClass 
+     * @return self 
+     */
+    public function bindService(string $serviceClass);
 
     /**
      * Set the name property of the controller.
@@ -51,4 +59,11 @@ interface ControllerBuilder extends ComponentBuilder
      * @return self
      */
     public function setName(string $value);
+
+    /**
+     * 
+     * @param string $dtoClass 
+     * @return self 
+     */
+    public function bindDTOObject(string $dtoClass);
 }
