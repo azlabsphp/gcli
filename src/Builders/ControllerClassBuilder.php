@@ -17,6 +17,7 @@ use Drewlabs\CodeGenerator\Contracts\Blueprint;
 use Drewlabs\CodeGenerator\Contracts\OOPComposableStruct;
 use Drewlabs\CodeGenerator\Types\PHPTypesModifiers;
 use Drewlabs\ComponentGenerators\Contracts\ControllerBuilder as ContractsControllerBuilder;
+use Drewlabs\ComponentGenerators\Helpers\ComponentBuilderHelpers;
 use Drewlabs\ComponentGenerators\PHP\PHPScriptFile;
 use Drewlabs\ComponentGenerators\Traits\HasNameAttribute;
 use Drewlabs\ComponentGenerators\Traits\HasNamespaceAttribute;
@@ -33,6 +34,7 @@ use function Drewlabs\CodeGenerator\Proxy\PHPClass;
 use function Drewlabs\CodeGenerator\Proxy\PHPClassMethod;
 use function Drewlabs\CodeGenerator\Proxy\PHPClassProperty;
 use function Drewlabs\CodeGenerator\Proxy\PHPFunctionParameter;
+use function Drewlabs\Filesystem\Proxy\Path;
 
 class ControllerClassBuilder implements ContractsControllerBuilder
 {
@@ -43,14 +45,14 @@ class ControllerClassBuilder implements ContractsControllerBuilder
 
     private const DEFAULT_NAME = 'TestsController';
 
-    private const DEFAULT_PATH = 'app/Http/Controllers/';
+    private const DEFAULT_PATH = 'Http/Controllers/';
 
     /**
      * Controller class namespace.
      *
      * @var string
      */
-    private const DEFAULT_NAMESPACE = 'App\\Http\\Controllers';
+    public const DEFAULT_NAMESPACE = 'App\\Http\\Controllers';
 
     /**
      * @var bool
@@ -110,9 +112,8 @@ class ControllerClassBuilder implements ContractsControllerBuilder
             $this->setName($name);
         }
         // Set the component write path
-        if ($path) {
-            $this->setWritePath(self::DEFAULT_PATH);
-        }
+        $this->setWritePath($path ?? self::DEFAULT_PATH);
+
         // Set the component namespace
         $this->setNamespace($namespace ?? self::DEFAULT_NAMESPACE);
     }
@@ -297,16 +298,25 @@ class ControllerClassBuilder implements ContractsControllerBuilder
             );
         }
         // Returns the builded component
+
         return new PHPScriptFile(
             $component->getName(),
             $component,
-            $this->path_ ?? self::DEFAULT_PATH
+            ComponentBuilderHelpers::rebuildComponentPath(
+                $this->namespace_ ?? self::DEFAULT_NAMESPACE,
+                $this->path_ ?? self::DEFAULT_PATH
+            )
         );
     }
 
     private function addResourcesActions(Blueprint $component)
     {
-        $routeName = drewlabs_core_strings_as_snake_case(drewlabs_core_strings_to_lower_case(drewlabs_core_strings_replace('Controller', '', $component->getName())), '-');
+        $routeName = drewlabs_core_strings_as_snake_case(
+            drewlabs_core_strings_to_lower_case(
+                drewlabs_core_strings_replace('Controller', '', $component->getName())
+            ),
+            '-'
+        );
         $validatable = null === $this->viewModelClass_ ? '[]' : sprintf("%s::class", $this->viewModelClass_);
         $actions = [
             [
@@ -540,15 +550,26 @@ class ControllerClassBuilder implements ContractsControllerBuilder
         }, $component
             ->addClassPath(ValidationException::class)
             ->addFunctionPath(self::ACTION_FUNCTION_PATH)
-        ->addConstant(PHPClassProperty(
-            'RESOURCE_PRIMARY_KEY',
-            'string',
-            PHPTypesModifiers::PRIVATE,
-            'id',
-            'Resource primary key name'
-        )));
+            ->addConstant(PHPClassProperty(
+                'RESOURCE_PRIMARY_KEY',
+                'string',
+                PHPTypesModifiers::PRIVATE,
+                'id',
+                'Resource primary key name'
+            )));
 
         // Returns the component back to the caller
         return $component;
+    }
+
+
+
+    public static function defaultClassPath(?string $classname = null)
+    {
+        $classname = $classname ?? 'Test';
+        if (drewlabs_core_strings_contains($classname, "\\")) {
+            return $classname;
+        }
+        return sprintf("%s%s%s", self::DEFAULT_NAMESPACE, "\\", $classname);
     }
 }

@@ -49,14 +49,14 @@ class EloquentORMModelBuilder implements ContractsEloquentORMModel, ComponentBui
     /**
      * @var string
      */
-    private const DEFAULT_PATH = 'app/Models';
+    private const DEFAULT_PATH = 'Models';
 
     /**
      * The namespace of the model.
      *
      * @var string
      */
-    private const DEFAULT_NAMESPACE = 'App\\Models';
+    public const DEFAULT_NAMESPACE = 'App\\Models';
 
     /**
      * @var Stringable
@@ -431,5 +431,14 @@ class EloquentORMModelBuilder implements ContractsEloquentORMModel, ComponentBui
             $component,
             $this->path_ ?? self::DEFAULT_PATH
         );
+    }
+
+    public static function defaultClassPath(?string $classname = null)
+    {
+        $classname = $classname ?? 'Test';
+        if (drewlabs_core_strings_contains($classname, "\\")) {
+            return $classname;
+        }
+        return sprintf("%s%s%s", self::DEFAULT_NAMESPACE, "\\", $classname);
     }
 }

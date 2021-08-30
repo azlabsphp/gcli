@@ -33,14 +33,14 @@ class DataTransfertClassBuilder implements ComponentBuilder
     /**
      * @var string
      */
-    private const DEFAULT_PATH = 'app/DataTransfertObject/';
+    private const DEFAULT_PATH = 'DataTransfertObject/';
 
     /**
      * Service default class namespace.
      *
      * @var string
      */
-    private const DEFAULT_NAMESPACE = 'App\\DataTransfertObject';
+    public const DEFAULT_NAMESPACE = 'App\\DataTransfertObject';
 
     /**
      * List of attributes that can be json serializable
@@ -63,11 +63,22 @@ class DataTransfertClassBuilder implements ComponentBuilder
      */
     private $guarded_ = [];
 
-    public function __construct(string $name = null, array $json_attributes = [])
-    {
+    public function __construct(
+        array $json_attributes = [],
+        string $name = null,
+        ?string $namespace = null,
+        string $path = null
+    ) {
         if ($name) {
             $this->setName($name);
         }
+        // Set the component write path
+        $this->setWritePath($path ?? self::DEFAULT_PATH);
+
+        // Set the component namespace
+        $this->setNamespace($namespace ?? self::DEFAULT_NAMESPACE);
+
+        // Set json_attributes
         $this->json_attributes_ = $json_attributes ?? [];
     }
 
@@ -77,7 +88,7 @@ class DataTransfertClassBuilder implements ComponentBuilder
      * 
      * @return self 
      */
-    public function bind($model)
+    public function bindModel($model)
     {
         if (null === $model) {
             return $this;
@@ -177,5 +188,14 @@ class DataTransfertClassBuilder implements ComponentBuilder
             $component,
             $this->path_ ?? self::DEFAULT_PATH
         );
+    }
+
+    public static function defaultClassPath(?string $classname = null)
+    {
+        $classname = $classname ?? 'Test';
+        if (drewlabs_core_strings_contains($classname, "\\")) {
+            return $classname;
+        }
+        return sprintf("%s%s%s", self::DEFAULT_NAMESPACE, "\\", $classname);
     }
 }

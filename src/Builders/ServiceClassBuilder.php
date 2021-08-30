@@ -48,14 +48,14 @@ class ServiceClassBuilder implements ComponentBuilder
     /**
      * @var string
      */
-    private const DEFAULT_PATH = 'app/Services/';
+    private const DEFAULT_PATH = 'Services/';
 
     /**
      * Service default class namespace.
      *
      * @var string
      */
-    private const DEFAULT_NAMESPACE = 'App\\Services';
+    public const DEFAULT_NAMESPACE = 'App\\Services';
 
     /**
      * @var bool
@@ -85,9 +85,8 @@ class ServiceClassBuilder implements ComponentBuilder
             $this->setName($name);
         }
         // Set the component write path
-        if ($path) {
-            $this->setWritePath(self::DEFAULT_PATH);
-        }
+        $this->setWritePath($path ?? self::DEFAULT_PATH);
+
         // Set the component namespace
         $this->setNamespace($namespace ?? self::DEFAULT_NAMESPACE);
     }
@@ -227,5 +226,14 @@ class ServiceClassBuilder implements ComponentBuilder
             $component,
             $this->path_ ?? self::DEFAULT_PATH
         );
+    }
+
+    public static function defaultClassPath(?string $classname = null)
+    {
+        $classname = $classname ?? 'Test';
+        if (drewlabs_core_strings_contains($classname, "\\")) {
+            return $classname;
+        }
+        return sprintf("%s%s%s", self::DEFAULT_NAMESPACE, "\\", $classname);
     }
 }

@@ -9,7 +9,7 @@
  * file that was distributed with this source code.
 */
 
-namespace App\Http\Common;
+namespace App\Http\Controllers\Common;
 
 use App\Services\PersonService;
 use App\Models\Person;

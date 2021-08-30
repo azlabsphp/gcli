@@ -5,6 +5,7 @@
         "phpunit/phpunit": "^9.5",
         "drewlabs/database": "v3.1.x-dev",
         "illuminate/support": "^5.0|^6.0|^7.0|^8.0",
+        "illuminate/console": "^5.0|^6.0|^7.0|^8.0",
         "drewlabs/http": "v3.1.x-dev",
         "drewlabs/helpers": "v3.1.x-dev"
     },

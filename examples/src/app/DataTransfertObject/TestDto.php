@@ -13,7 +13,7 @@ namespace App\DataTransfertObject;
 
 use Drewlabs\Support\Immutable\ModelValueObject;
 
-class PersonDto extends ModelValueObject
+class TestDto extends ModelValueObject
 {
 
 	/**
@@ -40,9 +40,10 @@ class PersonDto extends ModelValueObject
 	{
 		# code...
 		return [
-			"firstname" => "firstname",
-			"lastname" => "lastname",
-			"phoneNumber" => "phone_number",
+			"username",
+			"password",
+			"email",
+			"id",
 		];
 	}
 

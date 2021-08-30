@@ -43,14 +43,14 @@ class ViewModelClassBuilder implements ComponentBuilder
     /**
      * @var string
      */
-    private const DEFAULT_PATH = 'app/Http/ViewModels';
+    private const DEFAULT_PATH = 'Http/ViewModels';
 
     /**
      * Service default class namespace.
      *
      * @var string
      */
-    private const DEFAULT_NAMESPACE = 'App\\Http\\ViewModels';
+    public const DEFAULT_NAMESPACE = 'App\\Http\\ViewModels';
 
     public function __construct(
         ?string $name = null,
@@ -61,9 +61,7 @@ class ViewModelClassBuilder implements ComponentBuilder
             $this->setName($name);
         }
         // Set the component write path
-        if (null !== $path) {
-            $this->setWritePath($path);
-        }
+        $this->setWritePath($path ?? self::DEFAULT_PATH);
         // Set the component namespace
         $this->setNamespace($namespace ?? self::DEFAULT_NAMESPACE);
     }
@@ -76,7 +74,7 @@ class ViewModelClassBuilder implements ComponentBuilder
         $is_class_path = drewlabs_core_strings_contains($model, '\\'); // && class_exists($model); To uncomment if there is need to validate class existence
         $model_name = 'Test';
         $model_name = $is_class_path ? array_reverse(explode('\\', $model))[0] : (drewlabs_core_strings_contains($model, '\\') ? array_reverse(explode('\\', $model))[0] : $model);
-        $name = drewlabs_core_strings_as_camel_case(Pluralizer::singular($model_name)).'ViewModel';
+        $name = drewlabs_core_strings_as_camel_case(Pluralizer::singular($model_name)) . 'ViewModel';
         $this->setName($name);
 
         return $this;
@@ -89,21 +87,25 @@ class ViewModelClassBuilder implements ComponentBuilder
          */
         $component = (PHPClass($this->name() ?? self::DEFAULT_NAME))
             ->addToNamespace($this->namespace() ?? self::DEFAULT_NAMESPACE)
-            ->addMethod(PHPClassMethod(
-                'rules',
-                [],
-                'array<string,string|string[]>',
-                PHPTypesModifiers::PUBLIC,
-                'Returns a fluent validation rules'
-            ))->addMethod(
-                (PHPClassMethod(
-                    'messages',
+            ->addMethod(
+                PHPClassMethod(
+                    'rules',
                     [],
                     'array<string,string|string[]>',
                     PHPTypesModifiers::PUBLIC,
                     'Returns a fluent validation rules'
-                ))->addContents(
-                    'return '.PHPVariable('rules', null, $this->rules_ ?? [])->asRValue()->__toString()
+                )->addContents(
+                    'return ' . PHPVariable('rules', null, $this->rules_ ?? [])->asRValue()->__toString()
+                )
+            )->addMethod(
+                PHPClassMethod(
+                    'messages',
+                    [],
+                    'array<string,string|string[]>',
+                    PHPTypesModifiers::PUBLIC,
+                    'Returns a list of validation error messages'
+                )->addContents(
+                    'return []'
                 )
             );
         if (!$this->isSingleActionValidator_) {
@@ -119,7 +121,7 @@ class ViewModelClassBuilder implements ComponentBuilder
                         'array<string,string|string[]>',
                         PHPTypesModifiers::PUBLIC,
                         'Returns a fluent validation rules applied during update actions'
-                    )->addContents('return '.PHPVariable('rules', null, $this->rules_ ?? [])->asRValue()->__toString())
+                    )->addContents('return ' . PHPVariable('rules', null, $this->updateRules_ ?? [])->asRValue()->__toString())
                 );
         } else {
             /**
@@ -149,5 +151,14 @@ class ViewModelClassBuilder implements ComponentBuilder
             $component,
             $this->path_ ?? self::DEFAULT_PATH
         );
+    }
+
+    public static function defaultClassPath(?string $classname = null)
+    {
+        $classname = $classname ?? 'Test';
+        if (drewlabs_core_strings_contains($classname, "\\")) {
+            return $classname;
+        }
+        return sprintf("%s%s%s", self::DEFAULT_NAMESPACE, "\\", $classname);
     }
 }

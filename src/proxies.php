@@ -125,11 +125,18 @@ function ViewModelBuilder(
 /**
  * Provides a proxy function to the  {@link \Drewlabs\ComponentGenerators\Builders\DataTransfertClassBuilder} constructor
  * 
- * @param string|null $name 
  * @param array $json_attributes 
+ * @param string|null $name 
+ * @param null|string $namespace 
+ * @param string|null $path 
  * @return DataTransfertClassBuilder 
  */
-function DataTransfertClassBuilder(string $name = null, array $json_attributes = [])
+function DataTransfertClassBuilder(
+    array $json_attributes = [],
+    string $name = null,
+    ?string $namespace = null,
+    string $path = null
+)
 {
-    return new DataTransfertClassBuilder($name, $json_attributes);
+    return new DataTransfertClassBuilder($json_attributes, $name, $namespace, $path);
 }

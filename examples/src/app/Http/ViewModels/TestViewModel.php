@@ -14,9 +14,9 @@ namespace App\Http\ViewModels;
 use Drewlabs\Core\Validator\Traits\HasAuthenticatable;
 use Drewlabs\Core\Validator\Traits\HasFileInputs;
 use Drewlabs\Core\Validator\Traits\HasInputs;
-use Drewlabs\Contracts\Validator\Validatable;
+use Drewlabs\Contracts\Validator\CoreValidatable;
 
-class PersonViewModel implements Validatable
+class TestViewModel implements CoreValidatable
 {
 
 	use HasAuthenticatable;
@@ -32,10 +32,14 @@ class PersonViewModel implements Validatable
 	public function rules()
 	{
 		# code...
+		return [
+			"firstname" => "required|max:50",
+			"lastname" => "required|max:50",
+		];
 	}
 
 	/**
-	 * Returns a fluent validation rules
+	 * Returns a list of validation error messages
 	 * 
 	 *
 	 * @return array<string,string|string[]>
@@ -43,25 +47,7 @@ class PersonViewModel implements Validatable
 	public function messages()
 	{
 		# code...
-		return [
-			"firstname" => "required|max:50",
-			"lastname" => "required|max:50",
-		];
-	}
-
-	/**
-	 * Returns a fluent validation rules applied during update actions
-	 * 
-	 *
-	 * @return array<string,string|string[]>
-	 */
-	public function updateRules()
-	{
-		# code...
-		return [
-			"firstname" => "required|max:50",
-			"lastname" => "required|max:50",
-		];
+		return [];
 	}
 
 }
