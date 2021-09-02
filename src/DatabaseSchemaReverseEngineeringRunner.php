@@ -147,6 +147,9 @@ class DatabaseSchemaReverseEngineeringRunner
                 sprintf("%s\\%s", $this->blocComponentNamespace_ ?? self::DEFAULT_BLOC_COMPONENT_NAMESPACE, 'Http\\Controllers\\Controllers'),
             );
             ComponentsScriptWriter($this->blocComponentPath_)->write($controller);
+
+            // Yield the success value;
+            yield true;
         }
     }
 
@@ -179,12 +182,7 @@ class DatabaseSchemaReverseEngineeringRunner
 
     private function tablesToORMModelDefinitionGenerator(array $tables)
     {
-        $index = 0;
         foreach ($tables as $table) {
-            if ($index === 4) {
-                break;
-            }
-            $index += 1;
             $table_name = $table->getName();
             //# region get table primary key columns
             $primaryKeyColumns = $table->getPrimaryKey()->getColumns();
