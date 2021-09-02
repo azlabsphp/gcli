@@ -1,12 +1,14 @@
 <?php
 
-namespace Drewlabs\ComponentGenerators\Extensions\Command;
+namespace Drewlabs\ComponentGenerators\Extensions\Console\Commands;
 
 use Drewlabs\ComponentGenerators\Builders\EloquentORMModelBuilder;
 use Drewlabs\ComponentGenerators\Helpers\ComponentBuilderHelpers;
 use Illuminate\Console\Command;
 use Illuminate\Container\Container;
 use Illuminate\Contracts\Foundation\Application;
+
+use function Drewlabs\ComponentGenerators\Proxy\ComponentsScriptWriter;
 
 class GenerateMVComponent extends Command
 {
@@ -84,7 +86,7 @@ class GenerateMVComponent extends Command
         $vm = $this->option('as-viewmodel') ?? false;
         $basePath = $this->app->basePath($this->option('path') ?? 'app');
         // # End of parameters initialization
-        ComponentBuilderHelpers::buildModelDefinition($table, $basePath, $columns ?? [], $namespace, $primaryKey, $increments, $vm);
+        ComponentsScriptWriter($basePath)->write(ComponentBuilderHelpers::buildModelDefinition($table, $columns ?? [], $namespace, $primaryKey, $increments, $vm));
     }
 
     private function callServiceGenerator()
@@ -95,7 +97,7 @@ class GenerateMVComponent extends Command
         $namespace = $this->option('namespace') ?? null;
         $basePath = $this->app->basePath($this->option('path') ?? 'app');
         // # End of parameters initialization
-        ComponentBuilderHelpers::buildServiceDefinition($basePath, $name, $namespace, $model);
+        ComponentsScriptWriter($basePath)->write(ComponentBuilderHelpers::buildServiceDefinition($name, $namespace, $model));
     }
 
     public function callViewModelGeneratorClass()
@@ -109,7 +111,7 @@ class GenerateMVComponent extends Command
         $rules = $this->option('rules') ?? [];
         $updateRules = $this->option('update-rules') ?? [];
         // # End of parameters initialization
-        ComponentBuilderHelpers::buildViewModelDefinition($basePath, $single, $rules, $updateRules, $name, $namespace, $model);
+        ComponentsScriptWriter($basePath)->write(ComponentBuilderHelpers::buildViewModelDefinition($single, $rules, $updateRules, $name, $namespace, $model));
     }
 
     public function callDtoBuilder()
@@ -123,15 +125,14 @@ class GenerateMVComponent extends Command
         $hidden = $this->option('hidden-attributes') ?? []; //
         $guarded = $this->option('guarded-attributes') ?? [];
         // # End of parameters initialization
-        ComponentBuilderHelpers::buildDtoObjectDefinition(
-            $basePath,
+        ComponentsScriptWriter($basePath)->write(ComponentBuilderHelpers::buildDtoObjectDefinition(
             $attributes,
             $hidden,
             $guarded,
             $name,
             $namespace,
             $model
-        );
+        ));
     }
 
     public function callControllerBuilder()

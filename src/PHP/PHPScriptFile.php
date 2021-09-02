@@ -14,9 +14,9 @@ declare(strict_types=1);
 namespace Drewlabs\ComponentGenerators\PHP;
 
 use Drewlabs\CodeGenerator\Contracts\Stringable;
-use Drewlabs\ComponentGenerators\Contracts\Writable;
+use Drewlabs\ComponentGenerators\Contracts\SourceFileInterface;
 
-class PHPScriptFile implements Writable
+class PHPScriptFile implements SourceFileInterface
 {
     private const DEFAULT_HEADER = <<<EOT
 /*
@@ -66,6 +66,12 @@ EOT;
      */
     private $name_;
 
+    /**
+     * 
+     * @var mixed
+     */
+    private $namespace_;
+
     public function __construct(
         string $name,
         Stringable $content,
@@ -95,14 +101,7 @@ EOT;
         return implode(\PHP_EOL, $parts);
     }
 
-    /**
-     * Set the PHP headers linest.
-     *
-     * @param string|string[] $headers
-     *
-     * @return self
-     */
-    public function setHeaderLines($headers)
+    public function setHeaders($headers)
     {
         $headers = !\is_string($headers) && !\is_array($headers) ? (array) $headers : $headers;
         $this->headers_ = \is_string($headers) ? explode(\PHP_EOL, $headers) : $headers;
@@ -117,6 +116,17 @@ EOT;
         return $this;
     }
 
+    public function setNamespace(string $namespace)
+    {
+        $this->namespace_ = $namespace;
+        return $this;
+    }
+
+    public function getNamespace(): ?string
+    {
+        return $this->namespace_;
+    }
+
     public function getPath(): string
     {
         return sprintf(
@@ -126,5 +136,12 @@ EOT;
             $this->name_,
             $this->extension_
         );
+    }
+
+    public function getName()
+    {
+        return drewlabs_core_strings_contains($this->name_ ?? '', '.') ?
+            drewlabs_core_strings_before('.', $this->name_) :
+            $this->name_ ?? 'Test';
     }
 }

@@ -18,8 +18,6 @@ use Drewlabs\CodeGenerator\Contracts\OOPComposableStruct;
 use Drewlabs\CodeGenerator\Types\PHPTypesModifiers;
 use Drewlabs\ComponentGenerators\Contracts\ControllerBuilder as ContractsControllerBuilder;
 use Drewlabs\ComponentGenerators\Helpers\ComponentBuilderHelpers;
-use Drewlabs\ComponentGenerators\PHP\PHPScriptFile;
-use Drewlabs\ComponentGenerators\Traits\HasNameAttribute;
 use Drewlabs\ComponentGenerators\Traits\HasNamespaceAttribute;
 use Drewlabs\Contracts\Support\Actions\ActionHandler;
 use Drewlabs\Contracts\Validator\Validator;
@@ -34,11 +32,10 @@ use function Drewlabs\CodeGenerator\Proxy\PHPClass;
 use function Drewlabs\CodeGenerator\Proxy\PHPClassMethod;
 use function Drewlabs\CodeGenerator\Proxy\PHPClassProperty;
 use function Drewlabs\CodeGenerator\Proxy\PHPFunctionParameter;
-use function Drewlabs\Filesystem\Proxy\Path;
+use function Drewlabs\ComponentGenerators\Proxy\PHPScript;
 
 class ControllerClassBuilder implements ContractsControllerBuilder
 {
-    use HasNameAttribute;
     use HasNamespaceAttribute;
 
     private const ACTION_FUNCTION_PATH = 'Drewlabs\\Support\\Proxy\\Action';
@@ -299,14 +296,14 @@ class ControllerClassBuilder implements ContractsControllerBuilder
         }
         // Returns the builded component
 
-        return new PHPScriptFile(
+        return PHPScript(
             $component->getName(),
             $component,
             ComponentBuilderHelpers::rebuildComponentPath(
                 $this->namespace_ ?? self::DEFAULT_NAMESPACE,
                 $this->path_ ?? self::DEFAULT_PATH
             )
-        );
+        )->setNamespace($component->getNamespace());
     }
 
     private function addResourcesActions(Blueprint $component)
@@ -349,7 +346,7 @@ class ControllerClassBuilder implements ContractsControllerBuilder
                         (null !== $this->modelName_) ? "\$filters = drewlabs_databse_parse_client_request_query(new $this->modelName_, \$request);" : null,
                         "\$result = \$this->service->handle(Action([",
                         "\t'type' => 'SELECT',",
-                        "\t'payload_' => \$request->has('per_page') ? [\$filters, (int)\$request->get('per_page'), \$request->has('page') ? (int)\$request->get('page') : null] : [\$filters],",
+                        "\t'payload' => \$request->has('per_page') ? [\$filters, (int)\$request->get('per_page'), \$request->has('page') ? (int)\$request->get('page') : null] : [\$filters],",
                         $this->dtoClass_ ? "]), \$tranformFunc_)" : "]))",
                         "return \$this->response->ok(\$result)", //
                     ] : []
@@ -372,7 +369,7 @@ class ControllerClassBuilder implements ContractsControllerBuilder
                         "// TODO: Provide Policy handlers if required",
                         "\$result = \$this->service->handle(Action([",
                         "\t'type' => 'SELECT',",
-                        "\t'payload_' => [\$id],",
+                        "\t'payload' => [\$id],",
                     ],
                     null !== $this->dtoClass_ ? [
                         "]), function(\$value) {",
@@ -412,7 +409,7 @@ class ControllerClassBuilder implements ContractsControllerBuilder
                         "\t\t\t'type' => 'CREATE',",
                     ],
                     $validatable === '[]' ? [
-                        "\t\t\t'payload_' => [",
+                        "\t\t\t'payload' => [",
                         "\t\t\t\t\$request->all(),",
                         "\t\t\t\t\$request->has(self::RESOURCE_PRIMARY_KEY) ?",
                         "\t\t\t\t\t[",
@@ -420,7 +417,7 @@ class ControllerClassBuilder implements ContractsControllerBuilder
                         "\t\t\t\t\t\t'upsert_conditions' => [",
                         "\t\t\t\t\t\t\tself::RESOURCE_PRIMARY_KEY => \$request->get(self::RESOURCE_PRIMARY_KEY),",
                     ] : [
-                        "\t\t\t'payload_' => [",
+                        "\t\t\t'payload' => [",
                         "\t\t\t\t\$viewModel_->all(),",
                         "\t\t\t\t\$viewModel_->has(self::RESOURCE_PRIMARY_KEY) ?",
                         "\t\t\t\t\t[",
@@ -485,9 +482,9 @@ class ControllerClassBuilder implements ContractsControllerBuilder
                         "\t\t\t'type' => 'UPDATE',",
                     ],
                     $validatable === '[]' ? [
-                        "\t\t\t'payload_' => [\$id, \$request->all()],",
+                        "\t\t\t'payload' => [\$id, \$request->all()],",
                     ] : [
-                        "\t\t\t'payload_' => [\$id, \$viewModel_->all()],",
+                        "\t\t\t'payload' => [\$id, \$viewModel_->all()],",
                     ],
                     null !== $this->dtoClass_ ? [
                         "\t\t]), function( \$value) {",
@@ -523,7 +520,7 @@ class ControllerClassBuilder implements ContractsControllerBuilder
                     "// TODO: Provide Policy handlers if required",
                     "\$result = \$this->service->handle(Action([",
                     "\t'type' => 'DELETE',",
-                    "\t'payload_' => [\$id],",
+                    "\t'payload' => [\$id],",
                     "]))",
                     "return \$this->response->ok(\$result)", //
                 ],

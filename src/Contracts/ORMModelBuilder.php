@@ -25,7 +25,7 @@ interface ORMModelBuilder extends ComponentBuilder
     /**
      * Set the list of columns that are attached to the Model/Entity properties.
      *
-     * @param ORMModelColumnDefintion[] $columns
+     * @param ORMColumnDefinition[] $columns
      *
      * @return self
      */

@@ -12,7 +12,7 @@
 namespace App\Services;
 
 use Drewlabs\Packages\Database\EloquentDMLManager;
-use App\Models\Human;
+use App\Models\ClientFace;
 use Drewlabs\Contracts\Support\Actions\ActionPayload;
 use Drewlabs\Contracts\Support\Actions\Exceptions\InvalidActionException;
 use Drewlabs\Contracts\Support\Actions\ActionHandler;
@@ -24,7 +24,7 @@ use Closure;
 // Function import statements
 use function Drewlabs\Support\Proxy\ActionResult;
 
-final class HumanService implements ActionHandler
+final class ClientFaceService implements ActionHandler
 {
 
 	/**
@@ -44,7 +44,7 @@ final class HumanService implements ActionHandler
 	public function __construct(DMLProvider $manager = null)
 	{
 		# code...
-		$this->dbManager = $manager ?? new EloquentDMLManager(Human::class);
+		$this->dbManager = $manager ?? new EloquentDMLManager(ClientFace::class);
 	}
 
 	/**

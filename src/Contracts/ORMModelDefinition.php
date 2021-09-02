@@ -33,7 +33,7 @@ interface ORMModelDefinition
     /**
      * Returns the list of columns definitions.
      *
-     * @return ORMModelColumnDefintion[]
+     * @return ORMColumnDefinition[]
      */
     public function columns(): array;
 

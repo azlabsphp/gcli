@@ -13,22 +13,18 @@ namespace App\DataTransfertObject;
 
 use Drewlabs\Support\Immutable\ModelValueObject;
 
-class TestDto extends ModelValueObject
+class ClientVerifiedPhoneNumberDto extends ModelValueObject
 {
 
 	/**
 	 * @var array
 	 */
-	private $___hidden = [
-		"password",
-	];
+	private $___hidden = [];
 
 	/**
 	 * @var array
 	 */
-	private $___guarded = [
-		"id",
-	];
+	private $___guarded = [];
 
 	/**
 	 * Returns the list of JSON serializable properties
@@ -40,10 +36,15 @@ class TestDto extends ModelValueObject
 	{
 		# code...
 		return [
-			"username",
-			"password",
-			"email",
-			"id",
+			"id" => "id",
+			"phoneNumber" => "phone_number",
+			"sessionClientId" => "session_client_id",
+			"verificationCode" => "verification_code",
+			"expiresAt" => "expires_at",
+			"expired" => "expired",
+			"verifiedAt" => "verified_at",
+			"createdAt" => "created_at",
+			"updatedAt" => "updated_at",
 		];
 	}
 

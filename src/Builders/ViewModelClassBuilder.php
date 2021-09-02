@@ -18,10 +18,12 @@ use Drewlabs\CodeGenerator\Models\PHPClass;
 use function Drewlabs\CodeGenerator\Proxy\PHPClass;
 use function Drewlabs\CodeGenerator\Proxy\PHPClassMethod;
 use function Drewlabs\CodeGenerator\Proxy\PHPVariable;
+use function Drewlabs\ComponentGenerators\Proxy\PHPScript;
+
 use Drewlabs\CodeGenerator\Types\PHPTypesModifiers;
 use Drewlabs\ComponentGenerators\Contracts\ComponentBuilder;
+use Drewlabs\ComponentGenerators\Helpers\ComponentBuilderHelpers;
 use Drewlabs\ComponentGenerators\PHP\PHPScriptFile;
-use Drewlabs\ComponentGenerators\Traits\HasNameAttribute;
 use Drewlabs\ComponentGenerators\Traits\HasNamespaceAttribute;
 use Drewlabs\ComponentGenerators\Traits\ViewModelBuilder;
 
@@ -31,7 +33,6 @@ use Illuminate\Support\Pluralizer;
 
 class ViewModelClassBuilder implements ComponentBuilder
 {
-    use HasNameAttribute;
     use HasNamespaceAttribute;
     use ViewModelBuilder;
 
@@ -143,14 +144,20 @@ class ViewModelClassBuilder implements ComponentBuilder
 
         // Add inputs traits
         if ($this->hasInputsTraits_) {
+            /**
+             * @var Blueprint
+             */
             $component = $component->addTrait('\\Drewlabs\\Core\\Validator\\Traits\\HasInputs');
         }
         // Returns the builded component
-        return new PHPScriptFile(
+        return PHPScript(
             $component->getName(),
             $component,
-            $this->path_ ?? self::DEFAULT_PATH
-        );
+            ComponentBuilderHelpers::rebuildComponentPath(
+                $this->namespace_ ?? self::DEFAULT_NAMESPACE,
+                $this->path_ ?? self::DEFAULT_PATH
+            ),
+        )->setNamespace($component->getNamespace());
     }
 
     public static function defaultClassPath(?string $classname = null)

@@ -9,14 +9,13 @@
  * file that was distributed with this source code.
 */
 
-namespace App\Http\Common;
+namespace App\Http\Controllers\Controllers;
 
-use App\Services\PersonService;
-use App\Models\Person;
-use App\Http\ViewModels\PersonViewModel;
-use App\DataTransfertObject\TestDto;
+use App\Services\ClientVerifiedPhoneNumberService;
+use App\Models\ClientVerifiedPhoneNumber;
+use App\Http\Controllers\ViewModels\ClientVerifiedPhoneNumberViewModel;
+use App\DataTransfertObject\ClientVerifiedPhoneNumberDto;
 use Drewlabs\Core\Validator\Exceptions\ValidationException;
-use Drewlabs\Contracts\Support\Actions\ActionHandler;
 use Drewlabs\Contracts\Validator\Validator;
 use Drewlabs\Packages\Http\Contracts\IActionResponseHandler;
 use Illuminate\Http\JsonResponse;
@@ -25,13 +24,13 @@ use Illuminate\Http\Request;
 // Function import statements
 use function Drewlabs\Support\Proxy\Action;
 
-final class PeopleController
+final class ClientVerifiedPhoneNumbersController
 {
 
 	/**
 	 * Injected instance of MVC service
 	 * 
-	 * @var ActionHandler
+	 * @var ClientVerifiedPhoneNumberService
 	 */
 	private $service;
 
@@ -61,21 +60,21 @@ final class PeopleController
 	 * 
 	 * @param Validator $validator
 	 * @param IActionResponseHandler $response
-	 * @param ActionHandler $service
+	 * @param ClientVerifiedPhoneNumberService $service
 	 *
 	 * @return self
 	 */
-	public function __construct(Validator $validator, IActionResponseHandler $response, ActionHandler $service = null)
+	public function __construct(Validator $validator, IActionResponseHandler $response, ClientVerifiedPhoneNumberService $service = null)
 	{
 		# code...
 		$this->validator = $validator;
 		$this->response = $response;
-		$this->service = $service ?? new PersonService();
+		$this->service = $service;
 	}
 
 	/**
 	 * Display or Returns a list of items
-	 * @Route /GET /people[/{$id}]
+	 * @Route /GET /clientverifiedphonenumbers[/{$id}]
 	 * 
 	 * @param Request $request
 	 * @param string $id
@@ -91,20 +90,20 @@ final class PeopleController
 		// TODO : Provides policy handlers
 		$tranformFunc_ = function( $items) {
 			return map_query_result($items, function ($value) {
-				return $value ? (new TestDto)->withModel($value) : $value;
+				return $value ? (new ClientVerifiedPhoneNumberDto)->withModel($value) : $value;
 			});
 		};
-		$filters = drewlabs_databse_parse_client_request_query(new Person, $request);;
+		$filters = drewlabs_databse_parse_client_request_query(new ClientVerifiedPhoneNumber, $request);;
 		$result = $this->service->handle(Action([
 			'type' => 'SELECT',
-			'payload_' => $request->has('per_page') ? [$filters, (int)$request->get('per_page'), $request->has('page') ? (int)$request->get('page') : null] : [$filters],
+			'payload' => $request->has('per_page') ? [$filters, (int)$request->get('per_page'), $request->has('page') ? (int)$request->get('page') : null] : [$filters],
 		]), $tranformFunc_);
 		return $this->response->ok($result);
 	}
 
 	/**
 	 * Display or Returns an item matching the specified id
-	 * @Route /GET /people/{$id}
+	 * @Route /GET /clientverifiedphonenumbers/{$id}
 	 * 
 	 * @param Request $request
 	 * @param mixed $id
@@ -117,16 +116,16 @@ final class PeopleController
 		// TODO: Provide Policy handlers if required
 		$result = $this->service->handle(Action([
 			'type' => 'SELECT',
-			'payload_' => [$id],
+			'payload' => [$id],
 		]), function($value) {
-			return null !== $value ? new TestDto($value->toArray()) : $value;
+			return null !== $value ? new ClientVerifiedPhoneNumberDto($value->toArray()) : $value;
 		});
 		return $this->response->ok($result);
 	}
 
 	/**
 	 * Stores a new item in the storage
-	 * @Route /POST /people
+	 * @Route /POST /clientverifiedphonenumbers
 	 * 
 	 * @param Request $request
 	 *
@@ -137,12 +136,12 @@ final class PeopleController
 		# code...
 		try {
 			// validate request inputs
-			$viewModel_ = (new PersonViewModel)->setUser($request->user())->set($request->all())->files($request->allFiles());
+			$viewModel_ = (new ClientVerifiedPhoneNumberViewModel)->setUser($request->user())->set($request->all())->files($request->allFiles());
 		
 			$result = $this->validator->validate($viewModel_, $request->all(), function() use ($viewModel_) {
 				return $this->service->handle(Action([
 					'type' => 'CREATE',
-					'payload_' => [
+					'payload' => [
 						$viewModel_->all(),
 						$viewModel_->has(self::RESOURCE_PRIMARY_KEY) ?
 							[
@@ -154,7 +153,7 @@ final class PeopleController
 							[]
 					],
 				]), function( $value) {
-					return null !== $value ? new TestDto($value->toArray()) : $value;
+					return null !== $value ? new ClientVerifiedPhoneNumberDto($value->toArray()) : $value;
 				});
 			});
 		
@@ -170,8 +169,8 @@ final class PeopleController
 
 	/**
 	 * Update the specified resource in storage.
-	 * @Route /PUT /people/{id}
-	 * @Route /PATCH /people/{id}
+	 * @Route /PUT /clientverifiedphonenumbers/{id}
+	 * @Route /PATCH /clientverifiedphonenumbers/{id}
 	 * 
 	 * @param Request $request
 	 * @param mixed $id
@@ -185,14 +184,14 @@ final class PeopleController
 			$request = $request->merge(["id" => $id]);
 			// validate request inputs
 			// Use your custom validation rules here
-			$viewModel_ = (new PersonViewModel)->setUser($request->user())->set($request->all())->files($request->allFiles());
+			$viewModel_ = (new ClientVerifiedPhoneNumberViewModel)->setUser($request->user())->set($request->all())->files($request->allFiles());
 		
 			$result = $this->validator->setUpdate(true)->validate($viewModel_, $request->all(), function() use ($id, $viewModel_) {
 				return $this->service->handle(Action([
 					'type' => 'UPDATE',
-					'payload_' => [$id, $viewModel_->all()],
+					'payload' => [$id, $viewModel_->all()],
 				]), function( $value) {
-					return null !== $value ? new TestDto($value->toArray()) : $value;
+					return null !== $value ? new ClientVerifiedPhoneNumberDto($value->toArray()) : $value;
 				});
 			});
 		
@@ -208,7 +207,7 @@ final class PeopleController
 
 	/**
 	 * Remove the specified resource from storage.
-	 * @Route /DELETE /people/{id}
+	 * @Route /DELETE /clientverifiedphonenumbers/{id}
 	 * 
 	 * @param Request $request
 	 * @param mixed $id
@@ -221,7 +220,7 @@ final class PeopleController
 		// TODO: Provide Policy handlers if required
 		$result = $this->service->handle(Action([
 			'type' => 'DELETE',
-			'payload_' => [$id],
+			'payload' => [$id],
 		]));
 		return $this->response->ok($result);
 	}

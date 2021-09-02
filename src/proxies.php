@@ -2,6 +2,7 @@
 
 namespace Drewlabs\ComponentGenerators\Proxy;
 
+use Drewlabs\CodeGenerator\Contracts\Stringable;
 use Drewlabs\ComponentGenerators\Builders\ControllerClassBuilder;
 use Drewlabs\ComponentGenerators\Builders\DataTransfertClassBuilder;
 use Drewlabs\ComponentGenerators\Builders\EloquentORMModelBuilder;
@@ -14,6 +15,7 @@ use Drewlabs\ComponentGenerators\Contracts\EloquentORMModelBuilder as ContractsE
 use Drewlabs\ComponentGenerators\ORMColumnDefinition;
 use Drewlabs\ComponentGenerators\Contracts\ORMColumnDefinition as ContractsORMColumnDefinition;
 use Drewlabs\ComponentGenerators\ORMModelDefinition as ComponentGeneratorsORMModelDefinition;
+use Drewlabs\ComponentGenerators\PHP\PHPScriptFile;
 
 /**
  * Provides a proxy function to the {@link ScriptWriter} constructor
@@ -139,4 +141,22 @@ function DataTransfertClassBuilder(
 )
 {
     return new DataTransfertClassBuilder($json_attributes, $name, $namespace, $path);
+}
+
+/**
+ * Provides a proxy function to the  {@link \Drewlabs\ComponentGenerators\PHP\PHPScriptFile} constructor
+ * 
+ * @param string $name 
+ * @param Stringable $content 
+ * @param string $path 
+ * @param string $extension 
+ * @return PHPScriptFile 
+ */
+function PHPScript(
+    string $name,
+    Stringable $content,
+    string $path,
+    string $extension = 'php'
+) {
+    return new PHPScriptFile($name, $content, $path, $extension);
 }

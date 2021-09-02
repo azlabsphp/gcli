@@ -3,6 +3,7 @@
 namespace Drewlabs\ComponentGenerators\Helpers;
 
 use Drewlabs\CodeGenerator\Exceptions\PHPVariableException;
+use Drewlabs\ComponentGenerators\Contracts\SourceFileInterface;
 
 use function Drewlabs\ComponentGenerators\Proxy\ComponentsScriptWriter;
 use function Drewlabs\ComponentGenerators\Proxy\DataTransfertClassBuilder;
@@ -19,17 +20,15 @@ class ComponentBuilderHelpers
     /**
      * 
      * @param string $table 
-     * @param string $namespace 
      * @param array $columns 
-     * @param mixed $basePath 
+     * @param string $namespace 
      * @param string $primaryKey 
      * @param bool $increments 
      * @param bool $vm 
-     * @return void 
+     * @return SourceFileInterface 
      */
     public static function buildModelDefinition(
         string $table,
-        $basePath,
         array $columns = [],
         string $namespace = "App\\Models",
         string $primaryKey = 'id',
@@ -63,19 +62,19 @@ class ComponentBuilderHelpers
         if ($vm) {
             $component = $component->asViewModel();
         }
-        ComponentsScriptWriter($basePath)->write($component->build());
+        return $component->build();
     }
 
     /**
      * 
-     * @param string $name 
-     * @param string $namespace 
-     * @param mixed $basePath 
+     * @param bool $asCRUD
+     * @param string|null $name 
+     * @param string|null $namespace 
      * @param string|null $model 
-     * @return void 
+     * @return SourceFileInterface 
      */
     public static function buildServiceDefinition(
-        $basePath,
+        bool $asCRUD = false,
         string $name = null,
         string $namespace = null,
         string $model = null
@@ -87,25 +86,24 @@ class ComponentBuilderHelpers
                 $model
             );
         }
-        (ComponentsScriptWriter($basePath))->write(
-            $component->build()
-        );
+        if ($asCRUD) {
+            $component = $component->asCRUDService();
+        }
+        return $component->build();
     }
 
     /**
      * 
-     * @param mixed $basePath 
      * @param bool $handleSignleAction 
      * @param array $rules 
      * @param array $updateRules 
      * @param string|null $name 
      * @param string|null $namespace 
      * @param string|null $model 
-     * @return void 
+     * @return SourceFileInterface 
      * @throws PHPVariableException 
      */
     public static function buildViewModelDefinition(
-        $basePath,
         bool $handleSignleAction = false,
         array $rules = [],
         array $updateRules = [],
@@ -114,12 +112,21 @@ class ComponentBuilderHelpers
         string $model = null
     ) {
         $rulesParserFunc = function ($definitions) {
-            foreach (array_filter($definitions, function ($definition) {
-                return (null !== $definition) && drewlabs_core_strings_contains($definition, '=');
-            }) as $definition) {
-                $key = drewlabs_core_strings_before('=', $definition);
-                $value = drewlabs_core_strings_after('=', $definition);
-                yield $key => $value;
+            $definitions_ = [];
+            foreach ($definitions as $key => $value) {
+                if (is_string($value) && !drewlabs_core_strings_contains($value, '=')) {
+                    continue;
+                }
+                if (is_numeric($key) && is_string($value)) {
+                    $k = drewlabs_core_strings_before('=', $value);
+                    $v = drewlabs_core_strings_after('=', $value);
+                    $definitions_[$k] = $v;
+                    continue;
+                }
+                $definitions_[$key] = $value;
+            }
+            foreach ($definitions_ ?? [] as $key => $definition) {
+                yield $key => $definition;
             }
         };
         $component = (ViewModelBuilder($name, $namespace));
@@ -130,38 +137,36 @@ class ComponentBuilderHelpers
         }
         if (!$handleSignleAction) {
             $component = $component->setUpdateRules(
-                (iterator_to_array($rulesParserFunc($updateRules)))
+                iterator_to_array(
+                    $rulesParserFunc($updateRules)
+                )
             );
         } else {
             $component = $component->asSingleActionValidator();
         }
-        (ComponentsScriptWriter($basePath))->write(
-            $component->addInputsTraits()
-                ->addFileInputTraits()
-                ->addAuthenticatableTraits()
-                ->setRules(
-                    iterator_to_array(
-                        $rulesParserFunc($rules)
-                    )
+        return $component->addInputsTraits()
+            ->addFileInputTraits()
+            ->addAuthenticatableTraits()
+            ->setRules(
+                iterator_to_array(
+                    $rulesParserFunc($rules)
                 )
-                ->build()
-        );
+            )
+            ->build();
     }
 
     /**
      * 
-     * @param mixed $basePath 
-     * @param array $attributes
+     * @param array $attributes 
      * @param array $hidden 
      * @param array $guarded 
      * @param string|null $name 
      * @param string|null $namespace 
      * @param string|null $model 
-     * @return void 
+     * @return SourceFileInterface 
      * @throws PHPVariableException 
      */
     public static function buildDtoObjectDefinition(
-        $basePath,
         array $attributes = [],
         array $hidden = [],
         array $guarded = [],
@@ -175,28 +180,23 @@ class ComponentBuilderHelpers
                 $model
             );
         }
-        (ComponentsScriptWriter($basePath))->write(
-            $component
-                ->setHidden($hidden ?? [])
-                ->setGuarded($guarded ?? [])
-                ->build()
-        );
+        return $component
+            ->setHidden($hidden ?? [])
+            ->setGuarded($guarded ?? [])
+            ->build();
     }
 
     /**
      * 
-     * @param mixed $basePath 
-     * @param string|stdClass|null $model 
-     * @param string|stdClass|null $service 
-     * @param string|stdClass|null $viewModel 
-     * @param string|stdClass|null $dto 
+     * @param mixed|null $model 
+     * @param mixed|null $service 
+     * @param mixed|null $viewModel 
+     * @param mixed|null $dto 
      * @param string|null $name 
      * @param string|null $namespace 
-     * @return void
-     * @throws PHPVariableException 
+     * @return SourceFileInterface 
      */
     public static function buildController(
-        $basePath,
         $model = null,
         $service = null,
         $viewModel = null,
@@ -221,7 +221,7 @@ class ComponentBuilderHelpers
         if (null !== $dto) {
             $component = $component->bindDTOObject(is_string($dto) ? $dto : get_class($dto));
         }
-        ComponentsScriptWriter($basePath)->write($component->build());
+        return $component->build();
     }
 
     public static function rebuildComponentPath(string $namespace, string $path)

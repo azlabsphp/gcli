@@ -4,25 +4,23 @@ namespace Drewlabs\ComponentGenerators\Builders;
 
 use Drewlabs\CodeGenerator\Types\PHPTypesModifiers;
 use Drewlabs\ComponentGenerators\Contracts\ComponentBuilder;
-use Drewlabs\ComponentGenerators\PHP\PHPScriptFile;
-use Drewlabs\ComponentGenerators\Traits\HasNameAttribute;
 use Drewlabs\ComponentGenerators\Traits\HasNamespaceAttribute;
 use Drewlabs\Contracts\Data\Model\Parseable;
 use Drewlabs\Support\Immutable\ValueObject;
 use Illuminate\Support\Pluralizer;
 use Drewlabs\CodeGenerator\Contracts\Blueprint;
+use Drewlabs\ComponentGenerators\Helpers\ComponentBuilderHelpers;
 use Drewlabs\Support\Immutable\ModelValueObject;
 
 use function Drewlabs\CodeGenerator\Proxy\PHPClass;
 use function Drewlabs\CodeGenerator\Proxy\PHPClassMethod;
 use function Drewlabs\CodeGenerator\Proxy\PHPClassProperty;
 use function Drewlabs\CodeGenerator\Proxy\PHPVariable;
+use function Drewlabs\ComponentGenerators\Proxy\PHPScript;
 
 /** @package Drewlabs\ComponentGenerators\Builders */
 class DataTransfertClassBuilder implements ComponentBuilder
 {
-
-    use HasNameAttribute;
     use HasNamespaceAttribute;
 
     /**
@@ -77,9 +75,8 @@ class DataTransfertClassBuilder implements ComponentBuilder
 
         // Set the component namespace
         $this->setNamespace($namespace ?? self::DEFAULT_NAMESPACE);
-
         // Set json_attributes
-        $this->json_attributes_ = $json_attributes ?? [];
+        $this->setAttributes($json_attributes ?? []);
     }
 
     /**
@@ -104,8 +101,7 @@ class DataTransfertClassBuilder implements ComponentBuilder
             $model = new $model;
         }
         // Get or load the fillable properties
-        $this->setJSONProperties(method_exists($model, 'getFillables') ? $model->getFillables() : []);
-        return $this;
+        return $this->setAttributes(self::buildAsAssociativeArray(method_exists($model, 'getFillables') ? $model->getFillables() : []));
     }
 
     /**
@@ -132,18 +128,11 @@ class DataTransfertClassBuilder implements ComponentBuilder
         return $this;
     }
 
-    private function setJSONProperties(array $values = [])
+    public function setAttributes(array $attributes = [])
     {
-        $attributes = [];
-        // Convert values to camel case for associatve values
-        foreach (array_filter($values ?? []) as $key => $value) {
-            if (!is_numeric($key)) {
-                $attributes[drewlabs_core_strings_as_camel_case(ltrim(rtrim($key, '_'), '_'), false)] = $value;
-                continue;
-            }
-            $attributes[drewlabs_core_strings_as_camel_case(ltrim(rtrim($value, '_'), '_'), false)] = $value;
+        if (!empty($attributes)) {
+            $this->json_attributes_ = $attributes;
         }
-        $this->json_attributes_ = $attributes;
         return $this;
     }
 
@@ -183,11 +172,14 @@ class DataTransfertClassBuilder implements ComponentBuilder
             )
         );
         // Returns the builded component
-        return new PHPScriptFile(
+        return PHPScript(
             $component->getName(),
             $component,
-            $this->path_ ?? self::DEFAULT_PATH
-        );
+            ComponentBuilderHelpers::rebuildComponentPath(
+                $this->namespace_ ?? self::DEFAULT_NAMESPACE,
+                $this->path_ ?? self::DEFAULT_PATH
+            ),
+        )->setNamespace($component->getNamespace());
     }
 
     public static function defaultClassPath(?string $classname = null)
@@ -197,5 +189,19 @@ class DataTransfertClassBuilder implements ComponentBuilder
             return $classname;
         }
         return sprintf("%s%s%s", self::DEFAULT_NAMESPACE, "\\", $classname);
+    }
+
+    public static function buildAsAssociativeArray(array $values = [])
+    {
+        $attributes = [];
+        // Convert values to camel case for associatve values
+        foreach (array_filter($values ?? []) as $key => $value) {
+            if (!is_numeric($key)) {
+                $attributes[drewlabs_core_strings_as_camel_case(ltrim(rtrim($key, '_'), '_'), false)] = $value;
+                continue;
+            }
+            $attributes[drewlabs_core_strings_as_camel_case(ltrim(rtrim($value, '_'), '_'), false)] = $value;
+        }
+        return $attributes;
     }
 }

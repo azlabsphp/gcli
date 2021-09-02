@@ -18,6 +18,7 @@ use function Drewlabs\Filesystem\Proxy\Path;
 trait HasNamespaceAttribute
 {
     use HasPathAttribute;
+    use HasNameAttribute;
 
     /**
      * @var string

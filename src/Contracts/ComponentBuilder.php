@@ -16,7 +16,7 @@ namespace Drewlabs\ComponentGenerators\Contracts;
 interface ComponentBuilder
 {
     /**
-     * @return Writable
+     * @return SourceFileInterface
      */
     public function build();
 

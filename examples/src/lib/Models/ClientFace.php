@@ -18,7 +18,7 @@ use Drewlabs\Contracts\Data\Model\Relatable;
 use Drewlabs\Contracts\Data\Model\GuardedModel;
 use Illuminate\Database\Eloquent\Model as EloquentModel;
 
-final class Person extends EloquentModel implements ActiveModel, Parseable, Relatable, GuardedModel
+final class ClientFace extends EloquentModel implements ActiveModel, Parseable, Relatable, GuardedModel
 {
 
 	use Model;
@@ -28,7 +28,7 @@ final class Person extends EloquentModel implements ActiveModel, Parseable, Rela
 	 * 
 	 * @var string
 	 */
-	protected $table = "persons";
+	protected $table = "client_faces";
 
 	/**
 	 * Table primary key
@@ -57,9 +57,13 @@ final class Person extends EloquentModel implements ActiveModel, Parseable, Rela
 	 * @var array
 	 */
 	protected $fillable = [
-		"firstname",
-		"lastname",
-		"phone_number",
+		"id",
+		"client_id",
+		"front_facing",
+		"left_facing",
+		"right_facing",
+		"created_at",
+		"updated_at",
 	];
 
 	/**
@@ -68,13 +72,6 @@ final class Person extends EloquentModel implements ActiveModel, Parseable, Rela
 	 * @var array
 	 */
 	public $relation_methods = [];
-
-	/**
-	 * Indicates whether the primary key of the model is incrementable
-	 * 
-	 * @var bool
-	 */
-	public $incrementing;
 
 	/**
 	 * Bootstrap the model and its traits.

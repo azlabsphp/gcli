@@ -9,16 +9,22 @@
  * file that was distributed with this source code.
 */
 
-namespace App\Services\Common;
+namespace App\Services;
 
 use Drewlabs\Packages\Database\EloquentDMLManager;
+use App\Models\Address;
+use Drewlabs\Contracts\Support\Actions\ActionPayload;
+use Drewlabs\Contracts\Support\Actions\Exceptions\InvalidActionException;
 use Drewlabs\Contracts\Support\Actions\ActionHandler;
 use Drewlabs\Contracts\Data\DML\DMLProvider;
-use Drewlabs\Contracts\Support\Actions\ActionResult;
+use Drewlabs\Contracts\Support\Actions\ActionResult as ActionsActionResult;
 use Drewlabs\Contracts\Support\Actions\Action;
 use Closure;
 
-final class TestService implements ActionHandler
+// Function import statements
+use function Drewlabs\Support\Proxy\ActionResult;
+
+final class AddressService implements ActionHandler
 {
 
 	/**
@@ -38,7 +44,7 @@ final class TestService implements ActionHandler
 	public function __construct(DMLProvider $manager = null)
 	{
 		# code...
-		$this->dbManager = $manager ?? new EloquentDMLManager(Test::class);
+		$this->dbManager = $manager ?? new EloquentDMLManager(Address::class);
 	}
 
 	/**
@@ -47,28 +53,34 @@ final class TestService implements ActionHandler
 	 * @param Action $action
 	 * @param Closure $callback
 	 *
-	 * @return ActionResult
+	 * @return ActionsActionResult
 	 */
 	public function handle(Action $action, Closure $callback = null)
 	{
 		# code...
+		$payload = $action->payload();
+		$payload = $payload instanceof ActionPayload ? $payload->toArray() : (is_array($payload) ? $payload : []);
+		
 		// Handle switch statements
 		switch (strtoupper($action->type())) {
 			case "CREATE":
 				//Create handler code goes here
-				return;
+				$payload = null !== $callback ? array_merge($payload, [$callback]) : $payload;
+				return ActionResult($this->dbManager->create(...$payload));
 			case "UPDATE":
 				//Update handler code goes here
-				return;
+				$payload = null !== $callback ? array_merge($payload, [$callback]) : $payload;
+				return ActionResult($this->dbManager->update(...$payload));
 			case "DELETE":
 				//Delete handler code goes here
-				return;
+				return ActionResult($this->dbManager->delete(...$payload));
 			case "SELECT":
 				//Select handler code goes here
-				return;
+				$payload = null !== $callback ? array_merge($payload, [$callback]) : $payload;
+				return ActionResult($this->dbManager->select(...$payload));
 			default:
 				//Provides default handler or throws exception
-				return;
+				throw new InvalidActionException("This " . __CLASS__ . " can only handle CREATE,DELETE,UPDATE AND SELECT actions");
 		}
 	}
 

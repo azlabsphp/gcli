@@ -1,0 +1,1832 @@
+[
+    {
+        "primaryKey": "id",
+        "name": null,
+        "table": "addresses",
+        "columns": [
+            {
+                "table": "addresses",
+                "name": "id",
+                "type": "bigint:9223372036854775807",
+                "required": true,
+                "unsigned": true
+            },
+            {
+                "table": "addresses",
+                "name": "email",
+                "type": "string:190",
+                "required": false,
+                "unsigned": false
+            },
+            {
+                "table": "addresses",
+                "name": "postal_box",
+                "type": "string:255",
+                "required": false,
+                "unsigned": false
+            },
+            {
+                "table": "addresses",
+                "name": "house_no",
+                "type": "text:65535",
+                "required": false,
+                "unsigned": false
+            },
+            {
+                "table": "addresses",
+                "name": "country",
+                "type": "string:255",
+                "required": true,
+                "unsigned": false
+            },
+            {
+                "table": "addresses",
+                "name": "city",
+                "type": "string:255",
+                "required": true,
+                "unsigned": false
+            },
+            {
+                "table": "addresses",
+                "name": "area",
+                "type": "string:255",
+                "required": false,
+                "unsigned": false
+            },
+            {
+                "table": "addresses",
+                "name": "district",
+                "type": "string:255",
+                "required": false,
+                "unsigned": false
+            },
+            {
+                "table": "addresses",
+                "name": "created_at",
+                "type": "datetime",
+                "required": false,
+                "unsigned": false
+            },
+            {
+                "table": "addresses",
+                "name": "updated_at",
+                "type": "datetime",
+                "required": false,
+                "unsigned": false
+            }
+        ],
+        "increments": true,
+        "namespace": "App\\Models",
+        "comment": ""
+    },
+    {
+        "primaryKey": "id",
+        "name": null,
+        "table": "client_faces",
+        "columns": [
+            {
+                "table": "client_faces",
+                "name": "id",
+                "type": "bigint:9223372036854775807",
+                "required": true,
+                "unsigned": true
+            },
+            {
+                "table": "client_faces",
+                "name": "client_id",
+                "type": "string:45",
+                "required": true,
+                "unsigned": false
+            },
+            {
+                "table": "client_faces",
+                "name": "front_facing",
+                "type": "bigint:9223372036854775807",
+                "required": true,
+                "unsigned": true
+            },
+            {
+                "table": "client_faces",
+                "name": "left_facing",
+                "type": "bigint:9223372036854775807",
+                "required": false,
+                "unsigned": true
+            },
+            {
+                "table": "client_faces",
+                "name": "right_facing",
+                "type": "bigint:9223372036854775807",
+                "required": false,
+                "unsigned": true
+            },
+            {
+                "table": "client_faces",
+                "name": "created_at",
+                "type": "datetime",
+                "required": false,
+                "unsigned": false
+            },
+            {
+                "table": "client_faces",
+                "name": "updated_at",
+                "type": "datetime",
+                "required": false,
+                "unsigned": false
+            }
+        ],
+        "increments": true,
+        "namespace": "App\\Models",
+        "comment": ""
+    },
+    {
+        "primaryKey": "id",
+        "name": null,
+        "table": "client_fingerprints",
+        "columns": [
+            {
+                "table": "client_fingerprints",
+                "name": "id",
+                "type": "bigint:9223372036854775807",
+                "required": true,
+                "unsigned": true
+            },
+            {
+                "table": "client_fingerprints",
+                "name": "client_id",
+                "type": "string:45",
+                "required": true,
+                "unsigned": false
+            },
+            {
+                "table": "client_fingerprints",
+                "name": "finger",
+                "type": "string",
+                "required": true,
+                "unsigned": false
+            },
+            {
+                "table": "client_fingerprints",
+                "name": "fingerprint_image_id",
+                "type": "bigint:9223372036854775807",
+                "required": true,
+                "unsigned": true
+            },
+            {
+                "table": "client_fingerprints",
+                "name": "created_at",
+                "type": "datetime",
+                "required": false,
+                "unsigned": false
+            },
+            {
+                "table": "client_fingerprints",
+                "name": "updated_at",
+                "type": "datetime",
+                "required": false,
+                "unsigned": false
+            }
+        ],
+        "increments": true,
+        "namespace": "App\\Models",
+        "comment": ""
+    },
+    {
+        "primaryKey": "id",
+        "name": null,
+        "table": "client_verified_phone_numbers",
+        "columns": [
+            {
+                "table": "client_verified_phone_numbers",
+                "name": "id",
+                "type": "bigint:9223372036854775807",
+                "required": true,
+                "unsigned": true
+            },
+            {
+                "table": "client_verified_phone_numbers",
+                "name": "phone_number",
+                "type": "string:20",
+                "required": true,
+                "unsigned": false
+            },
+            {
+                "table": "client_verified_phone_numbers",
+                "name": "session_client_id",
+                "type": "string:100",
+                "required": true,
+                "unsigned": false
+            },
+            {
+                "table": "client_verified_phone_numbers",
+                "name": "verification_code",
+                "type": "string:10",
+                "required": true,
+                "unsigned": false
+            },
+            {
+                "table": "client_verified_phone_numbers",
+                "name": "expires_at",
+                "type": "datetime",
+                "required": true,
+                "unsigned": false
+            },
+            {
+                "table": "client_verified_phone_numbers",
+                "name": "expired",
+                "type": "boolean",
+                "required": true,
+                "unsigned": false
+            },
+            {
+                "table": "client_verified_phone_numbers",
+                "name": "verified_at",
+                "type": "datetime",
+                "required": false,
+                "unsigned": false
+            },
+            {
+                "table": "client_verified_phone_numbers",
+                "name": "created_at",
+                "type": "datetime",
+                "required": false,
+                "unsigned": false
+            },
+            {
+                "table": "client_verified_phone_numbers",
+                "name": "updated_at",
+                "type": "datetime",
+                "required": false,
+                "unsigned": false
+            }
+        ],
+        "increments": true,
+        "namespace": "App\\Models",
+        "comment": ""
+    },
+    {
+        "primaryKey": "id",
+        "name": null,
+        "table": "devices",
+        "columns": [
+            {
+                "table": "devices",
+                "name": "id",
+                "type": "bigint:9223372036854775807",
+                "required": true,
+                "unsigned": true
+            },
+            {
+                "table": "devices",
+                "name": "ip_address",
+                "type": "string:50",
+                "required": true,
+                "unsigned": false
+            },
+            {
+                "table": "devices",
+                "name": "device_uuid",
+                "type": "string:36",
+                "required": false,
+                "unsigned": false
+            },
+            {
+                "table": "devices",
+                "name": "user_agent",
+                "type": "text:65535",
+                "required": false,
+                "unsigned": false
+            },
+            {
+                "table": "devices",
+                "name": "deleted_at",
+                "type": "datetime",
+                "required": false,
+                "unsigned": false
+            },
+            {
+                "table": "devices",
+                "name": "created_at",
+                "type": "datetime",
+                "required": false,
+                "unsigned": false
+            },
+            {
+                "table": "devices",
+                "name": "updated_at",
+                "type": "datetime",
+                "required": false,
+                "unsigned": false
+            }
+        ],
+        "increments": true,
+        "namespace": "App\\Models",
+        "comment": ""
+    },
+    {
+        "primaryKey": "uuid",
+        "name": null,
+        "table": "edition_recipients",
+        "columns": [
+            {
+                "table": "edition_recipients",
+                "name": "uuid",
+                "type": "string:36",
+                "required": true,
+                "unsigned": false
+            },
+            {
+                "table": "edition_recipients",
+                "name": "right_id",
+                "type": "integer",
+                "foreignKeyConstraint": {
+                    "local_table": "edition_recipients",
+                    "columns": [
+                        "right_id"
+                    ],
+                    "foreign_table": "rights",
+                    "foreign_columns": [
+                        "id"
+                    ],
+                    "key": "edition_recipients_right_id_foreign"
+                },
+                "required": true,
+                "unsigned": true
+            },
+            {
+                "table": "edition_recipients",
+                "name": "edition_id",
+                "type": "bigint:9223372036854775807",
+                "foreignKeyConstraint": {
+                    "local_table": "edition_recipients",
+                    "columns": [
+                        "edition_id"
+                    ],
+                    "foreign_table": "editions",
+                    "foreign_columns": [
+                        "id"
+                    ],
+                    "key": "edition_recipients_edition_id_foreign"
+                },
+                "required": true,
+                "unsigned": true
+            },
+            {
+                "table": "edition_recipients",
+                "name": "id",
+                "type": "bigint:9223372036854775807",
+                "required": false,
+                "unsigned": true
+            },
+            {
+                "table": "edition_recipients",
+                "name": "social_number",
+                "type": "string:20",
+                "required": false,
+                "unsigned": false
+            },
+            {
+                "table": "edition_recipients",
+                "name": "firstname",
+                "type": "string:100",
+                "required": false,
+                "unsigned": false
+            },
+            {
+                "table": "edition_recipients",
+                "name": "lastname",
+                "type": "string:100",
+                "required": false,
+                "unsigned": false
+            },
+            {
+                "table": "edition_recipients",
+                "name": "right_number",
+                "type": "string:255",
+                "required": false,
+                "unsigned": false
+            },
+            {
+                "table": "edition_recipients",
+                "name": "state",
+                "type": "integer",
+                "required": true,
+                "unsigned": true
+            },
+            {
+                "table": "edition_recipients",
+                "name": "bank",
+                "type": "string:190",
+                "required": true,
+                "unsigned": false
+            },
+            {
+                "table": "edition_recipients",
+                "name": "issued_date",
+                "type": "date",
+                "required": false,
+                "unsigned": false
+            },
+            {
+                "table": "edition_recipients",
+                "name": "assignee_number",
+                "type": "string:11",
+                "required": false,
+                "unsigned": false
+            },
+            {
+                "table": "edition_recipients",
+                "name": "address",
+                "type": "text:65535",
+                "required": false,
+                "unsigned": false
+            },
+            {
+                "table": "edition_recipients",
+                "name": "amount",
+                "type": "decimal",
+                "required": false,
+                "unsigned": false
+            },
+            {
+                "table": "edition_recipients",
+                "name": "created_at",
+                "type": "datetime",
+                "required": false,
+                "unsigned": false
+            },
+            {
+                "table": "edition_recipients",
+                "name": "updated_at",
+                "type": "datetime",
+                "required": false,
+                "unsigned": false
+            }
+        ],
+        "increments": false,
+        "namespace": "App\\Models",
+        "comment": ""
+    },
+    {
+        "primaryKey": "id",
+        "name": null,
+        "table": "editions",
+        "columns": [
+            {
+                "table": "editions",
+                "name": "id",
+                "type": "bigint:9223372036854775807",
+                "required": true,
+                "unsigned": true
+            },
+            {
+                "table": "editions",
+                "name": "label",
+                "type": "string:255",
+                "required": true,
+                "unsigned": false
+            },
+            {
+                "table": "editions",
+                "name": "year",
+                "type": "smallint",
+                "required": true,
+                "unsigned": true
+            },
+            {
+                "table": "editions",
+                "name": "month",
+                "type": "boolean",
+                "required": false,
+                "unsigned": true
+            },
+            {
+                "table": "editions",
+                "name": "status",
+                "type": "boolean",
+                "required": true,
+                "unsigned": false
+            },
+            {
+                "table": "editions",
+                "name": "created_at",
+                "type": "datetime",
+                "required": false,
+                "unsigned": false
+            },
+            {
+                "table": "editions",
+                "name": "updated_at",
+                "type": "datetime",
+                "required": false,
+                "unsigned": false
+            }
+        ],
+        "increments": true,
+        "namespace": "App\\Models",
+        "comment": ""
+    },
+    {
+        "primaryKey": "id",
+        "name": null,
+        "table": "folders",
+        "columns": [
+            {
+                "table": "folders",
+                "name": "id",
+                "type": "bigint:9223372036854775807",
+                "required": true,
+                "unsigned": true
+            },
+            {
+                "table": "folders",
+                "name": "basename",
+                "type": "string:100",
+                "required": true,
+                "unsigned": false
+            },
+            {
+                "table": "folders",
+                "name": "description",
+                "type": "string:255",
+                "required": false,
+                "unsigned": false
+            },
+            {
+                "table": "folders",
+                "name": "fullpath",
+                "type": "text:65535",
+                "required": true,
+                "unsigned": false
+            },
+            {
+                "table": "folders",
+                "name": "parent_id",
+                "type": "bigint:9223372036854775807",
+                "required": false,
+                "unsigned": true
+            },
+            {
+                "table": "folders",
+                "name": "user_id",
+                "type": "bigint:9223372036854775807",
+                "required": false,
+                "unsigned": true
+            },
+            {
+                "table": "folders",
+                "name": "created_at",
+                "type": "datetime",
+                "required": false,
+                "unsigned": false
+            },
+            {
+                "table": "folders",
+                "name": "updated_at",
+                "type": "datetime",
+                "required": false,
+                "unsigned": false
+            }
+        ],
+        "increments": true,
+        "namespace": "App\\Models",
+        "comment": ""
+    },
+    {
+        "primaryKey": "id",
+        "name": null,
+        "table": "geolocations",
+        "columns": [
+            {
+                "table": "geolocations",
+                "name": "id",
+                "type": "bigint:9223372036854775807",
+                "required": true,
+                "unsigned": true
+            },
+            {
+                "table": "geolocations",
+                "name": "lat",
+                "type": "string:36",
+                "required": true,
+                "unsigned": false
+            },
+            {
+                "table": "geolocations",
+                "name": "long",
+                "type": "string:36",
+                "required": true,
+                "unsigned": false
+            },
+            {
+                "table": "geolocations",
+                "name": "created_at",
+                "type": "datetime",
+                "required": false,
+                "unsigned": false
+            },
+            {
+                "table": "geolocations",
+                "name": "updated_at",
+                "type": "datetime",
+                "required": false,
+                "unsigned": false
+            }
+        ],
+        "increments": true,
+        "namespace": "App\\Models",
+        "comment": ""
+    },
+    {
+        "primaryKey": "id",
+        "name": null,
+        "table": "identity_documents",
+        "columns": [
+            {
+                "table": "identity_documents",
+                "name": "id",
+                "type": "integer",
+                "required": true,
+                "unsigned": true
+            },
+            {
+                "table": "identity_documents",
+                "name": "label",
+                "type": "string:45",
+                "required": true,
+                "unsigned": false
+            },
+            {
+                "table": "identity_documents",
+                "name": "description",
+                "type": "string:255",
+                "required": false,
+                "unsigned": false
+            },
+            {
+                "table": "identity_documents",
+                "name": "created_at",
+                "type": "datetime",
+                "required": false,
+                "unsigned": false
+            },
+            {
+                "table": "identity_documents",
+                "name": "updated_at",
+                "type": "datetime",
+                "required": false,
+                "unsigned": false
+            }
+        ],
+        "increments": true,
+        "namespace": "App\\Models",
+        "comment": ""
+    },
+    {
+        "primaryKey": "id",
+        "name": null,
+        "table": "physical_states",
+        "columns": [
+            {
+                "table": "physical_states",
+                "name": "id",
+                "type": "integer",
+                "required": true,
+                "unsigned": true
+            },
+            {
+                "table": "physical_states",
+                "name": "label",
+                "type": "string:190",
+                "required": true,
+                "unsigned": false
+            },
+            {
+                "table": "physical_states",
+                "name": "description",
+                "type": "text:65535",
+                "required": false,
+                "unsigned": false
+            },
+            {
+                "table": "physical_states",
+                "name": "created_at",
+                "type": "datetime",
+                "required": false,
+                "unsigned": false
+            },
+            {
+                "table": "physical_states",
+                "name": "updated_at",
+                "type": "datetime",
+                "required": false,
+                "unsigned": false
+            }
+        ],
+        "increments": true,
+        "namespace": "App\\Models",
+        "comment": ""
+    },
+    {
+        "primaryKey": "id",
+        "name": null,
+        "table": "place_types",
+        "columns": [
+            {
+                "table": "place_types",
+                "name": "id",
+                "type": "bigint:9223372036854775807",
+                "required": true,
+                "unsigned": true
+            },
+            {
+                "table": "place_types",
+                "name": "label",
+                "type": "string:5",
+                "required": true,
+                "unsigned": false
+            },
+            {
+                "table": "place_types",
+                "name": "description",
+                "type": "string:100",
+                "required": true,
+                "unsigned": false
+            },
+            {
+                "table": "place_types",
+                "name": "created_at",
+                "type": "datetime",
+                "required": false,
+                "unsigned": false
+            },
+            {
+                "table": "place_types",
+                "name": "updated_at",
+                "type": "datetime",
+                "required": false,
+                "unsigned": false
+            }
+        ],
+        "increments": true,
+        "namespace": "App\\Models",
+        "comment": ""
+    },
+    {
+        "primaryKey": "id",
+        "name": null,
+        "table": "places",
+        "columns": [
+            {
+                "table": "places",
+                "name": "id",
+                "type": "bigint:9223372036854775807",
+                "required": true,
+                "unsigned": true
+            },
+            {
+                "table": "places",
+                "name": "parent",
+                "type": "bigint:9223372036854775807",
+                "foreignKeyConstraint": {
+                    "local_table": "places",
+                    "columns": [
+                        "parent"
+                    ],
+                    "foreign_table": "places",
+                    "foreign_columns": [
+                        "id"
+                    ],
+                    "key": "places_parent_foreign"
+                },
+                "required": false,
+                "unsigned": true
+            },
+            {
+                "table": "places",
+                "name": "type",
+                "type": "string:5",
+                "foreignKeyConstraint": {
+                    "local_table": "places",
+                    "columns": [
+                        "type"
+                    ],
+                    "foreign_table": "place_types",
+                    "foreign_columns": [
+                        "label"
+                    ],
+                    "key": "places_type_foreign"
+                },
+                "required": true,
+                "unsigned": false
+            },
+            {
+                "table": "places",
+                "name": "label2",
+                "type": "string:2",
+                "required": false,
+                "unsigned": false
+            },
+            {
+                "table": "places",
+                "name": "label",
+                "type": "string:5",
+                "required": true,
+                "unsigned": false
+            },
+            {
+                "table": "places",
+                "name": "description",
+                "type": "string:145",
+                "required": true,
+                "unsigned": false
+            },
+            {
+                "table": "places",
+                "name": "created_at",
+                "type": "datetime",
+                "required": false,
+                "unsigned": false
+            },
+            {
+                "table": "places",
+                "name": "updated_at",
+                "type": "datetime",
+                "required": false,
+                "unsigned": false
+            }
+        ],
+        "increments": true,
+        "namespace": "App\\Models",
+        "comment": ""
+    },
+    {
+        "primaryKey": "id",
+        "name": null,
+        "table": "recipient_documents",
+        "columns": [
+            {
+                "table": "recipient_documents",
+                "name": "id",
+                "type": "bigint:9223372036854775807",
+                "required": true,
+                "unsigned": true
+            },
+            {
+                "table": "recipient_documents",
+                "name": "personal_details_id",
+                "type": "bigint:9223372036854775807",
+                "foreignKeyConstraint": {
+                    "local_table": "recipient_documents",
+                    "columns": [
+                        "personal_details_id"
+                    ],
+                    "foreign_table": "recipient_personal_details",
+                    "foreign_columns": [
+                        "id"
+                    ],
+                    "key": "recipient_documents_personal_details_id_foreign"
+                },
+                "required": true,
+                "unsigned": true
+            },
+            {
+                "table": "recipient_documents",
+                "name": "document_id",
+                "type": "integer",
+                "foreignKeyConstraint": {
+                    "local_table": "recipient_documents",
+                    "columns": [
+                        "document_id"
+                    ],
+                    "foreign_table": "identity_documents",
+                    "foreign_columns": [
+                        "id"
+                    ],
+                    "key": "recipient_documents_document_id_foreign"
+                },
+                "required": true,
+                "unsigned": true
+            },
+            {
+                "table": "recipient_documents",
+                "name": "document_file_id",
+                "type": "bigint:9223372036854775807",
+                "required": false,
+                "unsigned": true
+            },
+            {
+                "table": "recipient_documents",
+                "name": "document_number",
+                "type": "string:100",
+                "required": true,
+                "unsigned": false
+            },
+            {
+                "table": "recipient_documents",
+                "name": "created_at",
+                "type": "datetime",
+                "required": false,
+                "unsigned": false
+            },
+            {
+                "table": "recipient_documents",
+                "name": "updated_at",
+                "type": "datetime",
+                "required": false,
+                "unsigned": false
+            }
+        ],
+        "increments": true,
+        "namespace": "App\\Models",
+        "comment": ""
+    },
+    {
+        "primaryKey": "id",
+        "name": null,
+        "table": "recipient_personal_details",
+        "columns": [
+            {
+                "table": "recipient_personal_details",
+                "name": "id",
+                "type": "bigint:9223372036854775807",
+                "required": true,
+                "unsigned": true
+            },
+            {
+                "table": "recipient_personal_details",
+                "name": "address_id",
+                "type": "bigint:9223372036854775807",
+                "foreignKeyConstraint": {
+                    "local_table": "recipient_personal_details",
+                    "columns": [
+                        "address_id"
+                    ],
+                    "foreign_table": "addresses",
+                    "foreign_columns": [
+                        "id"
+                    ],
+                    "key": "recipient_personal_details_address_id_foreign"
+                },
+                "required": false,
+                "unsigned": true
+            },
+            {
+                "table": "recipient_personal_details",
+                "name": "firstname",
+                "type": "string:100",
+                "required": true,
+                "unsigned": false
+            },
+            {
+                "table": "recipient_personal_details",
+                "name": "lastname",
+                "type": "string:100",
+                "required": true,
+                "unsigned": false
+            },
+            {
+                "table": "recipient_personal_details",
+                "name": "phone_number",
+                "type": "string:20",
+                "required": true,
+                "unsigned": false
+            },
+            {
+                "table": "recipient_personal_details",
+                "name": "birthdate",
+                "type": "date",
+                "required": false,
+                "unsigned": false
+            },
+            {
+                "table": "recipient_personal_details",
+                "name": "recipient_session_id",
+                "type": "bigint:9223372036854775807",
+                "required": false,
+                "unsigned": true
+            },
+            {
+                "table": "recipient_personal_details",
+                "name": "recipient_state_id",
+                "type": "bigint:9223372036854775807",
+                "required": false,
+                "unsigned": true
+            },
+            {
+                "table": "recipient_personal_details",
+                "name": "created_at",
+                "type": "datetime",
+                "required": false,
+                "unsigned": false
+            },
+            {
+                "table": "recipient_personal_details",
+                "name": "updated_at",
+                "type": "datetime",
+                "required": false,
+                "unsigned": false
+            }
+        ],
+        "increments": true,
+        "namespace": "App\\Models",
+        "comment": ""
+    },
+    {
+        "primaryKey": "id",
+        "name": null,
+        "table": "recipient_rights",
+        "columns": [
+            {
+                "table": "recipient_rights",
+                "name": "id",
+                "type": "bigint:9223372036854775807",
+                "required": true,
+                "unsigned": true
+            },
+            {
+                "table": "recipient_rights",
+                "name": "recipient_id",
+                "type": "bigint:9223372036854775807",
+                "foreignKeyConstraint": {
+                    "local_table": "recipient_rights",
+                    "columns": [
+                        "recipient_id"
+                    ],
+                    "foreign_table": "recipients",
+                    "foreign_columns": [
+                        "id"
+                    ],
+                    "key": "recipient_rights_recipient_id_foreign"
+                },
+                "required": true,
+                "unsigned": true
+            },
+            {
+                "table": "recipient_rights",
+                "name": "right_id",
+                "type": "integer",
+                "foreignKeyConstraint": {
+                    "local_table": "recipient_rights",
+                    "columns": [
+                        "right_id"
+                    ],
+                    "foreign_table": "rights",
+                    "foreign_columns": [
+                        "id"
+                    ],
+                    "key": "recipient_rights_right_id_foreign"
+                },
+                "required": true,
+                "unsigned": true
+            },
+            {
+                "table": "recipient_rights",
+                "name": "right_number",
+                "type": "string:45",
+                "required": true,
+                "unsigned": false
+            },
+            {
+                "table": "recipient_rights",
+                "name": "created_at",
+                "type": "datetime",
+                "required": false,
+                "unsigned": false
+            },
+            {
+                "table": "recipient_rights",
+                "name": "updated_at",
+                "type": "datetime",
+                "required": false,
+                "unsigned": false
+            }
+        ],
+        "increments": true,
+        "namespace": "App\\Models",
+        "comment": ""
+    },
+    {
+        "primaryKey": "id",
+        "name": null,
+        "table": "recipient_session_faces",
+        "columns": [
+            {
+                "table": "recipient_session_faces",
+                "name": "id",
+                "type": "bigint:9223372036854775807",
+                "required": true,
+                "unsigned": true
+            },
+            {
+                "table": "recipient_session_faces",
+                "name": "recipient_session_id",
+                "type": "bigint:9223372036854775807",
+                "foreignKeyConstraint": {
+                    "local_table": "recipient_session_faces",
+                    "columns": [
+                        "recipient_session_id"
+                    ],
+                    "foreign_table": "recipient_sessions",
+                    "foreign_columns": [
+                        "id"
+                    ],
+                    "key": "recipient_session_faces_recipient_session_id_foreign"
+                },
+                "required": true,
+                "unsigned": true
+            },
+            {
+                "table": "recipient_session_faces",
+                "name": "front_facing",
+                "type": "bigint:9223372036854775807",
+                "required": true,
+                "unsigned": true
+            },
+            {
+                "table": "recipient_session_faces",
+                "name": "left_facing",
+                "type": "bigint:9223372036854775807",
+                "required": false,
+                "unsigned": true
+            },
+            {
+                "table": "recipient_session_faces",
+                "name": "right_facing",
+                "type": "bigint:9223372036854775807",
+                "required": false,
+                "unsigned": true
+            },
+            {
+                "table": "recipient_session_faces",
+                "name": "created_at",
+                "type": "datetime",
+                "required": false,
+                "unsigned": false
+            },
+            {
+                "table": "recipient_session_faces",
+                "name": "updated_at",
+                "type": "datetime",
+                "required": false,
+                "unsigned": false
+            }
+        ],
+        "increments": true,
+        "namespace": "App\\Models",
+        "comment": ""
+    },
+    {
+        "primaryKey": "id",
+        "name": null,
+        "table": "recipient_session_fingerprints",
+        "columns": [
+            {
+                "table": "recipient_session_fingerprints",
+                "name": "id",
+                "type": "integer",
+                "required": true,
+                "unsigned": true
+            },
+            {
+                "table": "recipient_session_fingerprints",
+                "name": "recipient_session_id",
+                "type": "bigint:9223372036854775807",
+                "foreignKeyConstraint": {
+                    "local_table": "recipient_session_fingerprints",
+                    "columns": [
+                        "recipient_session_id"
+                    ],
+                    "foreign_table": "recipient_sessions",
+                    "foreign_columns": [
+                        "id"
+                    ],
+                    "key": "recipient_session_fingerprints_recipient_session_id_foreign"
+                },
+                "required": true,
+                "unsigned": true
+            },
+            {
+                "table": "recipient_session_fingerprints",
+                "name": "fingerprint_image_id",
+                "type": "bigint:9223372036854775807",
+                "required": true,
+                "unsigned": true
+            },
+            {
+                "table": "recipient_session_fingerprints",
+                "name": "finger",
+                "type": "string",
+                "required": true,
+                "unsigned": false
+            },
+            {
+                "table": "recipient_session_fingerprints",
+                "name": "created_at",
+                "type": "datetime",
+                "required": false,
+                "unsigned": false
+            },
+            {
+                "table": "recipient_session_fingerprints",
+                "name": "updated_at",
+                "type": "datetime",
+                "required": false,
+                "unsigned": false
+            }
+        ],
+        "increments": true,
+        "namespace": "App\\Models",
+        "comment": ""
+    },
+    {
+        "primaryKey": "id",
+        "name": null,
+        "table": "recipient_session_matching_details",
+        "columns": [
+            {
+                "table": "recipient_session_matching_details",
+                "name": "id",
+                "type": "bigint:9223372036854775807",
+                "required": true,
+                "unsigned": true
+            },
+            {
+                "table": "recipient_session_matching_details",
+                "name": "recipient_session_id",
+                "type": "bigint:9223372036854775807",
+                "required": true,
+                "unsigned": true
+            },
+            {
+                "table": "recipient_session_matching_details",
+                "name": "face_match_score",
+                "type": "decimal",
+                "required": false,
+                "unsigned": false
+            },
+            {
+                "table": "recipient_session_matching_details",
+                "name": "fingerprint_match_score",
+                "type": "decimal",
+                "required": false,
+                "unsigned": false
+            },
+            {
+                "table": "recipient_session_matching_details",
+                "name": "voice_match_score",
+                "type": "decimal",
+                "required": false,
+                "unsigned": false
+            },
+            {
+                "table": "recipient_session_matching_details",
+                "name": "created_at",
+                "type": "datetime",
+                "required": false,
+                "unsigned": false
+            },
+            {
+                "table": "recipient_session_matching_details",
+                "name": "updated_at",
+                "type": "datetime",
+                "required": false,
+                "unsigned": false
+            }
+        ],
+        "increments": true,
+        "namespace": "App\\Models",
+        "comment": ""
+    },
+    {
+        "primaryKey": "id",
+        "name": null,
+        "table": "recipient_sessions",
+        "columns": [
+            {
+                "table": "recipient_sessions",
+                "name": "id",
+                "type": "bigint:9223372036854775807",
+                "required": true,
+                "unsigned": true
+            },
+            {
+                "table": "recipient_sessions",
+                "name": "recipient_id",
+                "type": "bigint:9223372036854775807",
+                "foreignKeyConstraint": {
+                    "local_table": "recipient_sessions",
+                    "columns": [
+                        "recipient_id"
+                    ],
+                    "foreign_table": "recipients",
+                    "foreign_columns": [
+                        "id"
+                    ],
+                    "key": "recipient_sessions_recipient_id_foreign"
+                },
+                "required": false,
+                "unsigned": true
+            },
+            {
+                "table": "recipient_sessions",
+                "name": "session_id",
+                "type": "bigint:9223372036854775807",
+                "foreignKeyConstraint": {
+                    "local_table": "recipient_sessions",
+                    "columns": [
+                        "session_id"
+                    ],
+                    "foreign_table": "sessions",
+                    "foreign_columns": [
+                        "id"
+                    ],
+                    "key": "recipient_sessions_session_id_foreign"
+                },
+                "required": true,
+                "unsigned": true
+            },
+            {
+                "table": "recipient_sessions",
+                "name": "geolocation_id",
+                "type": "bigint:9223372036854775807",
+                "foreignKeyConstraint": {
+                    "local_table": "recipient_sessions",
+                    "columns": [
+                        "geolocation_id"
+                    ],
+                    "foreign_table": "geolocations",
+                    "foreign_columns": [
+                        "id"
+                    ],
+                    "key": "recipient_sessions_geolocation_id_foreign"
+                },
+                "required": false,
+                "unsigned": true
+            },
+            {
+                "table": "recipient_sessions",
+                "name": "device_id",
+                "type": "bigint:9223372036854775807",
+                "foreignKeyConstraint": {
+                    "local_table": "recipient_sessions",
+                    "columns": [
+                        "device_id"
+                    ],
+                    "foreign_table": "devices",
+                    "foreign_columns": [
+                        "id"
+                    ],
+                    "key": "recipient_sessions_device_id_foreign"
+                },
+                "required": false,
+                "unsigned": true
+            },
+            {
+                "table": "recipient_sessions",
+                "name": "personal_details_id",
+                "type": "bigint:9223372036854775807",
+                "required": false,
+                "unsigned": true
+            },
+            {
+                "table": "recipient_sessions",
+                "name": "status",
+                "type": "boolean",
+                "required": true,
+                "unsigned": false
+            },
+            {
+                "table": "recipient_sessions",
+                "name": "is_enrollment",
+                "type": "boolean",
+                "required": true,
+                "unsigned": false
+            },
+            {
+                "table": "recipient_sessions",
+                "name": "created_at",
+                "type": "datetime",
+                "required": false,
+                "unsigned": false
+            },
+            {
+                "table": "recipient_sessions",
+                "name": "updated_at",
+                "type": "datetime",
+                "required": false,
+                "unsigned": false
+            },
+            {
+                "table": "recipient_sessions",
+                "name": "session_uuid",
+                "type": "string:45",
+                "required": true,
+                "unsigned": false
+            },
+            {
+                "table": "recipient_sessions",
+                "name": "social_number",
+                "type": "string:20",
+                "required": false,
+                "unsigned": false
+            },
+            {
+                "table": "recipient_sessions",
+                "name": "verified_phone_number",
+                "type": "string:20",
+                "required": false,
+                "unsigned": false
+            },
+            {
+                "table": "recipient_sessions",
+                "name": "year",
+                "type": "smallint",
+                "required": false,
+                "unsigned": true
+            }
+        ],
+        "increments": true,
+        "namespace": "App\\Models",
+        "comment": ""
+    },
+    {
+        "primaryKey": "id",
+        "name": null,
+        "table": "recipient_sessions_rights",
+        "columns": [
+            {
+                "table": "recipient_sessions_rights",
+                "name": "id",
+                "type": "bigint:9223372036854775807",
+                "required": true,
+                "unsigned": true
+            },
+            {
+                "table": "recipient_sessions_rights",
+                "name": "recipient_session_id",
+                "type": "bigint:9223372036854775807",
+                "foreignKeyConstraint": {
+                    "local_table": "recipient_sessions_rights",
+                    "columns": [
+                        "recipient_session_id"
+                    ],
+                    "foreign_table": "recipient_sessions",
+                    "foreign_columns": [
+                        "id"
+                    ],
+                    "key": "recipient_sessions_rights_recipient_session_id_foreign"
+                },
+                "required": true,
+                "unsigned": true
+            },
+            {
+                "table": "recipient_sessions_rights",
+                "name": "right_id",
+                "type": "integer",
+                "foreignKeyConstraint": {
+                    "local_table": "recipient_sessions_rights",
+                    "columns": [
+                        "right_id"
+                    ],
+                    "foreign_table": "rights",
+                    "foreign_columns": [
+                        "id"
+                    ],
+                    "key": "recipient_sessions_rights_right_id_foreign"
+                },
+                "required": true,
+                "unsigned": true
+            },
+            {
+                "table": "recipient_sessions_rights",
+                "name": "right_number",
+                "type": "string:45",
+                "required": true,
+                "unsigned": false
+            },
+            {
+                "table": "recipient_sessions_rights",
+                "name": "created_at",
+                "type": "datetime",
+                "required": false,
+                "unsigned": false
+            },
+            {
+                "table": "recipient_sessions_rights",
+                "name": "updated_at",
+                "type": "datetime",
+                "required": false,
+                "unsigned": false
+            },
+            {
+                "table": "recipient_sessions_rights",
+                "name": "social_number",
+                "type": "string:20",
+                "required": false,
+                "unsigned": false
+            }
+        ],
+        "increments": true,
+        "namespace": "App\\Models",
+        "comment": ""
+    },
+    {
+        "primaryKey": "id",
+        "name": null,
+        "table": "recipient_states",
+        "columns": [
+            {
+                "table": "recipient_states",
+                "name": "id",
+                "type": "integer",
+                "required": true,
+                "unsigned": true
+            },
+            {
+                "table": "recipient_states",
+                "name": "physical_state_id",
+                "type": "integer",
+                "foreignKeyConstraint": {
+                    "local_table": "recipient_states",
+                    "columns": [
+                        "physical_state_id"
+                    ],
+                    "foreign_table": "physical_states",
+                    "foreign_columns": [
+                        "id"
+                    ],
+                    "key": "recipient_states_physical_state_id_foreign"
+                },
+                "required": false,
+                "unsigned": true
+            },
+            {
+                "table": "recipient_states",
+                "name": "remarried",
+                "type": "boolean",
+                "required": true,
+                "unsigned": false
+            },
+            {
+                "table": "recipient_states",
+                "name": "created_at",
+                "type": "datetime",
+                "required": false,
+                "unsigned": false
+            },
+            {
+                "table": "recipient_states",
+                "name": "updated_at",
+                "type": "datetime",
+                "required": false,
+                "unsigned": false
+            }
+        ],
+        "increments": true,
+        "namespace": "App\\Models",
+        "comment": ""
+    },
+    {
+        "primaryKey": "id",
+        "name": null,
+        "table": "recipients",
+        "columns": [
+            {
+                "table": "recipients",
+                "name": "id",
+                "type": "bigint:9223372036854775807",
+                "required": true,
+                "unsigned": true
+            },
+            {
+                "table": "recipients",
+                "name": "personal_details_id",
+                "type": "bigint:9223372036854775807",
+                "foreignKeyConstraint": {
+                    "local_table": "recipients",
+                    "columns": [
+                        "personal_details_id"
+                    ],
+                    "foreign_table": "recipient_personal_details",
+                    "foreign_columns": [
+                        "id"
+                    ],
+                    "key": "recipients_personal_details_id_foreign"
+                },
+                "required": true,
+                "unsigned": true
+            },
+            {
+                "table": "recipients",
+                "name": "created_at",
+                "type": "datetime",
+                "required": false,
+                "unsigned": false
+            },
+            {
+                "table": "recipients",
+                "name": "updated_at",
+                "type": "datetime",
+                "required": false,
+                "unsigned": false
+            }
+        ],
+        "increments": true,
+        "namespace": "App\\Models",
+        "comment": ""
+    },
+    {
+        "primaryKey": "id",
+        "name": null,
+        "table": "rights",
+        "columns": [
+            {
+                "table": "rights",
+                "name": "id",
+                "type": "integer",
+                "required": true,
+                "unsigned": true
+            },
+            {
+                "table": "rights",
+                "name": "type",
+                "type": "string:45",
+                "required": false,
+                "unsigned": false
+            },
+            {
+                "table": "rights",
+                "name": "description",
+                "type": "string:255",
+                "required": false,
+                "unsigned": false
+            },
+            {
+                "table": "rights",
+                "name": "label",
+                "type": "string:10",
+                "uniqueKeyConstraint": {
+                    "table": "rights",
+                    "columns": [
+                        "label"
+                    ]
+                },
+                "required": true,
+                "unsigned": false
+            },
+            {
+                "table": "rights",
+                "name": "branch",
+                "type": "string:100",
+                "required": false,
+                "unsigned": false
+            },
+            {
+                "table": "rights",
+                "name": "created_at",
+                "type": "datetime",
+                "required": false,
+                "unsigned": false
+            },
+            {
+                "table": "rights",
+                "name": "updated_at",
+                "type": "datetime",
+                "required": false,
+                "unsigned": false
+            }
+        ],
+        "increments": true,
+        "namespace": "App\\Models",
+        "comment": ""
+    },
+    {
+        "primaryKey": "id",
+        "name": null,
+        "table": "scopes",
+        "columns": [
+            {
+                "table": "scopes",
+                "name": "id",
+                "type": "bigint:9223372036854775807",
+                "required": true,
+                "unsigned": true
+            },
+            {
+                "table": "scopes",
+                "name": "label",
+                "type": "string:100",
+                "required": true,
+                "unsigned": false
+            },
+            {
+                "table": "scopes",
+                "name": "description_fr",
+                "type": "string:255",
+                "required": true,
+                "unsigned": false
+            },
+            {
+                "table": "scopes",
+                "name": "description_en",
+                "type": "string:255",
+                "required": true,
+                "unsigned": false
+            },
+            {
+                "table": "scopes",
+                "name": "created_at",
+                "type": "datetime",
+                "required": false,
+                "unsigned": false
+            },
+            {
+                "table": "scopes",
+                "name": "updated_at",
+                "type": "datetime",
+                "required": false,
+                "unsigned": false
+            }
+        ],
+        "increments": true,
+        "namespace": "App\\Models",
+        "comment": ""
+    },
+    {
+        "primaryKey": "id",
+        "name": null,
+        "table": "sessions",
+        "columns": [
+            {
+                "table": "sessions",
+                "name": "id",
+                "type": "bigint:9223372036854775807",
+                "required": true,
+                "unsigned": true
+            },
+            {
+                "table": "sessions",
+                "name": "edition_id",
+                "type": "bigint:9223372036854775807",
+                "foreignKeyConstraint": {
+                    "local_table": "sessions",
+                    "columns": [
+                        "edition_id"
+                    ],
+                    "foreign_table": "editions",
+                    "foreign_columns": [
+                        "id"
+                    ],
+                    "key": "sessions_edition_id_foreign"
+                },
+                "required": false,
+                "unsigned": true
+            },
+            {
+                "table": "sessions",
+                "name": "label",
+                "type": "string:255",
+                "required": true,
+                "unsigned": false
+            },
+            {
+                "table": "sessions",
+                "name": "start_date",
+                "type": "date",
+                "required": true,
+                "unsigned": false
+            },
+            {
+                "table": "sessions",
+                "name": "end_date",
+                "type": "date",
+                "required": false,
+                "unsigned": false
+            },
+            {
+                "table": "sessions",
+                "name": "status",
+                "type": "boolean",
+                "required": true,
+                "unsigned": false
+            },
+            {
+                "table": "sessions",
+                "name": "created_at",
+                "type": "datetime",
+                "required": false,
+                "unsigned": false
+            },
+            {
+                "table": "sessions",
+                "name": "updated_at",
+                "type": "datetime",
+                "required": false,
+                "unsigned": false
+            }
+        ],
+        "increments": true,
+        "namespace": "App\\Models",
+        "comment": ""
+    }
+]

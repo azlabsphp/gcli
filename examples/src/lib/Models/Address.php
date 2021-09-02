@@ -9,7 +9,7 @@
  * file that was distributed with this source code.
 */
 
-namespace App\Models\Common;
+namespace App\Models;
 
 use Drewlabs\Packages\Database\Traits\Model;
 use Drewlabs\Contracts\Data\Model\ActiveModel;
@@ -18,7 +18,7 @@ use Drewlabs\Contracts\Data\Model\Relatable;
 use Drewlabs\Contracts\Data\Model\GuardedModel;
 use Illuminate\Database\Eloquent\Model as EloquentModel;
 
-final class Human extends EloquentModel implements ActiveModel, Parseable, Relatable, GuardedModel
+final class Address extends EloquentModel implements ActiveModel, Parseable, Relatable, GuardedModel
 {
 
 	use Model;
@@ -28,14 +28,14 @@ final class Human extends EloquentModel implements ActiveModel, Parseable, Relat
 	 * 
 	 * @var string
 	 */
-	protected $table = "humans";
+	protected $table = "addresses";
 
 	/**
 	 * Table primary key
 	 * 
 	 * @var string
 	 */
-	protected $primaryKey = "human_id";
+	protected $primaryKey = "id";
 
 	/**
 	 * List of values that must be hidden when generating the json output
@@ -57,8 +57,16 @@ final class Human extends EloquentModel implements ActiveModel, Parseable, Relat
 	 * @var array
 	 */
 	protected $fillable = [
-		"firstname",
-		"lastname",
+		"id",
+		"email",
+		"postal_box",
+		"house_no",
+		"country",
+		"city",
+		"area",
+		"district",
+		"created_at",
+		"updated_at",
 	];
 
 	/**

@@ -21,8 +21,8 @@ use Drewlabs\CodeGenerator\Models\PHPClassProperty;
 use Drewlabs\CodeGenerator\Models\PHPFunctionParameter;
 use Drewlabs\CodeGenerator\Types\PHPTypesModifiers;
 use Drewlabs\ComponentGenerators\Contracts\ComponentBuilder;
+use Drewlabs\ComponentGenerators\Helpers\ComponentBuilderHelpers;
 use Drewlabs\ComponentGenerators\PHP\PHPScriptFile;
-use Drewlabs\ComponentGenerators\Traits\HasNameAttribute;
 use Drewlabs\ComponentGenerators\Traits\HasNamespaceAttribute;
 use Drewlabs\Contracts\Data\DML\DMLProvider;
 use Drewlabs\Contracts\Support\Actions\Action;
@@ -33,9 +33,10 @@ use Drewlabs\Contracts\Support\Actions\Exceptions\InvalidActionException;
 use Drewlabs\Packages\Database\EloquentDMLManager;
 use Illuminate\Support\Pluralizer;
 
+use function Drewlabs\ComponentGenerators\Proxy\PHPScript;
+
 class ServiceClassBuilder implements ComponentBuilder
 {
-    use HasNameAttribute;
     use HasNamespaceAttribute;
 
     public const ACTION_RESULT_FUNCTION_PATH = 'Drewlabs\\Support\\Proxy\\ActionResult';
@@ -221,11 +222,14 @@ class ServiceClassBuilder implements ComponentBuilder
             ->addToNamespace($this->namespace_ ?? self::DEFAULT_NAMESPACE);
 
         // Returns the builded component
-        return new PHPScriptFile(
+        return PHPScript(
             $component->getName(),
             $component,
-            $this->path_ ?? self::DEFAULT_PATH
-        );
+            ComponentBuilderHelpers::rebuildComponentPath(
+                $this->namespace_ ?? self::DEFAULT_NAMESPACE,
+                $this->path_ ?? self::DEFAULT_PATH
+            ),
+        )->setNamespace($component->getNamespace());
     }
 
     public static function defaultClassPath(?string $classname = null)

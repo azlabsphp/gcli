@@ -7,4 +7,5 @@
 - Write a service generator class [x]
 - Write a Data transfert Object generator class [x]
 - Write a Illuminate command generator class []
-- Provides with Illuminate commands for all component builders []
+- Provides with Illuminate commands for all component builders [x]
+- Create a full mvc generator command []

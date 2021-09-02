@@ -19,14 +19,14 @@ use Drewlabs\CodeGenerator\Models\PHPClassMethod;
 use Drewlabs\CodeGenerator\Models\PHPClassProperty;
 use function Drewlabs\CodeGenerator\Proxy\PHPClassMethod;
 use function Drewlabs\CodeGenerator\Proxy\PHPVariable;
+use function Drewlabs\ComponentGenerators\Proxy\PHPScript;
+
 use Drewlabs\CodeGenerator\Types\PHPTypesModifiers;
 use Drewlabs\ComponentGenerators\Contracts\ComponentBuilder;
 use Drewlabs\ComponentGenerators\Contracts\EloquentORMModelBuilder as ContractsEloquentORMModel;
-use Drewlabs\ComponentGenerators\Contracts\ORMModelColumnDefintion;
+use Drewlabs\ComponentGenerators\Contracts\ORMColumnDefinition;
 use Drewlabs\ComponentGenerators\Contracts\ORMModelDefinition;
-use Drewlabs\ComponentGenerators\Exceptions\BuildErrorException;
-use Drewlabs\ComponentGenerators\PHP\PHPScriptFile;
-use Drewlabs\ComponentGenerators\Traits\HasNameAttribute;
+use Drewlabs\ComponentGenerators\Helpers\ComponentBuilderHelpers;
 use Drewlabs\ComponentGenerators\Traits\HasNamespaceAttribute;
 use Drewlabs\ComponentGenerators\Traits\ViewModelBuilder;
 use Drewlabs\Contracts\Data\Model\ActiveModel;
@@ -42,7 +42,6 @@ use Illuminate\Support\Pluralizer;
 
 class EloquentORMModelBuilder implements ContractsEloquentORMModel, ComponentBuilder
 {
-    use HasNameAttribute;
     use HasNamespaceAttribute;
     use ViewModelBuilder;
 
@@ -52,16 +51,18 @@ class EloquentORMModelBuilder implements ContractsEloquentORMModel, ComponentBui
     private const DEFAULT_PATH = 'Models';
 
     /**
+     * The name of the model.
+     *
+     * @var string
+     */
+    public const DEFAULT_NAME = 'Test';
+
+    /**
      * The namespace of the model.
      *
      * @var string
      */
     public const DEFAULT_NAMESPACE = 'App\\Models';
-
-    /**
-     * @var Stringable
-     */
-    private $component_;
 
     /**
      * List of appendable model properties.
@@ -94,7 +95,7 @@ class EloquentORMModelBuilder implements ContractsEloquentORMModel, ComponentBui
     /**
      * List of table columns.
      *
-     * @var ORMModelColumnDefintion[]
+     * @var ORMColumnDefinition[]
      */
     private $columns_ = [];
 
@@ -163,15 +164,6 @@ class EloquentORMModelBuilder implements ContractsEloquentORMModel, ComponentBui
 
         // Set the model path
         $this->setWritePath($path ?? self::DEFAULT_PATH);
-    }
-
-    public function __toString(): string
-    {
-        if (null === $this->component_) {
-            throw new BuildErrorException(__CLASS__);
-        }
-
-        return $this->component_->__toString();
     }
 
     public function setRelationMethods(array $names)
@@ -359,7 +351,7 @@ class EloquentORMModelBuilder implements ContractsEloquentORMModel, ComponentBui
                     'fillable',
                     'array',
                     PHPTypesModifiers::PROTECTED,
-                    $this->columns_ ? array_map(static function (ORMModelColumnDefintion $column) {
+                    $this->columns_ ? array_map(static function (ORMColumnDefinition $column) {
                         return $column->name();
                     }, $this->columns_) : [],
                     'List of fillable properties of the current model'
@@ -423,14 +415,15 @@ class EloquentORMModelBuilder implements ContractsEloquentORMModel, ComponentBui
             return $carry;
         }, $component);
 
-        $this->component_ = $component;
-
         // Returns the builded component
-        return new PHPScriptFile(
+        return PHPScript(
             $component->getName(),
             $component,
-            $this->path_ ?? self::DEFAULT_PATH
-        );
+            ComponentBuilderHelpers::rebuildComponentPath(
+                $this->namespace_ ?? self::DEFAULT_NAMESPACE,
+                $this->path_ ?? self::DEFAULT_PATH
+            ),
+        )->setNamespace($component->getNamespace());
     }
 
     public static function defaultClassPath(?string $classname = null)

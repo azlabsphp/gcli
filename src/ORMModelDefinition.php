@@ -13,17 +13,17 @@ declare(strict_types=1);
 
 namespace Drewlabs\ComponentGenerators;
 
-use Drewlabs\ComponentGenerators\Contracts\ORMModelColumnDefintion;
+use Drewlabs\ComponentGenerators\Contracts\ORMColumnDefinition;
 use Drewlabs\ComponentGenerators\Contracts\ORMModelDefinition as ContractsORMModelDefinition;
-use Drewlabs\Core\EntityObject\ValueObject;
+use Drewlabs\Support\Immutable\ValueObject;
 
 class ORMModelDefinition extends ValueObject implements ContractsORMModelDefinition
 {
     public function setColumns_Attribute(?array $value)
     {
         foreach ($value as $value) {
-            if (!($value instanceof ORMModelColumnDefintion)) {
-                throw new \InvalidArgumentException('$columns parameter must be a list of '.ORMModelColumnDefintion::class.' items');
+            if (!($value instanceof ORMColumnDefinition)) {
+                throw new \InvalidArgumentException('$columns parameter must be a list of '.ORMColumnDefinition::class.' items');
             }
         }
 
@@ -38,6 +38,11 @@ class ORMModelDefinition extends ValueObject implements ContractsORMModelDefinit
     public function name(): ?string
     {
         return $this->name_;
+    }
+
+    public function comment(): ?string
+    {
+        return $this->comment_;
     }
 
     public function table(): ?string
@@ -69,6 +74,7 @@ class ORMModelDefinition extends ValueObject implements ContractsORMModelDefinit
             'columns_' => 'columns',
             'increments_' => 'increments',
             'namespace_' => 'namespace',
+            'comment_' => 'comment'
         ];
     }
 }
