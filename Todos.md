@@ -8,4 +8,4 @@
 - Write a Data transfert Object generator class [x]
 - Write a Illuminate command generator class []
 - Provides with Illuminate commands for all component builders [x]
-- Create a full mvc generator command []
+- Create a full mvc generator command [x]
