@@ -21,14 +21,25 @@ class DataTypeToFluentValidationRulesHelper
         'datetime' => 'date_format'
     ];
 
+    /**
+     * @Rule required if
+     */
     public const REQUIRED_IF = 'required_if';
-
+    /**
+     * @Rule required without
+     */
     public const REQUIRED_WITHOUT = 'required_without';
-
+    /**
+     * @Rule required
+     */
     public const REQUIRED = 'required';
-
+    /**
+     * @Rule nullable
+     */
     public const NULLABLE = 'nullable';
-
+    /**
+     * @Rule sometimes
+     */
     public const SOMETIMES = 'sometimes';
 
     /**

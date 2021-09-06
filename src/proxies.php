@@ -2,6 +2,7 @@
 
 namespace Drewlabs\ComponentGenerators\Proxy;
 
+use Doctrine\DBAL\Schema\AbstractSchemaManager;
 use Drewlabs\CodeGenerator\Contracts\Stringable;
 use Drewlabs\ComponentGenerators\Builders\ControllerClassBuilder;
 use Drewlabs\ComponentGenerators\Builders\DataTransfertClassBuilder;
@@ -14,6 +15,7 @@ use Drewlabs\ComponentGenerators\Contracts\ORMModelDefinition;
 use Drewlabs\ComponentGenerators\Contracts\EloquentORMModelBuilder as ContractsEloquentORMModelBuilder;
 use Drewlabs\ComponentGenerators\ORMColumnDefinition;
 use Drewlabs\ComponentGenerators\Contracts\ORMColumnDefinition as ContractsORMColumnDefinition;
+use Drewlabs\ComponentGenerators\DatabaseSchemaReverseEngineeringRunner;
 use Drewlabs\ComponentGenerators\ORMModelDefinition as ComponentGeneratorsORMModelDefinition;
 use Drewlabs\ComponentGenerators\PHP\PHPScriptFile;
 
@@ -138,8 +140,7 @@ function DataTransfertClassBuilder(
     string $name = null,
     ?string $namespace = null,
     string $path = null
-)
-{
+) {
     return new DataTransfertClassBuilder($json_attributes, $name, $namespace, $path);
 }
 
@@ -159,4 +160,24 @@ function PHPScript(
     string $extension = 'php'
 ) {
     return new PHPScriptFile($name, $content, $path, $extension);
+}
+
+/**
+ * Provides a proxy function to the  {@link \Drewlabs\ComponentGenerators\DatabaseSchemaReverseEngineeringRunner} constructor
+ * 
+ * @param AbstractSchemaManager $manager 
+ * @param string $blocComponentPath 
+ * @param string $blocComponentNamespace 
+ * @return DatabaseSchemaReverseEngineeringRunner 
+ */
+function DatabaseSchemaReverseEngineeringRunner(
+    AbstractSchemaManager $manager,
+    string $blocComponentPath,
+    string $blocComponentNamespace = 'App'
+) {
+    return new DatabaseSchemaReverseEngineeringRunner(
+        $manager,
+        $blocComponentPath,
+        $blocComponentNamespace
+    );
 }

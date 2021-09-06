@@ -106,7 +106,6 @@ class ColumnsDefinitionHelpers
                     );
                 }
             }
-            // dump($definitions);
             return $definitions;
         };
     }

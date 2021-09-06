@@ -5,7 +5,6 @@ namespace Drewlabs\ComponentGenerators\Helpers;
 use Drewlabs\CodeGenerator\Exceptions\PHPVariableException;
 use Drewlabs\ComponentGenerators\Contracts\SourceFileInterface;
 
-use function Drewlabs\ComponentGenerators\Proxy\ComponentsScriptWriter;
 use function Drewlabs\ComponentGenerators\Proxy\DataTransfertClassBuilder;
 use function Drewlabs\ComponentGenerators\Proxy\EloquentORMModelBuilder;
 use function Drewlabs\ComponentGenerators\Proxy\MVCControllerBuilder;
