@@ -31,13 +31,6 @@ final class Address extends EloquentModel implements ActiveModel, Parseable, Rel
 	protected $table = "addresses";
 
 	/**
-	 * Table primary key
-	 * 
-	 * @var string
-	 */
-	protected $primaryKey = "id";
-
-	/**
 	 * List of values that must be hidden when generating the json output
 	 * 
 	 * @var array
@@ -75,6 +68,13 @@ final class Address extends EloquentModel implements ActiveModel, Parseable, Rel
 	 * @var array
 	 */
 	public $relation_methods = [];
+
+	/**
+	 * Table primary key
+	 * 
+	 * @var string
+	 */
+	protected $primaryKey = "id";
 
 	/**
 	 * Bootstrap the model and its traits.

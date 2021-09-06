@@ -110,7 +110,7 @@ class DatabaseSchemaReverseEngineeringRunner
                     }
                 })($value)),
                 null,
-                sprintf("%s\\%s", $this->blocComponentNamespace_ ?? self::DEFAULT_BLOC_COMPONENT_NAMESPACE, 'Http\\Controllers\\ViewModels'),
+                sprintf("%s\\%s", $this->blocComponentNamespace_ ?? self::DEFAULT_BLOC_COMPONENT_NAMESPACE, 'Http\\ViewModels'),
                 // TODO Add namespace method to component items
                 $modelClassPath
             );
@@ -144,7 +144,7 @@ class DatabaseSchemaReverseEngineeringRunner
                 sprintf("%s\\%s", $viewModel->getNamespace(), drewlabs_core_strings_as_camel_case($viewModel->getName())),
                 sprintf("%s\\%s", $dtoObject->getNamespace(), drewlabs_core_strings_as_camel_case($dtoObject->getName())),
                 null,
-                sprintf("%s\\%s", $this->blocComponentNamespace_ ?? self::DEFAULT_BLOC_COMPONENT_NAMESPACE, 'Http\\Controllers\\Controllers'),
+                sprintf("%s\\%s", $this->blocComponentNamespace_ ?? self::DEFAULT_BLOC_COMPONENT_NAMESPACE, 'Http\\Controllers'),
             );
             ComponentsScriptWriter($this->blocComponentPath_)->write($controller);
 
