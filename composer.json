@@ -72,5 +72,16 @@
             "type": "vcs",
             "url": "git@github.com:liksoft/drewlabs-laravel-http.git"
         }
-    ]
+    ],
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Drewlabs\\ComponentGenerators\\Extensions\\Providers\\ServiceProvider"
+            ],
+            "aliases": {}
+        },
+        "branch-alias": {
+            "dev-master": "v1.0.x-dev"
+        }
+    }
 }

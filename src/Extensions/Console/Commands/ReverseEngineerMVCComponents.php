@@ -67,7 +67,7 @@ class ReverseEngineerMVCComponents extends Command
         // For Mariadb server
         $schemaManager->getDatabasePlatform()->registerDoctrineTypeMapping('enum', 'string');
         // Execute the runner
-        $result = DatabaseSchemaReverseEngineeringRunner(
+        $traversable = DatabaseSchemaReverseEngineeringRunner(
             $connection->createSchemaManager(),
             __DIR__ . '/examples/src/lib/'
         )->tableListFilterFunc(function ($table) {
@@ -86,7 +86,7 @@ class ReverseEngineerMVCComponents extends Command
 
         $this->info('Started reverse engineering process...');
         $this->withProgressBar(
-            $result,
+            iterator_count($traversable),
             function () {
             }
         );
