@@ -158,7 +158,7 @@ class DataTransfertClassBuilder implements ComponentBuilder
             PHPClassProperty(
                 ValueObject::hiddenProperty(),
                 'array',
-                PHPTypesModifiers::PRIVATE,
+                PHPTypesModifiers::PROTECTED,
                 $this->hidden_ ?? []
             )
         );
@@ -167,7 +167,7 @@ class DataTransfertClassBuilder implements ComponentBuilder
             PHPClassProperty(
                 ValueObject::guardedProperty(),
                 'array',
-                PHPTypesModifiers::PRIVATE,
+                PHPTypesModifiers::PROTECTED,
                 $this->guarded_ ?? []
             )
         );
