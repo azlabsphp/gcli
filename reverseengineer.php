@@ -17,7 +17,7 @@ $connection = DriverManager::getConnection([
 $schemaManager =  $connection->createSchemaManager();
 $schemaManager->getDatabasePlatform()->registerDoctrineTypeMapping('enum', 'string');
 
-iterator_to_array((new DatabaseSchemaReverseEngineeringRunner(
+dd(iterator_to_array((new DatabaseSchemaReverseEngineeringRunner(
     $connection->createSchemaManager(),
     __DIR__ . '/examples/src/lib/'
 ))->tableListFilterFunc(function ($table) {
@@ -32,7 +32,7 @@ iterator_to_array((new DatabaseSchemaReverseEngineeringRunner(
         ($table->getName() === 'forms') ||
         ($table->getName() === 'migrations') ||
         (drewlabs_core_strings_starts_with($table->getName(), 'log_model_')));
-})->run());
+})->run()));
 
 // DataType To Fluent Rules helper
 // dump(array_map(function ($type) {

@@ -3,7 +3,9 @@
 namespace Drewlabs\ComponentGenerators\Extensions\Console\Commands;
 
 use Doctrine\DBAL\DriverManager;
+use Drewlabs\ComponentGenerators\Helpers\RouteDefinitionsHelper;
 use Illuminate\Console\Command;
+use Illuminate\Container\Container;
 
 use function Drewlabs\ComponentGenerators\Proxy\DatabaseSchemaReverseEngineeringRunner;
 use function Drewlabs\Filesystem\Proxy\Path;
@@ -87,11 +89,26 @@ class ReverseEngineerMVCComponents extends Command
         })->run();
 
         $this->info(sprintf("Started reverse engineering process...\n"));
-        $this->withProgressBar(
-            iterator_count($traversable),
-            function () {
-            }
-        );
+        $bar = $this->output->createProgressBar(iterator_count($traversable));
+        $bar->start();
+        $routeDefinitions = [];
+        foreach ($traversable as $key => $value) {
+            // Call the route definitions creator function
+            $routeDefinitions[] = $this->createRouteDefinitions($key, $value);
+            // TODO : Add the definitions to the route definitions array
+            $bar->advance();
+        }
+        // TODO : Write the definitions to the route files
+        $bar->finish();
         $this->info(sprintf("\nReverse engineering completed successfully!\n"));
+    }
+
+    private function createRouteDefinitions(
+        string $name,
+        $controllerClassPath = "TestController"
+    ) {
+        return RouteDefinitionsHelper::for($name, $controllerClassPath)(
+            drewlabs_code_generator_is_running_lumen_app(Container::getInstance())
+        );
     }
 }

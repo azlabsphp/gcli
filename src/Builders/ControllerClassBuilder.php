@@ -96,6 +96,13 @@ class ControllerClassBuilder implements ContractsControllerBuilder
     private $modelName_ = 'Test';
 
     /**
+     * Route name for various resources actions
+     * 
+     * @var string
+     */
+    private $routeName_;
+
+    /**
      * Create an instance of the controller builder.
      *
      * @return self
@@ -190,14 +197,15 @@ class ControllerClassBuilder implements ContractsControllerBuilder
         return $this;
     }
 
-    private function getClassFromClassPath(string $classPath)
+    public function routeName()
     {
-        $list = explode("\\", $classPath);
-        return array_reverse(array_values($list))[0];
+        return $this->routeName_;
     }
 
     public function build()
     {
+        // Set the route name of the controller
+        $this->setRouteName($this->name_ ?? self::DEFAULT_NAME);
         /**
          * @var Blueprint
          */
@@ -290,6 +298,7 @@ class ControllerClassBuilder implements ContractsControllerBuilder
                     PHPTypesModifiers::PUBLIC,
                     [
                         'Handles http request action',
+                        '@Route /POST /' . $this->routeName_ . '/{id}',
                     ]
                 )
             );
@@ -306,14 +315,20 @@ class ControllerClassBuilder implements ContractsControllerBuilder
         )->setNamespace($component->getNamespace());
     }
 
+    private function setRouteName(string $classname)
+    {
+        $this->routeName_ = ComponentBuilderHelpers::buildRouteName($classname ?? '');
+        return $this;
+    }
+
+    private function getClassFromClassPath(string $classPath)
+    {
+        $list = explode("\\", $classPath);
+        return array_reverse(array_values($list))[0];
+    }
+
     private function addResourcesActions(Blueprint $component)
     {
-        $routeName = drewlabs_core_strings_as_snake_case(
-            drewlabs_core_strings_to_lower_case(
-                drewlabs_core_strings_replace('Controller', '', $component->getName())
-            ),
-            '-'
-        );
         $validatable = null === $this->viewModelClass_ ? '[]' : sprintf("%s::class", $this->viewModelClass_);
         $actions = [
             [
@@ -324,7 +339,7 @@ class ControllerClassBuilder implements ContractsControllerBuilder
                 ],
                 'descriptors' => [
                     'Display or Returns a list of items',
-                    '@Route /GET /' . $routeName . '[/{$id}]',
+                    '@Route /GET /' . $this->routeName_ . '[/{$id}]',
                 ],
                 'returns' => JsonResponse::class,
                 'contents' => array_merge(
@@ -361,7 +376,7 @@ class ControllerClassBuilder implements ContractsControllerBuilder
                 ],
                 'descriptors' => [
                     'Display or Returns an item matching the specified id',
-                    '@Route /GET /' . $routeName . '/{$id}',
+                    '@Route /GET /' . $this->routeName_ . '/{$id}',
                 ],
                 'returns' => JsonResponse::class,
                 'contents' => array_merge(
@@ -388,7 +403,7 @@ class ControllerClassBuilder implements ContractsControllerBuilder
                 ],
                 'descriptors' => [
                     'Stores a new item in the storage',
-                    '@Route /POST /' . $routeName,
+                    '@Route /POST /' . $this->routeName_,
                 ],
                 'returns' => JsonResponse::class,
                 'contents' => array_merge(
@@ -458,8 +473,8 @@ class ControllerClassBuilder implements ContractsControllerBuilder
                 ],
                 'descriptors' => [
                     'Update the specified resource in storage.',
-                    '@Route /PUT /' . $routeName . '/{id}',
-                    '@Route /PATCH /' . $routeName . '/{id}',
+                    '@Route /PUT /' . $this->routeName_ . '/{id}',
+                    '@Route /PATCH /' . $this->routeName_ . '/{id}',
                 ],
                 'returns' => JsonResponse::class,
                 'contents' => array_merge(
@@ -513,7 +528,7 @@ class ControllerClassBuilder implements ContractsControllerBuilder
                 ],
                 'descriptors' => [
                     'Remove the specified resource from storage.',
-                    '@Route /DELETE /' . $routeName . '/{id}',
+                    '@Route /DELETE /' . $this->routeName_ . '/{id}',
                 ],
                 'returns' => JsonResponse::class,
                 'contents' => [
@@ -526,7 +541,7 @@ class ControllerClassBuilder implements ContractsControllerBuilder
                 ],
             ],
         ];
-        $component = array_reduce($actions, static function (OOPComposableStruct $carry, $action) {
+        $component = array_reduce($actions, static function (Blueprint $carry, $action) {
             $method = PHPClassMethod(
                 $action['name'],
                 $action['params'],

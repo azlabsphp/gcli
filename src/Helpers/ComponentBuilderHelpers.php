@@ -249,4 +249,15 @@ class ComponentBuilderHelpers
         }
         return $path;
     }
+
+    public static function buildRouteName(string $classname)
+    {
+        if (empty($classname) || (null === $classname)) {
+            $classname = 'TestsController';
+        }
+        return drewlabs_core_strings_as_snake_case(
+            drewlabs_core_strings_replace('Controller', '', $classname),
+            '-'
+        );
+    }
 }

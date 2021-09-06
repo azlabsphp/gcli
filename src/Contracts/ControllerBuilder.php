@@ -66,4 +66,11 @@ interface ControllerBuilder extends ComponentBuilder
      * @return self 
      */
     public function bindDTOObject(string $dtoClass);
+
+    /**
+     * Returns the name of controller actions route name
+     * 
+     * @return string 
+     */
+    public function routeName();
 }
