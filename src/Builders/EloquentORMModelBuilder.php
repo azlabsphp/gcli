@@ -14,10 +14,10 @@ declare(strict_types=1);
 namespace Drewlabs\ComponentGenerators\Builders;
 
 use Drewlabs\CodeGenerator\Contracts\Blueprint;
-use Drewlabs\CodeGenerator\Models\PHPClass;
-use Drewlabs\CodeGenerator\Models\PHPClassMethod;
-use Drewlabs\CodeGenerator\Models\PHPClassProperty;
+
+use function Drewlabs\CodeGenerator\Proxy\PHPClass;
 use function Drewlabs\CodeGenerator\Proxy\PHPClassMethod;
+use function Drewlabs\CodeGenerator\Proxy\PHPClassProperty;
 use function Drewlabs\CodeGenerator\Proxy\PHPVariable;
 use function Drewlabs\ComponentGenerators\Proxy\PHPScript;
 
@@ -239,10 +239,10 @@ class EloquentORMModelBuilder implements ContractsEloquentORMModel, ComponentBui
 
     public function build()
     {
-        $component = (new PHPClass($this->name_));
+        $component = (PHPClass($this->name_));
         if ($this->isViewModel_) {
             /**
-             * @var BluePrint|PHPClass
+             * @var BluePrint
              */
             $component = $component->addMethod(PHPClassMethod(
                 'rules',
@@ -258,7 +258,7 @@ class EloquentORMModelBuilder implements ContractsEloquentORMModel, ComponentBui
                     PHPTypesModifiers::PUBLIC,
                     'Returns a fluent validation rules'
                 ))->addContents(
-                    'return '.PHPVariable('rules', null, $this->rules_ ?? [])->asRValue()->__toString()
+                    'return ' . PHPVariable('rules', null, $this->rules_ ?? [])->asRValue()->__toString()
                 )
             );
             if (!$this->isSingleActionValidator_) {
@@ -274,7 +274,7 @@ class EloquentORMModelBuilder implements ContractsEloquentORMModel, ComponentBui
                             'array<string,string|string[]>',
                             PHPTypesModifiers::PUBLIC,
                             'Returns a fluent validation rules applied during update actions'
-                        )->addContents('return '.PHPVariable('rules', null, $this->rules_ ?? [])->asRValue()->__toString())
+                        )->addContents('return ' . PHPVariable('rules', null, $this->rules_ ?? [])->asRValue()->__toString())
                     );
             } else {
                 /**
@@ -307,7 +307,7 @@ class EloquentORMModelBuilder implements ContractsEloquentORMModel, ComponentBui
             ->addTrait(Model::class)
             // Model associated table
             ->addProperty(
-                new PHPClassProperty(
+                PHPClassProperty(
                     'table',
                     'string',
                     PHPTypesModifiers::PROTECTED,
@@ -315,19 +315,9 @@ class EloquentORMModelBuilder implements ContractsEloquentORMModel, ComponentBui
                     'Model referenced table'
                 )
             )
-            // Model table primary key
-            ->addProperty(
-                new PHPClassProperty(
-                    'primaryKey',
-                    'string',
-                    PHPTypesModifiers::PROTECTED,
-                    $this->primaryKey_ ?? 'id',
-                    'Table primary key'
-                )
-            )
             // Model hidden attributes
             ->addProperty(
-                new PHPClassProperty(
+                PHPClassProperty(
                     'hidden',
                     'array',
                     PHPTypesModifiers::PROTECTED,
@@ -337,7 +327,7 @@ class EloquentORMModelBuilder implements ContractsEloquentORMModel, ComponentBui
             )
             // Model appendable attributes
             ->addProperty(
-                new PHPClassProperty(
+                PHPClassProperty(
                     'appends',
                     'array',
                     PHPTypesModifiers::PROTECTED,
@@ -347,7 +337,7 @@ class EloquentORMModelBuilder implements ContractsEloquentORMModel, ComponentBui
             )
             // Models fillable Columns
             ->addProperty(
-                new PHPClassProperty(
+                PHPClassProperty(
                     'fillable',
                     'array',
                     PHPTypesModifiers::PROTECTED,
@@ -358,7 +348,7 @@ class EloquentORMModelBuilder implements ContractsEloquentORMModel, ComponentBui
                 )
             )
             ->addProperty(
-                new PHPClassProperty(
+                PHPClassProperty(
                     'relation_methods',
                     'array',
                     PHPTypesModifiers::PUBLIC,
@@ -366,7 +356,7 @@ class EloquentORMModelBuilder implements ContractsEloquentORMModel, ComponentBui
                     'List of fillable properties of the current model'
                 )
             )->addMethod(
-                (new PHPClassMethod(
+                (PHPClassMethod(
                     'boot',
                     [],
                     'void',
@@ -376,9 +366,21 @@ class EloquentORMModelBuilder implements ContractsEloquentORMModel, ComponentBui
             )
             ->addToNamespace($this->namespace_ ?? self::DEFAULT_NAMESPACE);
 
-        if (!$this->autoIncrements_) {
+        if (null !== $this->primaryKey_) {
             $component = $component->addProperty(
-                new PHPClassProperty(
+                PHPClassProperty(
+                    'primaryKey',
+                    'string',
+                    PHPTypesModifiers::PROTECTED,
+                    $this->primaryKey_ ?? 'id',
+                    'Table primary key'
+                )
+            );
+        }
+
+        if ((null !== $this->autoIncrements_) && !$this->autoIncrements_) {
+            $component = $component->addProperty(
+                PHPClassProperty(
                     'incrementing',
                     'bool',
                     PHPTypesModifiers::PUBLIC,
@@ -390,7 +392,7 @@ class EloquentORMModelBuilder implements ContractsEloquentORMModel, ComponentBui
 
         if (!$this->hasTimestamps_) {
             $component = $component->addProperty(
-                new PHPClassProperty(
+                PHPClassProperty(
                     'timestamps',
                     'bool',
                     PHPTypesModifiers::PUBLIC,

@@ -19,19 +19,19 @@ use function Drewlabs\ComponentGenerators\Proxy\ORMModelDefinition;
 class DatabaseSchemaReverseEngineeringRunner
 {
     /**
-     * 
+     *
      * @var AbstractSchemaManager
      */
     private $manager;
 
     /**
-     * 
+     *
      * @var string
      */
     private $blocComponentPath_;
 
     /**
-     * 
+     *
      * @var string
      */
     private $blocComponentNamespace_;
@@ -40,13 +40,13 @@ class DatabaseSchemaReverseEngineeringRunner
 
     /**
      * List of table that must be ignore
-     * 
+     *
      * @var string[]
      */
     private $excepts_;
 
     /**
-     * 
+     *
      * @var \Closure
      */
     private $tablesFilterFunc_;
@@ -110,7 +110,7 @@ class DatabaseSchemaReverseEngineeringRunner
                     }
                 })($value)),
                 null,
-                sprintf("%s\\%s", $this->blocComponentNamespace_ ?? self::DEFAULT_BLOC_COMPONENT_NAMESPACE, 'Http\\Controllers\\ViewModels'),
+                sprintf("%s\\%s", $this->blocComponentNamespace_ ?? self::DEFAULT_BLOC_COMPONENT_NAMESPACE, 'Http\\ViewModels'),
                 // TODO Add namespace method to component items
                 $modelClassPath
             );
@@ -144,7 +144,7 @@ class DatabaseSchemaReverseEngineeringRunner
                 sprintf("%s\\%s", $viewModel->getNamespace(), drewlabs_core_strings_as_camel_case($viewModel->getName())),
                 sprintf("%s\\%s", $dtoObject->getNamespace(), drewlabs_core_strings_as_camel_case($dtoObject->getName())),
                 null,
-                sprintf("%s\\%s", $this->blocComponentNamespace_ ?? self::DEFAULT_BLOC_COMPONENT_NAMESPACE, 'Http\\Controllers\\Controllers'),
+                sprintf("%s\\%s", $this->blocComponentNamespace_ ?? self::DEFAULT_BLOC_COMPONENT_NAMESPACE, 'Http\\Controllers'),
             );
             ComponentsScriptWriter($this->blocComponentPath_)->write($controller);
 
@@ -185,7 +185,8 @@ class DatabaseSchemaReverseEngineeringRunner
         foreach ($tables as $table) {
             $table_name = $table->getName();
             //# region get table primary key columns
-            $primaryKeyColumns = $table->getPrimaryKey()->getColumns();
+            $tPrimaryKey = $table->getPrimaryKey();
+            $primaryKeyColumns = $tPrimaryKey ? $tPrimaryKey->getColumns() : [];
             $primaryKey = ($columnCount = count($primaryKeyColumns)) <= 1 ? ($columnCount === 1 ? $primaryKeyColumns[0] : null) : $primaryKeyColumns;
             //# end region get table primary key columns
             // #region column definition
@@ -210,11 +211,11 @@ class DatabaseSchemaReverseEngineeringRunner
             $key = is_array($primaryKey) ? ($primaryKey[0] ?? null) : $primaryKey;
             // # Get unique primary key value
             yield ORMModelDefinition([
-                'primaryKey' => $key,
+                'primaryKey' => $key ?? null,
                 'name' => null,
                 'table' => $table_name,
                 'columns' => $columns,
-                'increments' => $table->getColumn($key)->getAutoincrement(),
+                'increments' => !empty($key) ? $table->getColumn($key)->getAutoincrement() : false,
                 'namespace' => sprintf("%s\\%s", $this->blocComponentNamespace_ ?? self::DEFAULT_BLOC_COMPONENT_NAMESPACE, 'Models'),
                 'comment' => $comment
             ]);
