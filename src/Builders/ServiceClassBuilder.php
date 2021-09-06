@@ -15,14 +15,9 @@ namespace Drewlabs\ComponentGenerators\Builders;
 
 use Drewlabs\CodeGenerator\Contracts\Blueprint;
 use Drewlabs\CodeGenerator\Contracts\CallableInterface;
-use Drewlabs\CodeGenerator\Models\PHPClass;
-use Drewlabs\CodeGenerator\Models\PHPClassMethod;
-use Drewlabs\CodeGenerator\Models\PHPClassProperty;
-use Drewlabs\CodeGenerator\Models\PHPFunctionParameter;
 use Drewlabs\CodeGenerator\Types\PHPTypesModifiers;
 use Drewlabs\ComponentGenerators\Contracts\ComponentBuilder;
 use Drewlabs\ComponentGenerators\Helpers\ComponentBuilderHelpers;
-use Drewlabs\ComponentGenerators\PHP\PHPScriptFile;
 use Drewlabs\ComponentGenerators\Traits\HasNamespaceAttribute;
 use Drewlabs\Contracts\Data\DML\DMLProvider;
 use Drewlabs\Contracts\Support\Actions\Action;
@@ -33,6 +28,10 @@ use Drewlabs\Contracts\Support\Actions\Exceptions\InvalidActionException;
 use Drewlabs\Packages\Database\EloquentDMLManager;
 use Illuminate\Support\Pluralizer;
 
+use function Drewlabs\CodeGenerator\Proxy\PHPClass;
+use function Drewlabs\CodeGenerator\Proxy\PHPClassMethod;
+use function Drewlabs\CodeGenerator\Proxy\PHPClassProperty;
+use function Drewlabs\CodeGenerator\Proxy\PHPFunctionParameter;
 use function Drewlabs\ComponentGenerators\Proxy\PHPScript;
 
 class ServiceClassBuilder implements ComponentBuilder
@@ -154,7 +153,7 @@ class ServiceClassBuilder implements ComponentBuilder
         /**
          * @var BluePrint|PHPClass
          */
-        $component = (new PHPClass($this->name_ ?? self::DEFAULT_NAME))
+        $component = (PHPClass($this->name_ ?? self::DEFAULT_NAME))
             ->addClassPath(EloquentDMLManager::class);
 
         foreach ($this->classPaths_ ?? [] as $value) {
@@ -170,7 +169,7 @@ class ServiceClassBuilder implements ComponentBuilder
         $component->addImplementation(ActionHandler::class)
             ->asFinal()
             ->addProperty(
-                new PHPClassProperty(
+                PHPClassProperty(
                     'dbManager',
                     DMLProvider::class,
                     PHPTypesModifiers::PRIVATE,
@@ -180,10 +179,10 @@ class ServiceClassBuilder implements ComponentBuilder
             )
             // Add the class constructor
             ->addMethod(
-                (new PHPClassMethod(
+                (PHPClassMethod(
                     '__construct',
                     [
-                        (new PHPFunctionParameter(
+                        (PHPFunctionParameter(
                             'manager',
                             DMLProvider::class,
                             null
@@ -202,14 +201,14 @@ class ServiceClassBuilder implements ComponentBuilder
                     return null !== $line;
                 }), static function (CallableInterface $carry, $curr) {
                     return $carry->addLine($curr);
-                }, (new PHPClassMethod(
+                }, (PHPClassMethod(
                     'handle',
                     [
-                        new PHPFunctionParameter(
+                        PHPFunctionParameter(
                             'action',
                             Action::class,
                         ),
-                        (new PHPFunctionParameter(
+                        (PHPFunctionParameter(
                             'callback',
                             '\Closure',
                         ))->asOptional(),

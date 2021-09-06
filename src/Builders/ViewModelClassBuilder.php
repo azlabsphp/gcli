@@ -14,7 +14,6 @@ declare(strict_types=1);
 namespace Drewlabs\ComponentGenerators\Builders;
 
 use Drewlabs\CodeGenerator\Contracts\Blueprint;
-use Drewlabs\CodeGenerator\Models\PHPClass;
 use function Drewlabs\CodeGenerator\Proxy\PHPClass;
 use function Drewlabs\CodeGenerator\Proxy\PHPClassMethod;
 use function Drewlabs\CodeGenerator\Proxy\PHPVariable;
@@ -23,7 +22,6 @@ use function Drewlabs\ComponentGenerators\Proxy\PHPScript;
 use Drewlabs\CodeGenerator\Types\PHPTypesModifiers;
 use Drewlabs\ComponentGenerators\Contracts\ComponentBuilder;
 use Drewlabs\ComponentGenerators\Helpers\ComponentBuilderHelpers;
-use Drewlabs\ComponentGenerators\PHP\PHPScriptFile;
 use Drewlabs\ComponentGenerators\Traits\HasNamespaceAttribute;
 use Drewlabs\ComponentGenerators\Traits\ViewModelBuilder;
 
