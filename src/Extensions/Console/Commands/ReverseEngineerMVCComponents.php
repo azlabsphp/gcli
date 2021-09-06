@@ -6,6 +6,7 @@ use Doctrine\DBAL\DriverManager;
 use Illuminate\Console\Command;
 
 use function Drewlabs\ComponentGenerators\Proxy\DatabaseSchemaReverseEngineeringRunner;
+use function Drewlabs\Filesystem\Proxy\Path;
 
 class ReverseEngineerMVCComponents extends Command
 {
@@ -31,6 +32,7 @@ class ReverseEngineerMVCComponents extends Command
 
     public function handle()
     {
+        $srcPath = Path($this->option('srcPath') ?? 'app')->makeAbsolute($this->laravel->basePath())->__toString();
         if (null !== ($url = $this->option('connectionURL'))) {
             $options = [
                 'url' => $url
@@ -68,8 +70,8 @@ class ReverseEngineerMVCComponents extends Command
         $schemaManager->getDatabasePlatform()->registerDoctrineTypeMapping('enum', 'string');
         // Execute the runner
         $traversable = DatabaseSchemaReverseEngineeringRunner(
-            $connection->createSchemaManager(),
-            __DIR__ . '/examples/src/lib/'
+            $schemaManager,
+            $srcPath
         )->tableListFilterFunc(function ($table) {
             return !(drewlabs_core_strings_contains($table->getName(), 'auth_') ||
                 drewlabs_core_strings_starts_with($table->getName(), 'acl_') ||
@@ -84,12 +86,12 @@ class ReverseEngineerMVCComponents extends Command
                 (drewlabs_core_strings_starts_with($table->getName(), 'log_model_')));
         })->run();
 
-        $this->info('Started reverse engineering process...');
+        $this->info(sprintf("Started reverse engineering process...\n"));
         $this->withProgressBar(
             iterator_count($traversable),
             function () {
             }
         );
-        $this->info('Reverse engineering completed successfully!');
+        $this->info(sprintf("\nReverse engineering completed successfully!\n"));
     }
 }
