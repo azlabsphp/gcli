@@ -71,6 +71,8 @@ class ReverseEngineerMVCComponents extends Command
         $password = $this->option('password') ?? config("database.connections.$default_driver.password");
         $charset = $this->option('charset') ?? ($driver === 'pdo_mysql' ? 'utf8mb4' : 'utf8');
         $server_version = $this->option('server_version') ?? null;
+
+        $exceptions = $this->option('excepts') ?? [];
         // !Ends Local variables initialization
 
         if (null !== ($url = $this->option('connectionURL'))) {
@@ -112,7 +114,7 @@ class ReverseEngineerMVCComponents extends Command
         $traversable = DatabaseSchemaReverseEngineeringRunner(
             $schemaManager,
             $srcPath
-        )->bindExceptMethod($tablesFilterFunc)->run();
+        )->bindExceptMethod($tablesFilterFunc)->except($exceptions)->run();
 
         $this->info(sprintf("Started reverse engineering process...\n"));
         $items = iterator_to_array($traversable);
