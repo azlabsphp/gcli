@@ -360,7 +360,16 @@ class ControllerClassBuilder implements ContractsControllerBuilder
                         (null !== $this->modelName_) ? "\$filters = drewlabs_databse_parse_client_request_query(new $this->modelName_, \$request);" : null,
                         "\$result = \$this->service->handle(Action([",
                         "\t'type' => 'SELECT',",
-                        "\t'payload' => \$request->has('per_page') ? [\$filters, (int)\$request->get('per_page'), \$request->has('page') ? (int)\$request->get('page') : null] : [\$filters],",
+                        "\t'payload' => \$request->has('per_page') ? [",
+                        "\t\t\$filters,",
+                        "\t\t(int)\$request->get('per_page'),",
+                        "\t\t\$request->has('_columns') ? (is_array(\$colums_ = \$request->get('_columns')) ? \$colums_ : json_decode(\$colums_, true)): ['*'],",
+                        "\t\t\$request->has('page') ? (int)\$request->get('page') : null,",
+                        "\t] :",
+                        "\t[",
+                        "\t\t\$filters,",
+                        "\t\t\$request->has('_columns') ? (is_array(\$colums_ = \$request->get('_columns')) ? \$colums_ : json_decode(\$colums_, true))  : ['*'],",
+                        "\t],",
                         $this->dtoClass_ ? "]), \$tranformFunc_)" : "]))",
                         "return \$this->response->ok(\$result)", //
                     ] : []
@@ -383,7 +392,10 @@ class ControllerClassBuilder implements ContractsControllerBuilder
                         "// TODO: Provide Policy handlers if required",
                         "\$result = \$this->service->handle(Action([",
                         "\t'type' => 'SELECT',",
-                        "\t'payload' => [\$id],",
+                        "\t'payload' => [",
+                        "\t\t\$id,",
+                        "\t\t\$request->has('_columns') ? (is_array(\$colums_ = \$request->get('_columns')) ? \$colums_ : json_decode(\$colums_, true)): ['*'],",
+                        "\t],"
                     ],
                     null !== $this->dtoClass_ ? [
                         "]), function(\$value) {",
