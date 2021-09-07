@@ -363,12 +363,12 @@ class ControllerClassBuilder implements ContractsControllerBuilder
                         "\t'payload' => \$request->has('per_page') ? [",
                         "\t\t\$filters,",
                         "\t\t(int)\$request->get('per_page'),",
-                        "\t\t\$request->has('_columns') ? (is_array(\$colums_ = \$request->get('_columns')) ? \$colums_ : json_decode(\$colums_, true)): ['*'],",
+                        "\t\t\$request->has('_columns') ? (is_array(\$colums_ = \$request->get('_columns')) ? \$colums_ : (@json_decode(\$colums_, true) ?? ['*'])): ['*'],",
                         "\t\t\$request->has('page') ? (int)\$request->get('page') : null,",
                         "\t] :",
                         "\t[",
                         "\t\t\$filters,",
-                        "\t\t\$request->has('_columns') ? (is_array(\$colums_ = \$request->get('_columns')) ? \$colums_ : json_decode(\$colums_, true))  : ['*'],",
+                        "\t\t\$request->has('_columns') ? (is_array(\$colums_ = \$request->get('_columns')) ? \$colums_ : (@json_decode(\$colums_, true) ?? ['*']))  : ['*'],",
                         "\t],",
                         $this->dtoClass_ ? "]), \$tranformFunc_)" : "]))",
                         "return \$this->response->ok(\$result)", //
@@ -394,7 +394,7 @@ class ControllerClassBuilder implements ContractsControllerBuilder
                         "\t'type' => 'SELECT',",
                         "\t'payload' => [",
                         "\t\t\$id,",
-                        "\t\t\$request->has('_columns') ? (is_array(\$colums_ = \$request->get('_columns')) ? \$colums_ : json_decode(\$colums_, true)): ['*'],",
+                        "\t\t\$request->has('_columns') ? (is_array(\$colums_ = \$request->get('_columns')) ? \$colums_ : (@json_decode(\$colums_, true) ?? ['*'])): ['*'],",
                         "\t],"
                     ],
                     null !== $this->dtoClass_ ? [
