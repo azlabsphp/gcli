@@ -14,7 +14,6 @@ declare(strict_types=1);
 namespace Drewlabs\ComponentGenerators\Builders;
 
 use Drewlabs\CodeGenerator\Contracts\Blueprint;
-use Drewlabs\CodeGenerator\Contracts\OOPComposableStruct;
 use Drewlabs\CodeGenerator\Types\PHPTypesModifiers;
 use Drewlabs\ComponentGenerators\Contracts\ControllerBuilder as ContractsControllerBuilder;
 use Drewlabs\ComponentGenerators\Helpers\ComponentBuilderHelpers;
