@@ -16,7 +16,8 @@
             "App\\": "./examples/src/app"
         },
         "files": [
-            "./src/proxies.php"
+            "./src/proxies.php",
+            "./src/helpers.php"
         ]
     },
     "authors": [

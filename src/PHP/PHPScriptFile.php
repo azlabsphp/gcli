@@ -15,6 +15,7 @@ namespace Drewlabs\ComponentGenerators\PHP;
 
 use Drewlabs\CodeGenerator\Contracts\Stringable;
 use Drewlabs\ComponentGenerators\Contracts\SourceFileInterface;
+use Drewlabs\CodeGenerator\Contracts\NamespaceComponent;
 
 class PHPScriptFile implements SourceFileInterface
 {
@@ -45,7 +46,8 @@ EOT;
     private $headers_;
 
     /**
-     * @var OOPComposableStruct
+     * 
+     * @var NamespaceComponent|Stringable
      */
     private $content_;
 
@@ -136,6 +138,11 @@ EOT;
             $this->name_,
             $this->extension_
         );
+    }
+
+    public function getContent()
+    {
+        return $this->content_;
     }
 
     public function getName()

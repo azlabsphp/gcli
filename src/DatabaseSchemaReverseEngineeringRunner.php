@@ -6,6 +6,7 @@ namespace Drewlabs\ComponentGenerators;
 use ArrayIterator;
 use Doctrine\DBAL\Schema\AbstractSchemaManager;
 use Drewlabs\ComponentGenerators\Builders\DataTransfertClassBuilder;
+use Drewlabs\ComponentGenerators\Contracts\ControllerBuilder;
 use Drewlabs\ComponentGenerators\Contracts\ORMColumnDefinition;
 use Drewlabs\ComponentGenerators\Contracts\ORMModelDefinition as ContractsORMModelDefinition;
 use Drewlabs\ComponentGenerators\Helpers\ColumnsDefinitionHelpers;
@@ -67,7 +68,7 @@ class DatabaseSchemaReverseEngineeringRunner
         return $this;
     }
 
-    public function tableListFilterFunc(\Closure $filterFn)
+    public function bindExceptMethod(\Closure $filterFn)
     {
         $this->tablesFilterFunc_ = $filterFn;
         return $this;
@@ -147,9 +148,11 @@ class DatabaseSchemaReverseEngineeringRunner
                 sprintf("%s\\%s", $this->blocComponentNamespace_ ?? self::DEFAULT_BLOC_COMPONENT_NAMESPACE, 'Http\\Controllers'),
             );
             ComponentsScriptWriter($this->blocComponentPath_)->write($controller);
-
-            // Yield the success value;
-            yield true;
+            $content = $controller->getContent();
+            $routeName = $content instanceof ControllerBuilder ? $content->routeName() : ComponentBuilderHelpers::buildRouteName($controller->getName());
+            $controllerClassPath = sprintf("%s\\%s", $content->getNamespace(), drewlabs_core_strings_as_camel_case($controller->getName()));
+            // Yield the created mvc component route name;
+            yield $routeName => $controllerClassPath;
         }
     }
 

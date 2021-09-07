@@ -3,6 +3,7 @@
 namespace Drewlabs\ComponentGenerators\Contracts;
 
 use Drewlabs\CodeGenerator\Contracts\Stringable;
+use Drewlabs\CodeGenerator\Contracts\NamespaceComponent;
 
 interface SourceFileInterface extends Writable, Stringable
 {
@@ -36,4 +37,11 @@ interface SourceFileInterface extends Writable, Stringable
      * @return string 
      */
     public function getName();
+
+    /**
+     * Returns the content of the source file
+     * 
+     * @return NamespaceComponent 
+     */
+    public function getContent();
 }
