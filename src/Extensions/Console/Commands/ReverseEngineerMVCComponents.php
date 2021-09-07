@@ -121,7 +121,7 @@ class ReverseEngineerMVCComponents extends Command
         $definitions = [];
         foreach ($items as $key => $value) {
             // Call the route definitions creator function
-            $definitions[] = RouteDefinitionsHelper::for($key, $value)($forLumen);
+            $definitions[$key] = RouteDefinitionsHelper::for($key, $value)($forLumen);
             // TODO : Add the definitions to the route definitions array
             $bar->advance();
         }

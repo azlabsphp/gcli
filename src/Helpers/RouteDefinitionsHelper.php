@@ -118,13 +118,13 @@ class RouteDefinitionsHelper
                     $is_lumen_app ? "use (\$router)" : ""
                 );
             }
-            $definitions = array_map(
+            $definitions = drewlabs_core_array_map(
+                $definitions ?? [],
                 function ($definition) use ($has_group_definition) {
                     return $has_group_definition ? array_map(function ($line) {
                         return "\t$line";
                     }, $definition) : $definition;
-                },
-                $definitions ?? []
+                }
             );
             foreach ($definitions as $key => $value) {
                 $output .=  PHP_EOL . ($has_group_definition ? "\t" : "") . "// Route definitions for $key" . PHP_EOL;
