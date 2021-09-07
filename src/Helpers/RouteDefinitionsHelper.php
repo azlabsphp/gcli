@@ -112,7 +112,7 @@ class RouteDefinitionsHelper
                                     array_merge(
                                         [],
                                         null !== $prefix ? ['prefix' => $prefix] : [],
-                                        null !== $prefix ? ['middleware' => $middleware] : []
+                                        null !== $middleware ? ['middleware' => $middleware] : []
                                     )
                                 )
                             ),

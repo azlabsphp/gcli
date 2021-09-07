@@ -115,10 +115,11 @@ class ReverseEngineerMVCComponents extends Command
         )->bindExceptMethod($tablesFilterFunc)->run();
 
         $this->info(sprintf("Started reverse engineering process...\n"));
-        $bar = $this->output->createProgressBar(iterator_count($traversable));
+        $items = iterator_to_array($traversable);
+        $bar = $this->output->createProgressBar(count($items));
         $bar->start();
         $definitions = [];
-        foreach ($traversable as $key => $value) {
+        foreach ($items as $key => $value) {
             // Call the route definitions creator function
             $definitions[] = RouteDefinitionsHelper::for($key, $value)($forLumen);
             // TODO : Add the definitions to the route definitions array
