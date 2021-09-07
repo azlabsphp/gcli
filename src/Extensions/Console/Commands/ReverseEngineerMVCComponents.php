@@ -18,7 +18,21 @@ class ReverseEngineerMVCComponents extends Command
      *
      * @var string
      */
-    protected $signature = 'drewlabs:mvc:create {--srcPath= : Path to the business logic component folder} {--connectionURL= : Database connection URL} {--dbname= : Database name} {--host= : Database host name} {--port= : Database host port number} {--user= : Database authentication user} {--password= : Database authentication password} {--driver= : Database driver name} {--server_version= : Database server version} {--charset= : Database Connection collation} {--unix_socket= : Unix socket to use for connections}';
+    protected $signature = 'drewlabs:mvc:create {--srcPath= : Path to the business logic component folder}'
+        . '{--connectionURL= : Database connection URL}'
+        . '{--dbname= : Database name}'
+        . '{--host= : Database host name}'
+        . '{--port= : Database host port number}'
+        . '{--user= : Database authentication user}'
+        . '{--password= : Database authentication password}'
+        . '{--driver= : Database driver name}'
+        . '{--server_version= : Database server version}'
+        . '{--charset= : Database Connection collation}'
+        . '{--unix_socket= : Unix socket to use for connections}'
+        . '{--routePrefix= : The prefix for the generated route definitions}'
+        . '{--middleware= : Middleware group defined for the routes prefix}'
+        . '{--routePath= : Routing filename (Default = web.php)}'
+        . '{--excepts=* : List of tables not to be included in the generated output}';
 
     /**
      * The console command description.
@@ -34,27 +48,36 @@ class ReverseEngineerMVCComponents extends Command
 
     public function handle()
     {
+        // TODO : Initialize local variables
+        $forLumen = drewlabs_code_generator_is_running_lumen_app(Container::getInstance());
         $srcPath = Path($this->option('srcPath') ?? 'app')->makeAbsolute($this->laravel->basePath())->__toString();
+        $routingFilePath = $this->option('routePath') ?? 'web.php';
+        $routePrefix = $this->option('routePrefix') ?? null;
+        $middleware = $this->option('middleware') ?? null;
+        $default_driver = config('database.default');
+        $driver = $this->option('driver') ?
+            (drewlabs_core_strings_starts_with(
+                $this->option('driver'),
+                'pdo'
+            ) ? $this->option('driver') :
+                sprintf(
+                    'pdo_%s',
+                    $this->option('driver')
+                )) : sprintf("pdo_%s", $default_driver);
+        $database = $this->option('dbname') ?? config("database.connections.$default_driver.database");
+        $port = $this->option('port') ?? config("database.connections.$default_driver.port");
+        $username = $this->option('user') ?? config("database.connections.$default_driver.username");
+        $host = $this->option('host') ?? config("database.connections.$default_driver.host");
+        $password = $this->option('password') ?? config("database.connections.$default_driver.password");
+        $charset = $this->option('charset') ?? ($driver === 'pdo_mysql' ? 'utf8mb4' : 'utf8');
+        $server_version = $this->option('server_version') ?? null;
+        // !Ends Local variables initialization
+
         if (null !== ($url = $this->option('connectionURL'))) {
             $options = [
                 'url' => $url
             ];
         } else {
-            $default_driver = config('database.default');
-            $driver = $this->option('driver') ?
-                (drewlabs_core_strings_starts_with(
-                    $this->option('driver'),
-                    'pdo'
-                ) ? $this->option('driver') :
-                    sprintf(
-                        'pdo_%s',
-                        $this->option('driver')
-                    )) : sprintf("pdo_%s", $default_driver);
-            $database = $this->option('dbname') ?? config("database.connections.$default_driver.database");
-            $port = $this->option('port') ?? config("database.connections.$default_driver.port");
-            $username = $this->option('user') ?? config("database.connections.$default_driver.username");
-            $host = $this->option('host') ?? config("database.connections.$default_driver.host");
-            $password = $this->option('password') ?? config("database.connections.$default_driver.password");
             $options = [
                 "dbname" => $database,
                 "host" => $host ?? '127.0.0.1',
@@ -62,19 +85,17 @@ class ReverseEngineerMVCComponents extends Command
                 "user" => $username,
                 "password" => $password,
                 "driver" => $driver ?? 'pdo_sqlite',
-                "server_version" => $this->option('server_version') ?? null,
-                "charset" => $this->option('charset') ?? ($driver === 'pdo_mysql' ? 'utf8mb4' : 'utf8'),
+                "server_version" => $server_version,
+                "charset" => $charset,
             ];
         }
         $connection = DriverManager::getConnection($options);
         $schemaManager =  $connection->createSchemaManager();
         // For Mariadb server
         $schemaManager->getDatabasePlatform()->registerDoctrineTypeMapping('enum', 'string');
-        // Execute the runner
-        $traversable = DatabaseSchemaReverseEngineeringRunner(
-            $schemaManager,
-            $srcPath
-        )->tableListFilterFunc(function ($table) {
+        // TODO : Create a table filtering function that removes drewlabs packages tables from
+        // the generated tables
+        $tablesFilterFunc = function ($table) {
             return !(drewlabs_core_strings_contains($table->getName(), 'auth_') ||
                 drewlabs_core_strings_starts_with($table->getName(), 'acl_') ||
                 ($table->getName() === 'accounts_verifications') ||
@@ -86,29 +107,34 @@ class ReverseEngineerMVCComponents extends Command
                 ($table->getName() === 'forms') ||
                 ($table->getName() === 'migrations') ||
                 (drewlabs_core_strings_starts_with($table->getName(), 'log_model_')));
-        })->run();
+        };
+        // Execute the runner
+        $traversable = DatabaseSchemaReverseEngineeringRunner(
+            $schemaManager,
+            $srcPath
+        )->bindExceptMethod($tablesFilterFunc)->run();
 
         $this->info(sprintf("Started reverse engineering process...\n"));
         $bar = $this->output->createProgressBar(iterator_count($traversable));
         $bar->start();
-        $routeDefinitions = [];
+        $definitions = [];
         foreach ($traversable as $key => $value) {
             // Call the route definitions creator function
-            $routeDefinitions[] = $this->createRouteDefinitions($key, $value);
+            $definitions[] = RouteDefinitionsHelper::for($key, $value)($forLumen);
             // TODO : Add the definitions to the route definitions array
             $bar->advance();
         }
         // TODO : Write the definitions to the route files
+        RouteDefinitionsHelper::writeRouteDefinitions(
+            $this->laravel->basePath('routes'),
+            $definitions,
+            $routingFilePath
+        )(
+            true,
+            $routePrefix,
+            $middleware
+        );
         $bar->finish();
         $this->info(sprintf("\nReverse engineering completed successfully!\n"));
-    }
-
-    private function createRouteDefinitions(
-        string $name,
-        $controllerClassPath = "TestController"
-    ) {
-        return RouteDefinitionsHelper::for($name, $controllerClassPath)(
-            drewlabs_code_generator_is_running_lumen_app(Container::getInstance())
-        );
     }
 }

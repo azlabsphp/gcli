@@ -68,7 +68,7 @@ class DatabaseSchemaReverseEngineeringRunner
         return $this;
     }
 
-    public function tableListFilterFunc(\Closure $filterFn)
+    public function bindExceptMethod(\Closure $filterFn)
     {
         $this->tablesFilterFunc_ = $filterFn;
         return $this;

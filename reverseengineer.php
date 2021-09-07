@@ -20,7 +20,7 @@ $schemaManager->getDatabasePlatform()->registerDoctrineTypeMapping('enum', 'stri
 dd(iterator_to_array((new DatabaseSchemaReverseEngineeringRunner(
     $connection->createSchemaManager(),
     __DIR__ . '/examples/src/lib/'
-))->tableListFilterFunc(function ($table) {
+))->bindExceptMethod(function ($table) {
     return !(drewlabs_core_strings_contains($table->getName(), 'auth_') ||
         drewlabs_core_strings_starts_with($table->getName(), 'acl_') ||
         ($table->getName() === 'accounts_verifications') ||
