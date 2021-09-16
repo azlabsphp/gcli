@@ -12,6 +12,8 @@ use Drewlabs\ComponentGenerators\Contracts\ORMModelDefinition as ContractsORMMod
 use Drewlabs\ComponentGenerators\Helpers\ColumnsDefinitionHelpers;
 use Drewlabs\ComponentGenerators\Helpers\ComponentBuilderHelpers;
 use Drewlabs\ComponentGenerators\Helpers\DataTypeToFluentValidationRulesHelper;
+use Generator;
+use Doctrine\DBAL\Schema\Table;
 
 use function Drewlabs\ComponentGenerators\Proxy\ComponentsScriptWriter;
 use function Drewlabs\ComponentGenerators\Proxy\EloquentORMModelBuilder;
@@ -183,6 +185,11 @@ class DatabaseSchemaReverseEngineeringRunner
         return array_merge($rules);
     }
 
+    /**
+     * 
+     * @param Table[] $tables 
+     * @return Generator<int, ContractsORMModelDefinition, mixed, void> 
+     */
     private function tablesToORMModelDefinitionGenerator(array $tables)
     {
         foreach ($tables as $table) {
