@@ -2,6 +2,12 @@
 
 namespace Drewlabs\ComponentGenerators\Helpers;
 
+use Drewlabs\ComponentGenerators\Cache\CacheableRoutes;
+use Drewlabs\ComponentGenerators\Cache\CacheableSerializer;
+use Drewlabs\ComponentGenerators\Models\RouteController;
+use Drewlabs\Filesystem\Exceptions\ReadFileException;
+use Drewlabs\Filesystem\Exceptions\UnableToRetrieveMetadataException;
+use Drewlabs\Filesystem\Exceptions\FileNotFoundException;
 use League\Flysystem\Config;
 
 use function Drewlabs\Filesystem\Proxy\LocalFileSystem;
@@ -24,27 +30,39 @@ class RouteDefinitionsHelper
      * Higher order function for building routes definitions based on route and controller name
      * 
      * @param string $name 
-     * @param string $controllerClassPath 
+     * @param RouteController $controller 
      * @return Closure&#Function#2bf2b6cd 
      */
-    public static function for(string $name, $controllerClassPath = 'TestsController')
+    public static function for(string $name, RouteController $controller)
     {
-        return function ($is_lumen_app) use ($name, $controllerClassPath) {
+        return function ($is_lumen_app) use ($name, $controller) {
+            $classPath = $controller->getName();
+            $namespace = $controller->getNamespace();
             if ($is_lumen_app) {
-                $controllerClassPath = drewlabs_core_strings_contains($controllerClassPath, "\\") ? array_reverse(explode("\\", $controllerClassPath))[0] ?? $controllerClassPath : $controllerClassPath;
+                $classPath = drewlabs_core_strings_contains($classPath, "\\") ? array_reverse(explode("\\", $classPath))[0] ?? $classPath : $classPath;
+                $classPath = !empty($namespace) ?
+                    sprintf("%s\\%s", $namespace, $classPath) :
+                    $classPath;
                 return [
-                    "\$router->get('/${name}[/{id}]', ['uses' => '$controllerClassPath@index']);",
-                    "\$router->post('/${name}', ['uses' => '$controllerClassPath@store']);",
-                    "\$router->put('/${name}/{id}', ['uses' => '$controllerClassPath@update']);",
-                    "\$router->delete('/${name}/{id}', ['uses' => '$controllerClassPath@destroy']);",
+                    "\$router->get('/${name}', ['uses' => '$classPath@index']);",
+                    "\$router->get('/${name}/{id}', ['uses' => '$classPath@show']);",
+                    "\$router->post('/${name}', ['uses' => '$classPath@store']);",
+                    "\$router->put('/${name}/{id}', ['uses' => '$classPath@update']);",
+                    "\$router->delete('/${name}/{id}', ['uses' => '$classPath@destroy']);",
                 ];
             }
             $lines = [];
             $definitions = ['index' => "'/${name}/{id?}'", 'store' => "'/${name}'", 'update' => "'/${name}/{id}'", 'destroy' => "'/${name}/{id}'"];
             foreach ($definitions as $method => $route) {
-                $lines[] = drewlabs_core_strings_contains($controllerClassPath, "\\")  && class_exists($controllerClassPath) ?
-                    sprintf("Route::%s($route, [\\$controllerClassPath::class, '$method']);", self::HTTP_VERB_MAP[$method]) :
-                    sprintf("Route::%s($route, ['uses' => '%s@$method']);", self::HTTP_VERB_MAP[$method], drewlabs_core_strings_contains($controllerClassPath, "\\") ? array_reverse(explode("\\", $controllerClassPath))[0] ?? $controllerClassPath : $controllerClassPath);
+                if (drewlabs_core_strings_contains($classPath, "\\")  && class_exists($classPath)) {
+                    $lines[] = sprintf("Route::%s($route, [\\$classPath::class, '$method']);", self::HTTP_VERB_MAP[$method]);
+                } else {
+                    $classPath = drewlabs_core_strings_contains($classPath, "\\") ? array_reverse(explode("\\", $classPath))[0] ?? $classPath : $classPath;
+                    $classPath = !empty($namespace) ?
+                        sprintf("%s\\%s", $namespace, $classPath) :
+                        $classPath;
+                    $lines[] =  sprintf("Route::%s($route, ['uses' => '%s@$method']);", self::HTTP_VERB_MAP[$method], $classPath);
+                }
             }
             return $lines;
         };
@@ -58,7 +76,8 @@ class RouteDefinitionsHelper
         return function (
             string $is_lumen_app,
             string $prefix = null,
-            string $middleware = null
+            string $middleware = null,
+            \Closure $callback
         ) use ($definitions, $filename, $basePath) {
             $adapter = LocalFileSystem($basePath);
             $contentBefore = '';
@@ -97,23 +116,29 @@ class RouteDefinitionsHelper
                         yield is_numeric($key) ? $str_value_func($value) : "'$key' => " . $str_value_func($value);
                     }
                 };
+                $groupContainer = @json_encode(
+                    iterator_to_array(
+                        $list_to_list_string(
+                            array_merge(
+                                [],
+                                null !== $prefix ? ['prefix' => $prefix] : [],
+                                null !== $middleware ? ['middleware' => $middleware] : []
+                            )
+                        )
+                    ),
+                );
+                if ($groupContainer) {
+                    $groupContainer = drewlabs_core_strings_replace('\\/', '/', $groupContainer);
+                } else {
+                    $groupContainer = '';
+                }
                 $output .=  sprintf(
                     "%s%s, function() %s {",
                     $is_lumen_app ? "\$router->group(" : "Route::group(",
                     drewlabs_core_strings_replace(
                         "\"",
                         "",
-                        json_encode(
-                            iterator_to_array(
-                                $list_to_list_string(
-                                    array_merge(
-                                        [],
-                                        null !== $prefix ? ['prefix' => $prefix] : [],
-                                        null !== $middleware ? ['middleware' => $middleware] : []
-                                    )
-                                )
-                            ),
-                        )
+                        $groupContainer
                     ),
                     $is_lumen_app ? "use (\$router)" : ""
                 );
@@ -137,6 +162,33 @@ class RouteDefinitionsHelper
             $output .= PHP_EOL . self::ROUTE_DEFINITION_END;
             $output .= $contentAfter;
             $adapter->write($filename, $output, new Config());
+
+            // Call the callback
+            if ($callback) {
+                $callback($definitions);
+            }
         };
+    }
+
+    public static function cacheRouteDefinitions(string $path, array $routes, ?string $namespace = null)
+    {
+        (new CacheableSerializer($path))->dump(new CacheableRoutes([
+            'routes' => $routes,
+            'namespace' => $namespace
+        ]));
+    }
+
+    /**
+     * 
+     * @param string $path 
+     * @return CacheableRoutes 
+     * @throws ReadFileException 
+     * @throws UnableToRetrieveMetadataException 
+     * @throws FileNotFoundException 
+     */
+    public static function getCachedRouteDefinitions(string $path)
+    {
+        $value = (new CacheableSerializer($path))->load(CacheableRoutes::class);
+        return $value;
     }
 }

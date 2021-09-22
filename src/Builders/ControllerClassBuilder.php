@@ -102,6 +102,13 @@ class ControllerClassBuilder implements ContractsControllerBuilder
     private $routeName_;
 
     /**
+     * Indicates whether the controller should provide authenticatable handlers
+     * 
+     * @var bool
+     */
+    private $hasAuthenticatable_;
+
+    /**
      * Create an instance of the controller builder.
      *
      * @return self
@@ -199,6 +206,12 @@ class ControllerClassBuilder implements ContractsControllerBuilder
     public function routeName()
     {
         return $this->routeName_;
+    }
+
+    public function withoutAuthenticatable()
+    {
+        $this->hasAuthenticatable_ = false;
+        return $this;
     }
 
     public function build()
@@ -346,7 +359,7 @@ class ControllerClassBuilder implements ContractsControllerBuilder
                         'if (!is_null($id)) {',
                         "\treturn \$this->show(\$request, \$id)",
                         '}',
-                        "// TODO : Provides policy handlers",
+                        $this->hasAuthenticatable_  ? "// TODO : Provides policy handlers" : null,
                     ],
                     // Transformer part
                     $this->dtoClass_ ? [
@@ -357,7 +370,7 @@ class ControllerClassBuilder implements ContractsControllerBuilder
                         "};"
                     ] : [],
                     $this->isResourceController_ ? [
-                        (null !== $this->modelName_) ? "\$filters = drewlabs_databse_parse_client_request_query(new $this->modelName_, \$request);" : null,
+                        (null !== $this->modelName_) ? "\$filters = drewlabs_databse_parse_client_request_query(new $this->modelName_, \$request)" : null,
                         "\$result = \$this->service->handle(Action([",
                         "\t'type' => 'SELECT',",
                         "\t'payload' => \$request->has('per_page') ? [",
@@ -389,7 +402,7 @@ class ControllerClassBuilder implements ContractsControllerBuilder
                 'returns' => JsonResponse::class,
                 'contents' => array_merge(
                     [
-                        "// TODO: Provide Policy handlers if required",
+                        $this->hasAuthenticatable_  ? "// TODO: Provide Policy handlers if required" : null,
                         "\$result = \$this->service->handle(Action([",
                         "\t'type' => 'SELECT',",
                         "\t'payload' => [",
@@ -426,7 +439,7 @@ class ControllerClassBuilder implements ContractsControllerBuilder
                         "\t\$result = \$this->validator->validate($validatable, \$request->all(), function() use (\$request) {",
                         "\t// After validation logic goes here...",
                     ] : [
-                        "\t\$viewModel_ = (new " . drewlabs_core_strings_replace('::class', '', $validatable) . ")->setUser(\$request->user())->set(\$request->all())->files(\$request->allFiles())",
+                        "\t\$viewModel_ = (new " . drewlabs_core_strings_replace('::class', '', $validatable) . ($this->hasAuthenticatable_ ? ")->setUser(\$request->user() " : "") . ")->withBody(\$request->all())->files(\$request->allFiles())",
                         "",
                         "\t\$result = \$this->validator->validate(\$viewModel_, \$request->all(), function() use (\$viewModel_) {",
                     ],
@@ -499,7 +512,7 @@ class ControllerClassBuilder implements ContractsControllerBuilder
                         "\t\$result = \$this->validator->setUpdate(true)->validate($validatable, \$request->all(), function() use (\$id, \$request) {",
                         "\t// After validation logic goes here...",
                     ] : [
-                        "\t\$viewModel_ = (new " . drewlabs_core_strings_replace('::class', '', $validatable) . ")->setUser(\$request->user())->set(\$request->all())->files(\$request->allFiles())",
+                        "\t\$viewModel_ = (new " . drewlabs_core_strings_replace('::class', '', $validatable)  . ($this->hasAuthenticatable_ ? ")->setUser(\$request->user() " : "") . ")->withBody(\$request->all())->files(\$request->allFiles())",
                         "",
                         "\t\$result = \$this->validator->setUpdate(true)->validate(\$viewModel_, \$request->all(), function() use (\$id, \$viewModel_) {",
                     ],
@@ -543,7 +556,7 @@ class ControllerClassBuilder implements ContractsControllerBuilder
                 ],
                 'returns' => JsonResponse::class,
                 'contents' => [
-                    "// TODO: Provide Policy handlers if required",
+                    $this->hasAuthenticatable_  ? "// TODO: Provide Policy handlers if required" : null,
                     "\$result = \$this->service->handle(Action([",
                     "\t'type' => 'DELETE',",
                     "\t'payload' => [\$id],",
@@ -562,7 +575,9 @@ class ControllerClassBuilder implements ContractsControllerBuilder
             );
             if ($contents = $action['contents'] ?? null) {
                 $contents = \is_array($contents) ? $contents : [$contents];
-                foreach ($contents as $value) {
+                foreach (array_filter($contents, function ($item) {
+                    return null !== $item;
+                }) as $value) {
                     // code...
                     $method = $method->addLine($value);
                 }

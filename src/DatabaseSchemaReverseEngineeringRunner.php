@@ -54,6 +54,19 @@ class DatabaseSchemaReverseEngineeringRunner
      */
     private $tablesFilterFunc_;
 
+    /**
+     * 
+     * @var mixed
+     */
+    private $auth_ = true;
+
+    /**
+     * Components namespace
+     * 
+     * @var string
+     */
+    private $subNamespace_;
+
     public function __construct(
         AbstractSchemaManager $manager,
         string $blocComponentPath,
@@ -76,7 +89,19 @@ class DatabaseSchemaReverseEngineeringRunner
         return $this;
     }
 
-    public function run()
+    public function withoutAuth()
+    {
+        $this->auth_ = false;
+        return $this;
+    }
+
+    public function setSubNamespace(?string $namespace = null)
+    {
+        $this->subNamespace_ = !empty($namespace) ? $namespace : $this->subNamespace_;
+        return $this;
+    }
+
+    public function run(\Closure $callback = null)
     {
         // TODO: Read the database table using doctrine Database access layer
         // Filter tables during testing
@@ -113,7 +138,7 @@ class DatabaseSchemaReverseEngineeringRunner
                     }
                 })($value)),
                 null,
-                sprintf("%s\\%s", $this->blocComponentNamespace_ ?? self::DEFAULT_BLOC_COMPONENT_NAMESPACE, 'Http\\ViewModels'),
+                sprintf("%s\\%s", $this->blocComponentNamespace_ ?? self::DEFAULT_BLOC_COMPONENT_NAMESPACE, sprintf("%s%s", 'Http\\ViewModels', $this->subNamespace_ ? "\\$this->subNamespace_" : '')),
                 // TODO Add namespace method to component items
                 $modelClassPath
             );
@@ -128,7 +153,7 @@ class DatabaseSchemaReverseEngineeringRunner
                 [],
                 [],
                 null,
-                sprintf("%s\\%s", $this->blocComponentNamespace_ ?? self::DEFAULT_BLOC_COMPONENT_NAMESPACE, 'DataTransfertObject'),
+                sprintf("%s\\%s", $this->blocComponentNamespace_ ?? self::DEFAULT_BLOC_COMPONENT_NAMESPACE, sprintf("%s%s", 'DataTransfertObject', $this->subNamespace_ ? "\\$this->subNamespace_" : '')),
                 $modelClassPath
             );
             ComponentsScriptWriter($this->blocComponentPath_)->write($dtoObject);
@@ -136,7 +161,7 @@ class DatabaseSchemaReverseEngineeringRunner
             $service = ComponentBuilderHelpers::buildServiceDefinition(
                 true,
                 null,
-                sprintf("%s\\%s", $this->blocComponentNamespace_ ?? self::DEFAULT_BLOC_COMPONENT_NAMESPACE, 'Services'),
+                sprintf("%s\\%s", $this->blocComponentNamespace_ ?? self::DEFAULT_BLOC_COMPONENT_NAMESPACE, sprintf("%s%s", 'Services', $this->subNamespace_ ? "\\$this->subNamespace_" : '')),
                 $modelClassPath
             );
             ComponentsScriptWriter($this->blocComponentPath_)->write($service);
@@ -147,7 +172,8 @@ class DatabaseSchemaReverseEngineeringRunner
                 sprintf("%s\\%s", $viewModel->getNamespace(), drewlabs_core_strings_as_camel_case($viewModel->getName())),
                 sprintf("%s\\%s", $dtoObject->getNamespace(), drewlabs_core_strings_as_camel_case($dtoObject->getName())),
                 null,
-                sprintf("%s\\%s", $this->blocComponentNamespace_ ?? self::DEFAULT_BLOC_COMPONENT_NAMESPACE, 'Http\\Controllers'),
+                sprintf("%s\\%s", $this->blocComponentNamespace_ ?? self::DEFAULT_BLOC_COMPONENT_NAMESPACE, sprintf("%s%s", 'Http\\Controllers', $this->subNamespace_ ? "\\$this->subNamespace_" : '')),
+                $this->auth_
             );
             ComponentsScriptWriter($this->blocComponentPath_)->write($controller);
             $content = $controller->getContent();
@@ -155,6 +181,12 @@ class DatabaseSchemaReverseEngineeringRunner
             $controllerClassPath = sprintf("%s\\%s", $content->getNamespace(), drewlabs_core_strings_as_camel_case($controller->getName()));
             // Yield the created mvc component route name;
             yield $routeName => $controllerClassPath;
+        }
+
+        if ($callback) {
+            $callback(array_map(function($table) {
+                return $table->getName();
+            }, $tables));
         }
     }
 
@@ -226,7 +258,7 @@ class DatabaseSchemaReverseEngineeringRunner
                 'table' => $table_name,
                 'columns' => $columns,
                 'increments' => !empty($key) ? $table->getColumn($key)->getAutoincrement() : false,
-                'namespace' => sprintf("%s\\%s", $this->blocComponentNamespace_ ?? self::DEFAULT_BLOC_COMPONENT_NAMESPACE, 'Models'),
+                'namespace' => sprintf("%s\\%s", $this->blocComponentNamespace_ ?? self::DEFAULT_BLOC_COMPONENT_NAMESPACE, sprintf("%s%s", 'Models', $this->subNamespace_ ? "\\$this->subNamespace_" : '')),
                 'comment' => $comment
             ]);
         }

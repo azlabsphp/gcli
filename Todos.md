@@ -12,6 +12,6 @@
 
 ## v1.1 20210912
 
-- Add --auth option to generator command []
-- Add table names caching support []
-- Modify Service implementation to use DMLManager() function instead of EloquenDMLManager() instance []
+- Add --noAuth option to generator command [x]
+- Add table names caching support [x]
+- Modify Service implementation to use DMLManager() function instead of EloquenDMLManager() instance [x]

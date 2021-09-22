@@ -33,12 +33,15 @@ use function Drewlabs\CodeGenerator\Proxy\PHPClassMethod;
 use function Drewlabs\CodeGenerator\Proxy\PHPClassProperty;
 use function Drewlabs\CodeGenerator\Proxy\PHPFunctionParameter;
 use function Drewlabs\ComponentGenerators\Proxy\PHPScript;
+use function Drewlabs\Packages\Database\Proxy\DMLManager;
 
 class ServiceClassBuilder implements ComponentBuilder
 {
     use HasNamespaceAttribute;
 
     public const ACTION_RESULT_FUNCTION_PATH = 'Drewlabs\\Support\\Proxy\\ActionResult';
+
+    private const DML_MANAGER_PROXY = 'Drewlabs\\Packages\\Database\\Proxy\\DMLManager';
 
     /**
      * @var string
@@ -154,7 +157,8 @@ class ServiceClassBuilder implements ComponentBuilder
          * @var BluePrint|PHPClass
          */
         $component = (PHPClass($this->name_ ?? self::DEFAULT_NAME))
-            ->addClassPath(EloquentDMLManager::class);
+            ->addFunctionPath(self::DML_MANAGER_PROXY);
+            // ->addClassPath(EloquentDMLManager::class);
 
         foreach ($this->classPaths_ ?? [] as $value) {
             $component = $component->addClassPath($value);
@@ -192,7 +196,7 @@ class ServiceClassBuilder implements ComponentBuilder
                     PHPTypesModifiers::PUBLIC,
                     'Creates an instance of the Service'
                 ))->addLine(
-                    "\$this->dbManager = \$manager ?? new EloquentDMLManager($this->modelName_::class)"
+                    "\$this->dbManager = \$manager ?? DMLManager($this->modelName_::class)"
                 )
             )
             // Add Handler method

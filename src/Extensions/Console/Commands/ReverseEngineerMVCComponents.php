@@ -2,16 +2,29 @@
 
 namespace Drewlabs\ComponentGenerators\Extensions\Console\Commands;
 
-use Doctrine\DBAL\DriverManager;
-use Drewlabs\ComponentGenerators\Helpers\RouteDefinitionsHelper;
+use Drewlabs\ComponentGenerators\Extensions\ProgressbarIndicator;
+use Drewlabs\ComponentGenerators\Extensions\Helpers\ReverseEngineerTaskRunner;
+use Drewlabs\ComponentGenerators\Helpers\ComponentBuilderHelpers;
+use Drewlabs\Filesystem\Path;
 use Illuminate\Console\Command;
 use Illuminate\Container\Container;
 
-use function Drewlabs\ComponentGenerators\Proxy\DatabaseSchemaReverseEngineeringRunner;
 use function Drewlabs\Filesystem\Proxy\Path;
 
 class ReverseEngineerMVCComponents extends Command
 {
+
+    /**
+     * 
+     * @var Path
+     */
+    private $path_;
+
+    /**
+     * 
+     * @var mixed
+     */
+    private $routesCachePath_;
 
     /**
      * The name and signature of the console command.
@@ -19,6 +32,8 @@ class ReverseEngineerMVCComponents extends Command
      * @var string
      */
     protected $signature = 'drewlabs:mvc:create {--srcPath= : Path to the business logic component folder}'
+        . '{--package= : Package namespace for components}'
+        . '{--subPackage= : Subpackage will group each component part in a subfolder}'
         . '{--connectionURL= : Database connection URL}'
         . '{--dbname= : Database name}'
         . '{--host= : Database host name}'
@@ -31,8 +46,10 @@ class ReverseEngineerMVCComponents extends Command
         . '{--unix_socket= : Unix socket to use for connections}'
         . '{--routePrefix= : The prefix for the generated route definitions}'
         . '{--middleware= : Middleware group defined for the routes prefix}'
-        . '{--routePath= : Routing filename (Default = web.php)}'
-        . '{--excepts=* : List of tables not to be included in the generated output}';
+        . '{--routingfilename= : Routing filename (Default = web.php)}'
+        . '{--excepts=* : List of tables not to be included in the generated output}'
+        . '{--disableCache : Caching tables not supported}'
+        . '{--noAuth : Indicates whether project controllers supports authentication}';
 
     /**
      * The console command description.
@@ -44,6 +61,22 @@ class ReverseEngineerMVCComponents extends Command
     public function __construct()
     {
         parent::__construct();
+        // Initialize the cache path
+        $cachePath = Path(
+            drewlabs_component_generator_cache_path()
+        )->canonicalize()->__toString();
+        $this->path_ = sprintf(
+            "%s%s%s",
+            $cachePath,
+            DIRECTORY_SEPARATOR,
+            '__components__.dump'
+        );
+        $this->routesCachePath_ = sprintf(
+            "%s%s%s",
+            $cachePath,
+            DIRECTORY_SEPARATOR,
+            '__routes__.dump'
+        );
     }
 
     public function handle()
@@ -51,7 +84,7 @@ class ReverseEngineerMVCComponents extends Command
         // TODO : Initialize local variables
         $forLumen = drewlabs_code_generator_is_running_lumen_app(Container::getInstance());
         $srcPath = Path($this->option('srcPath') ?? 'app')->makeAbsolute($this->laravel->basePath())->__toString();
-        $routingFilePath = $this->option('routePath') ?? 'web.php';
+        $routingfilename = $this->option('routingfilename') ?? 'web.php';
         $routePrefix = $this->option('routePrefix') ?? null;
         $middleware = $this->option('middleware') ?? null;
         $default_driver = config('database.default');
@@ -73,6 +106,19 @@ class ReverseEngineerMVCComponents extends Command
         $server_version = $this->option('server_version') ?? null;
 
         $exceptions = $this->option('excepts') ?? [];
+        $disableCache = $this->option('disableCache');
+        if (!$disableCache) {
+            // Get component definitions from cache
+            $value = ComponentBuilderHelpers::getCachedComponentDefinitions($this->path_);
+            if (null !== $value) {
+                $exceptions = array_merge($exceptions, $value->getTables());
+            }
+        }
+
+        //
+        $noAuth = $this->option('noAuth');
+        $namespace = $this->option('package');
+        $subPackage = $this->option('subPackage');
         // !Ends Local variables initialization
 
         if (null !== ($url = $this->option('connectionURL'))) {
@@ -91,53 +137,30 @@ class ReverseEngineerMVCComponents extends Command
                 "charset" => $charset,
             ];
         }
-        $connection = DriverManager::getConnection($options);
-        $schemaManager =  $connection->createSchemaManager();
-        // For Mariadb server
-        $schemaManager->getDatabasePlatform()->registerDoctrineTypeMapping('enum', 'string');
-        // TODO : Create a table filtering function that removes drewlabs packages tables from
-        // the generated tables
-        $tablesFilterFunc = function ($table) {
-            return !(drewlabs_core_strings_contains($table->getName(), 'auth_') ||
-                drewlabs_core_strings_starts_with($table->getName(), 'acl_') ||
-                ($table->getName() === 'accounts_verifications') ||
-                drewlabs_core_strings_contains($table->getName(), 'file_authorization') ||
-                drewlabs_core_strings_contains($table->getName(), 'uploaded_file') ||
-                drewlabs_core_strings_contains($table->getName(), 'server_authorized_') ||
-                drewlabs_core_strings_contains($table->getName(), 'shared_files') ||
-                drewlabs_core_strings_contains($table->getName(), 'form_') ||
-                ($table->getName() === 'forms') ||
-                ($table->getName() === 'migrations') ||
-                (drewlabs_core_strings_starts_with($table->getName(), 'log_model_')));
-        };
-        // Execute the runner
-        $traversable = DatabaseSchemaReverseEngineeringRunner(
-            $schemaManager,
-            $srcPath
-        )->bindExceptMethod($tablesFilterFunc)->except($exceptions)->run();
-
-        $this->info(sprintf("Started reverse engineering process...\n"));
-        $items = iterator_to_array($traversable);
-        $bar = $this->output->createProgressBar(count($items));
-        $bar->start();
-        $definitions = [];
-        foreach ($items as $key => $value) {
-            // Call the route definitions creator function
-            $definitions[$key] = RouteDefinitionsHelper::for($key, $value)($forLumen);
-            // TODO : Add the definitions to the route definitions array
-            $bar->advance();
-        }
-        // TODO : Write the definitions to the route files
-        RouteDefinitionsHelper::writeRouteDefinitions(
-            $this->laravel->basePath('routes'),
-            $definitions,
-            $routingFilePath
-        )(
-            true,
+        (new ReverseEngineerTaskRunner)->run(
+            $options,
+            $srcPath,
+            $routingfilename,
             $routePrefix,
-            $middleware
+            $middleware,
+            $exceptions,
+            $forLumen,
+            $disableCache,
+            $noAuth,
+            $namespace,
+            $subPackage
+        )(
+            $this->laravel->basePath('routes'),
+            $this->path_,
+            $this->routesCachePath_,
+            // Creates the progress indicator
+            function ($values) {
+                $this->info(sprintf("Started reverse engineering process...\n"));
+                return new ProgressbarIndicator($this->output->createProgressBar(count($values)));
+            },
+            function () {
+                $this->info(sprintf("\nReverse engineering completed successfully!\n"));
+            }
         );
-        $bar->finish();
-        $this->info(sprintf("\nReverse engineering completed successfully!\n"));
     }
 }

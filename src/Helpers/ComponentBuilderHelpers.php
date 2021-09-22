@@ -3,7 +3,12 @@
 namespace Drewlabs\ComponentGenerators\Helpers;
 
 use Drewlabs\CodeGenerator\Exceptions\PHPVariableException;
+use Drewlabs\ComponentGenerators\Cache\CacheableSerializer;
+use Drewlabs\ComponentGenerators\Cache\CacheableTables;
 use Drewlabs\ComponentGenerators\Contracts\SourceFileInterface;
+use Drewlabs\Filesystem\Exceptions\ReadFileException;
+use Drewlabs\Filesystem\Exceptions\UnableToRetrieveMetadataException;
+use Drewlabs\Filesystem\Exceptions\FileNotFoundException;
 
 use function Drewlabs\ComponentGenerators\Proxy\DataTransfertClassBuilder;
 use function Drewlabs\ComponentGenerators\Proxy\EloquentORMModelBuilder;
@@ -201,9 +206,13 @@ class ComponentBuilderHelpers
         $viewModel = null,
         $dto = null,
         string $name = null,
-        string $namespace = null
+        string $namespace = null,
+        bool $hasAuthDefinitions = true
     ) {
         $component = (MVCControllerBuilder($name, $namespace));
+        if (!$hasAuthDefinitions) {
+            $component = $component->withoutAuthenticatable();
+        }
         // Check null state of the service parameter
         if (null !== $service) {
             $component = $component->bindService(is_string($service) ? $service : get_class($service));
@@ -259,5 +268,33 @@ class ComponentBuilderHelpers
             drewlabs_core_strings_replace('Controller', '', $classname),
             '-'
         );
+    }
+
+    public static function cacheComponentDefinitions(string $path, array $tables, ?string $namespace = null, ?string $subPackage = null)
+    {
+        (new CacheableSerializer($path))->dump(
+            new CacheableTables(
+                [
+                    'tables' => $tables,
+                    'namespace' => $namespace,
+                    'subNamespace' => $subPackage
+                ]
+            )
+        );
+    }
+
+    /**
+     * 
+     * @param string $path 
+     * @return CacheableTables
+     * @throws ReadFileException 
+     * @throws UnableToRetrieveMetadataException 
+     * @throws FileNotFoundException 
+     */
+    public static function getCachedComponentDefinitions(string $path)
+    {
+        // LOAD Contents from the path
+        $value = (new CacheableSerializer($path))->load(CacheableTables::class);
+        return $value;
     }
 }

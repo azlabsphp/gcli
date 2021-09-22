@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "146f46c6912a8fa257194b4f1b4d10fd",
+    "content-hash": "9e5e387ac3943ac57b8d5d092b331401",
     "packages": [
         {
             "name": "brick/math",
@@ -2048,23 +2048,23 @@
         },
         {
             "name": "drewlabs/database",
-            "version": "v3.1.x-dev",
+            "version": "v3.2.x-dev",
             "source": {
                 "type": "git",
                 "url": "git@github.com:liksoft/drewlabs-php-packages-database.git",
-                "reference": "3c3a2b29edc47a4bbca3db2bb5b9e33b027147a0"
+                "reference": "47d94148363ec9d4b0d8b1db7997a014595ac9f9"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/liksoft/drewlabs-php-packages-database/zipball/3c3a2b29edc47a4bbca3db2bb5b9e33b027147a0",
-                "reference": "3c3a2b29edc47a4bbca3db2bb5b9e33b027147a0",
+                "url": "https://api.github.com/repos/liksoft/drewlabs-php-packages-database/zipball/47d94148363ec9d4b0d8b1db7997a014595ac9f9",
+                "reference": "47d94148363ec9d4b0d8b1db7997a014595ac9f9",
                 "shasum": ""
             },
             "require": {
                 "doctrine/dbal": "^3.1",
-                "drewlabs/contracts": "v1.0.x-dev",
-                "drewlabs/core": "v1.0.x-dev",
-                "drewlabs/core-helpers": "v1.0.x-dev",
+                "drewlabs/contracts": "^v1.0.x-dev",
+                "drewlabs/core": "^v1.0.x-dev",
+                "drewlabs/core-helpers": "^v1.0.x-dev",
                 "illuminate/contracts": "^5.0|^6.0|^7.0|^8.0",
                 "illuminate/database": "^5.0|^6.0|^7.0|^8.0",
                 "illuminate/pagination": "^5.0|^6.0|^7.0|^8.0",
@@ -2094,7 +2094,9 @@
                 "files": [
                     "helpers/query.php",
                     "helpers/parsers.php",
-                    "helpers/utils.php"
+                    "helpers/utils.php",
+                    "helpers/transformers.php",
+                    "src/proxies.php"
                 ]
             },
             "autoload-dev": {
@@ -2113,28 +2115,28 @@
             ],
             "description": "Provides functionnalities for accessing and working with databases using laravel Eloquent, or NoSQL Datatabase providers",
             "support": {
-                "source": "https://github.com/liksoft/drewlabs-php-packages-database/tree/v3.1"
+                "source": "https://github.com/liksoft/drewlabs-php-packages-database/tree/v3.2"
             },
-            "time": "2021-09-20T21:57:46+00:00"
+            "time": "2021-09-20T20:44:02+00:00"
         },
         {
             "name": "drewlabs/helpers",
-            "version": "v3.1.x-dev",
+            "version": "v3.2.x-dev",
             "source": {
                 "type": "git",
                 "url": "git@github.com:liksoft/drewlabs-helpers.git",
-                "reference": "060fa113af9e9debeae2a55003d0940c07f9aa70"
+                "reference": "439ae0ab7d72047669435324e606f2055b58a11f"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/liksoft/drewlabs-helpers/zipball/060fa113af9e9debeae2a55003d0940c07f9aa70",
-                "reference": "060fa113af9e9debeae2a55003d0940c07f9aa70",
+                "url": "https://api.github.com/repos/liksoft/drewlabs-helpers/zipball/439ae0ab7d72047669435324e606f2055b58a11f",
+                "reference": "439ae0ab7d72047669435324e606f2055b58a11f",
                 "shasum": ""
             },
             "require": {
-                "drewlabs/contracts": ">=v1.0.x-dev",
-                "drewlabs/core": ">=v1.0.x-dev",
-                "drewlabs/core-helpers": ">=v1.0.x-dev",
+                "drewlabs/contracts": "^v1.0.x-dev",
+                "drewlabs/core": "^v1.0.x-dev",
+                "drewlabs/core-helpers": "^v1.0.x-dev",
                 "illuminate/container": "^5.0|^6.0|^7.0|^8.0",
                 "illuminate/http": "^5.0|^6.0|^7.0|^8.0",
                 "illuminate/pagination": "^5.0|^6.0|^7.0|^8.0",
@@ -2160,28 +2162,28 @@
             ],
             "description": "Helper function for various functionnalities in laravel framework and application requirements",
             "support": {
-                "source": "https://github.com/liksoft/drewlabs-helpers/tree/v3.1"
+                "source": "https://github.com/liksoft/drewlabs-helpers/tree/v3.2"
             },
-            "time": "2021-09-18T14:53:26+00:00"
+            "time": "2021-09-19T12:30:40+00:00"
         },
         {
             "name": "drewlabs/http",
-            "version": "v3.1.x-dev",
+            "version": "v3.2.x-dev",
             "source": {
                 "type": "git",
                 "url": "git@github.com:liksoft/drewlabs-laravel-http.git",
-                "reference": "41174a27ab870bf69b811f7f22e93a86fe62bdce"
+                "reference": "565c56e715e9d372be7ce980d7e24ad4fa31b2cc"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/liksoft/drewlabs-laravel-http/zipball/41174a27ab870bf69b811f7f22e93a86fe62bdce",
-                "reference": "41174a27ab870bf69b811f7f22e93a86fe62bdce",
+                "url": "https://api.github.com/repos/liksoft/drewlabs-laravel-http/zipball/565c56e715e9d372be7ce980d7e24ad4fa31b2cc",
+                "reference": "565c56e715e9d372be7ce980d7e24ad4fa31b2cc",
                 "shasum": ""
             },
             "require": {
-                "drewlabs/contracts": ">=v1.0.x-dev",
-                "drewlabs/core": ">=v1.0.x-dev",
-                "drewlabs/core-helpers": ">=v1.0.x-dev",
+                "drewlabs/contracts": "^v1.0.x-dev",
+                "drewlabs/core": "^v1.0.x-dev",
+                "drewlabs/core-helpers": "^v1.0.x-dev",
                 "illuminate/contracts": "^5.0|^6.0|^7.0|^8.0",
                 "illuminate/routing": "^5.0|^6.0|^7.0|^8.0",
                 "illuminate/support": "^5.0|^6.0|^7.0|^8.0",
@@ -2217,9 +2219,9 @@
             ],
             "description": "Simple HTTP packages definitions",
             "support": {
-                "source": "https://github.com/liksoft/drewlabs-laravel-http/tree/v3.1"
+                "source": "https://github.com/liksoft/drewlabs-laravel-http/tree/v3.2"
             },
-            "time": "2021-09-18T15:02:40+00:00"
+            "time": "2021-09-19T12:30:54+00:00"
         },
         {
             "name": "illuminate/collections",

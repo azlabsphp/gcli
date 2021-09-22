@@ -3,11 +3,11 @@
     "type": "library",
     "require-dev": {
         "phpunit/phpunit": "^9.5",
-        "drewlabs/database": "v3.1.x-dev",
+        "drewlabs/database": "^v3.1.x-dev",
         "illuminate/support": "^5.0|^6.0|^7.0|^8.0",
         "illuminate/console": "^5.0|^6.0|^7.0|^8.0",
-        "drewlabs/http": "v3.1.x-dev",
-        "drewlabs/helpers": "v3.1.x-dev"
+        "drewlabs/http": "^v3.1.x-dev",
+        "drewlabs/helpers": "^v3.1.x-dev"
     },
     "license": "MIT",
     "autoload": {
@@ -17,7 +17,8 @@
         },
         "files": [
             "./src/proxies.php",
-            "./src/helpers.php"
+            "./helpers/helpers.php",
+            "./helpers/config.php"
         ]
     },
     "authors": [
@@ -26,6 +27,17 @@
             "email": "asmyns.platonnas29@gmail.com"
         }
     ],
+    "autoload-dev": {
+        "classmap": [
+            "tests/"
+        ],
+        "autoload": {
+            "psr-4": {
+                "Drewlabs\\ComponentGenerators\\Tests\\": "./tests"
+            },
+            "files": []
+        }
+    },
     "minimum-stability": "stable",
     "require": {
         "php": "^7.3|^8.0",
