@@ -37,23 +37,11 @@ trait ViewModelBuilder
     private $updateRules_ = [];
 
     /**
-     * @var false
-     */
-    private $hasAuthenticatableTraits_ = false;
-
-    /**
      * Provides methods or traits for writing inputs to / reading inputs from the viewmodel.
      *
      * @var bool
      */
     private $hasInputsTraits_ = false;
-
-    /**
-     * Provides methods or traits for writing files inputs to / reading inputs from the viewmodel.
-     *
-     * @var bool
-     */
-    private $hasFileInputsTraits_ = false;
 
     public function setRules(array $rules = [])
     {
@@ -80,24 +68,9 @@ trait ViewModelBuilder
         return $this;
     }
 
-    public function addFileInputTraits()
-    {
-        $this->hasFileInputsTraits_ = true;
-
-        return $this;
-    }
-
     public function addInputsTraits()
     {
         $this->hasInputsTraits_ = true;
-
-        return $this;
-    }
-
-    public function addAuthenticatableTraits()
-    {
-        $this->hasAuthenticatableTraits_ = true;
-
         return $this;
     }
 }

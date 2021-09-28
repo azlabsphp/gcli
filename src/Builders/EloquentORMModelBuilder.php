@@ -36,6 +36,7 @@ use Drewlabs\Contracts\Data\Model\Relatable;
 use Drewlabs\Contracts\Validator\CoreValidatable;
 use Drewlabs\Contracts\Validator\Validatable;
 use Drewlabs\Packages\Database\Traits\Model;
+use Drewlabs\Core\Validator\Traits\ViewModel;
 
 use Illuminate\Database\Eloquent\Model as EloquentModel;
 use Illuminate\Support\Pluralizer;
@@ -231,10 +232,7 @@ class EloquentORMModelBuilder implements ContractsEloquentORMModel, ComponentBui
     {
         $this->isViewModel_ = true;
 
-        return $this->addFileInputTraits()
-            ->addAuthenticatableTraits()
-            ->addFileInputTraits()
-            ->addAuthenticatableTraits();
+        return $this->addInputsTraits();
     }
 
     public function build()
@@ -285,22 +283,12 @@ class EloquentORMModelBuilder implements ContractsEloquentORMModel, ComponentBui
             }
         }
 
-        // If should add authenticatableTrait
-        if ($this->hasAuthenticatableTraits_) {
-            $component = $component->addTrait('\\Drewlabs\\Core\\Validator\\Traits\\HasAuthenticatable');
-        }
-
-        // Add File inputs traits
-        if ($this->hasFileInputsTraits_) {
-            $component = $component->addTrait('\\Drewlabs\\Core\\Validator\\Traits\\HasFileInputs');
-        }
-
         // Add inputs traits
         if ($this->hasInputsTraits_) {
             /**
              * @var BluePrint
              */
-            $component = $component->addTrait('\\Drewlabs\\Core\\Validator\\Traits\\HasInputs');
+            $component = $component->addTrait(ViewModel::class);
         }
         $component->setBaseClass(EloquentModel::class)
             ->asFinal()

@@ -24,6 +24,7 @@ use Drewlabs\ComponentGenerators\Contracts\ComponentBuilder;
 use Drewlabs\ComponentGenerators\Helpers\ComponentBuilderHelpers;
 use Drewlabs\ComponentGenerators\Traits\HasNamespaceAttribute;
 use Drewlabs\ComponentGenerators\Traits\ViewModelBuilder;
+use Drewlabs\Core\Validator\Traits\ViewModel;
 
 use Drewlabs\Contracts\Validator\CoreValidatable;
 use Drewlabs\Contracts\Validator\Validatable;
@@ -130,22 +131,12 @@ class ViewModelClassBuilder implements ComponentBuilder
                 ->addImplementation(CoreValidatable::class);
         }
 
-        // If should add authenticatableTrait
-        if ($this->hasAuthenticatableTraits_) {
-            $component = $component->addTrait('\\Drewlabs\\Core\\Validator\\Traits\\HasAuthenticatable');
-        }
-
-        // Add File inputs traits
-        if ($this->hasFileInputsTraits_) {
-            $component = $component->addTrait('\\Drewlabs\\Core\\Validator\\Traits\\HasFileInputs');
-        }
-
         // Add inputs traits
         if ($this->hasInputsTraits_) {
             /**
              * @var Blueprint
              */
-            $component = $component->addTrait('\\Drewlabs\\Core\\Validator\\Traits\\HasInputs');
+            $component = $component->addTrait(ViewModel::class);
         }
         // Returns the builded component
         return PHPScript(

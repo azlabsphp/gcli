@@ -148,9 +148,8 @@ class ComponentBuilderHelpers
         } else {
             $component = $component->asSingleActionValidator();
         }
-        return $component->addInputsTraits()
-            ->addFileInputTraits()
-            ->addAuthenticatableTraits()
+        return $component
+            ->addInputsTraits()
             ->setRules(
                 iterator_to_array(
                     $rulesParserFunc($rules)

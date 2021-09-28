@@ -222,6 +222,7 @@ class ControllerClassBuilder implements ContractsControllerBuilder
          * @var Blueprint
          */
         $component = PHPClass($this->name_ ?? self::DEFAULT_NAME)
+            ->asFinal()
             ->addConstructor(
                 array_merge(
                     [
@@ -255,7 +256,6 @@ class ControllerClassBuilder implements ContractsControllerBuilder
                         $this->hasActionHandlerInterface_ && (null !== $this->serviceClass_) ? "\$this->service = \$service ?? new $this->serviceClass_()" : "\$this->service = \$service"
                     ] : [])
             )
-            ->asFinal()
             ->addToNamespace($this->namespace_ ?? self::DEFAULT_NAMESPACE);
         foreach ($this->classPaths_ ?? [] as $value) {
             /**
@@ -439,7 +439,7 @@ class ControllerClassBuilder implements ContractsControllerBuilder
                         "\t\$result = \$this->validator->validate($validatable, \$request->all(), function() use (\$request) {",
                         "\t// After validation logic goes here...",
                     ] : [
-                        "\t\$viewModel_ = (new " . drewlabs_core_strings_replace('::class', '', $validatable) . ($this->hasAuthenticatable_ ? ")->setUser(\$request->user() " : "") . ")->withBody(\$request->all())->files(\$request->allFiles())",
+                        "\t\$viewModel_ = (new " . drewlabs_core_strings_replace('::class', '', $validatable) . ($this->hasAuthenticatable_ ? ")->setUser(\$request->user() " : "") . ")->files(\$request->allFiles())->withBody(\$request->all())",
                         "",
                         "\t\$result = \$this->validator->validate(\$viewModel_, \$request->all(), function() use (\$viewModel_) {",
                     ],
@@ -512,7 +512,7 @@ class ControllerClassBuilder implements ContractsControllerBuilder
                         "\t\$result = \$this->validator->setUpdate(true)->validate($validatable, \$request->all(), function() use (\$id, \$request) {",
                         "\t// After validation logic goes here...",
                     ] : [
-                        "\t\$viewModel_ = (new " . drewlabs_core_strings_replace('::class', '', $validatable)  . ($this->hasAuthenticatable_ ? ")->setUser(\$request->user() " : "") . ")->withBody(\$request->all())->files(\$request->allFiles())",
+                        "\t\$viewModel_ = (new " . drewlabs_core_strings_replace('::class', '', $validatable)  . ($this->hasAuthenticatable_ ? ")->setUser(\$request->user() " : "") . ")->files(\$request->allFiles())->withBody(\$request->all())",
                         "",
                         "\t\$result = \$this->validator->setUpdate(true)->validate(\$viewModel_, \$request->all(), function() use (\$id, \$viewModel_) {",
                     ],
