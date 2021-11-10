@@ -37,7 +37,10 @@ class ComponentBuilderHelpers
         string $namespace = "App\\Models",
         string $primaryKey = 'id',
         bool $increments = true,
-        $vm = false
+        $vm = false,
+        array $hidden = [],
+        array $appends = [],
+        string $comments = null
     ) {
         $component = EloquentORMModelBuilder(
             ORMModelDefinition([
@@ -60,9 +63,11 @@ class ComponentBuilderHelpers
                     })
                 ),
                 'increments' => $increments,
-                'namespace' => $namespace
+                'namespace' => $namespace,
+                'comment' => $comments
             ])
-        );
+        )->setHiddenColumns($hidden ?? [])
+            ->setAppends($appends ?? []);
         if ($vm) {
             $component = $component->asViewModel();
         }
@@ -98,7 +103,7 @@ class ComponentBuilderHelpers
 
     /**
      * 
-     * @param bool $handleSignleAction 
+     * @param bool $single 
      * @param array $rules 
      * @param array $updateRules 
      * @param string|null $name 
@@ -108,7 +113,7 @@ class ComponentBuilderHelpers
      * @throws PHPVariableException 
      */
     public static function buildViewModelDefinition(
-        bool $handleSignleAction = false,
+        bool $single = false,
         array $rules = [],
         array $updateRules = [],
         string $name = null,
@@ -139,7 +144,7 @@ class ComponentBuilderHelpers
                 $model
             );
         }
-        if (!$handleSignleAction) {
+        if (!$single) {
             $component = $component->setUpdateRules(
                 iterator_to_array(
                     $rulesParserFunc($updateRules)
@@ -197,6 +202,7 @@ class ComponentBuilderHelpers
      * @param mixed|null $dto 
      * @param string|null $name 
      * @param string|null $namespace 
+     * @param bool $auth
      * @return SourceFileInterface 
      */
     public static function buildController(
@@ -206,10 +212,10 @@ class ComponentBuilderHelpers
         $dto = null,
         string $name = null,
         string $namespace = null,
-        bool $hasAuthDefinitions = true
+        bool $auth = true
     ) {
-        $component = (MVCControllerBuilder($name, $namespace));
-        if (!$hasAuthDefinitions) {
+        $component = MVCControllerBuilder($name, $namespace);
+        if (!$auth) {
             $component = $component->withoutAuthenticatable();
         }
         // Check null state of the service parameter

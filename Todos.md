@@ -15,3 +15,11 @@
 - Add --noAuth option to generator command [x]
 - Add table names caching support [x]
 - Modify Service implementation to use DMLManager() function instead of EloquenDMLManager() instance [x]
+
+## v1.1.2 20211110
+
+- Create model generator []
+- Create service generator command []
+- Create view model generator command []
+- Create controller generator []
+- Create command generator command []

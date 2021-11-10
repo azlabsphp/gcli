@@ -109,9 +109,49 @@ ComponentsScriptWriter(__DIR__ . '/examples/src/'))->write(
 )
 ```
 
+### Advantage of the view model
+
+The view model class act not only offer methods for defining validation rules, but can be used as request parameter bag containing authorized user, request body and request files.
+
+Examples:
+
+```php
+//...
+
+$viewModel = new ViewModelClass;
+
+// Setting request body values on the view model
+$viewModel = $viewModel->withBody($request->all());
+
+// Setting the request files attributes
+$viewModel = $viewModel->files($request->allFiles());
+
+// Setting the authenticated user
+$viewModel= $viewModel->setUser($request->user());
+```
+
+```php
+
+// ... Using the view model in a given service
+public function handle($viewModel)
+{
+    // Query for a parameter or an input in the 
+    $value = $viewModel->get('key');
+
+    // Query for a file
+    $file = $viewModel->file('key');
+
+    // Get the authenticated user
+    $user = $viewModel->user();
+
+    // Get all request body
+    $all = $viewModel->all();
+}
+```
+
 ## Creating a database model
 
-A database model is like en entity manager class that interact with database on your behalf. They packahe provides an implementation of the Eloquent ORM model. 
+A database model is like en entity manager class that interact with database on your behalf. They packahe provides an implementation of the Eloquent ORM model.
 
 This implementation use the drewlabs/database package for the builder and it suppose that package is install as dependency. You are free to provide an implementation of your on builder.
 
@@ -142,7 +182,6 @@ ComponentsScriptWriter(__DIR__ . '/examples/src'))->write(EloquentORMModelBuilde
     'namespace' => "App\\Models"
 ]))->build()
 
-
 // To build a model as a view model
 ComponentsScriptWriter(__DIR__ . '/examples/src')->write((EloquentORMModelBuilder(ORMModelDefinition([
     'primaryKey' => 'id',
@@ -162,3 +201,16 @@ ComponentsScriptWriter(__DIR__ . '/examples/src')->write((EloquentORMModelBuilde
     'namespace' => "App\\Models"
 ])))->asViewModel()->build();
 ```
+
+## Commands
+
+The package offers some laravel framework commands for easily creating component from your terminal application.
+Those commands are:
+
+> php artisan drewlabs:mvc:create -> Generate full MVC classes (a.k.a Model, Service, Controller, ViewModel, Data Transfert Object from a database configuration)
+> php artisan drewlabs:mvc:make:class -> To generate a PHP class
+> php artisan drewlabs:mvc:make:controller -> To generate a controller class
+> php artisan drewlabs:mvc:make:dto -> To generate a Data transfert object class
+> php artisan drewlabs:mvc:make:model -> To generate a database model
+> php artisan drewlabs:mvc:make:service -> To generate an MVC Service class
+> php artisan drewlabs:mvc:make:viewmodel -> To generate a validation view model
