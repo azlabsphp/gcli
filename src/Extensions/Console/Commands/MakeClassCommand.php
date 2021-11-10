@@ -14,7 +14,7 @@ use function Drewlabs\ComponentGenerators\Proxy\PHPScript;
 class MakeClassCommand extends Command
 {
     /**
-     * 
+     *
      * @var Application
      */
     private $app;
@@ -34,7 +34,7 @@ class MakeClassCommand extends Command
     protected $description = 'Creates a Drewlabs package MVC controller';
 
     public function handle()
-    {        
+    {
         // Parameters initialization
         $name = $this->option('name') ?? null;
         if (null === $name) {
@@ -52,7 +52,7 @@ class MakeClassCommand extends Command
                 $component->getName(),
                 $component,
                 ComponentBuilderHelpers::rebuildComponentPath(
-                    $namespace ?? "App",
+                    $namespace ?? "\\App",
                     $basePath
                 )
             )->setNamespace($component->getNamespace())

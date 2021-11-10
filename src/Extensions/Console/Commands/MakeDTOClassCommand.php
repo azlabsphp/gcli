@@ -13,7 +13,7 @@ use function Drewlabs\ComponentGenerators\Proxy\ComponentsScriptWriter;
 class MakeDTOClassCommand extends Command
 {
     /**
-     * 
+     *
      * @var Application
      */
     private $app;
@@ -39,7 +39,7 @@ class MakeDTOClassCommand extends Command
     {        // Parameters initialization
         $name = $this->option('name') ?? null;
         $model = EloquentORMModelBuilder::defaultClassPath($this->option('model'));
-        $namespace = $this->option('namespace') ?? null;
+        $namespace = $this->option('namespace') ?? "\\App\\DataTransfertObject";
         $basePath = $this->app->basePath($this->option('path') ?? 'app');
         $attributes = $this->option('attributes') ?? [];
         $hidden = $this->option('hidden') ?? []; //

@@ -13,7 +13,7 @@ use function Drewlabs\ComponentGenerators\Proxy\ComponentsScriptWriter;
 class MakeServiceCommand extends Command
 {
     /**
-     * 
+     *
      * @var Application
      */
     private $app;
@@ -38,7 +38,7 @@ class MakeServiceCommand extends Command
         // Parameters initialization
         $name = $this->option('name') ?? null;
         $model = EloquentORMModelBuilder::defaultClassPath($this->option('model'));
-        $namespace = $this->option('namespace') ?? null;
+        $namespace = $this->option('namespace') ?? "\\App\\Services";
         $basePath = $this->app->basePath($this->option('path') ?? 'app');
         // # End of parameters initialization
         ComponentsScriptWriter($basePath)->write(ComponentBuilderHelpers::buildServiceDefinition($name, $namespace, $model));

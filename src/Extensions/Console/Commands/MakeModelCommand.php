@@ -12,7 +12,7 @@ use function Drewlabs\ComponentGenerators\Proxy\ComponentsScriptWriter;
 class MakeModelCommand extends Command
 {
     /**
-     * 
+     *
      * @var Application
      */
     private $app;
@@ -45,7 +45,7 @@ class MakeModelCommand extends Command
         // Parameters initialization
         $primaryKey = $this->option('primaryKey') ?? 'id';
         $increments = $this->option('increments') ?? false;
-        $namespace = $this->option('namespace') ?? "App\\Models";
+        $namespace = $this->option('namespace') ?? "\\App\\Models";
         $columns = $this->option('columns') ?? [];
         $vm = $this->option('asViewModel') ?? false;
         $basePath = $this->app->basePath($this->option('path') ?? 'app');

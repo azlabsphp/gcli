@@ -14,7 +14,7 @@ use function Drewlabs\ComponentGenerators\Proxy\MVCControllerBuilder;
 class MakeControllerCommand extends Command
 {
     /**
-     * 
+     *
      * @var Application
      */
     private $app;
@@ -41,7 +41,7 @@ class MakeControllerCommand extends Command
     {
         $name = $this->option('name') ?? null;
         $model = EloquentORMModelBuilder::defaultClassPath($this->option('model'));
-        $namespace = $this->option('namespace') ?? "App\\Http\\Controllers";
+        $namespace = $this->option('namespace') ?? "\\App\\Http\\Controllers";
         $basePath = $this->app->basePath($this->option('path') ?? 'app');
         $service = $this->option('service') ?? null;
         $viewModel = $this->option('viewModel') ?? null;

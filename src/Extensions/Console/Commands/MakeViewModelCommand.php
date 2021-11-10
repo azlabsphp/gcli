@@ -13,7 +13,7 @@ use function Drewlabs\ComponentGenerators\Proxy\ComponentsScriptWriter;
 class MakeViewModelCommand extends Command
 {
     /**
-     * 
+     *
      * @var Application
      */
     private $app;
@@ -42,7 +42,7 @@ class MakeViewModelCommand extends Command
         $name = $this->option('name') ?? null;
         $single = $this->option('single') ?? false;
         $model = EloquentORMModelBuilder::defaultClassPath($this->option('model'));
-        $namespace = $this->option('namespace') ?? null;
+        $namespace = $this->option('namespace') ?? "\\App\\Http\\ViewModels";
         $basePath = $this->app->basePath($this->option('path') ?? 'app');
         $rules = $this->option('rules') ?? [];
         $updateRules = $this->option('updateRules') ?? [];
