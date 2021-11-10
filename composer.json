@@ -6,7 +6,8 @@
         "illuminate/support": "^5.0|^6.0|^7.0|^8.0",
         "illuminate/console": "^5.0|^6.0|^7.0|^8.0",
         "drewlabs/database": "^1.0",
-        "drewlabs/http": "^1.0"
+        "drewlabs/http": "^1.0",
+        "drewlabs/code-generator": "^1.0"
     },
     "license": "MIT",
     "autoload": {
@@ -43,7 +44,6 @@
         "drewlabs/contracts": "^1.0",
         "drewlabs/core": "^1.0",
         "drewlabs/core-helpers": "^1.0",
-        "drewlabs/code-generator": "^1.0",
         "drewlabs/filesystem": "^1.0",
         "drewlabs/psr7-stream": "^1.0"
     },
