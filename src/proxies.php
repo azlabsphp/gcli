@@ -173,7 +173,7 @@ function PHPScript(
 function DatabaseSchemaReverseEngineeringRunner(
     AbstractSchemaManager $manager,
     string $blocComponentPath,
-    string $blocComponentNamespace = 'App'
+    ?string $blocComponentNamespace = 'App'
 ) {
     return new DatabaseSchemaReverseEngineeringRunner(
         $manager,

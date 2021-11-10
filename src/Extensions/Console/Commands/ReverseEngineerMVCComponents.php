@@ -117,7 +117,7 @@ class ReverseEngineerMVCComponents extends Command
 
         //
         $noAuth = $this->option('noAuth');
-        $namespace = $this->option('package');
+        $namespace = $this->option('package') ?? 'App';
         $subPackage = $this->option('subPackage');
         // !Ends Local variables initialization
 

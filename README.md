@@ -214,3 +214,29 @@ Those commands are:
 > php artisan drewlabs:mvc:make:model -> To generate a database model
 > php artisan drewlabs:mvc:make:service -> To generate an MVC Service class
 > php artisan drewlabs:mvc:make:viewmodel -> To generate a validation view model
+
+
+### Examples
+
+```sh
+# Create a database model
+php artisan drewlabs:mvc:make:model --table=comments --columns="label|string" --columns="description|text" --columns="likes|number" --hidden=likes --path=src --namespace="\\Application\\Models" --appends=posts
+
+# Create a php class
+php artisan drewlabs:mvc:make:class --path='src' --name=Post
+
+# Create a data transfert class
+php artisan drewlabs:mvc:make:dto --path=src --namespace=\\Application\\Dto
+
+# Create a MVC service
+php artisan drewlabs:mvc:make:service --model=\\Application\\Models\\Comment --asCRUD --path=src
+
+# Create a MVC view model
+php artisan drewlabs:mvc:make:viewmodel --model=\\Application\\Models\\Comment --single --path=src
+
+# Create a MVC view model
+php artisan drewlabs:mvc:make:viewmodel --name=Post --single --path=src
+
+# Create a MVC controller
+php artisan drewlabs:mvc:make:controller --name=Posts --path=src --model="\\Application\\Models\\Comment"
+```
