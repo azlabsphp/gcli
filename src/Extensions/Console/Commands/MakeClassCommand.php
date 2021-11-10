@@ -25,7 +25,7 @@ class MakeClassCommand extends Command
         parent::__construct();
     }
 
-    protected $signature = 'drewlabs:mvc:make:class'
+    protected $signature = 'drewlabs:mvc:make:class '
         . '{--namespace= : View model namespace }'
         . '{--path= : Project source code path }'
         . '{--name= : Generated view model name }'

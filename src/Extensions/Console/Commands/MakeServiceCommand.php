@@ -24,7 +24,7 @@ class MakeServiceCommand extends Command
         parent::__construct();
     }
 
-    protected $signature = 'drewlabs:mvc:make:service'
+    protected $signature = 'drewlabs:mvc:make:service '
         . '{--namespace= : Controller namespace}'
         . '{--path= : Project source code path}'
         . '{--name= : Controller name}'

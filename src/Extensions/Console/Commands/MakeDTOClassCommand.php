@@ -24,7 +24,7 @@ class MakeDTOClassCommand extends Command
         parent::__construct();
     }
 
-    protected $signature = 'drewlabs:mvc:make:dto'
+    protected $signature = 'drewlabs:mvc:make:dto '
         . '{--namespace= : View model namespace }'
         . '{--path= : Project source code path }'
         . '{--name= : Generated view model name }'

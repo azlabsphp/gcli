@@ -24,7 +24,7 @@ class MakeViewModelCommand extends Command
         parent::__construct();
     }
 
-    protected $signature = 'drewlabs:mvc:make:viewmodel'
+    protected $signature = 'drewlabs:mvc:make:viewmodel '
         . '{--namespace= : View model namespace}'
         . '{--path= : Project source code path}'
         . '{--name= : Generated view model name}'

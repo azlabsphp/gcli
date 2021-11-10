@@ -23,7 +23,7 @@ class MakeModelCommand extends Command
         parent::__construct();
     }
 
-    protected $signature = 'drewlabs:mvc:make:model'
+    protected $signature = 'drewlabs:mvc:make:model '
         . '{--increments : Makes the model primary key incrementable}'
         . '{--asViewModel : Generate the model as a view model class}'
         . '{--comment= Comment to be added to the model }'

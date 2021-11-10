@@ -25,7 +25,7 @@ class MakeControllerCommand extends Command
         parent::__construct();
     }
 
-    protected $signature = 'drewlabs:mvc:make:controller'
+    protected $signature = 'drewlabs:mvc:make:controller '
         . '{--namespace= : Controller namespace}'
         . '{--path= : Project source code path}'
         . '{--name= : Controller name}'
