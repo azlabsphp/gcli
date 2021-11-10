@@ -39,7 +39,7 @@ class MakeDTOClassCommand extends Command
     {        // Parameters initialization
         $name = $this->option('name') ?? null;
         $model = $this->option('model') ? EloquentORMModelBuilder::defaultClassPath($this->option('model')) : null;
-        $namespace = $this->option('namespace') ?? "\\App\\DataTransfertObject";
+        $namespace = $this->option('namespace') ?? "\\App\\Dto";
         $basePath = $this->app->basePath($this->option('path') ?? 'app');
         $attributes = $this->option('attributes') ?? [];
         $hidden = $this->option('hidden') ?? []; //

@@ -153,7 +153,7 @@ class DatabaseSchemaReverseEngineeringRunner
                 [],
                 [],
                 null,
-                sprintf("%s\\%s", $this->blocComponentNamespace_ ?? self::DEFAULT_BLOC_COMPONENT_NAMESPACE, sprintf("%s%s", 'DataTransfertObject', $this->subNamespace_ ? "\\$this->subNamespace_" : '')),
+                sprintf("%s\\%s", $this->blocComponentNamespace_ ?? self::DEFAULT_BLOC_COMPONENT_NAMESPACE, sprintf("%s%s", 'Dto', $this->subNamespace_ ? "\\$this->subNamespace_" : '')),
                 $modelClassPath
             );
             ComponentsScriptWriter($this->blocComponentPath_)->write($dtoObject);

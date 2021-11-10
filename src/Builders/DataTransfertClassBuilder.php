@@ -31,14 +31,14 @@ class DataTransfertClassBuilder implements ComponentBuilder
     /**
      * @var string
      */
-    private const DEFAULT_PATH = 'DataTransfertObject/';
+    private const DEFAULT_PATH = 'Dto/';
 
     /**
      * Service default class namespace.
      *
      * @var string
      */
-    public const DEFAULT_NAMESPACE = 'App\\DataTransfertObject';
+    public const DEFAULT_NAMESPACE = 'App\\Dto';
 
     /**
      * List of attributes that can be json serializable
