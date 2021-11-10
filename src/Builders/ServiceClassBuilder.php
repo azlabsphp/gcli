@@ -84,8 +84,8 @@ class ServiceClassBuilder implements ComponentBuilder
         ?string $namespace = null,
         ?string $path = null
     ) {
-        if ($name) {
-            $this->setName($name);
+        if ($name) {        
+            $this->setName(drewlabs_core_strings_as_camel_case(Pluralizer::singular($name)) . 'Service');
         }
         // Set the component write path
         $this->setWritePath($path ?? self::DEFAULT_PATH);

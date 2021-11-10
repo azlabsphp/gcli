@@ -40,14 +40,16 @@ class MakeClassCommand extends Command
         if (null === $name) {
             return $this->error('Error while building class: name option is required!');
         }
-        $namespace = $this->option('namespace') ?? null;
-        $basePath = $this->app->basePath($this->option('path') ?? 'app');
+        $namespace = $this->option('namespace') ?? "\\App";
+        $basePath = $this->option('path') ?? 'app';
         // # End of parameters initialization
-        $component = PHPClass($name)->addConstructor();
+        $component = PHPClass($name)
+            ->addConstructor()
+            ->addToNamespace($namespace);
         if ($this->option('final')) {
             $component = $component->asFinal();
         }
-        ComponentsScriptWriter($basePath)->write(
+        ComponentsScriptWriter('')->write(
             PHPScript(
                 $component->getName(),
                 $component,

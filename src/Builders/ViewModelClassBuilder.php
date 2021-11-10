@@ -58,7 +58,7 @@ class ViewModelClassBuilder implements ComponentBuilder
         ?string $path = null
     ) {
         if (null !== $name) {
-            $this->setName($name);
+            $this->setName(drewlabs_core_strings_as_camel_case(Pluralizer::singular($name)) . 'ViewModel');
         }
         // Set the component write path
         $this->setWritePath($path ?? self::DEFAULT_PATH);

@@ -29,16 +29,16 @@ class MakeDTOClassCommand extends Command
         . '{--path= : Project source code path }'
         . '{--name= : Generated view model name }'
         . '{--model= : Model attached to the view model class }'
-        . '{--attributes=* List of Jsonable attributes }'
+        . '{--attributes=* : List of Jsonable attributes }'
         . '{--guarded=* : List of guarded attributes }'
-        . '{--hidden=* List of hidden attributes }';
+        . '{--hidden=* : List of hidden attributes }';
 
     protected $description = 'Creates a Drewlabs package MVC controller';
 
     public function handle()
     {        // Parameters initialization
         $name = $this->option('name') ?? null;
-        $model = EloquentORMModelBuilder::defaultClassPath($this->option('model'));
+        $model = $this->option('model') ? EloquentORMModelBuilder::defaultClassPath($this->option('model')) : null;
         $namespace = $this->option('namespace') ?? "\\App\\DataTransfertObject";
         $basePath = $this->app->basePath($this->option('path') ?? 'app');
         $attributes = $this->option('attributes') ?? [];

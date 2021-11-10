@@ -42,21 +42,21 @@ class DataTransfertClassBuilder implements ComponentBuilder
 
     /**
      * List of attributes that can be json serializable
-     * 
+     *
      * @var array
      */
     private $json_attributes_ = [];
 
     /**
      * List of the data transfert object hidden properties
-     * 
+     *
      * @var array
      */
     private $hidden_ = []; //
 
     /**
      * List of the data transfert object guarded properties
-     * 
+     *
      * @var array
      */
     private $guarded_ = [];
@@ -68,7 +68,7 @@ class DataTransfertClassBuilder implements ComponentBuilder
         string $path = null
     ) {
         if ($name) {
-            $this->setName($name);
+            $this->setName(drewlabs_core_strings_as_camel_case(Pluralizer::singular($name)) . 'Dto');
         }
         // Set the component write path
         $this->setWritePath($path ?? self::DEFAULT_PATH);
@@ -80,10 +80,10 @@ class DataTransfertClassBuilder implements ComponentBuilder
     }
 
     /**
-     * 
+     *
      * @param Parseable|string $model
-     * 
-     * @return self 
+     *
+     * @return self
      */
     public function bindModel($model)
     {
@@ -93,7 +93,10 @@ class DataTransfertClassBuilder implements ComponentBuilder
         $classname = ($model instanceof Parseable) || is_object($model) ? get_class($model) : $model;
         $is_class_path = drewlabs_core_strings_contains($classname, '\\'); // && class_exists($model); To uncomment if there is need to validate class existence
         $model_name = 'Test';
-        $model_name = $is_class_path ? array_reverse(explode('\\', $classname))[0] : (drewlabs_core_strings_contains($classname, '\\') ? array_reverse(explode('\\', $classname))[0] : $classname);
+        $model_name = $is_class_path ?
+            array_reverse(explode('\\', $classname))[0] : (drewlabs_core_strings_contains($classname, '\\') ?
+                array_reverse(explode('\\', $classname))[0] :
+                $classname);
         $this->setName(drewlabs_core_strings_as_camel_case(Pluralizer::singular($model_name)) . 'Dto');
 
         // creates an object to if the model is a PHP string
@@ -106,9 +109,9 @@ class DataTransfertClassBuilder implements ComponentBuilder
 
     /**
      * Set the list of hidden properties
-     * 
-     * @param array $properties 
-     * @return self 
+     *
+     * @param array $properties
+     * @return self
      */
     public function setHidden(array $properties = [])
     {
@@ -118,9 +121,9 @@ class DataTransfertClassBuilder implements ComponentBuilder
 
     /**
      * Set list of properties that are not assignable in the value object
-     * 
-     * @param array $properties 
-     * @return self 
+     *
+     * @param array $properties
+     * @return self
      */
     public function setGuarded(array $properties = [])
     {

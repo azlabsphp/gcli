@@ -76,34 +76,34 @@ class ControllerClassBuilder implements ContractsControllerBuilder
     private $serviceClass_;
 
     /**
-     * 
+     *
      * @var false
      */
     private $hasActionHandlerInterface_ = false;
 
     /**
      * List of classes to imports
-     * 
+     *
      * @var array
      */
     private $classPaths_ = [];
 
     /**
-     * 
+     *
      * @var string
      */
     private $modelName_ = 'Test';
 
     /**
      * Route name for various resources actions
-     * 
+     *
      * @var string
      */
     private $routeName_;
 
     /**
      * Indicates whether the controller should provide authenticatable handlers
-     * 
+     *
      * @var bool
      */
     private $hasAuthenticatable_;
@@ -119,7 +119,7 @@ class ControllerClassBuilder implements ContractsControllerBuilder
         ?string $path = null
     ) {
         if ($name) {
-            $this->setName($name);
+            $this->setName(sprintf("%s%s", drewlabs_core_strings_as_camel_case(Pluralizer::plural($name)), 'Controller'));
         }
         // Set the component write path
         $this->setWritePath($path ?? self::DEFAULT_PATH);
@@ -387,7 +387,7 @@ class ControllerClassBuilder implements ContractsControllerBuilder
                         "return \$this->response->ok(\$result)", //
                     ] : []
 
-                ), // 
+                ), //
             ],
             [
                 'name' => 'show',

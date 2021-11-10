@@ -22,14 +22,14 @@ use function Drewlabs\Filesystem\Proxy\Path;
 class ComponentBuilderHelpers
 {
     /**
-     * 
-     * @param string $table 
-     * @param array $columns 
-     * @param string $namespace 
-     * @param string $primaryKey 
-     * @param bool $increments 
-     * @param bool $vm 
-     * @return SourceFileInterface 
+     *
+     * @param string $table
+     * @param array $columns
+     * @param string $namespace
+     * @param string $primaryKey
+     * @param bool $increments
+     * @param bool $vm
+     * @return SourceFileInterface
      */
     public static function buildModelDefinition(
         string $table,
@@ -50,15 +50,23 @@ class ComponentBuilderHelpers
                 'columns' => array_map(
                     function ($definition) {
                         $name = drewlabs_core_strings_before('|', $definition);
-                        $least = explode(',', drewlabs_core_strings_after('|', $definition));
-                        $type = $least[0];
+                        $least = explode(',', drewlabs_core_strings_after('|', $definition) ?? '');
+                        $type = $least[0] ?? null;
                         // TODO : Load the remaining parts
-                        return ORMColumnDefinition([
-                            'name' => $name,
-                            'type' => $type
-                        ]);
+                        return ORMColumnDefinition(
+                            [
+                                'name' => $name,
+                                'type' => empty($type) ? null : $type
+                            ]
+                        );
                     },
-                    array_filter($columns, function ($definition) {
+                    array_filter(array_map(function ($column) {
+                        if (is_string($column) && !drewlabs_core_strings_contains($column, '|')) {
+                            $column = sprintf("%s|", $column);
+                        }
+                        return $column;
+                    }, $columns), function ($definition) {
+
                         return null !== $definition && drewlabs_core_strings_contains($definition, '|');
                     })
                 ),
@@ -75,12 +83,12 @@ class ComponentBuilderHelpers
     }
 
     /**
-     * 
+     *
      * @param bool $asCRUD
-     * @param string|null $name 
-     * @param string|null $namespace 
-     * @param string|null $model 
-     * @return SourceFileInterface 
+     * @param string|null $name
+     * @param string|null $namespace
+     * @param string|null $model
+     * @return SourceFileInterface
      */
     public static function buildServiceDefinition(
         bool $asCRUD = false,
@@ -102,15 +110,15 @@ class ComponentBuilderHelpers
     }
 
     /**
-     * 
-     * @param bool $single 
-     * @param array $rules 
-     * @param array $updateRules 
-     * @param string|null $name 
-     * @param string|null $namespace 
-     * @param string|null $model 
-     * @return SourceFileInterface 
-     * @throws PHPVariableException 
+     *
+     * @param bool $single
+     * @param array $rules
+     * @param array $updateRules
+     * @param string|null $name
+     * @param string|null $namespace
+     * @param string|null $model
+     * @return SourceFileInterface
+     * @throws PHPVariableException
      */
     public static function buildViewModelDefinition(
         bool $single = false,
@@ -164,15 +172,15 @@ class ComponentBuilderHelpers
     }
 
     /**
-     * 
-     * @param array $attributes 
-     * @param array $hidden 
-     * @param array $guarded 
-     * @param string|null $name 
-     * @param string|null $namespace 
-     * @param string|null $model 
-     * @return SourceFileInterface 
-     * @throws PHPVariableException 
+     *
+     * @param array $attributes
+     * @param array $hidden
+     * @param array $guarded
+     * @param string|null $name
+     * @param string|null $namespace
+     * @param string|null $model
+     * @return SourceFileInterface
+     * @throws PHPVariableException
      */
     public static function buildDtoObjectDefinition(
         array $attributes = [],
@@ -195,15 +203,15 @@ class ComponentBuilderHelpers
     }
 
     /**
-     * 
-     * @param mixed|null $model 
-     * @param mixed|null $service 
-     * @param mixed|null $viewModel 
-     * @param mixed|null $dto 
-     * @param string|null $name 
-     * @param string|null $namespace 
+     *
+     * @param mixed|null $model
+     * @param mixed|null $service
+     * @param mixed|null $viewModel
+     * @param mixed|null $dto
+     * @param string|null $name
+     * @param string|null $namespace
      * @param bool $auth
-     * @return SourceFileInterface 
+     * @return SourceFileInterface
      */
     public static function buildController(
         $model = null,
@@ -289,12 +297,12 @@ class ComponentBuilderHelpers
     }
 
     /**
-     * 
-     * @param string $path 
+     *
+     * @param string $path
      * @return CacheableTables
-     * @throws ReadFileException 
-     * @throws UnableToRetrieveMetadataException 
-     * @throws FileNotFoundException 
+     * @throws ReadFileException
+     * @throws UnableToRetrieveMetadataException
+     * @throws FileNotFoundException
      */
     public static function getCachedComponentDefinitions(string $path)
     {

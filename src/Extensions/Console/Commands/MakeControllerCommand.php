@@ -40,7 +40,9 @@ class MakeControllerCommand extends Command
     public function handle()
     {
         $name = $this->option('name') ?? null;
-        $model = EloquentORMModelBuilder::defaultClassPath($this->option('model'));
+        $model = $this->option('model') ?
+            EloquentORMModelBuilder::defaultClassPath($this->option('model')) :
+            null;
         $namespace = $this->option('namespace') ?? "\\App\\Http\\Controllers";
         $basePath = $this->app->basePath($this->option('path') ?? 'app');
         $service = $this->option('service') ?? null;

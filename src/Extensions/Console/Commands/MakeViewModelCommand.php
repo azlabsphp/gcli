@@ -28,7 +28,6 @@ class MakeViewModelCommand extends Command
         . '{--namespace= : View model namespace}'
         . '{--path= : Project source code path}'
         . '{--name= : Generated view model name}'
-        . '{--columns=* : List of model table fillable columns }'
         . '{--model= : Model attached to the view model class }'
         . '{--single : Makes the view model single action validator}'
         . '{--rules=* List of default rules to apply to the view model }'
@@ -40,8 +39,9 @@ class MakeViewModelCommand extends Command
     {
         // Parameters initialization
         $name = $this->option('name') ?? null;
-        $single = $this->option('single') ?? false;
-        $model = EloquentORMModelBuilder::defaultClassPath($this->option('model'));
+        $model = $this->option('model') ?
+            EloquentORMModelBuilder::defaultClassPath($this->option('model')) :
+            null;
         $namespace = $this->option('namespace') ?? "\\App\\Http\\ViewModels";
         $basePath = $this->app->basePath($this->option('path') ?? 'app');
         $rules = $this->option('rules') ?? [];
@@ -49,7 +49,7 @@ class MakeViewModelCommand extends Command
         // # End of parameters initialization
         ComponentsScriptWriter($basePath)->write(
             ComponentBuilderHelpers::buildViewModelDefinition(
-                $single,
+                $this->option('single') ?? false,
                 $rules,
                 $updateRules,
                 $name,

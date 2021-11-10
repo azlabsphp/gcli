@@ -28,7 +28,8 @@ class MakeServiceCommand extends Command
         . '{--namespace= : Controller namespace}'
         . '{--path= : Project source code path}'
         . '{--name= : Controller name}'
-        . '{--model= : Model attached to the controller generated code}';
+        . '{--model= : Model attached to the controller generated code}'
+        . '{--asCRUD : Generate a CRUD Service }';
 
     protected $description = 'Creates a Drewlabs package MVC controller';
 
@@ -37,11 +38,20 @@ class MakeServiceCommand extends Command
 
         // Parameters initialization
         $name = $this->option('name') ?? null;
-        $model = EloquentORMModelBuilder::defaultClassPath($this->option('model'));
+        $model = $this->option('model') ?
+            EloquentORMModelBuilder::defaultClassPath($this->option('model')) :
+            null;
         $namespace = $this->option('namespace') ?? "\\App\\Services";
         $basePath = $this->app->basePath($this->option('path') ?? 'app');
         // # End of parameters initialization
-        ComponentsScriptWriter($basePath)->write(ComponentBuilderHelpers::buildServiceDefinition($name, $namespace, $model));
+        ComponentsScriptWriter($basePath)->write(
+            ComponentBuilderHelpers::buildServiceDefinition(
+                $this->option('asCRUD'),
+                $name,
+                $namespace,
+                $model
+            )
+        );
         $this->info("Service class successfully generated\n");
     }
 }
