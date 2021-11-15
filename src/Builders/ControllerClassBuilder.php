@@ -20,7 +20,6 @@ use Drewlabs\ComponentGenerators\Helpers\ComponentBuilderHelpers;
 use Drewlabs\ComponentGenerators\Traits\HasNamespaceAttribute;
 use Drewlabs\Contracts\Support\Actions\ActionHandler;
 use Drewlabs\Contracts\Validator\Validator;
-use Drewlabs\Core\Validator\Exceptions\ValidationException;
 use Drewlabs\Packages\Http\Contracts\IActionResponseHandler;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -356,7 +355,7 @@ class ControllerClassBuilder implements ContractsControllerBuilder
                 'returns' => JsonResponse::class,
                 'contents' => array_merge(
                     [
-                        'if (!is_null($id)) {',
+                        'if (null !== $id) {',
                         "\treturn \$this->show(\$request, \$id)",
                         '}',
                         $this->hasAuthenticatable_  ? "// TODO : Provides policy handlers" : null,
@@ -371,6 +370,7 @@ class ControllerClassBuilder implements ContractsControllerBuilder
                     ] : [],
                     $this->isResourceController_ ? [
                         (null !== $this->modelName_) ? "\$filters = drewlabs_databse_parse_client_request_query(new $this->modelName_, \$request)" : null,
+                        "",
                         "\$result = \$this->service->handle(Action([",
                         "\t'type' => 'SELECT',",
                         "\t'payload' => \$request->has('per_page') ? [",
@@ -432,61 +432,53 @@ class ControllerClassBuilder implements ContractsControllerBuilder
                 'returns' => JsonResponse::class,
                 'contents' => array_merge(
                     [
-                        'try {',
-                        "\t// validate request inputs",
+                        "// validate request inputs",
                     ],
                     $validatable === '[]' ? [
-                        "\t\$result = \$this->validator->validate($validatable, \$request->all(), function() use (\$request) {",
-                        "\t// After validation logic goes here...",
+                        "\$result = \$this->validator->validate($validatable, \$request->all(), function() use (\$request) {",
+                        "// After validation logic goes here...",
                     ] : [
-                        "\t\$viewModel_ = (new " . drewlabs_core_strings_replace('::class', '', $validatable) . ($this->hasAuthenticatable_ ? ")->setUser(\$request->user() " : "") . ")->files(\$request->allFiles())->withBody(\$request->all())",
+                        "\$viewModel_ = (new " . drewlabs_core_strings_replace('::class', '', $validatable) . ($this->hasAuthenticatable_ ? ")->setUser(\$request->user() " : "") . ")->files(\$request->allFiles())->withBody(\$request->all())",
                         "",
-                        "\t\$result = \$this->validator->validate(\$viewModel_, \$request->all(), function() use (\$viewModel_) {",
+                        "\$result = \$this->validator->validate(\$viewModel_, function() use (\$viewModel_) {",
                     ],
                     [
-                        "\t\treturn \$this->service->handle(Action([",
-                        "\t\t\t'type' => 'CREATE',",
+                        "\treturn \$this->service->handle(Action([",
+                        "\t\t'type' => 'CREATE',",
                     ],
                     $validatable === '[]' ? [
-                        "\t\t\t'payload' => [",
-                        "\t\t\t\t\$request->all(),",
-                        "\t\t\t\t\$request->has(self::RESOURCE_PRIMARY_KEY) ?",
-                        "\t\t\t\t\t[",
-                        "\t\t\t\t\t\t'upsert' => true,",
-                        "\t\t\t\t\t\t'upsert_conditions' => [",
-                        "\t\t\t\t\t\t\tself::RESOURCE_PRIMARY_KEY => \$request->get(self::RESOURCE_PRIMARY_KEY),",
+                        "\t\t'payload' => [",
+                        "\t\t\t\$request->all(),",
+                        "\t\t\t\$request->has(self::RESOURCE_PRIMARY_KEY) ?",
+                        "\t\t\t\t[",
+                        "\t\t\t\t\t'upsert' => true,",
+                        "\t\t\t\t\t'upsert_conditions' => [",
+                        "\t\t\t\t\t\tself::RESOURCE_PRIMARY_KEY => \$request->get(self::RESOURCE_PRIMARY_KEY),",
                     ] : [
-                        "\t\t\t'payload' => [",
-                        "\t\t\t\t\$viewModel_->all(),",
-                        "\t\t\t\t\$viewModel_->has(self::RESOURCE_PRIMARY_KEY) ?",
-                        "\t\t\t\t\t[",
-                        "\t\t\t\t\t\t'upsert' => true,",
-                        "\t\t\t\t\t\t'upsert_conditions' => [",
-                        "\t\t\t\t\t\t\tself::RESOURCE_PRIMARY_KEY => \$viewModel_->get(self::RESOURCE_PRIMARY_KEY),",
+                        "\t\t'payload' => [",
+                        "\t\t\t\$viewModel_->all(),",
+                        "\t\t\t\$viewModel_->has(self::RESOURCE_PRIMARY_KEY) ?",
+                        "\t\t\t\t[",
+                        "\t\t\t\t\t'upsert' => true,",
+                        "\t\t\t\t\t'upsert_conditions' => [",
+                        "\t\t\t\t\t\tself::RESOURCE_PRIMARY_KEY => \$viewModel_->get(self::RESOURCE_PRIMARY_KEY),",
                     ],
                     [
 
-                        "\t\t\t\t\t\t],",
-                        "\t\t\t\t\t] :",
-                        "\t\t\t\t\t[]",
-                        "\t\t\t],",
+                        "\t\t\t\t\t],",
+                        "\t\t\t\t] :",
+                        "\t\t\t\t[]",
+                        "\t\t],",
                     ],
                     null !== $this->dtoClass_ ? [
-                        "\t\t]), function( \$value) {",
-                        "\t\t\treturn null !== \$value ? new $this->dtoClass_(\$value->toArray()) : \$value",
-                        "\t\t});"
-                    ] : ["\t\t]))"],
+                        "\t]), function( \$value) {",
+                        "\t\treturn null !== \$value ? new $this->dtoClass_(\$value->toArray()) : \$value",
+                        "\t});"
+                    ] : ["\t]))"],
                     [
-                        "\t});",
+                        "});",
                         "",
-                        "\treturn \$this->response->ok(\$result)", //
-                        "} catch (ValidationException \$e) {",
-                        "\t// Return failure response to request client",
-                        "\treturn \$this->response->badRequest(\$e->getErrors())",
-                        "} catch (\Exception \$e) {",
-                        "\t// Return failure response to request client",
-                        "\treturn \$this->response->error(\$e)",
-                        '}',
+                        "return \$this->response->ok(\$result)",
                     ]
                 ),
             ], [
@@ -503,44 +495,35 @@ class ControllerClassBuilder implements ContractsControllerBuilder
                 'returns' => JsonResponse::class,
                 'contents' => array_merge(
                     [
-                        'try {',
-                        "\t\$request = \$request->merge([\"id\" => \$id])",
-                        "\t// validate request inputs",
-                        "\t// Use your custom validation rules here",
+                        "\$request = \$request->merge([\"id\" => \$id])",
+                        "// Validate request inputs",
                     ],
                     $validatable === '[]' ? [
-                        "\t\$result = \$this->validator->setUpdate(true)->validate($validatable, \$request->all(), function() use (\$id, \$request) {",
-                        "\t// After validation logic goes here...",
+                        "\$result = \$this->validator->setUpdate(true)->validate($validatable, \$request->all(), function() use (\$id, \$request) {",
+                        "// After validation logic goes here...",
                     ] : [
-                        "\t\$viewModel_ = (new " . drewlabs_core_strings_replace('::class', '', $validatable)  . ($this->hasAuthenticatable_ ? ")->setUser(\$request->user() " : "") . ")->files(\$request->allFiles())->withBody(\$request->all())",
+                        "\$viewModel_ = (new " . drewlabs_core_strings_replace('::class', '', $validatable)  . ($this->hasAuthenticatable_ ? ")->setUser(\$request->user() " : "") . ")->files(\$request->allFiles())->withBody(\$request->all())",
                         "",
-                        "\t\$result = \$this->validator->setUpdate(true)->validate(\$viewModel_, \$request->all(), function() use (\$id, \$viewModel_) {",
+                        "\$result = \$this->validator->setUpdate(true)->validate(\$viewModel_, function() use (\$id, \$viewModel_) {",
                     ],
                     [
-                        "\t\treturn \$this->service->handle(Action([",
-                        "\t\t\t'type' => 'UPDATE',",
+                        "\treturn \$this->service->handle(Action([",
+                        "\t\t'type' => 'UPDATE',",
                     ],
                     $validatable === '[]' ? [
-                        "\t\t\t'payload' => [\$id, \$request->all()],",
+                        "\t\t'payload' => [\$id, \$request->all()],",
                     ] : [
-                        "\t\t\t'payload' => [\$id, \$viewModel_->all()],",
+                        "\t\t'payload' => [\$id, \$viewModel_->all()],",
                     ],
                     null !== $this->dtoClass_ ? [
-                        "\t\t]), function( \$value) {",
-                        "\t\t\treturn null !== \$value ? new $this->dtoClass_(\$value->toArray()) : \$value",
-                        "\t\t});"
-                    ] : ["\t\t]))"],
+                        "\t]), function( \$value) {",
+                        "\t\treturn null !== \$value ? new $this->dtoClass_(\$value->toArray()) : \$value",
+                        "\t});"
+                    ] : ["\t]))"],
                     [
-                        "\t});",
+                        "});",
                         "",
-                        "\treturn \$this->response->ok(\$result)", // ValidationException
-                        "} catch (ValidationException \$e) {",
-                        "\t// Return failure response to request client",
-                        "\treturn \$this->response->badRequest(\$e->getErrors())",
-                        "} catch (\Exception \$e) {",
-                        "\t// Return failure response to request client",
-                        "\treturn \$this->response->error(\$e)",
-                        '}',
+                        "return \$this->response->ok(\$result)",
                     ]
                 ),
             ],
@@ -586,7 +569,6 @@ class ControllerClassBuilder implements ContractsControllerBuilder
 
             return $carry;
         }, $component
-            ->addClassPath(ValidationException::class)
             ->addFunctionPath(self::ACTION_FUNCTION_PATH)
             ->addConstant(PHPClassProperty(
                 'RESOURCE_PRIMARY_KEY',
