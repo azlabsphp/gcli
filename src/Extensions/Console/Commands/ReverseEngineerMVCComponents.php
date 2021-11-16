@@ -15,13 +15,13 @@ class ReverseEngineerMVCComponents extends Command
 {
 
     /**
-     * 
+     *
      * @var Path
      */
     private $path_;
 
     /**
-     * 
+     *
      * @var mixed
      */
     private $routesCachePath_;
@@ -49,7 +49,8 @@ class ReverseEngineerMVCComponents extends Command
         . '{--routingfilename= : Routing filename (Default = web.php)}'
         . '{--excepts=* : List of tables not to be included in the generated output}'
         . '{--disableCache : Caching tables not supported}'
-        . '{--noAuth : Indicates whether project controllers supports authentication}';
+        . '{--noAuth : Indicates whether project controllers supports authentication}'
+        . '{--schema= : Schema prefix to database tables}';
 
     /**
      * The console command description.
@@ -148,7 +149,8 @@ class ReverseEngineerMVCComponents extends Command
             $disableCache,
             $noAuth,
             $namespace,
-            $subPackage
+            $subPackage,
+            $this->option('schema') ?? null
         )(
             $this->laravel->basePath('routes'),
             $this->path_,

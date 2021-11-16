@@ -21,9 +21,9 @@ use Drewlabs\ComponentGenerators\PHP\PHPScriptFile;
 
 /**
  * Provides a proxy function to the {@link ScriptWriter} constructor
- * 
- * @param string $srcPath 
- * @return ScriptWriter 
+ *
+ * @param string $srcPath
+ * @return ScriptWriter
  */
 function ComponentsScriptWriter(string $srcPath)
 {
@@ -32,9 +32,9 @@ function ComponentsScriptWriter(string $srcPath)
 
 /**
  * Provides a proxy function to the {@link \Drewlabs\ComponentGenerators\Contracts\ContractsORMColumnDefinition} constructor
- * 
- * @param array $attributes 
- * @return ORMModelDefinition 
+ *
+ * @param array $attributes
+ * @return ORMModelDefinition
  */
 function ORMModelDefinition($attributes = [])
 {
@@ -43,23 +43,25 @@ function ORMModelDefinition($attributes = [])
 
 /**
  * Provides a proxy function to the {@link \Drewlabs\ComponentGenerators\Contracts\EloquentORMModelBuilder} constructor
- * 
- * @param ORMModelDefinition $defintion 
- * @param null|string $path 
- * @return ContractsEloquentORMModelBuilder 
+ *
+ * @param ORMModelDefinition $defintion
+ * @param string|null $schema
+ * @param null|string $path
+ * @return EloquentORMModelBuilder
  */
 function EloquentORMModelBuilder(
     ORMModelDefinition $defintion,
+    ?string $schema = null,
     ?string $path = null
 ) {
-    return new EloquentORMModelBuilder($defintion, $path);
+    return new EloquentORMModelBuilder($defintion, $schema, $path);
 }
 
 /**
  * Provides a proxy function to the {@link \Drewlabs\ComponentGenerators\Contracts\ContractsORMColumnDefinition} constructor
- * 
- * @param array $attributes 
- * @return ContractsORMColumnDefinition 
+ *
+ * @param array $attributes
+ * @return ContractsORMColumnDefinition
  */
 function ORMColumnDefinition($attributes = [])
 {
@@ -68,11 +70,11 @@ function ORMColumnDefinition($attributes = [])
 
 /**
  * Provides a proxy function to the {@link \Drewlabs\ComponentGenerators\Builders\ControllerClassBuilder} constructor
- * 
- * @param null|string $name 
- * @param null|string $namespace 
- * @param null|string $path 
- * @return ControllerClassBuilder 
+ *
+ * @param null|string $name
+ * @param null|string $namespace
+ * @param null|string $path
+ * @return ControllerClassBuilder
  */
 function MVCControllerBuilder(
     ?string $name = null,
@@ -88,11 +90,11 @@ function MVCControllerBuilder(
 
 /**
  * Provides a proxy function to the {@link \Drewlabs\ComponentGenerators\Builders\ServiceClassBuilder} constructor
- * 
- * @param null|string $name 
- * @param null|string $namespace 
- * @param null|string $path 
- * @return ServiceClassBuilder 
+ *
+ * @param null|string $name
+ * @param null|string $namespace
+ * @param null|string $path
+ * @return ServiceClassBuilder
  */
 function MVCServiceBuilder(
     ?string $name = null,
@@ -108,11 +110,11 @@ function MVCServiceBuilder(
 
 /**
  * Provides a proxy function to the  {@link \Drewlabs\ComponentGenerators\Builders\ViewModelClassBuilder} constructor
- * 
- * @param null|string $name 
- * @param null|string $namespace 
- * @param null|string $path 
- * @return ViewModelClassBuilder 
+ *
+ * @param null|string $name
+ * @param null|string $namespace
+ * @param null|string $path
+ * @return ViewModelClassBuilder
  */
 function ViewModelBuilder(
     ?string $name = null,
@@ -128,12 +130,12 @@ function ViewModelBuilder(
 
 /**
  * Provides a proxy function to the  {@link \Drewlabs\ComponentGenerators\Builders\DataTransfertClassBuilder} constructor
- * 
- * @param array $json_attributes 
- * @param string|null $name 
- * @param null|string $namespace 
- * @param string|null $path 
- * @return DataTransfertClassBuilder 
+ *
+ * @param array $json_attributes
+ * @param string|null $name
+ * @param null|string $namespace
+ * @param string|null $path
+ * @return DataTransfertClassBuilder
  */
 function DataTransfertClassBuilder(
     array $json_attributes = [],
@@ -146,12 +148,12 @@ function DataTransfertClassBuilder(
 
 /**
  * Provides a proxy function to the  {@link \Drewlabs\ComponentGenerators\PHP\PHPScriptFile} constructor
- * 
- * @param string $name 
- * @param Stringable $content 
- * @param string $path 
- * @param string $extension 
- * @return PHPScriptFile 
+ *
+ * @param string $name
+ * @param Stringable $content
+ * @param string $path
+ * @param string $extension
+ * @return PHPScriptFile
  */
 function PHPScript(
     string $name,
@@ -164,11 +166,11 @@ function PHPScript(
 
 /**
  * Provides a proxy function to the  {@link \Drewlabs\ComponentGenerators\DatabaseSchemaReverseEngineeringRunner} constructor
- * 
- * @param AbstractSchemaManager $manager 
- * @param string $blocComponentPath 
- * @param string $blocComponentNamespace 
- * @return DatabaseSchemaReverseEngineeringRunner 
+ *
+ * @param AbstractSchemaManager $manager
+ * @param string $blocComponentPath
+ * @param string $blocComponentNamespace
+ * @return DatabaseSchemaReverseEngineeringRunner
  */
 function DatabaseSchemaReverseEngineeringRunner(
     AbstractSchemaManager $manager,

@@ -23,7 +23,8 @@ class ReverseEngineerTaskRunner
         bool $disableCache = false,
         bool $noAuth = false,
         ?string $namespace = null,
-        ?string $subPackage = null
+        ?string $subPackage = null,
+        ?string $schema = null
     ) {
 
         return function (
@@ -43,7 +44,8 @@ class ReverseEngineerTaskRunner
             $disableCache,
             $noAuth,
             $namespace,
-            $subPackage
+            $subPackage,
+            $schema
         ) {
             $onCompleteCallback = $onCompleteCallback ?? function () {
                 dump('Task Completed successfully...');
@@ -79,6 +81,7 @@ class ReverseEngineerTaskRunner
                 ->setSubNamespace($subPackage)
                 ->bindExceptMethod($tablesFilterFunc)
                 ->except($exceptions)
+                ->setSchema($schema)
                 ->run(function ($tables) use ($namespace, $subPackage, $disableCache, $cachePath) {
                     if (!$disableCache) {
                         // TODO : Add definitions to cache
@@ -122,7 +125,6 @@ class ReverseEngineerTaskRunner
                     $indicator->advance();
                 }
             }
-            // dd($definitions);
             // TODO : Write the definitions to the route files
             RouteDefinitionsHelper::writeRouteDefinitions(
                 $routesDirectory,

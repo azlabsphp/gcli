@@ -32,7 +32,7 @@ interface EloquentORMModelBuilder extends ORMModelBuilder
     /**
      * Whether the model has updated_at and created_at columns.
      *
-     * @return bool
+     * @return self
      */
     public function hasTimestamps(bool $value);
 

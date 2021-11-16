@@ -130,20 +130,11 @@ class EloquentORMModelBuilder implements ContractsEloquentORMModel, ComponentBui
 
     public function __construct(
         ORMModelDefinition $defintion,
+        ?string $schema = null,
         ?string $path = null
     ) {
         [$table, $name] = [$defintion->table(), $defintion->name()];
-        $table = (null === $table) ? (null !== $name ?
-            drewlabs_core_strings_as_snake_case(Pluralizer::plural($name)) : null) : $table;
-        // Set the table name
-        if ($table) {
-            $this->setTableName($table);
-        }
-        // Set the table name
-        $name = (null === $name) ? drewlabs_core_strings_as_camel_case(Pluralizer::singular($table)) : $name;
-        if ($name) {
-            $this->setName($name);
-        }
+        $this->setComponentBaseDefintions($schema, $table, $name);
         // Set the primary key
         if ($defintion->primaryKey()) {
             $this->setKeyName($defintion->primaryKey() ?? 'id');
@@ -165,6 +156,29 @@ class EloquentORMModelBuilder implements ContractsEloquentORMModel, ComponentBui
 
         // Set the model path
         $this->setWritePath($path ?? self::DEFAULT_PATH);
+    }
+
+    private function setComponentBaseDefintions($schema, $table, $name)
+    {
+        $table = (null === $table) ? (null !== $name ?
+            drewlabs_core_strings_as_snake_case(Pluralizer::plural($name)) : null) : $table;
+        // Set the table name
+        if ($table) {
+            $this->setTableName($table);
+        }
+        // Set model name
+        $name_ = $table ?? $name ?? null;
+        // TODO : REMOVE SCHEMA PREFIX IF ANY
+        if ($name_ && $schema) {
+            $name_ = drewlabs_core_strings_starts_with($name_, $schema . "_") ?
+                drewlabs_core_strings_replace($schema . "_", "", $name_) : (drewlabs_core_strings_starts_with($name_, $schema) ?
+                    drewlabs_core_strings_replace($schema, "", $name_) :
+                    $name_);
+        }
+        $name = $name_ ? drewlabs_core_strings_as_camel_case(Pluralizer::singular($name_)) : self::DEFAULT_NAME;
+        if ($name) {
+            $this->setName($name);
+        }
     }
 
     public function setRelationMethods(array $names)
@@ -191,7 +205,6 @@ class EloquentORMModelBuilder implements ContractsEloquentORMModel, ComponentBui
     public function hasTimestamps(bool $value)
     {
         $this->hasTimestamps_ = $value;
-
         return $this;
     }
 
@@ -231,7 +244,6 @@ class EloquentORMModelBuilder implements ContractsEloquentORMModel, ComponentBui
     public function asViewModel()
     {
         $this->isViewModel_ = true;
-
         return $this->addInputsTraits();
     }
 

@@ -21,6 +21,12 @@ use function Drewlabs\ComponentGenerators\Proxy\ORMModelDefinition;
 
 class DatabaseSchemaReverseEngineeringRunner
 {
+
+    /**
+     * @var array
+     */
+    private const DEFAULT_TIMESTAMP_COLUMNS = ['created_at', 'updated_at'];
+
     /**
      *
      * @var AbstractSchemaManager
@@ -39,6 +45,9 @@ class DatabaseSchemaReverseEngineeringRunner
      */
     private $blocComponentNamespace_;
 
+    /**
+     *
+     */
     private const DEFAULT_BLOC_COMPONENT_NAMESPACE = "App";
 
     /**
@@ -55,17 +64,23 @@ class DatabaseSchemaReverseEngineeringRunner
     private $tablesFilterFunc_;
 
     /**
-     * 
+     *
      * @var mixed
      */
     private $auth_ = true;
 
     /**
      * Components namespace
-     * 
+     *
      * @var string
      */
     private $subNamespace_;
+
+    /**
+     *
+     * @var string
+     */
+    private $schema_;
 
     public function __construct(
         AbstractSchemaManager $manager,
@@ -101,6 +116,12 @@ class DatabaseSchemaReverseEngineeringRunner
         return $this;
     }
 
+    public function  setSchema(?string $value = null)
+    {
+        $this->schema_ = $value;
+        return $this;
+    }
+
     public function run(\Closure $callback = null)
     {
         // TODO: Read the database table using doctrine Database access layer
@@ -119,7 +140,13 @@ class DatabaseSchemaReverseEngineeringRunner
 
         foreach ($models as $value) {
             // TODO: Generate model file in the model namespace
-            $modelClass = EloquentORMModelBuilder($value)->build();
+            $hasTimeStamps = drewlabs_core_array_contains_all(array_map(function ($column) {
+                return $column->name();
+            }, $value->columns() ?? []), self::DEFAULT_TIMESTAMP_COLUMNS);
+            $modelClass = EloquentORMModelBuilder(
+                $value,
+                $this->schema_
+            )->hasTimestamps($hasTimeStamps)->build();
             ComponentsScriptWriter($this->blocComponentPath_)->write($modelClass);
             $modelClassPath = sprintf("%s\\%s", $modelClass->getNamespace(), drewlabs_core_strings_as_camel_case($modelClass->getName()));
             // TODO: Generate view model file for the model
@@ -184,7 +211,7 @@ class DatabaseSchemaReverseEngineeringRunner
         }
 
         if ($callback) {
-            $callback(array_map(function($table) {
+            $callback(array_map(function ($table) {
                 return $table->getName();
             }, $tables));
         }
@@ -218,14 +245,14 @@ class DatabaseSchemaReverseEngineeringRunner
     }
 
     /**
-     * 
-     * @param Table[] $tables 
-     * @return Generator<int, ContractsORMModelDefinition, mixed, void> 
+     *
+     * @param Table[] $tables
+     * @return Generator<int, ContractsORMModelDefinition, mixed, void>
      */
     private function tablesToORMModelDefinitionGenerator(array $tables)
     {
         foreach ($tables as $table) {
-            $table_name = $table->getName();
+            $name_ = $table->getName();
             //# region get table primary key columns
             $tPrimaryKey = $table->getPrimaryKey();
             $primaryKeyColumns = $tPrimaryKey ? $tPrimaryKey->getColumns() : [];
@@ -245,7 +272,7 @@ class DatabaseSchemaReverseEngineeringRunner
                 function ($columns) {
                     return array_values($columns);
                 }
-            )($table_name);
+            )($name_);
             // #endregion colum definition
             // # Get table comment
             $comment = $table->getComment();
@@ -255,7 +282,7 @@ class DatabaseSchemaReverseEngineeringRunner
             yield ORMModelDefinition([
                 'primaryKey' => $key ?? null,
                 'name' => null,
-                'table' => $table_name,
+                'table' => $name_,
                 'columns' => $columns,
                 'increments' => !empty($key) ? $table->getColumn($key)->getAutoincrement() : false,
                 'namespace' => sprintf("%s\\%s", $this->blocComponentNamespace_ ?? self::DEFAULT_BLOC_COMPONENT_NAMESPACE, sprintf("%s%s", 'Models', $this->subNamespace_ ? "\\$this->subNamespace_" : '')),
