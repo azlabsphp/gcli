@@ -364,7 +364,7 @@ class ControllerClassBuilder implements ContractsControllerBuilder
                     $this->dtoClass_ ? [
                         "\$tranformFunc_ = function( \$items) {",
                         "\treturn map_query_result(\$items, function (\$value) {",
-                        "\t\treturn \$value ? (new $this->dtoClass_)->withModel(\$value) : \$value",
+                        "\t\treturn \$value ? new $this->dtoClass_(\$value) : \$value",
                         "\t});",
                         "};"
                     ] : [],

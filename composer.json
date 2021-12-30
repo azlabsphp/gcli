@@ -5,9 +5,9 @@
         "phpunit/phpunit": "^9.5",
         "illuminate/support": "^5.0|^6.0|^7.0|^8.0",
         "illuminate/console": "^5.0|^6.0|^7.0|^8.0",
-        "drewlabs/database": "^1.0",
-        "drewlabs/http": "^1.0",
-        "drewlabs/code-generator": "^1.0"
+        "drewlabs/database": "^2.0",
+        "drewlabs/http": "^2.0",
+        "drewlabs/code-generator": "^2.0"
     },
     "license": "MIT",
     "autoload": {
@@ -40,12 +40,13 @@
     },
     "minimum-stability": "stable",
     "require": {
-        "php": "^7.3|^8.0",
-        "drewlabs/contracts": "^1.0",
-        "drewlabs/core": "^1.0",
-        "drewlabs/core-helpers": "^1.0",
+        "php": "^7.4|^8.0",
+        "drewlabs/contracts": "^2.0.20",
+        "drewlabs/core": "^2.0",
+        "drewlabs/core-helpers": "^2.0",
         "drewlabs/filesystem": "^1.0",
-        "drewlabs/psr7-stream": "^1.0"
+        "drewlabs/psr7-stream": "^1.0",
+        "drewlabs/support": "^2.0"
     },
     "repositories": [
         {
@@ -79,6 +80,10 @@
         {
             "type": "vcs",
             "url": "git@github.com:liksoft/drewlabs-laravel-http.git"
+        },
+        {
+            "type": "vcs",
+            "url": "git@github.com:liksoft/drewlabs-php-support.git"
         }
     ],
     "extra": {
@@ -89,7 +94,7 @@
             "aliases": {}
         },
         "branch-alias": {
-            "dev-master": "v1.0.x-dev"
+            "dev-master": "v2-dev-branch"
         }
     }
 }
