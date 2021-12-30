@@ -18,8 +18,8 @@
 
 ## v1.1.2 20211110
 
-- Create model generator []
-- Create service generator command []
-- Create view model generator command []
-- Create controller generator []
+- Create model generator [x]
+- Create service generator command [x]
+- Create view model generator command [x]
+- Create controller generator [x]
 - Create command generator command []
