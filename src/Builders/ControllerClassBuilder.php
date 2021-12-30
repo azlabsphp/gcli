@@ -450,7 +450,7 @@ class ControllerClassBuilder implements ContractsControllerBuilder
                         "\$result = \$this->validator->validate($validatable, \$request->all(), function() use (\$request) {",
                         '// After validation logic goes here...',
                     ] : [
-                        '$viewModel_ = (new '.drewlabs_core_strings_replace('::class', '', $validatable).($this->hasAuthenticatable_ ? ')->setUser($request->user() ' : '').')->files($request->allFiles())->withBody($request->all())',
+                        '$viewModel_ = (new '.drewlabs_core_strings_replace('::class', '', $validatable).($this->hasAuthenticatable_ ? ')->setUser($request->user()' : '').')->files($request->allFiles())->withBody($request->all())',
                         '',
                         '$result = $this->validator->validate($viewModel_, function() use ($viewModel_) {',
                     ],
@@ -514,7 +514,7 @@ class ControllerClassBuilder implements ContractsControllerBuilder
                         "\$result = \$this->validator->setUpdate(true)->validate($validatable, \$request->all(), function() use (\$id, \$request) {",
                         '// After validation logic goes here...',
                     ] : [
-                        '$viewModel_ = (new '.drewlabs_core_strings_replace('::class', '', $validatable).($this->hasAuthenticatable_ ? ')->setUser($request->user() ' : '').')->files($request->allFiles())->withBody($request->all())',
+                        '$viewModel_ = (new '.drewlabs_core_strings_replace('::class', '', $validatable).($this->hasAuthenticatable_ ? ')->setUser($request->user()' : '').')->files($request->allFiles())->withBody($request->all())',
                         '',
                         '$result = $this->validator->setUpdate(true)->validate($viewModel_, function() use ($id, $viewModel_) {',
                     ],
