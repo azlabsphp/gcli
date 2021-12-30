@@ -103,7 +103,7 @@ class ControllerClassBuilder implements ContractsControllerBuilder
      *
      * @var bool
      */
-    private $hasAuthenticatable_;
+    private $hasAuthenticatable_ = true;
 
     /**
      * Create an instance of the controller builder.
