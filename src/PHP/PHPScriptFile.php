@@ -13,9 +13,9 @@ declare(strict_types=1);
 
 namespace Drewlabs\ComponentGenerators\PHP;
 
+use Drewlabs\CodeGenerator\Contracts\NamespaceComponent;
 use Drewlabs\CodeGenerator\Contracts\Stringable;
 use Drewlabs\ComponentGenerators\Contracts\SourceFileInterface;
-use Drewlabs\CodeGenerator\Contracts\NamespaceComponent;
 
 class PHPScriptFile implements SourceFileInterface
 {
@@ -46,7 +46,6 @@ EOT;
     private $headers_;
 
     /**
-     * 
      * @var NamespaceComponent|Stringable
      */
     private $content_;
@@ -69,7 +68,6 @@ EOT;
     private $name_;
 
     /**
-     * 
      * @var mixed
      */
     private $namespace_;
@@ -121,6 +119,7 @@ EOT;
     public function setNamespace(string $namespace)
     {
         $this->namespace_ = $namespace;
+
         return $this;
     }
 

@@ -1,15 +1,28 @@
 <?php
 
+declare(strict_types=1);
+
+/*
+ * This file is part of the Drewlabs package.
+ *
+ * (c) Sidoine Azandrew <azandrewdevelopper@gmail.com>
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
+
 namespace Drewlabs\ComponentGenerators\Models;
 
 use Drewlabs\Support\Immutable\ValueObject;
 
 class RouteController extends ValueObject
 {
-
-    protected function getJsonableAttributes()
+    public function __serialize(): array
     {
-        return ['namespace', 'name'];
+        return [
+          'name' => $this->getName(),
+          'namespace' => $this->getNamespace(),
+        ];
     }
 
     public function getName()
@@ -22,11 +35,8 @@ class RouteController extends ValueObject
         return $this->namespace;
     }
 
-    public function __serialize(): array
+    protected function getJsonableAttributes()
     {
-        return [
-          'name' => $this->getName(),
-          'namespace' => $this->getNamespace()  
-        ];
+        return ['namespace', 'name'];
     }
 }

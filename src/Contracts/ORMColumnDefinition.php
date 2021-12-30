@@ -16,9 +16,9 @@ namespace Drewlabs\ComponentGenerators\Contracts;
 interface ORMColumnDefinition
 {
     /**
-     * Return the table that the column belongs to
-     * 
-     * @return string 
+     * Return the table that the column belongs to.
+     *
+     * @return string
      */
     public function getTable();
 
@@ -37,30 +37,30 @@ interface ORMColumnDefinition
     public function type();
 
     /**
-     * Returns the unique constraint rules on the column
-     * 
+     * Returns the unique constraint rules on the column.
+     *
      * @return UniqueKeyConstraintDefinition|null
      */
     public function unique();
 
     /**
-     * Returns the foreign constraint rules on the column
-     * 
+     * Returns the foreign constraint rules on the column.
+     *
      * @return ForeignKeyConstraintDefinition|null
      */
     public function foreignConstraint();
 
     /**
-     * Indicates whether the column is required or not
-     * 
-     * @return bool 
+     * Indicates whether the column is required or not.
+     *
+     * @return bool
      */
     public function required();
 
     /**
-     * Indicates whether the column is unsigned or not
-     * 
-     * @return bool 
+     * Indicates whether the column is unsigned or not.
+     *
+     * @return bool
      */
     public function unsigned();
 }

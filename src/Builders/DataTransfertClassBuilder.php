@@ -1,27 +1,44 @@
 <?php
 
+declare(strict_types=1);
+
+/*
+ * This file is part of the Drewlabs package.
+ *
+ * (c) Sidoine Azandrew <azandrewdevelopper@gmail.com>
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
+
 namespace Drewlabs\ComponentGenerators\Builders;
 
-use Drewlabs\CodeGenerator\Types\PHPTypesModifiers;
-use Drewlabs\ComponentGenerators\Contracts\ComponentBuilder;
-use Drewlabs\ComponentGenerators\Traits\HasNamespaceAttribute;
-use Drewlabs\Contracts\Data\Model\Parseable;
-use Drewlabs\Support\Immutable\ValueObject;
-use Illuminate\Support\Pluralizer;
 use Drewlabs\CodeGenerator\Contracts\Blueprint;
-use Drewlabs\ComponentGenerators\Helpers\ComponentBuilderHelpers;
-use Drewlabs\Support\Immutable\ModelValueObject;
-
 use function Drewlabs\CodeGenerator\Proxy\PHPClass;
 use function Drewlabs\CodeGenerator\Proxy\PHPClassMethod;
 use function Drewlabs\CodeGenerator\Proxy\PHPClassProperty;
 use function Drewlabs\CodeGenerator\Proxy\PHPVariable;
+use Drewlabs\CodeGenerator\Types\PHPTypesModifiers;
+use Drewlabs\ComponentGenerators\Contracts\ComponentBuilder;
+use Drewlabs\ComponentGenerators\Helpers\ComponentBuilderHelpers;
 use function Drewlabs\ComponentGenerators\Proxy\PHPScript;
 
-/** @package Drewlabs\ComponentGenerators\Builders */
+use Drewlabs\ComponentGenerators\Traits\HasNamespaceAttribute;
+use Drewlabs\Contracts\Data\Model\Parseable;
+use Drewlabs\Support\Immutable\ModelValueObject;
+use Drewlabs\Support\Immutable\ValueObject;
+use Illuminate\Support\Pluralizer;
+
 class DataTransfertClassBuilder implements ComponentBuilder
 {
     use HasNamespaceAttribute;
+
+    /**
+     * Service default class namespace.
+     *
+     * @var string
+     */
+    public const DEFAULT_NAMESPACE = 'App\\Dto';
 
     /**
      * @var string
@@ -34,28 +51,21 @@ class DataTransfertClassBuilder implements ComponentBuilder
     private const DEFAULT_PATH = 'Dto/';
 
     /**
-     * Service default class namespace.
-     *
-     * @var string
-     */
-    public const DEFAULT_NAMESPACE = 'App\\Dto';
-
-    /**
-     * List of attributes that can be json serializable
+     * List of attributes that can be json serializable.
      *
      * @var array
      */
     private $json_attributes_ = [];
 
     /**
-     * List of the data transfert object hidden properties
+     * List of the data transfert object hidden properties.
      *
      * @var array
      */
-    private $hidden_ = []; //
+    private $hidden_ = [];
 
     /**
-     * List of the data transfert object guarded properties
+     * List of the data transfert object guarded properties.
      *
      * @var array
      */
@@ -63,12 +73,12 @@ class DataTransfertClassBuilder implements ComponentBuilder
 
     public function __construct(
         array $json_attributes = [],
-        string $name = null,
+        ?string $name = null,
         ?string $namespace = null,
-        string $path = null
+        ?string $path = null
     ) {
         if ($name) {
-            $this->setName(drewlabs_core_strings_as_camel_case(Pluralizer::singular($name)) . 'Dto');
+            $this->setName(drewlabs_core_strings_as_camel_case(Pluralizer::singular($name)).'Dto');
         }
         // Set the component write path
         $this->setWritePath($path ?? self::DEFAULT_PATH);
@@ -80,7 +90,6 @@ class DataTransfertClassBuilder implements ComponentBuilder
     }
 
     /**
-     *
      * @param Parseable|string $model
      *
      * @return self
@@ -90,44 +99,44 @@ class DataTransfertClassBuilder implements ComponentBuilder
         if (null === $model) {
             return $this;
         }
-        $classname = ($model instanceof Parseable) || is_object($model) ? get_class($model) : $model;
+        $classname = ($model instanceof Parseable) || \is_object($model) ? \get_class($model) : $model;
         $is_class_path = drewlabs_core_strings_contains($classname, '\\'); // && class_exists($model); To uncomment if there is need to validate class existence
         $model_name = 'Test';
         $model_name = $is_class_path ?
             array_reverse(explode('\\', $classname))[0] : (drewlabs_core_strings_contains($classname, '\\') ?
                 array_reverse(explode('\\', $classname))[0] :
                 $classname);
-        $this->setName(drewlabs_core_strings_as_camel_case(Pluralizer::singular($model_name)) . 'Dto');
+        $this->setName(drewlabs_core_strings_as_camel_case(Pluralizer::singular($model_name)).'Dto');
 
         // creates an object to if the model is a PHP string
-        if (is_string($model) && class_exists($model)) {
-            $model = new $model;
+        if (\is_string($model) && class_exists($model)) {
+            $model = new $model();
         }
         // Get or load the fillable properties
         return $this->setAttributes(self::buildAsAssociativeArray(method_exists($model, 'getFillables') ? $model->getFillables() : []));
     }
 
     /**
-     * Set the list of hidden properties
+     * Set the list of hidden properties.
      *
-     * @param array $properties
      * @return self
      */
     public function setHidden(array $properties = [])
     {
         $this->hidden_ = $properties ?? [];
+
         return $this;
     }
 
     /**
-     * Set list of properties that are not assignable in the value object
+     * Set list of properties that are not assignable in the value object.
      *
-     * @param array $properties
      * @return self
      */
     public function setGuarded(array $properties = [])
     {
         $this->guarded_ = $properties ?? [];
+
         return $this;
     }
 
@@ -136,12 +145,13 @@ class DataTransfertClassBuilder implements ComponentBuilder
         if (!empty($attributes)) {
             $this->json_attributes_ = $attributes;
         }
+
         return $this;
     }
 
     public function build()
     {
-        $property = sprintf("return %s", PHPVariable('jsonProperty', 'array', $this->json_attributes_)->asRValue()->__toString());
+        $property = sprintf('return %s', PHPVariable('jsonProperty', 'array', $this->json_attributes_)->asRValue()->__toString());
         /**
          * @var BluePrint
          */
@@ -188,10 +198,11 @@ class DataTransfertClassBuilder implements ComponentBuilder
     public static function defaultClassPath(?string $classname = null)
     {
         $classname = $classname ?? 'Test';
-        if (drewlabs_core_strings_contains($classname, "\\")) {
+        if (drewlabs_core_strings_contains($classname, '\\')) {
             return $classname;
         }
-        return sprintf("%s%s%s", self::DEFAULT_NAMESPACE, "\\", $classname);
+
+        return sprintf('%s%s%s', self::DEFAULT_NAMESPACE, '\\', $classname);
     }
 
     public static function buildAsAssociativeArray(array $values = [])
@@ -205,6 +216,7 @@ class DataTransfertClassBuilder implements ComponentBuilder
             }
             $attributes[drewlabs_core_strings_as_camel_case(ltrim(rtrim($value, '_'), '_'), false)] = $value;
         }
+
         return $attributes;
     }
 }

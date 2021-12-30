@@ -15,31 +15,37 @@ namespace Drewlabs\ComponentGenerators\Builders;
 
 use Drewlabs\CodeGenerator\Contracts\Blueprint;
 use Drewlabs\CodeGenerator\Contracts\CallableInterface;
+use function Drewlabs\CodeGenerator\Proxy\PHPClass;
+use function Drewlabs\CodeGenerator\Proxy\PHPClassMethod;
+use function Drewlabs\CodeGenerator\Proxy\PHPClassProperty;
+use function Drewlabs\CodeGenerator\Proxy\PHPFunctionParameter;
 use Drewlabs\CodeGenerator\Types\PHPTypesModifiers;
 use Drewlabs\ComponentGenerators\Contracts\ComponentBuilder;
 use Drewlabs\ComponentGenerators\Helpers\ComponentBuilderHelpers;
+use function Drewlabs\ComponentGenerators\Proxy\PHPScript;
 use Drewlabs\ComponentGenerators\Traits\HasNamespaceAttribute;
 use Drewlabs\Contracts\Data\DML\DMLProvider;
 use Drewlabs\Contracts\Support\Actions\Action;
 use Drewlabs\Contracts\Support\Actions\ActionHandler;
+
 use Drewlabs\Contracts\Support\Actions\ActionPayload;
 use Drewlabs\Contracts\Support\Actions\ActionResult;
 use Drewlabs\Contracts\Support\Actions\Exceptions\InvalidActionException;
 use Drewlabs\Packages\Database\EloquentDMLManager;
 use Illuminate\Support\Pluralizer;
 
-use function Drewlabs\CodeGenerator\Proxy\PHPClass;
-use function Drewlabs\CodeGenerator\Proxy\PHPClassMethod;
-use function Drewlabs\CodeGenerator\Proxy\PHPClassProperty;
-use function Drewlabs\CodeGenerator\Proxy\PHPFunctionParameter;
-use function Drewlabs\ComponentGenerators\Proxy\PHPScript;
-use function Drewlabs\Packages\Database\Proxy\DMLManager;
-
 class ServiceClassBuilder implements ComponentBuilder
 {
     use HasNamespaceAttribute;
 
     public const ACTION_RESULT_FUNCTION_PATH = 'Drewlabs\\Support\\Proxy\\ActionResult';
+
+    /**
+     * Service default class namespace.
+     *
+     * @var string
+     */
+    public const DEFAULT_NAMESPACE = 'App\\Services';
 
     private const DML_MANAGER_PROXY = 'Drewlabs\\Packages\\Database\\Proxy\\DMLManager';
 
@@ -54,27 +60,20 @@ class ServiceClassBuilder implements ComponentBuilder
     private const DEFAULT_PATH = 'Services/';
 
     /**
-     * Service default class namespace.
-     *
-     * @var string
-     */
-    public const DEFAULT_NAMESPACE = 'App\\Services';
-
-    /**
      * @var bool
      */
     private $asCRUD_ = false;
 
     /**
-     * List of classes to imports
-     * 
+     * List of classes to imports.
+     *
      * @var array
      */
     private $classPaths_ = [];
 
     /**
-     * The name of the model the service will be bound to
-     * 
+     * The name of the model the service will be bound to.
+     *
      * @var string
      */
     private $modelName_ = 'Test';
@@ -84,8 +83,8 @@ class ServiceClassBuilder implements ComponentBuilder
         ?string $namespace = null,
         ?string $path = null
     ) {
-        if ($name) {        
-            $this->setName(drewlabs_core_strings_as_camel_case(Pluralizer::singular($name)) . 'Service');
+        if ($name) {
+            $this->setName(drewlabs_core_strings_as_camel_case(Pluralizer::singular($name)).'Service');
         }
         // Set the component write path
         $this->setWritePath($path ?? self::DEFAULT_PATH);
@@ -107,7 +106,7 @@ class ServiceClassBuilder implements ComponentBuilder
         } else {
             $this->modelName_ = $classPath;
         }
-        $name = drewlabs_core_strings_as_camel_case(Pluralizer::singular($this->modelName_)) . 'Service';
+        $name = drewlabs_core_strings_as_camel_case(Pluralizer::singular($this->modelName_)).'Service';
         $this->setName($name);
 
         return $this;
@@ -158,7 +157,7 @@ class ServiceClassBuilder implements ComponentBuilder
          */
         $component = (PHPClass($this->name_ ?? self::DEFAULT_NAME))
             ->addFunctionPath(self::DML_MANAGER_PROXY);
-            // ->addClassPath(EloquentDMLManager::class);
+        // ->addClassPath(EloquentDMLManager::class);
 
         foreach ($this->classPaths_ ?? [] as $value) {
             $component = $component->addClassPath($value);
@@ -238,9 +237,10 @@ class ServiceClassBuilder implements ComponentBuilder
     public static function defaultClassPath(?string $classname = null)
     {
         $classname = $classname ?? 'Test';
-        if (drewlabs_core_strings_contains($classname, "\\")) {
+        if (drewlabs_core_strings_contains($classname, '\\')) {
             return $classname;
         }
-        return sprintf("%s%s%s", self::DEFAULT_NAMESPACE, "\\", $classname);
+
+        return sprintf('%s%s%s', self::DEFAULT_NAMESPACE, '\\', $classname);
     }
 }

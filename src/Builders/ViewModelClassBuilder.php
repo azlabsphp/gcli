@@ -17,23 +17,30 @@ use Drewlabs\CodeGenerator\Contracts\Blueprint;
 use function Drewlabs\CodeGenerator\Proxy\PHPClass;
 use function Drewlabs\CodeGenerator\Proxy\PHPClassMethod;
 use function Drewlabs\CodeGenerator\Proxy\PHPVariable;
-use function Drewlabs\ComponentGenerators\Proxy\PHPScript;
-
 use Drewlabs\CodeGenerator\Types\PHPTypesModifiers;
+
 use Drewlabs\ComponentGenerators\Contracts\ComponentBuilder;
 use Drewlabs\ComponentGenerators\Helpers\ComponentBuilderHelpers;
+use function Drewlabs\ComponentGenerators\Proxy\PHPScript;
 use Drewlabs\ComponentGenerators\Traits\HasNamespaceAttribute;
 use Drewlabs\ComponentGenerators\Traits\ViewModelBuilder;
-use Drewlabs\Core\Validator\Traits\ViewModel;
-
 use Drewlabs\Contracts\Validator\CoreValidatable;
+
 use Drewlabs\Contracts\Validator\Validatable;
+use Drewlabs\Core\Validator\Traits\ViewModel;
 use Illuminate\Support\Pluralizer;
 
 class ViewModelClassBuilder implements ComponentBuilder
 {
     use HasNamespaceAttribute;
     use ViewModelBuilder;
+
+    /**
+     * Service default class namespace.
+     *
+     * @var string
+     */
+    public const DEFAULT_NAMESPACE = 'App\\Http\\ViewModels';
 
     /**
      * @var string
@@ -45,20 +52,13 @@ class ViewModelClassBuilder implements ComponentBuilder
      */
     private const DEFAULT_PATH = 'Http/ViewModels';
 
-    /**
-     * Service default class namespace.
-     *
-     * @var string
-     */
-    public const DEFAULT_NAMESPACE = 'App\\Http\\ViewModels';
-
     public function __construct(
         ?string $name = null,
         ?string $namespace = null,
         ?string $path = null
     ) {
         if (null !== $name) {
-            $this->setName(drewlabs_core_strings_as_camel_case(Pluralizer::singular($name)) . 'ViewModel');
+            $this->setName(drewlabs_core_strings_as_camel_case(Pluralizer::singular($name)).'ViewModel');
         }
         // Set the component write path
         $this->setWritePath($path ?? self::DEFAULT_PATH);
@@ -74,7 +74,7 @@ class ViewModelClassBuilder implements ComponentBuilder
         $is_class_path = drewlabs_core_strings_contains($model, '\\'); // && class_exists($model); To uncomment if there is need to validate class existence
         $model_name = 'Test';
         $model_name = $is_class_path ? array_reverse(explode('\\', $model))[0] : (drewlabs_core_strings_contains($model, '\\') ? array_reverse(explode('\\', $model))[0] : $model);
-        $name = drewlabs_core_strings_as_camel_case(Pluralizer::singular($model_name)) . 'ViewModel';
+        $name = drewlabs_core_strings_as_camel_case(Pluralizer::singular($model_name)).'ViewModel';
         $this->setName($name);
 
         return $this;
@@ -95,7 +95,7 @@ class ViewModelClassBuilder implements ComponentBuilder
                     PHPTypesModifiers::PUBLIC,
                     'Returns a fluent validation rules'
                 )->addContents(
-                    'return ' . PHPVariable('rules', null, $this->rules_ ?? [])->asRValue()->__toString()
+                    'return '.PHPVariable('rules', null, $this->rules_ ?? [])->asRValue()->__toString()
                 )
             )->addMethod(
                 PHPClassMethod(
@@ -121,7 +121,7 @@ class ViewModelClassBuilder implements ComponentBuilder
                         'array<string,string|string[]>',
                         PHPTypesModifiers::PUBLIC,
                         'Returns a fluent validation rules applied during update actions'
-                    )->addContents('return ' . PHPVariable('rules', null, $this->updateRules_ ?? [])->asRValue()->__toString())
+                    )->addContents('return '.PHPVariable('rules', null, $this->updateRules_ ?? [])->asRValue()->__toString())
                 );
         } else {
             /**
@@ -152,9 +152,10 @@ class ViewModelClassBuilder implements ComponentBuilder
     public static function defaultClassPath(?string $classname = null)
     {
         $classname = $classname ?? 'Test';
-        if (drewlabs_core_strings_contains($classname, "\\")) {
+        if (drewlabs_core_strings_contains($classname, '\\')) {
             return $classname;
         }
-        return sprintf("%s%s%s", self::DEFAULT_NAMESPACE, "\\", $classname);
+
+        return sprintf('%s%s%s', self::DEFAULT_NAMESPACE, '\\', $classname);
     }
 }

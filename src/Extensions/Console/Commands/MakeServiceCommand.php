@@ -1,19 +1,37 @@
 <?php
 
+declare(strict_types=1);
+
+/*
+ * This file is part of the Drewlabs package.
+ *
+ * (c) Sidoine Azandrew <azandrewdevelopper@gmail.com>
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
+
 namespace Drewlabs\ComponentGenerators\Extensions\Console\Commands;
 
 use Drewlabs\ComponentGenerators\Builders\EloquentORMModelBuilder;
 use Drewlabs\ComponentGenerators\Helpers\ComponentBuilderHelpers;
+use function Drewlabs\ComponentGenerators\Proxy\ComponentsScriptWriter;
 use Illuminate\Console\Command;
 use Illuminate\Container\Container;
-use Illuminate\Contracts\Foundation\Application;
 
-use function Drewlabs\ComponentGenerators\Proxy\ComponentsScriptWriter;
+use Illuminate\Contracts\Foundation\Application;
 
 class MakeServiceCommand extends Command
 {
+    protected $signature = 'drewlabs:mvc:make:service '
+        .'{--namespace= : Controller namespace}'
+        .'{--path= : Project source code path}'
+        .'{--name= : Controller name}'
+        .'{--model= : Model attached to the controller generated code}'
+        .'{--asCRUD : Generate a CRUD Service }';
+
+    protected $description = 'Creates a Drewlabs package MVC controller';
     /**
-     *
      * @var Application
      */
     private $app;
@@ -24,15 +42,6 @@ class MakeServiceCommand extends Command
         parent::__construct();
     }
 
-    protected $signature = 'drewlabs:mvc:make:service '
-        . '{--namespace= : Controller namespace}'
-        . '{--path= : Project source code path}'
-        . '{--name= : Controller name}'
-        . '{--model= : Model attached to the controller generated code}'
-        . '{--asCRUD : Generate a CRUD Service }';
-
-    protected $description = 'Creates a Drewlabs package MVC controller';
-
     public function handle()
     {
 
@@ -41,7 +50,7 @@ class MakeServiceCommand extends Command
         $model = $this->option('model') ?
             EloquentORMModelBuilder::defaultClassPath($this->option('model')) :
             null;
-        $namespace = $this->option('namespace') ?? "\\App\\Services";
+        $namespace = $this->option('namespace') ?? '\\App\\Services';
         $basePath = $this->app->basePath($this->option('path') ?? 'app');
         // # End of parameters initialization
         ComponentsScriptWriter($basePath)->write(

@@ -46,10 +46,9 @@ interface ControllerBuilder extends ComponentBuilder
     public function bindViewModel(string $viewModelClass);
 
     /**
-     * Bind a service class definition to the controller
-     * 
-     * @param string $serviceClass 
-     * @return self 
+     * Bind a service class definition to the controller.
+     *
+     * @return self
      */
     public function bindService(string $serviceClass);
 
@@ -61,16 +60,14 @@ interface ControllerBuilder extends ComponentBuilder
     public function setName(string $value);
 
     /**
-     * 
-     * @param string $dtoClass 
-     * @return self 
+     * @return self
      */
     public function bindDTOObject(string $dtoClass);
 
     /**
-     * Returns the name of controller actions route name
-     * 
-     * @return string 
+     * Returns the name of controller actions route name.
+     *
+     * @return string
      */
     public function routeName();
 }

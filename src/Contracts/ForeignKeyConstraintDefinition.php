@@ -1,36 +1,45 @@
 <?php
 
+declare(strict_types=1);
+
+/*
+ * This file is part of the Drewlabs package.
+ *
+ * (c) Sidoine Azandrew <azandrewdevelopper@gmail.com>
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
+
 namespace Drewlabs\ComponentGenerators\Contracts;
 
 interface ForeignKeyConstraintDefinition
 {
-
     /**
-     * Local table name
-     * 
-     * @return string 
+     * Local table name.
+     *
+     * @return string
      */
     public function getLocalTableName();
 
     /**
-     * Local columns names
-     * 
-     * @return string|string[] 
+     * Local columns names.
+     *
+     * @return string|string[]
      */
     public function localColumns();
 
     /**
-     * Foreign table name
-     * 
-     * @return string 
+     * Foreign table name.
+     *
+     * @return string
      */
     public function getForeignTableName();
 
     /**
-     * Foreign column names
-     * 
-     * @return string[] 
+     * Foreign column names.
+     *
+     * @return string[]
      */
     public function getForeignColumns();
-
 }

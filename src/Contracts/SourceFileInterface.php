@@ -1,24 +1,32 @@
 <?php
 
+declare(strict_types=1);
+
+/*
+ * This file is part of the Drewlabs package.
+ *
+ * (c) Sidoine Azandrew <azandrewdevelopper@gmail.com>
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
+
 namespace Drewlabs\ComponentGenerators\Contracts;
 
-use Drewlabs\CodeGenerator\Contracts\Stringable;
 use Drewlabs\CodeGenerator\Contracts\NamespaceComponent;
+use Drewlabs\CodeGenerator\Contracts\Stringable;
 
 interface SourceFileInterface extends Writable, Stringable
 {
     /**
-     * Set the source code namespace
-     * 
-     * @param string $namespace 
-     * @return self 
+     * Set the source code namespace.
+     *
+     * @return self
      */
     public function setNamespace(string $namespace);
 
     /**
-     * Return the source code namespace
-     * 
-     * @return null|string 
+     * Return the source code namespace.
      */
     public function getNamespace(): ?string;
 
@@ -32,16 +40,16 @@ interface SourceFileInterface extends Writable, Stringable
     public function setHeaders($headers);
 
     /**
-     * Returns the name of the source file without the extension part
-     * 
-     * @return string 
+     * Returns the name of the source file without the extension part.
+     *
+     * @return string
      */
     public function getName();
 
     /**
-     * Returns the content of the source file
-     * 
-     * @return NamespaceComponent 
+     * Returns the content of the source file.
+     *
+     * @return NamespaceComponent
      */
     public function getContent();
 }

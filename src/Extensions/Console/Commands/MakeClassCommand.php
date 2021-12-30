@@ -1,20 +1,37 @@
 <?php
 
+declare(strict_types=1);
+
+/*
+ * This file is part of the Drewlabs package.
+ *
+ * (c) Sidoine Azandrew <azandrewdevelopper@gmail.com>
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
+
 namespace Drewlabs\ComponentGenerators\Extensions\Console\Commands;
 
+use function Drewlabs\CodeGenerator\Proxy\PHPClass;
 use Drewlabs\ComponentGenerators\Helpers\ComponentBuilderHelpers;
+use function Drewlabs\ComponentGenerators\Proxy\ComponentsScriptWriter;
+use function Drewlabs\ComponentGenerators\Proxy\PHPScript;
+
 use Illuminate\Console\Command;
 use Illuminate\Container\Container;
 use Illuminate\Contracts\Foundation\Application;
 
-use function Drewlabs\CodeGenerator\Proxy\PHPClass;
-use function Drewlabs\ComponentGenerators\Proxy\ComponentsScriptWriter;
-use function Drewlabs\ComponentGenerators\Proxy\PHPScript;
-
 class MakeClassCommand extends Command
 {
+    protected $signature = 'drewlabs:mvc:make:class '
+        .'{--namespace= : View model namespace }'
+        .'{--path= : Project source code path }'
+        .'{--name= : Generated view model name }'
+        .'{--final : Creates a final class }';
+
+    protected $description = 'Creates a Drewlabs package MVC controller';
     /**
-     *
      * @var Application
      */
     private $app;
@@ -25,14 +42,6 @@ class MakeClassCommand extends Command
         parent::__construct();
     }
 
-    protected $signature = 'drewlabs:mvc:make:class '
-        . '{--namespace= : View model namespace }'
-        . '{--path= : Project source code path }'
-        . '{--name= : Generated view model name }'
-        . '{--final : Creates a final class }';
-
-    protected $description = 'Creates a Drewlabs package MVC controller';
-
     public function handle()
     {
         // Parameters initialization
@@ -40,7 +49,7 @@ class MakeClassCommand extends Command
         if (null === $name) {
             return $this->error('Error while building class: name option is required!');
         }
-        $namespace = $this->option('namespace') ?? "\\App";
+        $namespace = $this->option('namespace') ?? '\\App';
         $basePath = $this->option('path') ?? 'app';
         // # End of parameters initialization
         $component = PHPClass($name)
@@ -54,7 +63,7 @@ class MakeClassCommand extends Command
                 $component->getName(),
                 $component,
                 ComponentBuilderHelpers::rebuildComponentPath(
-                    $namespace ?? "\\App",
+                    $namespace ?? '\\App',
                     $basePath
                 )
             )->setNamespace($component->getNamespace())

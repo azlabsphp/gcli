@@ -38,6 +38,7 @@ class ORMColumnDefinition extends ValueObject implements ContractsORMColumnDefin
     public function setUnique(UniqueKeyConstraintDefinition $value)
     {
         $self = $this->copyWith(['uniqueKeyConstraint' => $value]);
+
         return $self;
     }
 
@@ -57,8 +58,8 @@ class ORMColumnDefinition extends ValueObject implements ContractsORMColumnDefin
     }
 
     /**
-     * Returns the foreign constraint rules on the column
-     * 
+     * Returns the foreign constraint rules on the column.
+     *
      * @return ForeignKeyConstraintDefinition|null
      */
     public function foreignConstraint()
@@ -69,6 +70,15 @@ class ORMColumnDefinition extends ValueObject implements ContractsORMColumnDefin
     public function getTable()
     {
         return $this->table_;
+    }
+
+    public function jsonSerialize()
+    {
+        $list = parent::jsonSerialize();
+
+        return array_filter($list, static function ($value) {
+            return null !== $value;
+        });
     }
 
     protected function getJsonableAttributes()
@@ -82,13 +92,5 @@ class ORMColumnDefinition extends ValueObject implements ContractsORMColumnDefin
             'required_' => 'required',
             'unsigned_' => 'unsigned',
         ];
-    }
-
-    public function jsonSerialize()
-    {
-        $list = parent::jsonSerialize();
-        return array_filter($list, function ($value) {
-            return null !== $value;
-        });
     }
 }

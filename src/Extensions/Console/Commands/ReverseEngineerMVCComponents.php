@@ -1,56 +1,54 @@
 <?php
 
+declare(strict_types=1);
+
+/*
+ * This file is part of the Drewlabs package.
+ *
+ * (c) Sidoine Azandrew <azandrewdevelopper@gmail.com>
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
+
 namespace Drewlabs\ComponentGenerators\Extensions\Console\Commands;
 
-use Drewlabs\ComponentGenerators\Extensions\ProgressbarIndicator;
 use Drewlabs\ComponentGenerators\Extensions\Helpers\ReverseEngineerTaskRunner;
+use Drewlabs\ComponentGenerators\Extensions\ProgressbarIndicator;
 use Drewlabs\ComponentGenerators\Helpers\ComponentBuilderHelpers;
 use Drewlabs\Filesystem\Path;
-use Illuminate\Console\Command;
-use Illuminate\Container\Container;
-
 use function Drewlabs\Filesystem\Proxy\Path;
+use Illuminate\Console\Command;
+
+use Illuminate\Container\Container;
 
 class ReverseEngineerMVCComponents extends Command
 {
-
-    /**
-     *
-     * @var Path
-     */
-    private $path_;
-
-    /**
-     *
-     * @var mixed
-     */
-    private $routesCachePath_;
-
     /**
      * The name and signature of the console command.
      *
      * @var string
      */
     protected $signature = 'drewlabs:mvc:create {--srcPath= : Path to the business logic component folder}'
-        . '{--package= : Package namespace for components}'
-        . '{--subPackage= : Subpackage will group each component part in a subfolder}'
-        . '{--connectionURL= : Database connection URL}'
-        . '{--dbname= : Database name}'
-        . '{--host= : Database host name}'
-        . '{--port= : Database host port number}'
-        . '{--user= : Database authentication user}'
-        . '{--password= : Database authentication password}'
-        . '{--driver= : Database driver name}'
-        . '{--server_version= : Database server version}'
-        . '{--charset= : Database Connection collation}'
-        . '{--unix_socket= : Unix socket to use for connections}'
-        . '{--routePrefix= : The prefix for the generated route definitions}'
-        . '{--middleware= : Middleware group defined for the routes prefix}'
-        . '{--routingfilename= : Routing filename (Default = web.php)}'
-        . '{--excepts=* : List of tables not to be included in the generated output}'
-        . '{--disableCache : Caching tables not supported}'
-        . '{--noAuth : Indicates whether project controllers supports authentication}'
-        . '{--schema= : Schema prefix to database tables}';
+        .'{--package= : Package namespace for components}'
+        .'{--subPackage= : Subpackage will group each component part in a subfolder}'
+        .'{--connectionURL= : Database connection URL}'
+        .'{--dbname= : Database name}'
+        .'{--host= : Database host name}'
+        .'{--port= : Database host port number}'
+        .'{--user= : Database authentication user}'
+        .'{--password= : Database authentication password}'
+        .'{--driver= : Database driver name}'
+        .'{--server_version= : Database server version}'
+        .'{--charset= : Database Connection collation}'
+        .'{--unix_socket= : Unix socket to use for connections}'
+        .'{--routePrefix= : The prefix for the generated route definitions}'
+        .'{--middleware= : Middleware group defined for the routes prefix}'
+        .'{--routingfilename= : Routing filename (Default = web.php)}'
+        .'{--excepts=* : List of tables not to be included in the generated output}'
+        .'{--disableCache : Caching tables not supported}'
+        .'{--noAuth : Indicates whether project controllers supports authentication}'
+        .'{--schema= : Schema prefix to database tables}';
 
     /**
      * The console command description.
@@ -58,6 +56,16 @@ class ReverseEngineerMVCComponents extends Command
      * @var string
      */
     protected $description = 'Reverse engineer database table to a full mvc components definitions';
+
+    /**
+     * @var Path
+     */
+    private $path_;
+
+    /**
+     * @var mixed
+     */
+    private $routesCachePath_;
 
     public function __construct()
     {
@@ -67,15 +75,15 @@ class ReverseEngineerMVCComponents extends Command
             drewlabs_component_generator_cache_path()
         )->canonicalize()->__toString();
         $this->path_ = sprintf(
-            "%s%s%s",
+            '%s%s%s',
             $cachePath,
-            DIRECTORY_SEPARATOR,
+            \DIRECTORY_SEPARATOR,
             '__components__.dump'
         );
         $this->routesCachePath_ = sprintf(
-            "%s%s%s",
+            '%s%s%s',
             $cachePath,
-            DIRECTORY_SEPARATOR,
+            \DIRECTORY_SEPARATOR,
             '__routes__.dump'
         );
     }
@@ -97,13 +105,13 @@ class ReverseEngineerMVCComponents extends Command
                 sprintf(
                     'pdo_%s',
                     $this->option('driver')
-                )) : sprintf("pdo_%s", $default_driver);
+                )) : sprintf('pdo_%s', $default_driver);
         $database = $this->option('dbname') ?? config("database.connections.$default_driver.database");
         $port = $this->option('port') ?? config("database.connections.$default_driver.port");
         $username = $this->option('user') ?? config("database.connections.$default_driver.username");
         $host = $this->option('host') ?? config("database.connections.$default_driver.host");
         $password = $this->option('password') ?? config("database.connections.$default_driver.password");
-        $charset = $this->option('charset') ?? ($driver === 'pdo_mysql' ? 'utf8mb4' : 'utf8');
+        $charset = $this->option('charset') ?? ('pdo_mysql' === $driver ? 'utf8mb4' : 'utf8');
         $server_version = $this->option('server_version') ?? null;
 
         $exceptions = $this->option('excepts') ?? [];
@@ -116,7 +124,6 @@ class ReverseEngineerMVCComponents extends Command
             }
         }
 
-        //
         $noAuth = $this->option('noAuth');
         $namespace = $this->option('package') ?? 'App';
         $subPackage = $this->option('subPackage');
@@ -124,21 +131,21 @@ class ReverseEngineerMVCComponents extends Command
 
         if (null !== ($url = $this->option('connectionURL'))) {
             $options = [
-                'url' => $url
+                'url' => $url,
             ];
         } else {
             $options = [
-                "dbname" => $database,
-                "host" => $host ?? '127.0.0.1',
-                "port" => $port ?? 3306,
-                "user" => $username,
-                "password" => $password,
-                "driver" => $driver ?? 'pdo_sqlite',
-                "server_version" => $server_version,
-                "charset" => $charset,
+                'dbname' => $database,
+                'host' => $host ?? '127.0.0.1',
+                'port' => $port ?? 3306,
+                'user' => $username,
+                'password' => $password,
+                'driver' => $driver ?? 'pdo_sqlite',
+                'server_version' => $server_version,
+                'charset' => $charset,
             ];
         }
-        (new ReverseEngineerTaskRunner)->run(
+        (new ReverseEngineerTaskRunner())->run(
             $options,
             $srcPath,
             $routingfilename,
@@ -157,11 +164,12 @@ class ReverseEngineerMVCComponents extends Command
             $this->routesCachePath_,
             // Creates the progress indicator
             function ($values) {
-                $this->info(sprintf("Started reverse engineering process...\n"));
-                return new ProgressbarIndicator($this->output->createProgressBar(count($values)));
+                $this->info("Started reverse engineering process...\n");
+
+                return new ProgressbarIndicator($this->output->createProgressBar(\count($values)));
             },
             function () {
-                $this->info(sprintf("\nReverse engineering completed successfully!\n"));
+                $this->info("\nReverse engineering completed successfully!\n");
             }
         );
     }

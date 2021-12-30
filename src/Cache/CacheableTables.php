@@ -1,23 +1,23 @@
 <?php
 
+declare(strict_types=1);
+
+/*
+ * This file is part of the Drewlabs package.
+ *
+ * (c) Sidoine Azandrew <azandrewdevelopper@gmail.com>
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
+
 namespace Drewlabs\ComponentGenerators\Cache;
 
 use Drewlabs\ComponentGenerators\Contracts\Cacheable as ContractsCacheable;
 use Drewlabs\Support\Immutable\ValueObject;
 
-/** @package Drewlabs\ComponentGenerators\Extensions */
 class CacheableTables extends ValueObject implements ContractsCacheable
 {
-
-    protected function getJsonableAttributes()
-    {
-        return [
-            'tables',
-            'namespace',
-            'subNamespace'
-        ];
-    }
-
     public function getTables()
     {
         return $this->tables ?? [];
@@ -38,7 +38,7 @@ class CacheableTables extends ValueObject implements ContractsCacheable
         return [
             'tables' => $this->getTables(),
             'namespace' => $this->getNamespace(),
-            'subNamespace' => $this->getSubNamespace()
+            'subNamespace' => $this->getSubNamespace(),
         ];
     }
 
@@ -50,5 +50,14 @@ class CacheableTables extends ValueObject implements ContractsCacheable
     public function serialize()
     {
         return serialize($this->toArray());
+    }
+
+    protected function getJsonableAttributes()
+    {
+        return [
+            'tables',
+            'namespace',
+            'subNamespace',
+        ];
     }
 }

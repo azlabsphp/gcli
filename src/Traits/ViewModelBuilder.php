@@ -71,6 +71,7 @@ trait ViewModelBuilder
     public function addInputsTraits()
     {
         $this->hasInputsTraits_ = true;
+
         return $this;
     }
 }

@@ -14,33 +14,27 @@ declare(strict_types=1);
 namespace Drewlabs\ComponentGenerators\Builders;
 
 use Drewlabs\CodeGenerator\Contracts\Blueprint;
+use function Drewlabs\CodeGenerator\Proxy\PHPClass;
+use function Drewlabs\CodeGenerator\Proxy\PHPClassMethod;
+use function Drewlabs\CodeGenerator\Proxy\PHPClassProperty;
+use function Drewlabs\CodeGenerator\Proxy\PHPFunctionParameter;
 use Drewlabs\CodeGenerator\Types\PHPTypesModifiers;
 use Drewlabs\ComponentGenerators\Contracts\ControllerBuilder as ContractsControllerBuilder;
 use Drewlabs\ComponentGenerators\Helpers\ComponentBuilderHelpers;
+use function Drewlabs\ComponentGenerators\Proxy\PHPScript;
 use Drewlabs\ComponentGenerators\Traits\HasNamespaceAttribute;
 use Drewlabs\Contracts\Support\Actions\ActionHandler;
 use Drewlabs\Contracts\Validator\Validator;
+
 use Drewlabs\Packages\Http\Contracts\IActionResponseHandler;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Pluralizer;
 
-use function Drewlabs\CodeGenerator\Proxy\PHPClass;
-use function Drewlabs\CodeGenerator\Proxy\PHPClassMethod;
-use function Drewlabs\CodeGenerator\Proxy\PHPClassProperty;
-use function Drewlabs\CodeGenerator\Proxy\PHPFunctionParameter;
-use function Drewlabs\ComponentGenerators\Proxy\PHPScript;
-
 class ControllerClassBuilder implements ContractsControllerBuilder
 {
     use HasNamespaceAttribute;
-
-    private const ACTION_FUNCTION_PATH = 'Drewlabs\\Support\\Proxy\\Action';
-
-    private const DEFAULT_NAME = 'TestsController';
-
-    private const DEFAULT_PATH = 'Http/Controllers/';
 
     /**
      * Controller class namespace.
@@ -48,6 +42,12 @@ class ControllerClassBuilder implements ContractsControllerBuilder
      * @var string
      */
     public const DEFAULT_NAMESPACE = 'App\\Http\\Controllers';
+
+    private const ACTION_FUNCTION_PATH = 'Drewlabs\\Support\\Proxy\\Action';
+
+    private const DEFAULT_NAME = 'TestsController';
+
+    private const DEFAULT_PATH = 'Http/Controllers/';
 
     /**
      * @var bool
@@ -75,33 +75,31 @@ class ControllerClassBuilder implements ContractsControllerBuilder
     private $serviceClass_;
 
     /**
-     *
      * @var false
      */
     private $hasActionHandlerInterface_ = false;
 
     /**
-     * List of classes to imports
+     * List of classes to imports.
      *
      * @var array
      */
     private $classPaths_ = [];
 
     /**
-     *
      * @var string
      */
     private $modelName_ = 'Test';
 
     /**
-     * Route name for various resources actions
+     * Route name for various resources actions.
      *
      * @var string
      */
     private $routeName_;
 
     /**
-     * Indicates whether the controller should provide authenticatable handlers
+     * Indicates whether the controller should provide authenticatable handlers.
      *
      * @var bool
      */
@@ -118,7 +116,7 @@ class ControllerClassBuilder implements ContractsControllerBuilder
         ?string $path = null
     ) {
         if ($name) {
-            $this->setName(sprintf("%s%s", drewlabs_core_strings_as_camel_case(Pluralizer::plural($name)), 'Controller'));
+            $this->setName(sprintf('%s%s', drewlabs_core_strings_as_camel_case(Pluralizer::plural($name)), 'Controller'));
         }
         // Set the component write path
         $this->setWritePath($path ?? self::DEFAULT_PATH);
@@ -156,7 +154,7 @@ class ControllerClassBuilder implements ContractsControllerBuilder
         } else {
             $this->modelName_ = drewlabs_core_strings_contains($value, '\\') ? array_reverse(explode('\\', $value))[0] : $value;
         }
-        $this->setName(sprintf("%s%s", drewlabs_core_strings_as_camel_case(Pluralizer::plural($this->modelName_)), 'Controller'));
+        $this->setName(sprintf('%s%s', drewlabs_core_strings_as_camel_case(Pluralizer::plural($this->modelName_)), 'Controller'));
         // TODO Set the view model class property if specified
         if ($is_class_path && $asViewModelClass) {
             $this->bindViewModel($value);
@@ -171,6 +169,7 @@ class ControllerClassBuilder implements ContractsControllerBuilder
             $this->classPaths_[] = $viewModelClass;
             $this->viewModelClass_ = $this->getClassFromClassPath($viewModelClass);
         }
+
         return $this;
     }
 
@@ -180,9 +179,9 @@ class ControllerClassBuilder implements ContractsControllerBuilder
             $this->classPaths_[] = $dtoClass;
             $this->dtoClass_ = $this->getClassFromClassPath($dtoClass);
         }
+
         return $this;
     }
-
 
     public function bindService(string $serviceClass)
     {
@@ -191,7 +190,7 @@ class ControllerClassBuilder implements ContractsControllerBuilder
             return $this;
         }
 
-        $clazz = class_exists($serviceClass) ? new $serviceClass : $clazz;
+        $clazz = class_exists($serviceClass) ? new $serviceClass() : $clazz;
         if ((null !== $clazz) && ($clazz instanceof ActionHandler)) {
             $this->hasActionHandlerInterface_ = true;
             $this->serviceClass_ = $this->getClassFromClassPath($serviceClass);
@@ -199,6 +198,7 @@ class ControllerClassBuilder implements ContractsControllerBuilder
             $this->serviceClass_ = $this->getClassFromClassPath($serviceClass);
         }
         $this->classPaths_[] = $serviceClass;
+
         return $this;
     }
 
@@ -210,6 +210,7 @@ class ControllerClassBuilder implements ContractsControllerBuilder
     public function withoutAuthenticatable()
     {
         $this->hasAuthenticatable_ = false;
+
         return $this;
     }
 
@@ -249,10 +250,10 @@ class ControllerClassBuilder implements ContractsControllerBuilder
                 ),
                 array_merge([
                     '$this->validator = $validator',
-                    '$this->response = $response'
+                    '$this->response = $response',
                 ], (null !== $this->serviceClass_) || $this->hasActionHandlerInterface_ ?
                     [
-                        $this->hasActionHandlerInterface_ && (null !== $this->serviceClass_) ? "\$this->service = \$service ?? new $this->serviceClass_()" : "\$this->service = \$service"
+                        $this->hasActionHandlerInterface_ && (null !== $this->serviceClass_) ? "\$this->service = \$service ?? new $this->serviceClass_()" : '$this->service = $service',
                     ] : [])
             )
             ->addToNamespace($this->namespace_ ?? self::DEFAULT_NAMESPACE);
@@ -309,7 +310,7 @@ class ControllerClassBuilder implements ContractsControllerBuilder
                     PHPTypesModifiers::PUBLIC,
                     [
                         'Handles http request action',
-                        '@Route /POST /' . $this->routeName_ . '/{id}',
+                        '@Route /POST /'.$this->routeName_.'/{id}',
                     ]
                 )
             );
@@ -326,21 +327,33 @@ class ControllerClassBuilder implements ContractsControllerBuilder
         )->setNamespace($component->getNamespace());
     }
 
+    public static function defaultClassPath(?string $classname = null)
+    {
+        $classname = $classname ?? 'Test';
+        if (drewlabs_core_strings_contains($classname, '\\')) {
+            return $classname;
+        }
+
+        return sprintf('%s%s%s', self::DEFAULT_NAMESPACE, '\\', $classname);
+    }
+
     private function setRouteName(string $classname)
     {
         $this->routeName_ = ComponentBuilderHelpers::buildRouteName($classname ?? '');
+
         return $this;
     }
 
     private function getClassFromClassPath(string $classPath)
     {
-        $list = explode("\\", $classPath);
+        $list = explode('\\', $classPath);
+
         return array_reverse(array_values($list))[0];
     }
 
     private function addResourcesActions(Blueprint $component)
     {
-        $validatable = null === $this->viewModelClass_ ? '[]' : sprintf("%s::class", $this->viewModelClass_);
+        $validatable = null === $this->viewModelClass_ ? '[]' : sprintf('%s::class', $this->viewModelClass_);
         $actions = [
             [
                 'name' => 'index',
@@ -350,7 +363,7 @@ class ControllerClassBuilder implements ContractsControllerBuilder
                 ],
                 'descriptors' => [
                     'Display or Returns a list of items',
-                    '@Route /GET /' . $this->routeName_ . '[/{$id}]',
+                    '@Route /GET /'.$this->routeName_.'[/{$id}]',
                 ],
                 'returns' => JsonResponse::class,
                 'contents' => array_merge(
@@ -358,20 +371,20 @@ class ControllerClassBuilder implements ContractsControllerBuilder
                         'if (null !== $id) {',
                         "\treturn \$this->show(\$request, \$id)",
                         '}',
-                        $this->hasAuthenticatable_  ? "// TODO : Provides policy handlers" : null,
+                        $this->hasAuthenticatable_ ? '// TODO : Provides policy handlers' : null,
                     ],
                     // Transformer part
                     $this->dtoClass_ ? [
-                        "\$tranformFunc_ = function( \$items) {",
+                        '$tranformFunc_ = function( $items) {',
                         "\treturn map_query_result(\$items, function (\$value) {",
                         "\t\treturn \$value ? new $this->dtoClass_(\$value) : \$value",
                         "\t});",
-                        "};"
+                        '};',
                     ] : [],
                     $this->isResourceController_ ? [
                         (null !== $this->modelName_) ? "\$filters = drewlabs_databse_parse_client_request_query(new $this->modelName_, \$request)" : null,
-                        "",
-                        "\$result = \$this->service->handle(Action([",
+                        '',
+                        '$result = $this->service->handle(Action([',
                         "\t'type' => 'SELECT',",
                         "\t'payload' => \$request->has('per_page') ? [",
                         "\t\t\$filters,",
@@ -383,11 +396,10 @@ class ControllerClassBuilder implements ContractsControllerBuilder
                         "\t\t\$filters,",
                         "\t\t\$request->has('_columns') ? (is_array(\$colums_ = \$request->get('_columns')) ? \$colums_ : (@json_decode(\$colums_, true) ?? ['*']))  : ['*'],",
                         "\t],",
-                        $this->dtoClass_ ? "]), \$tranformFunc_)" : "]))",
-                        "return \$this->response->ok(\$result)", //
+                        $this->dtoClass_ ? ']), $tranformFunc_)' : ']))',
+                        'return $this->response->ok($result)',
                     ] : []
-
-                ), //
+                ),
             ],
             [
                 'name' => 'show',
@@ -397,26 +409,26 @@ class ControllerClassBuilder implements ContractsControllerBuilder
                 ],
                 'descriptors' => [
                     'Display or Returns an item matching the specified id',
-                    '@Route /GET /' . $this->routeName_ . '/{$id}',
+                    '@Route /GET /'.$this->routeName_.'/{$id}',
                 ],
                 'returns' => JsonResponse::class,
                 'contents' => array_merge(
                     [
-                        $this->hasAuthenticatable_  ? "// TODO: Provide Policy handlers if required" : null,
-                        "\$result = \$this->service->handle(Action([",
+                        $this->hasAuthenticatable_ ? '// TODO: Provide Policy handlers if required' : null,
+                        '$result = $this->service->handle(Action([',
                         "\t'type' => 'SELECT',",
                         "\t'payload' => [",
                         "\t\t\$id,",
                         "\t\t\$request->has('_columns') ? (is_array(\$colums_ = \$request->get('_columns')) ? \$colums_ : (@json_decode(\$colums_, true) ?? ['*'])): ['*'],",
-                        "\t],"
+                        "\t],",
                     ],
                     null !== $this->dtoClass_ ? [
-                        "]), function(\$value) {",
+                        ']), function($value) {',
                         "\treturn null !== \$value ? new $this->dtoClass_(\$value->toArray()) : \$value",
-                        "});"
-                    ] : ["]))"],
+                        '});',
+                    ] : [']))'],
                     [
-                        "return \$this->response->ok(\$result)", //
+                        'return $this->response->ok($result)',
                     ]
                 ),
             ],
@@ -427,26 +439,26 @@ class ControllerClassBuilder implements ContractsControllerBuilder
                 ],
                 'descriptors' => [
                     'Stores a new item in the storage',
-                    '@Route /POST /' . $this->routeName_,
+                    '@Route /POST /'.$this->routeName_,
                 ],
                 'returns' => JsonResponse::class,
                 'contents' => array_merge(
                     [
-                        "// validate request inputs",
+                        '// validate request inputs',
                     ],
-                    $validatable === '[]' ? [
+                    '[]' === $validatable ? [
                         "\$result = \$this->validator->validate($validatable, \$request->all(), function() use (\$request) {",
-                        "// After validation logic goes here...",
+                        '// After validation logic goes here...',
                     ] : [
-                        "\$viewModel_ = (new " . drewlabs_core_strings_replace('::class', '', $validatable) . ($this->hasAuthenticatable_ ? ")->setUser(\$request->user() " : "") . ")->files(\$request->allFiles())->withBody(\$request->all())",
-                        "",
-                        "\$result = \$this->validator->validate(\$viewModel_, function() use (\$viewModel_) {",
+                        '$viewModel_ = (new '.drewlabs_core_strings_replace('::class', '', $validatable).($this->hasAuthenticatable_ ? ')->setUser($request->user() ' : '').')->files($request->allFiles())->withBody($request->all())',
+                        '',
+                        '$result = $this->validator->validate($viewModel_, function() use ($viewModel_) {',
                     ],
                     [
                         "\treturn \$this->service->handle(Action([",
                         "\t\t'type' => 'CREATE',",
                     ],
-                    $validatable === '[]' ? [
+                    '[]' === $validatable ? [
                         "\t\t'payload' => [",
                         "\t\t\t\$request->all(),",
                         "\t\t\t\$request->has(self::RESOURCE_PRIMARY_KEY) ?",
@@ -473,12 +485,12 @@ class ControllerClassBuilder implements ContractsControllerBuilder
                     null !== $this->dtoClass_ ? [
                         "\t]), function( \$value) {",
                         "\t\treturn null !== \$value ? new $this->dtoClass_(\$value->toArray()) : \$value",
-                        "\t});"
+                        "\t});",
                     ] : ["\t]))"],
                     [
-                        "});",
-                        "",
-                        "return \$this->response->ok(\$result)",
+                        '});',
+                        '',
+                        'return $this->response->ok($result)',
                     ]
                 ),
             ], [
@@ -489,28 +501,28 @@ class ControllerClassBuilder implements ContractsControllerBuilder
                 ],
                 'descriptors' => [
                     'Update the specified resource in storage.',
-                    '@Route /PUT /' . $this->routeName_ . '/{id}',
-                    '@Route /PATCH /' . $this->routeName_ . '/{id}',
+                    '@Route /PUT /'.$this->routeName_.'/{id}',
+                    '@Route /PATCH /'.$this->routeName_.'/{id}',
                 ],
                 'returns' => JsonResponse::class,
                 'contents' => array_merge(
                     [
-                        "\$request = \$request->merge([\"id\" => \$id])",
-                        "// Validate request inputs",
+                        '$request = $request->merge(["id" => $id])',
+                        '// Validate request inputs',
                     ],
-                    $validatable === '[]' ? [
+                    '[]' === $validatable ? [
                         "\$result = \$this->validator->setUpdate(true)->validate($validatable, \$request->all(), function() use (\$id, \$request) {",
-                        "// After validation logic goes here...",
+                        '// After validation logic goes here...',
                     ] : [
-                        "\$viewModel_ = (new " . drewlabs_core_strings_replace('::class', '', $validatable)  . ($this->hasAuthenticatable_ ? ")->setUser(\$request->user() " : "") . ")->files(\$request->allFiles())->withBody(\$request->all())",
-                        "",
-                        "\$result = \$this->validator->setUpdate(true)->validate(\$viewModel_, function() use (\$id, \$viewModel_) {",
+                        '$viewModel_ = (new '.drewlabs_core_strings_replace('::class', '', $validatable).($this->hasAuthenticatable_ ? ')->setUser($request->user() ' : '').')->files($request->allFiles())->withBody($request->all())',
+                        '',
+                        '$result = $this->validator->setUpdate(true)->validate($viewModel_, function() use ($id, $viewModel_) {',
                     ],
                     [
                         "\treturn \$this->service->handle(Action([",
                         "\t\t'type' => 'UPDATE',",
                     ],
-                    $validatable === '[]' ? [
+                    '[]' === $validatable ? [
                         "\t\t'payload' => [\$id, \$request->all()],",
                     ] : [
                         "\t\t'payload' => [\$id, \$viewModel_->all()],",
@@ -518,12 +530,12 @@ class ControllerClassBuilder implements ContractsControllerBuilder
                     null !== $this->dtoClass_ ? [
                         "\t]), function( \$value) {",
                         "\t\treturn null !== \$value ? new $this->dtoClass_(\$value->toArray()) : \$value",
-                        "\t});"
+                        "\t});",
                     ] : ["\t]))"],
                     [
-                        "});",
-                        "",
-                        "return \$this->response->ok(\$result)",
+                        '});',
+                        '',
+                        'return $this->response->ok($result)',
                     ]
                 ),
             ],
@@ -535,16 +547,16 @@ class ControllerClassBuilder implements ContractsControllerBuilder
                 ],
                 'descriptors' => [
                     'Remove the specified resource from storage.',
-                    '@Route /DELETE /' . $this->routeName_ . '/{id}',
+                    '@Route /DELETE /'.$this->routeName_.'/{id}',
                 ],
                 'returns' => JsonResponse::class,
                 'contents' => [
-                    $this->hasAuthenticatable_  ? "// TODO: Provide Policy handlers if required" : null,
-                    "\$result = \$this->service->handle(Action([",
+                    $this->hasAuthenticatable_ ? '// TODO: Provide Policy handlers if required' : null,
+                    '$result = $this->service->handle(Action([',
                     "\t'type' => 'DELETE',",
                     "\t'payload' => [\$id],",
-                    "]))",
-                    "return \$this->response->ok(\$result)", //
+                    ']))',
+                    'return $this->response->ok($result)',
                 ],
             ],
         ];
@@ -558,7 +570,7 @@ class ControllerClassBuilder implements ContractsControllerBuilder
             );
             if ($contents = $action['contents'] ?? null) {
                 $contents = \is_array($contents) ? $contents : [$contents];
-                foreach (array_filter($contents, function ($item) {
+                foreach (array_filter($contents, static function ($item) {
                     return null !== $item;
                 }) as $value) {
                     // code...
@@ -580,16 +592,5 @@ class ControllerClassBuilder implements ContractsControllerBuilder
 
         // Returns the component back to the caller
         return $component;
-    }
-
-
-
-    public static function defaultClassPath(?string $classname = null)
-    {
-        $classname = $classname ?? 'Test';
-        if (drewlabs_core_strings_contains($classname, "\\")) {
-            return $classname;
-        }
-        return sprintf("%s%s%s", self::DEFAULT_NAMESPACE, "\\", $classname);
     }
 }

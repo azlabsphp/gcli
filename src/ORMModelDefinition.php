@@ -74,7 +74,7 @@ class ORMModelDefinition extends ValueObject implements ContractsORMModelDefinit
             'columns_' => 'columns',
             'increments_' => 'increments',
             'namespace_' => 'namespace',
-            'comment_' => 'comment'
+            'comment_' => 'comment',
         ];
     }
 }

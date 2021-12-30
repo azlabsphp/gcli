@@ -1,19 +1,39 @@
 <?php
 
+declare(strict_types=1);
+
+/*
+ * This file is part of the Drewlabs package.
+ *
+ * (c) Sidoine Azandrew <azandrewdevelopper@gmail.com>
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
+
 namespace Drewlabs\ComponentGenerators\Extensions\Console\Commands;
 
 use Drewlabs\ComponentGenerators\Builders\EloquentORMModelBuilder;
 use Drewlabs\ComponentGenerators\Helpers\ComponentBuilderHelpers;
+use function Drewlabs\ComponentGenerators\Proxy\ComponentsScriptWriter;
 use Illuminate\Console\Command;
 use Illuminate\Container\Container;
-use Illuminate\Contracts\Foundation\Application;
 
-use function Drewlabs\ComponentGenerators\Proxy\ComponentsScriptWriter;
+use Illuminate\Contracts\Foundation\Application;
 
 class MakeViewModelCommand extends Command
 {
+    protected $signature = 'drewlabs:mvc:make:viewmodel '
+        .'{--namespace= : View model namespace}'
+        .'{--path= : Project source code path}'
+        .'{--name= : Generated view model name}'
+        .'{--model= : Model attached to the view model class }'
+        .'{--single : Makes the view model single action validator}'
+        .'{--rules=* List of default rules to apply to the view model }'
+        .'{--updateRules=* List of rules to apply on update actions }';
+
+    protected $description = 'Creates a Drewlabs package MVC controller';
     /**
-     *
      * @var Application
      */
     private $app;
@@ -24,17 +44,6 @@ class MakeViewModelCommand extends Command
         parent::__construct();
     }
 
-    protected $signature = 'drewlabs:mvc:make:viewmodel '
-        . '{--namespace= : View model namespace}'
-        . '{--path= : Project source code path}'
-        . '{--name= : Generated view model name}'
-        . '{--model= : Model attached to the view model class }'
-        . '{--single : Makes the view model single action validator}'
-        . '{--rules=* List of default rules to apply to the view model }'
-        . '{--updateRules=* List of rules to apply on update actions }';
-
-    protected $description = 'Creates a Drewlabs package MVC controller';
-
     public function handle()
     {
         // Parameters initialization
@@ -42,7 +51,7 @@ class MakeViewModelCommand extends Command
         $model = $this->option('model') ?
             EloquentORMModelBuilder::defaultClassPath($this->option('model')) :
             null;
-        $namespace = $this->option('namespace') ?? "\\App\\Http\\ViewModels";
+        $namespace = $this->option('namespace') ?? '\\App\\Http\\ViewModels';
         $basePath = $this->app->basePath($this->option('path') ?? 'app');
         $rules = $this->option('rules') ?? [];
         $updateRules = $this->option('updateRules') ?? [];

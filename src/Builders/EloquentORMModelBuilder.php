@@ -19,14 +19,14 @@ use function Drewlabs\CodeGenerator\Proxy\PHPClass;
 use function Drewlabs\CodeGenerator\Proxy\PHPClassMethod;
 use function Drewlabs\CodeGenerator\Proxy\PHPClassProperty;
 use function Drewlabs\CodeGenerator\Proxy\PHPVariable;
-use function Drewlabs\ComponentGenerators\Proxy\PHPScript;
-
 use Drewlabs\CodeGenerator\Types\PHPTypesModifiers;
+
 use Drewlabs\ComponentGenerators\Contracts\ComponentBuilder;
 use Drewlabs\ComponentGenerators\Contracts\EloquentORMModelBuilder as ContractsEloquentORMModel;
 use Drewlabs\ComponentGenerators\Contracts\ORMColumnDefinition;
 use Drewlabs\ComponentGenerators\Contracts\ORMModelDefinition;
 use Drewlabs\ComponentGenerators\Helpers\ComponentBuilderHelpers;
+use function Drewlabs\ComponentGenerators\Proxy\PHPScript;
 use Drewlabs\ComponentGenerators\Traits\HasNamespaceAttribute;
 use Drewlabs\ComponentGenerators\Traits\ViewModelBuilder;
 use Drewlabs\Contracts\Data\Model\ActiveModel;
@@ -35,8 +35,8 @@ use Drewlabs\Contracts\Data\Model\Parseable;
 use Drewlabs\Contracts\Data\Model\Relatable;
 use Drewlabs\Contracts\Validator\CoreValidatable;
 use Drewlabs\Contracts\Validator\Validatable;
-use Drewlabs\Packages\Database\Traits\Model;
 use Drewlabs\Core\Validator\Traits\ViewModel;
+use Drewlabs\Packages\Database\Traits\Model;
 
 use Illuminate\Database\Eloquent\Model as EloquentModel;
 use Illuminate\Support\Pluralizer;
@@ -45,11 +45,6 @@ class EloquentORMModelBuilder implements ContractsEloquentORMModel, ComponentBui
 {
     use HasNamespaceAttribute;
     use ViewModelBuilder;
-
-    /**
-     * @var string
-     */
-    private const DEFAULT_PATH = 'Models';
 
     /**
      * The name of the model.
@@ -64,6 +59,11 @@ class EloquentORMModelBuilder implements ContractsEloquentORMModel, ComponentBui
      * @var string
      */
     public const DEFAULT_NAMESPACE = 'App\\Models';
+
+    /**
+     * @var string
+     */
+    private const DEFAULT_PATH = 'Models';
 
     /**
      * List of appendable model properties.
@@ -158,29 +158,6 @@ class EloquentORMModelBuilder implements ContractsEloquentORMModel, ComponentBui
         $this->setWritePath($path ?? self::DEFAULT_PATH);
     }
 
-    private function setComponentBaseDefintions($schema, $table, $name)
-    {
-        $table = (null === $table) ? (null !== $name ?
-            drewlabs_core_strings_as_snake_case(Pluralizer::plural($name)) : null) : $table;
-        // Set the table name
-        if ($table) {
-            $this->setTableName($table);
-        }
-        // Set model name
-        $name_ = $table ?? $name ?? null;
-        // TODO : REMOVE SCHEMA PREFIX IF ANY
-        if ($name_ && $schema) {
-            $name_ = drewlabs_core_strings_starts_with($name_, $schema . "_") ?
-                drewlabs_core_strings_replace($schema . "_", "", $name_) : (drewlabs_core_strings_starts_with($name_, $schema) ?
-                    drewlabs_core_strings_replace($schema, "", $name_) :
-                    $name_);
-        }
-        $name = $name_ ? drewlabs_core_strings_as_camel_case(Pluralizer::singular($name_)) : self::DEFAULT_NAME;
-        if ($name) {
-            $this->setName($name);
-        }
-    }
-
     public function setRelationMethods(array $names)
     {
         $this->relationMethods_ = $names;
@@ -205,6 +182,7 @@ class EloquentORMModelBuilder implements ContractsEloquentORMModel, ComponentBui
     public function hasTimestamps(bool $value)
     {
         $this->hasTimestamps_ = $value;
+
         return $this;
     }
 
@@ -244,6 +222,7 @@ class EloquentORMModelBuilder implements ContractsEloquentORMModel, ComponentBui
     public function asViewModel()
     {
         $this->isViewModel_ = true;
+
         return $this->addInputsTraits();
     }
 
@@ -268,7 +247,7 @@ class EloquentORMModelBuilder implements ContractsEloquentORMModel, ComponentBui
                     PHPTypesModifiers::PUBLIC,
                     'Returns a fluent validation rules'
                 ))->addContents(
-                    'return ' . PHPVariable('rules', null, $this->rules_ ?? [])->asRValue()->__toString()
+                    'return '.PHPVariable('rules', null, $this->rules_ ?? [])->asRValue()->__toString()
                 )
             );
             if (!$this->isSingleActionValidator_) {
@@ -284,7 +263,7 @@ class EloquentORMModelBuilder implements ContractsEloquentORMModel, ComponentBui
                             'array<string,string|string[]>',
                             PHPTypesModifiers::PUBLIC,
                             'Returns a fluent validation rules applied during update actions'
-                        )->addContents('return ' . PHPVariable('rules', null, $this->rules_ ?? [])->asRValue()->__toString())
+                        )->addContents('return '.PHPVariable('rules', null, $this->rules_ ?? [])->asRValue()->__toString())
                     );
             } else {
                 /**
@@ -431,9 +410,33 @@ class EloquentORMModelBuilder implements ContractsEloquentORMModel, ComponentBui
     public static function defaultClassPath(?string $classname = null)
     {
         $classname = $classname ?? 'Test';
-        if (drewlabs_core_strings_contains($classname, "\\")) {
+        if (drewlabs_core_strings_contains($classname, '\\')) {
             return $classname;
         }
-        return sprintf("%s%s%s", self::DEFAULT_NAMESPACE, "\\", $classname);
+
+        return sprintf('%s%s%s', self::DEFAULT_NAMESPACE, '\\', $classname);
+    }
+
+    private function setComponentBaseDefintions($schema, $table, $name)
+    {
+        $table = (null === $table) ? (null !== $name ?
+            drewlabs_core_strings_as_snake_case(Pluralizer::plural($name)) : null) : $table;
+        // Set the table name
+        if ($table) {
+            $this->setTableName($table);
+        }
+        // Set model name
+        $name_ = $table ?? $name ?? null;
+        // TODO : REMOVE SCHEMA PREFIX IF ANY
+        if ($name_ && $schema) {
+            $name_ = drewlabs_core_strings_starts_with($name_, $schema.'_') ?
+                drewlabs_core_strings_replace($schema.'_', '', $name_) : (drewlabs_core_strings_starts_with($name_, $schema) ?
+                    drewlabs_core_strings_replace($schema, '', $name_) :
+                    $name_);
+        }
+        $name = $name_ ? drewlabs_core_strings_as_camel_case(Pluralizer::singular($name_)) : self::DEFAULT_NAME;
+        if ($name) {
+            $this->setName($name);
+        }
     }
 }

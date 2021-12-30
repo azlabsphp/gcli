@@ -1,18 +1,41 @@
 <?php
 
+declare(strict_types=1);
+
+/*
+ * This file is part of the Drewlabs package.
+ *
+ * (c) Sidoine Azandrew <azandrewdevelopper@gmail.com>
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
+
 namespace Drewlabs\ComponentGenerators\Extensions\Console\Commands;
 
 use Drewlabs\ComponentGenerators\Helpers\ComponentBuilderHelpers;
+use function Drewlabs\ComponentGenerators\Proxy\ComponentsScriptWriter;
 use Illuminate\Console\Command;
 use Illuminate\Container\Container;
-use Illuminate\Contracts\Foundation\Application;
 
-use function Drewlabs\ComponentGenerators\Proxy\ComponentsScriptWriter;
+use Illuminate\Contracts\Foundation\Application;
 
 class MakeModelCommand extends Command
 {
+    protected $signature = 'drewlabs:mvc:make:model '
+        .'{--increments : Makes the model primary key incrementable}'
+        .'{--asViewModel : Generate the model as a view model class}'
+        .'{--comment= Comment to be added to the model }'
+        .'{--table= : Table name to attached to the model }'
+        .'{--namespace= : Component namespace }'
+        .'{--primaryKey= : Model primary key }'
+        .'{--path= : Project source code path }'
+        .'{--columns=* : List of model table fillable columns}'
+        .'{--hidden=* List of hidden properties}'
+        .'{--appends=* List of properties to append to the model }';
+
+    protected $description = 'Creates a model using Drewlabs package model definitions';
     /**
-     *
      * @var Application
      */
     private $app;
@@ -22,20 +45,6 @@ class MakeModelCommand extends Command
         $this->app = ($this->getLaravel() ?? Container::getInstance());
         parent::__construct();
     }
-
-    protected $signature = 'drewlabs:mvc:make:model '
-        . '{--increments : Makes the model primary key incrementable}'
-        . '{--asViewModel : Generate the model as a view model class}'
-        . '{--comment= Comment to be added to the model }'
-        . '{--table= : Table name to attached to the model }'
-        . '{--namespace= : Component namespace }'
-        . '{--primaryKey= : Model primary key }'
-        . '{--path= : Project source code path }'
-        . '{--columns=* : List of model table fillable columns}'
-        . '{--hidden=* List of hidden properties}'
-        . '{--appends=* List of properties to append to the model }';
-
-    protected $description = 'Creates a model using Drewlabs package model definitions';
 
     public function handle()
     {
@@ -47,7 +56,7 @@ class MakeModelCommand extends Command
 
         $increments = $this->option('increments') ?? false;
 
-        $namespace = $this->option('namespace') ?? "\\App\\Models";
+        $namespace = $this->option('namespace') ?? '\\App\\Models';
 
         $columns = $this->option('columns') ?? [];
 
