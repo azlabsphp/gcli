@@ -40,7 +40,7 @@
     },
     "minimum-stability": "stable",
     "require": {
-        "php": "^7.4|^8.0",
+        "php": "^7.3|^8.0",
         "drewlabs/contracts": "^2.0.20",
         "drewlabs/core": "^2.0",
         "drewlabs/core-helpers": "^2.0",
