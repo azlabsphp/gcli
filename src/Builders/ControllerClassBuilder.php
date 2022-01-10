@@ -375,9 +375,9 @@ class ControllerClassBuilder implements ContractsControllerBuilder
                     ],
                     // Transformer part
                     $this->dtoClass_ ? [
-                        '$tranformFunc_ = function( $items) {',
-                        "\treturn map_query_result(\$items, function (\$value) {",
-                        "\t\treturn \$value ? new $this->dtoClass_(\$value) : \$value",
+                        '$tranformFunc_ = function( $items) use ($request) {',
+                        "\treturn map_query_result(\$items, function (\$value)  use (\$request)  {",
+                        "\t\treturn \$value ? (new $this->dtoClass_(\$value))->mergeHidden(\$request->get('_hidden') ?: []) : \$value",
                         "\t});",
                         '};',
                     ] : [],
@@ -423,8 +423,8 @@ class ControllerClassBuilder implements ContractsControllerBuilder
                         "\t],",
                     ],
                     null !== $this->dtoClass_ ? [
-                        ']), function($value) {',
-                        "\treturn null !== \$value ? new $this->dtoClass_(\$value) : \$value",
+                        ']), function($value) use ($request) {',
+                        "\treturn null !== \$value ? (new $this->dtoClass_(\$value))->mergeHidden(\$request->get('_hidden') ?: []) : \$value",
                         '});',
                     ] : [']))'],
                     [

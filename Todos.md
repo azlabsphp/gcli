@@ -23,3 +23,7 @@
 - Create view model generator command [x]
 - Create controller generator [x]
 - Create command generator command []
+
+## 202201102012
+
+- Add support for hidden attributes in request object [x]
