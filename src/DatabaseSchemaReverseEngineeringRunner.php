@@ -83,7 +83,6 @@ class DatabaseSchemaReverseEngineeringRunner
     private $schema_;
 
     /**
-     * 
      * @var bool
      */
     private $generateHttpHandlers_ = false;
@@ -134,12 +133,12 @@ class DatabaseSchemaReverseEngineeringRunner
     }
 
     /**
-     * 
-     * @return self 
+     * @return self
      */
     public function withHttpHandlers()
     {
         $this->generateHttpHandlers_ = true;
+
         return $this;
     }
 
@@ -186,8 +185,8 @@ class DatabaseSchemaReverseEngineeringRunner
                     }
                 })($value)),
                 null,
-                sprintf('%s\\%s', $this->blocComponentNamespace_ ?? self::DEFAULT_BLOC_COMPONENT_NAMESPACE, sprintf('%s%s', $this->generateHttpHandlers_ ? 'Http\\ViewModels' : "ViewModels", $this->subNamespace_ ? "\\$this->subNamespace_" : '')),
-                sprintf('%s%s', $this->generateHttpHandlers_ ? 'Http/ViewModels' : "ViewModels", $this->subNamespace_ ? "/$this->subNamespace_" : ''),
+                sprintf('%s\\%s', $this->blocComponentNamespace_ ?? self::DEFAULT_BLOC_COMPONENT_NAMESPACE, sprintf('%s%s', $this->generateHttpHandlers_ ? 'Http\\ViewModels' : 'ViewModels', $this->subNamespace_ ? "\\$this->subNamespace_" : '')),
+                sprintf('%s%s', $this->generateHttpHandlers_ ? 'Http/ViewModels' : 'ViewModels', $this->subNamespace_ ? "/$this->subNamespace_" : ''),
                 // TODO Add namespace method to component items
                 $modelClassPath,
                 $this->generateHttpHandlers_ ?: false
@@ -263,6 +262,34 @@ class DatabaseSchemaReverseEngineeringRunner
         return array_merge($rules);
     }
 
+    protected function generateController(?string $model = null, ?SourceFileInterface $service = null, ?SourceFileInterface $viewModel = null, ?SourceFileInterface $dtoObject = null)
+    {
+        $controller = ComponentBuilderHelpers::buildController(
+            $model,
+            $service ? sprintf(
+                '%s\\%s',
+                $service->getNamespace(),
+                drewlabs_core_strings_as_camel_case($service->getName())
+            ) : null,
+            $viewModel ? sprintf(
+                '%s\\%s',
+                $viewModel->getNamespace(),
+                drewlabs_core_strings_as_camel_case($viewModel->getName())
+            ) : null,
+            $dtoObject ? sprintf(
+                '%s\\%s',
+                $dtoObject->getNamespace(),
+                drewlabs_core_strings_as_camel_case($dtoObject->getName())
+            ) : null,
+            null,
+            sprintf('%s\\%s', $this->blocComponentNamespace_ ?? self::DEFAULT_BLOC_COMPONENT_NAMESPACE, sprintf('%s%s', 'Http\\Controllers', $this->subNamespace_ ? "\\$this->subNamespace_" : '')),
+            $this->auth_
+        );
+        ComponentsScriptWriter($this->blocComponentPath_)->write($controller);
+
+        return $controller;
+    }
+
     /**
      * @param Table[] $tables
      *
@@ -308,32 +335,5 @@ class DatabaseSchemaReverseEngineeringRunner
                 'comment' => $comment,
             ]);
         }
-    }
-
-    protected function generateController(?string $model = null, ?SourceFileInterface $service = null, ?SourceFileInterface $viewModel = null, ?SourceFileInterface $dtoObject = null)
-    {
-        $controller = ComponentBuilderHelpers::buildController(
-            $model,
-            $service ? sprintf(
-                '%s\\%s',
-                $service->getNamespace(),
-                drewlabs_core_strings_as_camel_case($service->getName())
-            ) : null,
-            $viewModel ? sprintf(
-                '%s\\%s',
-                $viewModel->getNamespace(),
-                drewlabs_core_strings_as_camel_case($viewModel->getName())
-            ) : null,
-            $dtoObject ? sprintf(
-                '%s\\%s',
-                $dtoObject->getNamespace(),
-                drewlabs_core_strings_as_camel_case($dtoObject->getName())
-            ) : null,
-            null,
-            sprintf('%s\\%s', $this->blocComponentNamespace_ ?? self::DEFAULT_BLOC_COMPONENT_NAMESPACE, sprintf('%s%s', 'Http\\Controllers', $this->subNamespace_ ? "\\$this->subNamespace_" : '')),
-            $this->auth_
-        );
-        ComponentsScriptWriter($this->blocComponentPath_)->write($controller);
-        return $controller;
     }
 }

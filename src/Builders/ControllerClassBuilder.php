@@ -310,7 +310,7 @@ class ControllerClassBuilder implements ContractsControllerBuilder
                     PHPTypesModifiers::PUBLIC,
                     [
                         'Handles http request action',
-                        '@Route /POST /' . $this->routeName_ . '/{id}',
+                        '@Route /POST /'.$this->routeName_.'/{id}',
                     ]
                 )
             );
@@ -363,7 +363,7 @@ class ControllerClassBuilder implements ContractsControllerBuilder
                 ],
                 'descriptors' => [
                     'Display or Returns a list of items',
-                    '@Route /GET /' . $this->routeName_ . '[/{$id}]',
+                    '@Route /GET /'.$this->routeName_.'[/{$id}]',
                 ],
                 'returns' => JsonResponse::class,
                 'contents' => array_merge(
@@ -409,7 +409,7 @@ class ControllerClassBuilder implements ContractsControllerBuilder
                 ],
                 'descriptors' => [
                     'Display or Returns an item matching the specified id',
-                    '@Route /GET /' . $this->routeName_ . '/{$id}',
+                    '@Route /GET /'.$this->routeName_.'/{$id}',
                 ],
                 'returns' => JsonResponse::class,
                 'contents' => array_merge(
@@ -439,7 +439,7 @@ class ControllerClassBuilder implements ContractsControllerBuilder
                 ],
                 'descriptors' => [
                     'Stores a new item in the storage',
-                    '@Route /POST /' . $this->routeName_,
+                    '@Route /POST /'.$this->routeName_,
                 ],
                 'returns' => JsonResponse::class,
                 'contents' => array_merge(
@@ -450,7 +450,7 @@ class ControllerClassBuilder implements ContractsControllerBuilder
                         "\$result = \$this->validator->validate($validatable, \$request->all(), function() use (\$request) {",
                         '// After validation logic goes here...',
                     ] : [
-                        '$viewModel_ = new ' . drewlabs_core_strings_replace('::class', '', $validatable) . '($request)',
+                        '$viewModel_ = new '.drewlabs_core_strings_replace('::class', '', $validatable).'($request)',
                         '',
                         '$result = $this->validator->validate($viewModel_, function() use ($viewModel_) {',
                     ],
@@ -501,8 +501,8 @@ class ControllerClassBuilder implements ContractsControllerBuilder
                 ],
                 'descriptors' => [
                     'Update the specified resource in storage.',
-                    '@Route /PUT /' . $this->routeName_ . '/{id}',
-                    '@Route /PATCH /' . $this->routeName_ . '/{id}',
+                    '@Route /PUT /'.$this->routeName_.'/{id}',
+                    '@Route /PATCH /'.$this->routeName_.'/{id}',
                 ],
                 'returns' => JsonResponse::class,
                 'contents' => array_merge(
@@ -513,7 +513,7 @@ class ControllerClassBuilder implements ContractsControllerBuilder
                         "\$result = \$this->validator->updating()->validate($validatable, \$request->all(), function() use (\$id, \$request) {",
                         '// After validation logic goes here...',
                     ] : [
-                        '$viewModel_ = new ' . drewlabs_core_strings_replace('::class', '', $validatable) . '($request)',
+                        '$viewModel_ = new '.drewlabs_core_strings_replace('::class', '', $validatable).'($request)',
                         '// Validate request inputs',
                         '$result = $this->validator->updating()->validate($viewModel_, function() use ($id, $viewModel_) {',
                     ],
@@ -546,7 +546,7 @@ class ControllerClassBuilder implements ContractsControllerBuilder
                 ],
                 'descriptors' => [
                     'Remove the specified resource from storage.',
-                    '@Route /DELETE /' . $this->routeName_ . '/{id}',
+                    '@Route /DELETE /'.$this->routeName_.'/{id}',
                 ],
                 'returns' => JsonResponse::class,
                 'contents' => [

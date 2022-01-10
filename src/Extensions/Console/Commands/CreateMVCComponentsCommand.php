@@ -119,7 +119,7 @@ class CreateMVCComponentsCommand extends Command
         $disableCache = $this->option('disableCache');
         if (!$disableCache) {
             // Get component definitions from cache
-            $value = ComponentBuilderHelpers::getCachedComponentDefinitions((string)$this->path_);
+            $value = ComponentBuilderHelpers::getCachedComponentDefinitions((string) $this->path_);
             if (null !== $value) {
                 $exceptions = array_merge($exceptions, $value->getTables());
             }

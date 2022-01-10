@@ -1,5 +1,16 @@
 <?php
 
+declare(strict_types=1);
+
+/*
+ * This file is part of the Drewlabs package.
+ *
+ * (c) Sidoine Azandrew <azandrewdevelopper@gmail.com>
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
+
 namespace Drewlabs\ComponentGenerators\Extensions\Helpers;
 
 use Doctrine\DBAL\DriverManager;
@@ -27,14 +38,13 @@ class ReverseEngineerTaskRunner
         ?string $schema = null,
         ?bool $hasHttpHandlers = false
     ) {
-
         return function (
             string $routesDirectory,
             string $cachePath,
             string $routesCachePath,
             \Closure $onStartCallback,
-            \Closure $onCompleteCallback = null
-        )  use (
+            ?\Closure $onCompleteCallback = null
+        ) use (
             $options,
             $srcPath,
             $routingfilename,
@@ -49,26 +59,26 @@ class ReverseEngineerTaskRunner
             $schema,
             $hasHttpHandlers
         ) {
-            $onCompleteCallback = $onCompleteCallback ?? function () {
+            $onCompleteCallback = $onCompleteCallback ?? static function () {
                 dump('Task Completed successfully...');
             };
             $connection = DriverManager::getConnection($options);
-            $schemaManager =  $connection->createSchemaManager();
+            $schemaManager = $connection->createSchemaManager();
             // For Mariadb server
             $schemaManager->getDatabasePlatform()->registerDoctrineTypeMapping('enum', 'string');
             // TODO : Create a table filtering function that removes drewlabs packages tables from
             // the generated tables
-            $tablesFilterFunc = function ($table) {
+            $tablesFilterFunc = static function ($table) {
                 return !(drewlabs_core_strings_contains($table->getName(), 'auth_') ||
                     drewlabs_core_strings_starts_with($table->getName(), 'acl_') ||
-                    ($table->getName() === 'accounts_verifications') ||
+                    ('accounts_verifications' === $table->getName()) ||
                     drewlabs_core_strings_contains($table->getName(), 'file_authorization') ||
                     drewlabs_core_strings_contains($table->getName(), 'uploaded_file') ||
                     drewlabs_core_strings_contains($table->getName(), 'server_authorized_') ||
                     drewlabs_core_strings_contains($table->getName(), 'shared_files') ||
                     drewlabs_core_strings_contains($table->getName(), 'form_') ||
-                    ($table->getName() === 'forms') ||
-                    ($table->getName() === 'migrations') ||
+                    ('forms' === $table->getName()) ||
+                    ('migrations' === $table->getName()) ||
                     (drewlabs_core_strings_starts_with($table->getName(), 'log_model_')));
             };
             // Execute the runner
@@ -90,7 +100,7 @@ class ReverseEngineerTaskRunner
                 ->bindExceptMethod($tablesFilterFunc)
                 ->except($exceptions)
                 ->setSchema($schema)
-                ->run(function ($tables) use ($namespace, $subPackage, $disableCache, $cachePath) {
+                ->run(static function ($tables) use ($namespace, $subPackage, $disableCache, $cachePath) {
                     if (!$disableCache) {
                         // TODO : Add definitions to cache
                         ComponentBuilderHelpers::cacheComponentDefinitions(
@@ -103,7 +113,7 @@ class ReverseEngineerTaskRunner
                 });
 
             $routes = iterator_to_array(
-                (function () use ($traversable, $subPackage) {
+                (static function () use ($traversable, $subPackage) {
                     foreach ($traversable as $key => $value) {
                         yield $key => new RouteController(['namespace' => $subPackage, 'name' => $value]);
                     }
@@ -151,7 +161,7 @@ class ReverseEngineerTaskRunner
         ?string $middleware,
         ?string $subPackage = null
     ) {
-        return function (Progress $indicator) use (
+        return static function (Progress $indicator) use (
             $disableCache,
             $routes,
             $cachePath,
@@ -190,7 +200,7 @@ class ReverseEngineerTaskRunner
                 true,
                 $prefix,
                 $middleware,
-                function () use ($routes, $disableCache, $cachePath, $subPackage) {
+                static function () use ($routes, $disableCache, $cachePath, $subPackage) {
                     if (!$disableCache) {
                         // Add routes definitions to cache
                         RouteDefinitionsHelper::cacheRouteDefinitions(
