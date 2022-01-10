@@ -14,8 +14,11 @@ declare(strict_types=1);
 namespace Drewlabs\ComponentGenerators\Builders;
 
 use Drewlabs\CodeGenerator\Contracts\Blueprint;
+use Drewlabs\CodeGenerator\Types\PHPTypes;
+
 use function Drewlabs\CodeGenerator\Proxy\PHPClass;
 use function Drewlabs\CodeGenerator\Proxy\PHPClassMethod;
+use function Drewlabs\CodeGenerator\Proxy\PHPClassProperty;
 use function Drewlabs\CodeGenerator\Proxy\PHPVariable;
 use Drewlabs\CodeGenerator\Types\PHPTypesModifiers;
 
@@ -25,6 +28,7 @@ use function Drewlabs\ComponentGenerators\Proxy\PHPScript;
 use Drewlabs\ComponentGenerators\Traits\HasNamespaceAttribute;
 use Drewlabs\ComponentGenerators\Traits\ViewModelBuilder;
 use Drewlabs\Contracts\Validator\CoreValidatable;
+use Drewlabs\Packages\Http\Traits\HttpViewModel;
 
 use Drewlabs\Contracts\Validator\Validatable;
 use Drewlabs\Core\Validator\Traits\ViewModel;
@@ -52,13 +56,31 @@ class ViewModelClassBuilder implements ComponentBuilder
      */
     private const DEFAULT_PATH = 'Http/ViewModels';
 
+    /**
+     * 
+     * @var bool
+     */
+    private $hasHttpHandlers_ = false;
+
+    /**
+     * 
+     * @var string
+     */
+    private $modelClassPath_;
+
+    /**
+     * 
+     * @var string
+     */
+    private $modelName_;
+
     public function __construct(
         ?string $name = null,
         ?string $namespace = null,
         ?string $path = null
     ) {
         if (null !== $name) {
-            $this->setName(drewlabs_core_strings_as_camel_case(Pluralizer::singular($name)).'ViewModel');
+            $this->setName(drewlabs_core_strings_as_camel_case(Pluralizer::singular($name)) . 'ViewModel');
         }
         // Set the component write path
         $this->setWritePath($path ?? self::DEFAULT_PATH);
@@ -71,12 +93,26 @@ class ViewModelClassBuilder implements ComponentBuilder
         if (empty($model)) {
             return $this;
         }
-        $is_class_path = drewlabs_core_strings_contains($model, '\\'); // && class_exists($model); To uncomment if there is need to validate class existence
-        $model_name = 'Test';
-        $model_name = $is_class_path ? array_reverse(explode('\\', $model))[0] : (drewlabs_core_strings_contains($model, '\\') ? array_reverse(explode('\\', $model))[0] : $model);
-        $name = drewlabs_core_strings_as_camel_case(Pluralizer::singular($model_name)).'ViewModel';
+        $isClassPath = drewlabs_core_strings_contains($model, '\\');
+        if ($isClassPath) {
+            $this->modelClassPath_ = $model;
+        }
+        if (is_object($model)) {
+            $this->modelClassPath_ = get_class($model);
+        }
+        $this->modelName_ = 'Test';
+        if ($isClassPath) {
+            $this->modelName_ = $isClassPath ? array_reverse(explode('\\', $this->modelClassPath_))[0] : $this->modelClassPath_;
+        }
+        $name = drewlabs_core_strings_as_camel_case(Pluralizer::singular($this->modelName_)) . 'ViewModel';
         $this->setName($name);
 
+        return $this;
+    }
+
+    public function withHttpHandlers()
+    {
+        $this->hasHttpHandlers_ = true;
         return $this;
     }
 
@@ -95,7 +131,7 @@ class ViewModelClassBuilder implements ComponentBuilder
                     PHPTypesModifiers::PUBLIC,
                     'Returns a fluent validation rules'
                 )->addContents(
-                    'return '.PHPVariable('rules', null, $this->rules_ ?? [])->asRValue()->__toString()
+                    'return ' . PHPVariable('rules', null, $this->rules_ ?? [])->asRValue()->__toString()
                 )
             )->addMethod(
                 PHPClassMethod(
@@ -121,7 +157,7 @@ class ViewModelClassBuilder implements ComponentBuilder
                         'array<string,string|string[]>',
                         PHPTypesModifiers::PUBLIC,
                         'Returns a fluent validation rules applied during update actions'
-                    )->addContents('return '.PHPVariable('rules', null, $this->updateRules_ ?? [])->asRValue()->__toString())
+                    )->addContents('return ' . PHPVariable('rules', null, $this->updateRules_ ?? [])->asRValue()->__toString())
                 );
         } else {
             /**
@@ -130,13 +166,27 @@ class ViewModelClassBuilder implements ComponentBuilder
             $component = $component
                 ->addImplementation(CoreValidatable::class);
         }
-
         // Add inputs traits
         if ($this->hasInputsTraits_) {
+            if ($this->modelClassPath_ && $this->modelName_) {
+                /**
+                 * @var Blueprint
+                 */
+                $component = $component->addProperty(
+                    PHPClassProperty(
+                        'model_',
+                        PHPTypes::STRING,
+                        PHPTypesModifiers::PRIVATE,
+                        $this->modelName_ . '::class',
+                        'Model class associated with the view model'
+                    )
+                );
+                $component = $component->addClassPath($this->modelClassPath_);
+            }
             /**
              * @var Blueprint
              */
-            $component = $component->addTrait(ViewModel::class);
+            $component = $this->hasHttpHandlers_ ? $component->addTrait(HttpViewModel::class) : $component->addTrait(ViewModel::class);
         }
         // Returns the builded component
         return PHPScript(

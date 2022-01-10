@@ -22,7 +22,7 @@ use Illuminate\Console\Command;
 
 use Illuminate\Container\Container;
 
-class ReverseEngineerMVCComponents extends Command
+class CreateMVCComponentsCommand extends Command
 {
     /**
      * The name and signature of the console command.
@@ -48,7 +48,8 @@ class ReverseEngineerMVCComponents extends Command
         .'{--excepts=* : List of tables not to be included in the generated output}'
         .'{--disableCache : Caching tables not supported}'
         .'{--noAuth : Indicates whether project controllers supports authentication}'
-        .'{--schema= : Schema prefix to database tables}';
+        .'{--schema= : Schema prefix to database tables}'
+        .'{--http= : Whether to generates controllers and routes}';
 
     /**
      * The console command description.
@@ -58,12 +59,12 @@ class ReverseEngineerMVCComponents extends Command
     protected $description = 'Reverse engineer database table to a full mvc components definitions';
 
     /**
-     * @var Path
+     * @var string
      */
     private $path_;
 
     /**
-     * @var mixed
+     * @var string
      */
     private $routesCachePath_;
 
@@ -118,7 +119,7 @@ class ReverseEngineerMVCComponents extends Command
         $disableCache = $this->option('disableCache');
         if (!$disableCache) {
             // Get component definitions from cache
-            $value = ComponentBuilderHelpers::getCachedComponentDefinitions($this->path_);
+            $value = ComponentBuilderHelpers::getCachedComponentDefinitions((string)$this->path_);
             if (null !== $value) {
                 $exceptions = array_merge($exceptions, $value->getTables());
             }
@@ -127,6 +128,7 @@ class ReverseEngineerMVCComponents extends Command
         $noAuth = $this->option('noAuth');
         $namespace = $this->option('package') ?? 'App';
         $subPackage = $this->option('subPackage');
+        $httpHandlers = $this->option('http');
         // !Ends Local variables initialization
 
         if (null !== ($url = $this->option('connectionURL'))) {
@@ -157,7 +159,8 @@ class ReverseEngineerMVCComponents extends Command
             $noAuth,
             $namespace,
             $subPackage,
-            $this->option('schema') ?? null
+            $this->option('schema') ?? null,
+            $httpHandlers
         )(
             $this->laravel->basePath('routes'),
             $this->path_,

@@ -19,6 +19,7 @@ use Drewlabs\ComponentGenerators\Builders\DataTransfertClassBuilder;
 use Drewlabs\ComponentGenerators\Contracts\ControllerBuilder;
 use Drewlabs\ComponentGenerators\Contracts\ORMColumnDefinition;
 use Drewlabs\ComponentGenerators\Contracts\ORMModelDefinition as ContractsORMModelDefinition;
+use Drewlabs\ComponentGenerators\Contracts\SourceFileInterface;
 use Drewlabs\ComponentGenerators\Helpers\ColumnsDefinitionHelpers;
 use Drewlabs\ComponentGenerators\Helpers\ComponentBuilderHelpers;
 use Drewlabs\ComponentGenerators\Helpers\DataTypeToFluentValidationRulesHelper;
@@ -81,6 +82,12 @@ class DatabaseSchemaReverseEngineeringRunner
      */
     private $schema_;
 
+    /**
+     * 
+     * @var bool
+     */
+    private $generateHttpHandlers_ = false;
+
     public function __construct(
         AbstractSchemaManager $manager,
         string $blocComponentPath,
@@ -123,6 +130,16 @@ class DatabaseSchemaReverseEngineeringRunner
     {
         $this->schema_ = $value;
 
+        return $this;
+    }
+
+    /**
+     * 
+     * @return self 
+     */
+    public function withHttpHandlers()
+    {
+        $this->generateHttpHandlers_ = true;
         return $this;
     }
 
@@ -169,25 +186,13 @@ class DatabaseSchemaReverseEngineeringRunner
                     }
                 })($value)),
                 null,
-                sprintf('%s\\%s', $this->blocComponentNamespace_ ?? self::DEFAULT_BLOC_COMPONENT_NAMESPACE, sprintf('%s%s', 'Http\\ViewModels', $this->subNamespace_ ? "\\$this->subNamespace_" : '')),
+                sprintf('%s\\%s', $this->blocComponentNamespace_ ?? self::DEFAULT_BLOC_COMPONENT_NAMESPACE, sprintf('%s%s', $this->generateHttpHandlers_ ? 'Http\\ViewModels' : "ViewModels", $this->subNamespace_ ? "\\$this->subNamespace_" : '')),
+                sprintf('%s%s', $this->generateHttpHandlers_ ? 'Http/ViewModels' : "ViewModels", $this->subNamespace_ ? "/$this->subNamespace_" : ''),
                 // TODO Add namespace method to component items
-                $modelClassPath
+                $modelClassPath,
+                $this->generateHttpHandlers_ ?: false
             );
             ComponentsScriptWriter($this->blocComponentPath_)->write($viewModel);
-            // TODO : Generate Data Transfert model file
-            $dtoObject = ComponentBuilderHelpers::buildDtoObjectDefinition(
-                DataTransfertClassBuilder::buildAsAssociativeArray(
-                    array_map(static function (ORMColumnDefinition $colum) {
-                        return $colum->name();
-                    }, $value->columns())
-                ),
-                [],
-                [],
-                null,
-                sprintf('%s\\%s', $this->blocComponentNamespace_ ?? self::DEFAULT_BLOC_COMPONENT_NAMESPACE, sprintf('%s%s', 'Dto', $this->subNamespace_ ? "\\$this->subNamespace_" : '')),
-                $modelClassPath
-            );
-            ComponentsScriptWriter($this->blocComponentPath_)->write($dtoObject);
             // TODO : Generate Service file
             $service = ComponentBuilderHelpers::buildServiceDefinition(
                 true,
@@ -196,22 +201,30 @@ class DatabaseSchemaReverseEngineeringRunner
                 $modelClassPath
             );
             ComponentsScriptWriter($this->blocComponentPath_)->write($service);
-            // TODO : Generate controller file from the model
-            $controller = ComponentBuilderHelpers::buildController(
-                $modelClassPath,
-                sprintf('%s\\%s', $service->getNamespace(), drewlabs_core_strings_as_camel_case($service->getName())),
-                sprintf('%s\\%s', $viewModel->getNamespace(), drewlabs_core_strings_as_camel_case($viewModel->getName())),
-                sprintf('%s\\%s', $dtoObject->getNamespace(), drewlabs_core_strings_as_camel_case($dtoObject->getName())),
-                null,
-                sprintf('%s\\%s', $this->blocComponentNamespace_ ?? self::DEFAULT_BLOC_COMPONENT_NAMESPACE, sprintf('%s%s', 'Http\\Controllers', $this->subNamespace_ ? "\\$this->subNamespace_" : '')),
-                $this->auth_
-            );
-            ComponentsScriptWriter($this->blocComponentPath_)->write($controller);
-            $content = $controller->getContent();
-            $routeName = $content instanceof ControllerBuilder ? $content->routeName() : ComponentBuilderHelpers::buildRouteName($controller->getName());
-            $controllerClassPath = sprintf('%s\\%s', $content->getNamespace(), drewlabs_core_strings_as_camel_case($controller->getName()));
-            // Yield the created mvc component route name;
-            yield $routeName => $controllerClassPath;
+            // TODO: Generate Data transfert object, controllers and routes
+            if ($this->generateHttpHandlers_) {
+                // TODO : Generate Data Transfert model file
+                $dtoObject = ComponentBuilderHelpers::buildDtoObjectDefinition(
+                    DataTransfertClassBuilder::buildAsAssociativeArray(
+                        array_map(static function (ORMColumnDefinition $colum) {
+                            return $colum->name();
+                        }, $value->columns())
+                    ),
+                    [],
+                    [],
+                    null,
+                    sprintf('%s\\%s', $this->blocComponentNamespace_ ?? self::DEFAULT_BLOC_COMPONENT_NAMESPACE, sprintf('%s%s', 'Dto', $this->subNamespace_ ? "\\$this->subNamespace_" : '')),
+                    $modelClassPath
+                );
+                ComponentsScriptWriter($this->blocComponentPath_)->write($dtoObject);
+                // TODO : Generate controller file from the model
+                $controller = $this->generateController($modelClassPath, $service, $viewModel, $dtoObject);
+                $content = $controller->getContent();
+                $routeName = $content instanceof ControllerBuilder ? $content->routeName() : ComponentBuilderHelpers::buildRouteName($controller->getName());
+                $controllerClassPath = sprintf('%s\\%s', $content->getNamespace(), drewlabs_core_strings_as_camel_case($controller->getName()));
+                // Yield the created mvc component route name;
+                yield $routeName => $controllerClassPath;
+            }
         }
 
         if ($callback) {
@@ -295,5 +308,32 @@ class DatabaseSchemaReverseEngineeringRunner
                 'comment' => $comment,
             ]);
         }
+    }
+
+    protected function generateController(?string $model = null, ?SourceFileInterface $service = null, ?SourceFileInterface $viewModel = null, ?SourceFileInterface $dtoObject = null)
+    {
+        $controller = ComponentBuilderHelpers::buildController(
+            $model,
+            $service ? sprintf(
+                '%s\\%s',
+                $service->getNamespace(),
+                drewlabs_core_strings_as_camel_case($service->getName())
+            ) : null,
+            $viewModel ? sprintf(
+                '%s\\%s',
+                $viewModel->getNamespace(),
+                drewlabs_core_strings_as_camel_case($viewModel->getName())
+            ) : null,
+            $dtoObject ? sprintf(
+                '%s\\%s',
+                $dtoObject->getNamespace(),
+                drewlabs_core_strings_as_camel_case($dtoObject->getName())
+            ) : null,
+            null,
+            sprintf('%s\\%s', $this->blocComponentNamespace_ ?? self::DEFAULT_BLOC_COMPONENT_NAMESPACE, sprintf('%s%s', 'Http\\Controllers', $this->subNamespace_ ? "\\$this->subNamespace_" : '')),
+            $this->auth_
+        );
+        ComponentsScriptWriter($this->blocComponentPath_)->write($controller);
+        return $controller;
     }
 }

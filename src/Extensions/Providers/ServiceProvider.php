@@ -19,7 +19,7 @@ use Drewlabs\ComponentGenerators\Extensions\Console\Commands\MakeDTOClassCommand
 use Drewlabs\ComponentGenerators\Extensions\Console\Commands\MakeModelCommand;
 use Drewlabs\ComponentGenerators\Extensions\Console\Commands\MakeServiceCommand;
 use Drewlabs\ComponentGenerators\Extensions\Console\Commands\MakeViewModelCommand;
-use Drewlabs\ComponentGenerators\Extensions\Console\Commands\ReverseEngineerMVCComponents;
+use Drewlabs\ComponentGenerators\Extensions\Console\Commands\CreateMVCComponentsCommand;
 use Illuminate\Support\ServiceProvider as SupportServiceProvider;
 
 class ServiceProvider extends SupportServiceProvider
@@ -33,7 +33,7 @@ class ServiceProvider extends SupportServiceProvider
     {
         if ($this->app->runningInConsole()) {
             $this->commands([
-                ReverseEngineerMVCComponents::class,
+                CreateMVCComponentsCommand::class,
                 MakeClassCommand::class,
                 MakeControllerCommand::class,
                 MakeDTOClassCommand::class,

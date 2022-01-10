@@ -98,7 +98,7 @@ class ComponentBuilderHelpers
         ?string $namespace = null,
         ?string $model = null
     ) {
-        $component = (MVCServiceBuilder($name, $namespace));
+        $component = MVCServiceBuilder($name, $namespace);
         if (\is_string($model)) {
             $component = $component->bindModel(
                 $model
@@ -122,7 +122,9 @@ class ComponentBuilderHelpers
         array $updateRules = [],
         ?string $name = null,
         ?string $namespace = null,
-        ?string $model = null
+        ?string $path = null,
+        ?string $model = null,
+        ?bool $hasHttpHandlers = false
     ) {
         $rulesParserFunc = static function ($definitions) {
             $definitions_ = [];
@@ -142,7 +144,7 @@ class ComponentBuilderHelpers
                 yield $key => $definition;
             }
         };
-        $component = (ViewModelBuilder($name, $namespace));
+        $component = ViewModelBuilder($name, $namespace, $path);
         if (\is_string($model)) {
             $component = $component->bindModel(
                 $model
@@ -156,6 +158,10 @@ class ComponentBuilderHelpers
             );
         } else {
             $component = $component->asSingleActionValidator();
+        }
+
+        if ($hasHttpHandlers) {
+            $component = $component->withHttpHandlers();
         }
 
         return $component

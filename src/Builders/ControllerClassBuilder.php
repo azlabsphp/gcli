@@ -310,7 +310,7 @@ class ControllerClassBuilder implements ContractsControllerBuilder
                     PHPTypesModifiers::PUBLIC,
                     [
                         'Handles http request action',
-                        '@Route /POST /'.$this->routeName_.'/{id}',
+                        '@Route /POST /' . $this->routeName_ . '/{id}',
                     ]
                 )
             );
@@ -363,7 +363,7 @@ class ControllerClassBuilder implements ContractsControllerBuilder
                 ],
                 'descriptors' => [
                     'Display or Returns a list of items',
-                    '@Route /GET /'.$this->routeName_.'[/{$id}]',
+                    '@Route /GET /' . $this->routeName_ . '[/{$id}]',
                 ],
                 'returns' => JsonResponse::class,
                 'contents' => array_merge(
@@ -409,7 +409,7 @@ class ControllerClassBuilder implements ContractsControllerBuilder
                 ],
                 'descriptors' => [
                     'Display or Returns an item matching the specified id',
-                    '@Route /GET /'.$this->routeName_.'/{$id}',
+                    '@Route /GET /' . $this->routeName_ . '/{$id}',
                 ],
                 'returns' => JsonResponse::class,
                 'contents' => array_merge(
@@ -424,7 +424,7 @@ class ControllerClassBuilder implements ContractsControllerBuilder
                     ],
                     null !== $this->dtoClass_ ? [
                         ']), function($value) {',
-                        "\treturn null !== \$value ? new $this->dtoClass_(\$value->toArray()) : \$value",
+                        "\treturn null !== \$value ? new $this->dtoClass_(\$value) : \$value",
                         '});',
                     ] : [']))'],
                     [
@@ -439,7 +439,7 @@ class ControllerClassBuilder implements ContractsControllerBuilder
                 ],
                 'descriptors' => [
                     'Stores a new item in the storage',
-                    '@Route /POST /'.$this->routeName_,
+                    '@Route /POST /' . $this->routeName_,
                 ],
                 'returns' => JsonResponse::class,
                 'contents' => array_merge(
@@ -450,7 +450,7 @@ class ControllerClassBuilder implements ContractsControllerBuilder
                         "\$result = \$this->validator->validate($validatable, \$request->all(), function() use (\$request) {",
                         '// After validation logic goes here...',
                     ] : [
-                        '$viewModel_ = (new '.drewlabs_core_strings_replace('::class', '', $validatable).($this->hasAuthenticatable_ ? ')->setUser($request->user()' : '').')->files($request->allFiles())->withBody($request->all())',
+                        '$viewModel_ = new ' . drewlabs_core_strings_replace('::class', '', $validatable) . '($request)',
                         '',
                         '$result = $this->validator->validate($viewModel_, function() use ($viewModel_) {',
                     ],
@@ -461,19 +461,19 @@ class ControllerClassBuilder implements ContractsControllerBuilder
                     '[]' === $validatable ? [
                         "\t\t'payload' => [",
                         "\t\t\t\$request->all(),",
-                        "\t\t\t\$request->has(self::RESOURCE_PRIMARY_KEY) ?",
+                        "\t\t\t\$request->has(\$viewModel_->getPrimaryKey()) ?",
                         "\t\t\t\t[",
                         "\t\t\t\t\t'upsert' => true,",
                         "\t\t\t\t\t'upsert_conditions' => [",
-                        "\t\t\t\t\t\tself::RESOURCE_PRIMARY_KEY => \$request->get(self::RESOURCE_PRIMARY_KEY),",
+                        "\t\t\t\t\t\t\$viewModel_->getPrimaryKey() => \$request->get(\$viewModel_->getPrimaryKey()),",
                     ] : [
                         "\t\t'payload' => [",
                         "\t\t\t\$viewModel_->all(),",
-                        "\t\t\t\$viewModel_->has(self::RESOURCE_PRIMARY_KEY) ?",
+                        "\t\t\t\$viewModel_->has(\$viewModel_->getPrimaryKey()) ?",
                         "\t\t\t\t[",
                         "\t\t\t\t\t'upsert' => true,",
                         "\t\t\t\t\t'upsert_conditions' => [",
-                        "\t\t\t\t\t\tself::RESOURCE_PRIMARY_KEY => \$viewModel_->get(self::RESOURCE_PRIMARY_KEY),",
+                        "\t\t\t\t\t\t\$viewModel_->getPrimaryKey() => \$viewModel_->get(\$viewModel_->getPrimaryKey()),",
                     ],
                     [
 
@@ -484,7 +484,7 @@ class ControllerClassBuilder implements ContractsControllerBuilder
                     ],
                     null !== $this->dtoClass_ ? [
                         "\t]), function( \$value) {",
-                        "\t\treturn null !== \$value ? new $this->dtoClass_(\$value->toArray()) : \$value",
+                        "\t\treturn null !== \$value ? new $this->dtoClass_(\$value) : \$value",
                         "\t});",
                     ] : ["\t]))"],
                     [
@@ -501,22 +501,21 @@ class ControllerClassBuilder implements ContractsControllerBuilder
                 ],
                 'descriptors' => [
                     'Update the specified resource in storage.',
-                    '@Route /PUT /'.$this->routeName_.'/{id}',
-                    '@Route /PATCH /'.$this->routeName_.'/{id}',
+                    '@Route /PUT /' . $this->routeName_ . '/{id}',
+                    '@Route /PATCH /' . $this->routeName_ . '/{id}',
                 ],
                 'returns' => JsonResponse::class,
                 'contents' => array_merge(
                     [
                         '$request = $request->merge(["id" => $id])',
-                        '// Validate request inputs',
                     ],
                     '[]' === $validatable ? [
-                        "\$result = \$this->validator->setUpdate(true)->validate($validatable, \$request->all(), function() use (\$id, \$request) {",
+                        "\$result = \$this->validator->updating()->validate($validatable, \$request->all(), function() use (\$id, \$request) {",
                         '// After validation logic goes here...',
                     ] : [
-                        '$viewModel_ = (new '.drewlabs_core_strings_replace('::class', '', $validatable).($this->hasAuthenticatable_ ? ')->setUser($request->user()' : '').')->files($request->allFiles())->withBody($request->all())',
-                        '',
-                        '$result = $this->validator->setUpdate(true)->validate($viewModel_, function() use ($id, $viewModel_) {',
+                        '$viewModel_ = new ' . drewlabs_core_strings_replace('::class', '', $validatable) . '($request)',
+                        '// Validate request inputs',
+                        '$result = $this->validator->updating()->validate($viewModel_, function() use ($id, $viewModel_) {',
                     ],
                     [
                         "\treturn \$this->service->handle(Action([",
@@ -529,7 +528,7 @@ class ControllerClassBuilder implements ContractsControllerBuilder
                     ],
                     null !== $this->dtoClass_ ? [
                         "\t]), function( \$value) {",
-                        "\t\treturn null !== \$value ? new $this->dtoClass_(\$value->toArray()) : \$value",
+                        "\t\treturn null !== \$value ? new $this->dtoClass_(\$value) : \$value",
                         "\t});",
                     ] : ["\t]))"],
                     [
@@ -547,7 +546,7 @@ class ControllerClassBuilder implements ContractsControllerBuilder
                 ],
                 'descriptors' => [
                     'Remove the specified resource from storage.',
-                    '@Route /DELETE /'.$this->routeName_.'/{id}',
+                    '@Route /DELETE /' . $this->routeName_ . '/{id}',
                 ],
                 'returns' => JsonResponse::class,
                 'contents' => [
@@ -560,35 +559,42 @@ class ControllerClassBuilder implements ContractsControllerBuilder
                 ],
             ],
         ];
-        $component = array_reduce($actions, static function (Blueprint $carry, $action) {
-            $method = PHPClassMethod(
-                $action['name'],
-                $action['params'],
-                $action['returns'] ?? null,
-                PHPTypesModifiers::PUBLIC,
-                $action['descriptors']
-            );
-            if ($contents = $action['contents'] ?? null) {
-                $contents = \is_array($contents) ? $contents : [$contents];
-                foreach (array_filter($contents, static function ($item) {
-                    return null !== $item;
-                }) as $value) {
-                    // code...
-                    $method = $method->addLine($value);
+        $component = array_reduce(
+            $actions,
+            static function (Blueprint $carry, $action) {
+                $method = PHPClassMethod(
+                    $action['name'],
+                    $action['params'],
+                    $action['returns'] ?? null,
+                    PHPTypesModifiers::PUBLIC,
+                    $action['descriptors']
+                );
+                if ($contents = $action['contents'] ?? null) {
+                    $contents = \is_array($contents) ? $contents : [$contents];
+                    foreach (array_filter($contents, static function ($item) {
+                        return null !== $item;
+                    }) as $value) {
+                        // code...
+                        $method = $method->addLine($value);
+                    }
                 }
-            }
-            $carry = $carry->addMethod($method);
+                $carry = $carry->addMethod($method);
 
-            return $carry;
-        }, $component
-            ->addFunctionPath(self::ACTION_FUNCTION_PATH)
-            ->addConstant(PHPClassProperty(
-                'RESOURCE_PRIMARY_KEY',
-                'string',
-                PHPTypesModifiers::PRIVATE,
-                'id',
-                'Resource primary key name'
-            )));
+                return $carry;
+            },
+            $component
+                ->addFunctionPath(self::ACTION_FUNCTION_PATH)
+                // REMOVE IN FUTURE RELEASE
+                // ->addConstant(
+                //     PHPClassProperty(
+                //         'RESOURCE_PRIMARY_KEY',
+                //         'string',
+                //         PHPTypesModifiers::PRIVATE,
+                //         null,
+                //         'Resource primary key name'
+                //     )
+                // )
+        );
 
         // Returns the component back to the caller
         return $component;
