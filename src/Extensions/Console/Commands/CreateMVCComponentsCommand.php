@@ -49,7 +49,7 @@ class CreateMVCComponentsCommand extends Command
         .'{--disableCache : Caching tables not supported}'
         .'{--noAuth : Indicates whether project controllers supports authentication}'
         .'{--schema= : Schema prefix to database tables}'
-        .'{--http= : Whether to generates controllers and routes}';
+        .'{--http : Whether to generates controllers and routes}';
 
     /**
      * The console command description.
