@@ -377,7 +377,7 @@ class ControllerClassBuilder implements ContractsControllerBuilder
                     $this->dtoClass_ ? [
                         '$tranformFunc_ = function($items) use ($request) {',
                         "\treturn map_query_result(\$items, function (\$value)  use (\$request)  {",
-                        "\t\treturn \$value ? (new $this->dtoClass_(\$value))->mergeHidden(\$request->get('_hidden') ?: []) : \$value",
+                        "\t\treturn \$value ? (new $this->dtoClass_(\$value))->mergeHidden(\$request->get('_hidden') ?? []) : \$value",
                         "\t});",
                         '};',
                     ] : [],
@@ -424,7 +424,7 @@ class ControllerClassBuilder implements ContractsControllerBuilder
                     ],
                     null !== $this->dtoClass_ ? [
                         ']), function($value) use ($request) {',
-                        "\treturn null !== \$value ? (new $this->dtoClass_(\$value))->mergeHidden(\$request->get('_hidden') ?: []) : \$value",
+                        "\treturn null !== \$value ? (new $this->dtoClass_(\$value))->mergeHidden(\$request->get('_hidden') ?? []) : \$value",
                         '});',
                     ] : [']))'],
                     [
@@ -464,17 +464,17 @@ class ControllerClassBuilder implements ContractsControllerBuilder
                         "\t\t\t\$request->all(),",
                         "\t\t\t\$request->has('id') ?",
                         "\t\t\t\t[",
-                        "\t\t\t\t\t'method' => \$query['method'] ?: null,",
-                        "\t\t\t\t\t'upsert' => \$query['upsert'] ?: null,",
+                        "\t\t\t\t\t'method' => \$query['method'] ?? null,",
+                        "\t\t\t\t\t'upsert' => \$query['upsert'] ?? null,",
                         "\t\t\t\t\t'upsert_conditions' => [",
                         "\t\t\t\t\t\t\'id' => \$request->get('id'),",
                     ] : [
                         "\t\t'payload' => [",
                         "\t\t\t\$viewModel_->all(),",
                         "\t\t\t[",
-                        "\t\t\t\t'method' => \$query['method'] ?: null,",
-                        "\t\t\t\t'upsert' => \$query['upsert'] ?: null,",
-                        "\t\t\t\t'upsert_conditions' => \$query['upsert_conditions'] ?: (\$viewModel_->has(\$viewModel_->getPrimaryKey()) ?",
+                        "\t\t\t\t'method' => \$query['method'] ?? null,",
+                        "\t\t\t\t'upsert' => \$query['upsert'] ?? null,",
+                        "\t\t\t\t'upsert_conditions' => \$query['upsert_conditions'] ?? (\$viewModel_->has(\$viewModel_->getPrimaryKey()) ?",
                         "\t\t\t\t\t[\$viewModel_->getPrimaryKey() => \$viewModel_->get(\$viewModel_->getPrimaryKey()),] : []),",
                     ],
                     [
@@ -525,12 +525,12 @@ class ControllerClassBuilder implements ContractsControllerBuilder
                         "\t\t'payload' => [",
                         "\t\t\t\$id,",
                         "\t\t\t\$request->all(),",
-                        "\t\t\t[ 'method' => \$query['method'] ?: null, ]",
+                        "\t\t\t[ 'method' => \$query['method'] ?? null, ]",
                     ] : [
                         "\t\t'payload' => [",
                         "\t\t\t\$id,",
                         "\t\t\t\$viewModel_->all(),",
-                        "\t\t\t['method' => \$query['method'] ?: null]",
+                        "\t\t\t['method' => \$query['method'] ?? null]",
                     ],
                     [
                         "\t\t],",
