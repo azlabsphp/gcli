@@ -310,7 +310,7 @@ class ControllerClassBuilder implements ContractsControllerBuilder
                     PHPTypesModifiers::PUBLIC,
                     [
                         'Handles http request action',
-                        '@Route /POST /'.$this->routeName_.'/{id}',
+                        '@Route /POST /' . $this->routeName_ . '/{id}',
                     ]
                 )
             );
@@ -363,7 +363,7 @@ class ControllerClassBuilder implements ContractsControllerBuilder
                 ],
                 'descriptors' => [
                     'Display or Returns a list of items',
-                    '@Route /GET /'.$this->routeName_.'[/{$id}]',
+                    '@Route /GET /' . $this->routeName_ . '[/{$id}]',
                 ],
                 'returns' => JsonResponse::class,
                 'contents' => array_merge(
@@ -375,7 +375,7 @@ class ControllerClassBuilder implements ContractsControllerBuilder
                     ],
                     // Transformer part
                     $this->dtoClass_ ? [
-                        '$tranformFunc_ = function( $items) use ($request) {',
+                        '$tranformFunc_ = function($items) use ($request) {',
                         "\treturn map_query_result(\$items, function (\$value)  use (\$request)  {",
                         "\t\treturn \$value ? (new $this->dtoClass_(\$value))->mergeHidden(\$request->get('_hidden') ?: []) : \$value",
                         "\t});",
@@ -409,7 +409,7 @@ class ControllerClassBuilder implements ContractsControllerBuilder
                 ],
                 'descriptors' => [
                     'Display or Returns an item matching the specified id',
-                    '@Route /GET /'.$this->routeName_.'/{$id}',
+                    '@Route /GET /' . $this->routeName_ . '/{$id}',
                 ],
                 'returns' => JsonResponse::class,
                 'contents' => array_merge(
@@ -439,7 +439,7 @@ class ControllerClassBuilder implements ContractsControllerBuilder
                 ],
                 'descriptors' => [
                     'Stores a new item in the storage',
-                    '@Route /POST /'.$this->routeName_,
+                    '@Route /POST /' . $this->routeName_,
                 ],
                 'returns' => JsonResponse::class,
                 'contents' => array_merge(
@@ -450,40 +450,39 @@ class ControllerClassBuilder implements ContractsControllerBuilder
                         "\$result = \$this->validator->validate($validatable, \$request->all(), function() use (\$request) {",
                         '// After validation logic goes here...',
                     ] : [
-                        '$viewModel_ = new '.drewlabs_core_strings_replace('::class', '', $validatable).'($request)',
+                        '$viewModel_ = new ' . drewlabs_core_strings_replace('::class', '', $validatable) . '($request)',
                         '',
                         '$result = $this->validator->validate($viewModel_, function() use ($viewModel_) {',
                     ],
                     [
+                        '[]' === $validatable ? "\t\$query = \$request->get('_query') ?? []" : "\t\$query = \$viewModel_->get('_query') ?? []",
                         "\treturn \$this->service->handle(Action([",
                         "\t\t'type' => 'CREATE',",
                     ],
                     '[]' === $validatable ? [
                         "\t\t'payload' => [",
                         "\t\t\t\$request->all(),",
-                        "\t\t\t\$request->has(\$viewModel_->getPrimaryKey()) ?",
+                        "\t\t\t\$request->has('id') ?",
                         "\t\t\t\t[",
-                        "\t\t\t\t\t'upsert' => true,",
+                        "\t\t\t\t\t'method' => \$query['method'] ?: null,",
+                        "\t\t\t\t\t'upsert' => \$query['upsert'] ?: null,",
                         "\t\t\t\t\t'upsert_conditions' => [",
-                        "\t\t\t\t\t\t\$viewModel_->getPrimaryKey() => \$request->get(\$viewModel_->getPrimaryKey()),",
+                        "\t\t\t\t\t\t\'id' => \$request->get('id'),",
                     ] : [
                         "\t\t'payload' => [",
                         "\t\t\t\$viewModel_->all(),",
-                        "\t\t\t\$viewModel_->has(\$viewModel_->getPrimaryKey()) ?",
-                        "\t\t\t\t[",
-                        "\t\t\t\t\t'upsert' => true,",
-                        "\t\t\t\t\t'upsert_conditions' => [",
-                        "\t\t\t\t\t\t\$viewModel_->getPrimaryKey() => \$viewModel_->get(\$viewModel_->getPrimaryKey()),",
+                        "\t\t\t[",
+                        "\t\t\t\t'method' => \$query['method'] ?: null,",
+                        "\t\t\t\t'upsert' => \$query['upsert'] ?: null,",
+                        "\t\t\t\t'upsert_conditions' => \$query['upsert_conditions'] ?: (\$viewModel_->has(\$viewModel_->getPrimaryKey()) ?",
+                        "\t\t\t\t\t[\$viewModel_->getPrimaryKey() => \$viewModel_->get(\$viewModel_->getPrimaryKey()),] : []),",
                     ],
                     [
-
-                        "\t\t\t\t\t],",
-                        "\t\t\t\t] :",
-                        "\t\t\t\t[]",
+                        "\t\t\t],",
                         "\t\t],",
                     ],
                     null !== $this->dtoClass_ ? [
-                        "\t]), function( \$value) {",
+                        "\t]), function(\$value) {",
                         "\t\treturn null !== \$value ? new $this->dtoClass_(\$value) : \$value",
                         "\t});",
                     ] : ["\t]))"],
@@ -501,8 +500,8 @@ class ControllerClassBuilder implements ContractsControllerBuilder
                 ],
                 'descriptors' => [
                     'Update the specified resource in storage.',
-                    '@Route /PUT /'.$this->routeName_.'/{id}',
-                    '@Route /PATCH /'.$this->routeName_.'/{id}',
+                    '@Route /PUT /' . $this->routeName_ . '/{id}',
+                    '@Route /PATCH /' . $this->routeName_ . '/{id}',
                 ],
                 'returns' => JsonResponse::class,
                 'contents' => array_merge(
@@ -513,21 +512,31 @@ class ControllerClassBuilder implements ContractsControllerBuilder
                         "\$result = \$this->validator->updating()->validate($validatable, \$request->all(), function() use (\$id, \$request) {",
                         '// After validation logic goes here...',
                     ] : [
-                        '$viewModel_ = new '.drewlabs_core_strings_replace('::class', '', $validatable).'($request)',
+                        '$viewModel_ = new ' . drewlabs_core_strings_replace('::class', '', $validatable) . '($request)',
                         '// Validate request inputs',
                         '$result = $this->validator->updating()->validate($viewModel_, function() use ($id, $viewModel_) {',
                     ],
                     [
+                        '[]' === $validatable ? "\t\$query = \$request->get('_query') ?? []" : "\t\$query = \$viewModel_->get('_query') ?? []",
                         "\treturn \$this->service->handle(Action([",
                         "\t\t'type' => 'UPDATE',",
                     ],
                     '[]' === $validatable ? [
-                        "\t\t'payload' => [\$id, \$request->all()],",
+                        "\t\t'payload' => [",
+                        "\t\t\t\$id,",
+                        "\t\t\t\$request->all(),",
+                        "\t\t\t[ 'method' => \$query['method'] ?: null, ]",
                     ] : [
-                        "\t\t'payload' => [\$id, \$viewModel_->all()],",
+                        "\t\t'payload' => [",
+                        "\t\t\t\$id,",
+                        "\t\t\t\$viewModel_->all(),",
+                        "\t\t\t['method' => \$query['method'] ?: null]",
+                    ],
+                    [
+                        "\t\t],",
                     ],
                     null !== $this->dtoClass_ ? [
-                        "\t]), function( \$value) {",
+                        "\t]), function(\$value) {",
                         "\t\treturn null !== \$value ? new $this->dtoClass_(\$value) : \$value",
                         "\t});",
                     ] : ["\t]))"],
@@ -546,7 +555,7 @@ class ControllerClassBuilder implements ContractsControllerBuilder
                 ],
                 'descriptors' => [
                     'Remove the specified resource from storage.',
-                    '@Route /DELETE /'.$this->routeName_.'/{id}',
+                    '@Route /DELETE /' . $this->routeName_ . '/{id}',
                 ],
                 'returns' => JsonResponse::class,
                 'contents' => [
@@ -584,16 +593,16 @@ class ControllerClassBuilder implements ContractsControllerBuilder
             },
             $component
                 ->addFunctionPath(self::ACTION_FUNCTION_PATH)
-                // REMOVE IN FUTURE RELEASE
-                // ->addConstant(
-                //     PHPClassProperty(
-                //         'RESOURCE_PRIMARY_KEY',
-                //         'string',
-                //         PHPTypesModifiers::PRIVATE,
-                //         null,
-                //         'Resource primary key name'
-                //     )
-                // )
+            // REMOVE IN FUTURE RELEASE
+            // ->addConstant(
+            //     PHPClassProperty(
+            //         'RESOURCE_PRIMARY_KEY',
+            //         'string',
+            //         PHPTypesModifiers::PRIVATE,
+            //         null,
+            //         'Resource primary key name'
+            //     )
+            // )
         );
 
         // Returns the component back to the caller
