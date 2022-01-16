@@ -43,10 +43,10 @@ class RouteDefinitionsHelper
      */
     public static function for(string $name, RouteController $controller)
     {
-        return static function ($is_lumen_app) use ($name, $controller) {
+        return static function ($isLumen) use ($name, $controller) {
             $classPath = $controller->getName();
             $namespace = $controller->getNamespace();
-            if ($is_lumen_app) {
+            if ($isLumen) {
                 $classPath = drewlabs_core_strings_contains($classPath, '\\') ? array_reverse(explode('\\', $classPath))[0] ?? $classPath : $classPath;
                 $classPath = !empty($namespace) ?
                     sprintf('%s\\%s', $namespace, $classPath) :
@@ -84,7 +84,7 @@ class RouteDefinitionsHelper
         string $filename = 'web.php'
     ) {
         return static function (
-            string $is_lumen_app,
+            bool $isLumen,
             ?string $prefix = null,
             ?string $middleware = null,
             \Closure $callback
@@ -144,13 +144,13 @@ class RouteDefinitionsHelper
                 }
                 $output .= sprintf(
                     '%s%s, function() %s {',
-                    $is_lumen_app ? '$router->group(' : 'Route::group(',
+                    $isLumen ? '$router->group(' : 'Route::group(',
                     drewlabs_core_strings_replace(
                         '"',
                         '',
                         $groupContainer
                     ),
-                    $is_lumen_app ? 'use ($router)' : ''
+                    $isLumen ? 'use ($router)' : ''
                 );
             }
             $definitions = drewlabs_core_array_map(

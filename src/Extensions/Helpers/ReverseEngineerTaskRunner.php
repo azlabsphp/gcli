@@ -127,7 +127,6 @@ class ReverseEngineerTaskRunner
             if ($hasHttpHandlers) {
                 $this->writeRoutes(
                     $disableCache,
-                    $routes,
                     $forLumen,
                     $routesDirectory,
                     $routesCachePath,
@@ -135,7 +134,7 @@ class ReverseEngineerTaskRunner
                     $routePrefix,
                     $middleware,
                     $subPackage
-                );
+                )($routes, $indicator);
             } else {
                 foreach ($routes as $value) {
                     $indicator->advance();
@@ -152,7 +151,6 @@ class ReverseEngineerTaskRunner
 
     protected function writeRoutes(
         ?bool $disableCache,
-        array $routes = [],
         ?bool $forLumen = false,
         ?string $routesDirectory = null,
         ?string $cachePath = null,
@@ -161,9 +159,8 @@ class ReverseEngineerTaskRunner
         ?string $middleware,
         ?string $subPackage = null
     ) {
-        return static function (Progress $indicator) use (
+        return static function (array $routes = [], Progress $indicator = null) use (
             $disableCache,
-            $routes,
             $cachePath,
             $forLumen,
             $routesDirectory,
@@ -197,7 +194,7 @@ class ReverseEngineerTaskRunner
                 $definitions,
                 $routingfilename
             )(
-                true,
+                $forLumen,
                 $prefix,
                 $middleware,
                 static function () use ($routes, $disableCache, $cachePath, $subPackage) {
