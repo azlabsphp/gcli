@@ -27,3 +27,8 @@
 ## 202201102012
 
 - Add support for hidden attributes in request object [x]
+
+## 20200119210
+
+- Generate static::creating entry for non incrementable models []
+- Generate relation method to foreign keys definitions []

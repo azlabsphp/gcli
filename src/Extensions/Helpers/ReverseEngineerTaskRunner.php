@@ -19,6 +19,7 @@ use Drewlabs\ComponentGenerators\Helpers\ComponentBuilderHelpers;
 use Drewlabs\ComponentGenerators\Helpers\RouteDefinitionsHelper;
 use Drewlabs\ComponentGenerators\Models\RouteController;
 
+use function Drewlabs\ComponentGenerators\Proxy\ComponentsScriptWriter;
 use function Drewlabs\ComponentGenerators\Proxy\DatabaseSchemaReverseEngineeringRunner;
 
 class ReverseEngineerTaskRunner
@@ -111,19 +112,25 @@ class ReverseEngineerTaskRunner
                         );
                     }
                 });
-
-            $routes = iterator_to_array(
-                (static function () use ($traversable, $subPackage) {
-                    foreach ($traversable as $key => $value) {
-                        yield $key => new RouteController(['namespace' => $subPackage, 'name' => $value]);
-                    }
-                })()
-            );
-
+            $values = iterator_to_array($traversable);
             /**
              * @var Progress
              */
-            $indicator = $onStartCallback($routes);
+            $indicator = $onStartCallback($values);
+            $routes = iterator_to_array((function () use ($values, $subPackage, $indicator) {
+                // TODO : IN FUTURE RELEASE BUILD MODEL RELATION METHOD
+                foreach ($values as $component) {
+                    ComponentsScriptWriter(drewlabs_core_array_get($component, 'model.path'))->write(drewlabs_core_array_get($component, 'model.class'));
+                    ComponentsScriptWriter(drewlabs_core_array_get($component, 'viewModel.path'))->write(drewlabs_core_array_get($component, 'viewModel.class'));
+                    ComponentsScriptWriter(drewlabs_core_array_get($component, 'service.path'))->write(drewlabs_core_array_get($component, 'service.class'));
+                    if (null !== $controller = drewlabs_core_array_get($component, 'controller')) {
+                        ComponentsScriptWriter(drewlabs_core_array_get($controller, 'dto.path'))->write(drewlabs_core_array_get($controller, 'dto.class'));
+                        ComponentsScriptWriter(drewlabs_core_array_get($controller, 'path'))->write(drewlabs_core_array_get($controller, 'class'));
+                        yield drewlabs_core_array_get($controller, 'route.name') => new RouteController(['namespace' => $subPackage, 'name' => drewlabs_core_array_get($controller, 'route.classPath')]);
+                    }
+                    $indicator->advance();
+                }
+            })());
             if ($hasHttpHandlers) {
                 $this->writeRoutes(
                     $disableCache,
@@ -134,11 +141,8 @@ class ReverseEngineerTaskRunner
                     $routePrefix,
                     $middleware,
                     $subPackage
-                )($routes, $indicator);
-            } else {
-                foreach ($routes as $value) {
-                    $indicator->advance();
-                }
+                )($routes);
+                $indicator->advance();
             }
             if ((null !== $indicator) && ($indicator instanceof Progress)) {
                 $indicator->complete();
@@ -159,7 +163,7 @@ class ReverseEngineerTaskRunner
         ?string $middleware,
         ?string $subPackage = null
     ) {
-        return static function (array $routes = [], Progress $indicator = null) use (
+        return static function (array $routes = []) use (
             $disableCache,
             $cachePath,
             $forLumen,
@@ -183,10 +187,6 @@ class ReverseEngineerTaskRunner
                     $key,
                     $value
                 )($forLumen);
-                // TODO : Add the definitions to the route definitions array
-                if ((null !== $indicator) && ($indicator instanceof Progress)) {
-                    $indicator->advance();
-                }
             }
             // TODO : Write the definitions to the route files
             RouteDefinitionsHelper::writeRouteDefinitions(
