@@ -160,7 +160,7 @@ class ReverseEngineerTaskRunner
         ?string $cachePath = null,
         ?string $routingfilename = null,
         ?string $prefix = null,
-        ?string $middleware,
+        ?string $middleware = null,
         ?string $subPackage = null
     ) {
         return static function (array $routes = []) use (
