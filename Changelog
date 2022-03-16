@@ -1,3 +1,7 @@
 # v202201102010
 
 - Modify MVC component generator command, controller builder class by removing RESOURCE_ID constant and ViewModel builder to use HttpViewModel trait when building for Http Applications [x]
+
+## [2.1.21]
+
+- Add support for php7.3 and php8.1 versions

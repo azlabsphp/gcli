@@ -22,7 +22,6 @@
 - Create service generator command [x]
 - Create view model generator command [x]
 - Create controller generator [x]
-- Create command generator command []
 
 ## 202201102012
 
@@ -32,3 +31,4 @@
 
 - Generate static::creating entry for non incrementable models []
 - Generate relation method to foreign keys definitions []
+- Create command generator command []
