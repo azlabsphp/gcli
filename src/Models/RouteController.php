@@ -13,15 +13,19 @@ declare(strict_types=1);
 
 namespace Drewlabs\ComponentGenerators\Models;
 
-use Drewlabs\Support\Immutable\ValueObject;
+use Drewlabs\PHPValue\Value;
 
-class RouteController extends ValueObject
+class RouteController extends Value
 {
+    protected $__PROPERTIES__ = [
+        'namespace', 'name'
+    ];
+
     public function __serialize(): array
     {
         return [
-          'name' => $this->getName(),
-          'namespace' => $this->getNamespace(),
+            'name' => $this->getName(),
+            'namespace' => $this->getNamespace(),
         ];
     }
 
@@ -33,10 +37,5 @@ class RouteController extends ValueObject
     public function getNamespace()
     {
         return $this->namespace;
-    }
-
-    protected function getJsonableAttributes()
-    {
-        return ['namespace', 'name'];
     }
 }

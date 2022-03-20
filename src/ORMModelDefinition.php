@@ -15,10 +15,20 @@ namespace Drewlabs\ComponentGenerators;
 
 use Drewlabs\ComponentGenerators\Contracts\ORMColumnDefinition;
 use Drewlabs\ComponentGenerators\Contracts\ORMModelDefinition as ContractsORMModelDefinition;
-use Drewlabs\Support\Immutable\ValueObject;
+use Drewlabs\PHPValue\Value;
 
-class ORMModelDefinition extends ValueObject implements ContractsORMModelDefinition
+class ORMModelDefinition extends Value implements ContractsORMModelDefinition
 {
+    protected $__PROPERTIES__ = [
+        'primaryKey_' => 'primaryKey',
+        'name_' => 'name',
+        'table_' => 'table',
+        'columns_' => 'columns',
+        'increments_' => 'increments',
+        'namespace_' => 'namespace',
+        'comment_' => 'comment',
+    ];
+
     public function setColumns_Attribute(?array $value)
     {
         foreach ($value as $value) {
@@ -63,18 +73,5 @@ class ORMModelDefinition extends ValueObject implements ContractsORMModelDefinit
     public function namespace(): ?string
     {
         return $this->namespace_ ?? '\\App\\Models';
-    }
-
-    protected function getJsonableAttributes()
-    {
-        return [
-            'primaryKey_' => 'primaryKey',
-            'name_' => 'name',
-            'table_' => 'table',
-            'columns_' => 'columns',
-            'increments_' => 'increments',
-            'namespace_' => 'namespace',
-            'comment_' => 'comment',
-        ];
     }
 }

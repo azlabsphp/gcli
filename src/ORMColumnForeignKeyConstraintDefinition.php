@@ -14,10 +14,18 @@ declare(strict_types=1);
 namespace Drewlabs\ComponentGenerators;
 
 use Drewlabs\ComponentGenerators\Contracts\ForeignKeyConstraintDefinition;
-use Drewlabs\Support\Immutable\ValueObject;
+use Drewlabs\PHPValue\Value;
 
-class ORMColumnForeignKeyConstraintDefinition extends ValueObject implements ForeignKeyConstraintDefinition
+class ORMColumnForeignKeyConstraintDefinition extends Value implements ForeignKeyConstraintDefinition
 {
+    protected $__PROPERTIES__ = [
+        'local_table',
+        'columns',
+        'foreign_table',
+        'foreign_columns',
+        'key',
+    ];
+
     public function getKey()
     {
         return $this->key;
@@ -41,16 +49,5 @@ class ORMColumnForeignKeyConstraintDefinition extends ValueObject implements For
     public function getForeignColumns()
     {
         return $this->foreign_columns ?? [];
-    }
-
-    protected function getJsonableAttributes()
-    {
-        return [
-            'local_table',
-            'columns',
-            'foreign_table',
-            'foreign_columns',
-            'key',
-        ];
     }
 }

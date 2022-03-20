@@ -46,7 +46,8 @@
         "drewlabs/core-helpers": "^2.0",
         "drewlabs/filesystem": "^1.0",
         "drewlabs/psr7-stream": "^1.0",
-        "drewlabs/support": "^2.0"
+        "drewlabs/support": "^2.0",
+        "drewlabs/php-value": "^0.1.5"
     },
     "repositories": [
         {
@@ -84,6 +85,10 @@
         {
             "type": "vcs",
             "url": "git@github.com:liksoft/drewlabs-php-support.git"
+        },
+        {
+            "type": "vcs",
+            "url": "git@github.com:liksoft/drewlabs-php-value.git"
         }
     ],
     "extra": {

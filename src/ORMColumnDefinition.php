@@ -16,10 +16,20 @@ namespace Drewlabs\ComponentGenerators;
 use Drewlabs\ComponentGenerators\Contracts\ForeignKeyConstraintDefinition;
 use Drewlabs\ComponentGenerators\Contracts\ORMColumnDefinition as ContractsORMColumnDefinition;
 use Drewlabs\ComponentGenerators\Contracts\UniqueKeyConstraintDefinition;
-use Drewlabs\Support\Immutable\ValueObject;
+use Drewlabs\PHPValue\Value;
 
-class ORMColumnDefinition extends ValueObject implements ContractsORMColumnDefinition
+class ORMColumnDefinition extends Value implements ContractsORMColumnDefinition
 {
+    protected $__PROPERTIES__ = [
+        'table_' => 'table',
+        'name_' => 'name',
+        'type_' => 'type',
+        'foreignKeyConstraint_' => 'foreignKeyConstraint',
+        'uniqueKeyConstraint_' => 'uniqueKeyConstraint',
+        'required_' => 'required',
+        'unsigned_' => 'unsigned',
+    ];
+
     public function name()
     {
         return $this->name_ ?? 'column';
@@ -75,22 +85,8 @@ class ORMColumnDefinition extends ValueObject implements ContractsORMColumnDefin
     public function jsonSerialize()
     {
         $list = parent::jsonSerialize();
-
         return array_filter($list, static function ($value) {
             return null !== $value;
         });
-    }
-
-    protected function getJsonableAttributes()
-    {
-        return [
-            'table_' => 'table',
-            'name_' => 'name',
-            'type_' => 'type',
-            'foreignKeyConstraint_' => 'foreignKeyConstraint',
-            'uniqueKeyConstraint_' => 'uniqueKeyConstraint',
-            'required_' => 'required',
-            'unsigned_' => 'unsigned',
-        ];
     }
 }

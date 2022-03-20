@@ -14,10 +14,15 @@ declare(strict_types=1);
 namespace Drewlabs\ComponentGenerators;
 
 use Drewlabs\ComponentGenerators\Contracts\UniqueKeyConstraintDefinition;
-use Drewlabs\Support\Immutable\ValueObject;
+use Drewlabs\PHPValue\Value;
 
-class ORMColumnUniqueKeyDefinition extends ValueObject implements UniqueKeyConstraintDefinition
+class ORMColumnUniqueKeyDefinition extends Value implements UniqueKeyConstraintDefinition
 {
+    protected $__PROPERTIES__ = [
+        'table_' => 'table',
+        'columns_' => 'columns',
+    ];
+
     public function getTable()
     {
         return $this->table_ ?? '';
@@ -26,13 +31,5 @@ class ORMColumnUniqueKeyDefinition extends ValueObject implements UniqueKeyConst
     public function getColumns()
     {
         return $this->columns_ ?? 'id';
-    }
-
-    protected function getJsonableAttributes()
-    {
-        return [
-            'table_' => 'table',
-            'columns_' => 'columns',
-        ];
     }
 }

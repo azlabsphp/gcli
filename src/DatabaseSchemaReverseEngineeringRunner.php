@@ -213,12 +213,11 @@ class DatabaseSchemaReverseEngineeringRunner
             if ($this->generateHttpHandlers_) {
                 // TODO : Generate Data Transfert model file
                 $dtoObject = ComponentBuilderHelpers::buildDtoObjectDefinition(
-                    DataTransfertClassBuilder::buildAsAssociativeArray(
-                        array_map(static function (ORMColumnDefinition $colum) {
-                            return $colum->name();
-                        }, $value->columns())
-                    ),
-                    [],
+                    iterator_to_array((function () use ($value) {
+                        foreach ($value->columns() as $column) {
+                            yield $column->name() => $column->type();
+                        }
+                    })()),
                     [],
                     null,
                     sprintf('%s\\%s', $this->blocComponentNamespace_ ?? self::DEFAULT_BLOC_COMPONENT_NAMESPACE, sprintf('%s%s', 'Dto', $this->subNamespace_ ? "\\$this->subNamespace_" : '')),

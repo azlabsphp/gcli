@@ -14,10 +14,16 @@ declare(strict_types=1);
 namespace Drewlabs\ComponentGenerators\Cache;
 
 use Drewlabs\ComponentGenerators\Contracts\Cacheable as ContractsCacheable;
-use Drewlabs\Support\Immutable\ValueObject;
+use Drewlabs\PHPValue\Value;
 
-class CacheableTables extends ValueObject implements ContractsCacheable
+class CacheableTables extends Value implements ContractsCacheable
 {
+    protected $__PROPERTIES__ = [
+        'tables',
+        'namespace',
+        'subNamespace',
+    ];
+
     public function getTables()
     {
         return $this->tables ?? [];
@@ -50,14 +56,5 @@ class CacheableTables extends ValueObject implements ContractsCacheable
     public function serialize()
     {
         return serialize($this->toArray());
-    }
-
-    protected function getJsonableAttributes()
-    {
-        return [
-            'tables',
-            'namespace',
-            'subNamespace',
-        ];
     }
 }

@@ -182,7 +182,6 @@ class ComponentBuilderHelpers
     public static function buildDtoObjectDefinition(
         array $attributes = [],
         array $hidden = [],
-        array $guarded = [],
         ?string $name = null,
         ?string $namespace = null,
         ?string $model = null
@@ -196,7 +195,6 @@ class ComponentBuilderHelpers
 
         return $component
             ->setHidden($hidden ?? [])
-            ->setGuarded($guarded ?? [])
             ->build();
     }
 

@@ -29,7 +29,6 @@ class MakeDTOClassCommand extends Command
         .'{--name= : Generated view model name }'
         .'{--model= : Model attached to the view model class }'
         .'{--attributes=* : List of Jsonable attributes }'
-        .'{--guarded=* : List of guarded attributes }'
         .'{--hidden=* : List of hidden attributes }';
 
     protected $description = 'Creates a Drewlabs package MVC controller';
@@ -52,13 +51,15 @@ class MakeDTOClassCommand extends Command
         $basePath = $this->app->basePath($this->option('path') ?? 'app');
         $attributes = $this->option('attributes') ?? [];
         $hidden = $this->option('hidden') ?? [];
-        $guarded = $this->option('guarded') ?? [];
         // # End of parameters initialization
         ComponentsScriptWriter($basePath)->write(
             ComponentBuilderHelpers::buildDtoObjectDefinition(
-                $attributes,
+                iterator_to_array((function () use ($attributes) {
+                    foreach ($attributes as $value) {
+                        yield $value => 'mixed';
+                    }
+                })()),
                 $hidden,
-                $guarded,
                 $name,
                 $namespace,
                 $model

@@ -14,10 +14,14 @@ declare(strict_types=1);
 namespace Drewlabs\ComponentGenerators\Cache;
 
 use Drewlabs\ComponentGenerators\Contracts\Cacheable;
-use Drewlabs\Support\Immutable\ValueObject;
+use Drewlabs\PHPValue\Value;
 
-class CacheableRoutes extends ValueObject implements Cacheable
+class CacheableRoutes extends Value implements Cacheable
 {
+    protected $__PROPERTIES__ = [
+        'routes',
+    ];
+
     public function toArray()
     {
         return [
@@ -41,12 +45,5 @@ class CacheableRoutes extends ValueObject implements Cacheable
     public function serialize()
     {
         return serialize($this->toArray());
-    }
-
-    protected function getJsonableAttributes()
-    {
-        return [
-            'routes',
-        ];
     }
 }
