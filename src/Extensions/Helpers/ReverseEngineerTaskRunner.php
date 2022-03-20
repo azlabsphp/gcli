@@ -61,7 +61,7 @@ class ReverseEngineerTaskRunner
             $hasHttpHandlers
         ) {
             $onCompleteCallback = $onCompleteCallback ?? static function () {
-                dump('Task Completed successfully...');
+                printf("\nTask Completed successfully...\n");
             };
             $connection = DriverManager::getConnection($options);
             $schemaManager = $connection->createSchemaManager();

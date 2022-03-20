@@ -3,11 +3,11 @@
     "type": "library",
     "require-dev": {
         "phpunit/phpunit": "^9.5",
-        "illuminate/support": "^5.0|^6.0|^7.0|^8.0",
-        "illuminate/console": "^5.0|^6.0|^7.0|^8.0",
-        "drewlabs/database": "^2.0",
-        "drewlabs/http": "^2.0",
-        "drewlabs/code-generator": "^2.0"
+        "illuminate/support": "^7.0|^8.0|^9.0",
+        "illuminate/console": "^7.0|^8.0|^9.0",
+        "illuminate/database": "^7.0|^8.0|^9.0",
+        "drewlabs/code-generator": "^2.0",
+        "doctrine/dbal": "^3.3"
     },
     "license": "MIT",
     "autoload": {
@@ -42,21 +42,15 @@
     "require": {
         "php": "^7.3|^7.4|^8.0|^8.1",
         "drewlabs/contracts": "^2.0.20",
-        "drewlabs/core": "^2.0",
         "drewlabs/core-helpers": "^2.0",
         "drewlabs/filesystem": "^1.0",
         "drewlabs/psr7-stream": "^1.0",
-        "drewlabs/support": "^2.0",
         "drewlabs/php-value": "^0.1.5"
     },
     "repositories": [
         {
             "type": "vcs",
             "url": "git@github.com:liksoft/drewlabs-php-contracts.git"
-        },
-        {
-            "type": "vcs",
-            "url": "git@github.com:liksoft/drewlabs-php-core.git"
         },
         {
             "type": "vcs",
@@ -73,18 +67,6 @@
         {
             "type": "vcs",
             "url": "git@github.com:liksoft/drewlabs-psr7-stream.git"
-        },
-        {
-            "type": "vcs",
-            "url": "git@github.com:liksoft/drewlabs-php-packages-database.git"
-        },
-        {
-            "type": "vcs",
-            "url": "git@github.com:liksoft/drewlabs-laravel-http.git"
-        },
-        {
-            "type": "vcs",
-            "url": "git@github.com:liksoft/drewlabs-php-support.git"
         },
         {
             "type": "vcs",

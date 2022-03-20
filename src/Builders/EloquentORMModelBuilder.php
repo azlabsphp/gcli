@@ -35,8 +35,6 @@ use Drewlabs\Contracts\Data\Model\Parseable;
 use Drewlabs\Contracts\Data\Model\Relatable;
 use Drewlabs\Contracts\Validator\CoreValidatable;
 use Drewlabs\Contracts\Validator\Validatable;
-use Drewlabs\Core\Validator\Traits\ViewModel;
-use Drewlabs\Packages\Database\Traits\Model;
 
 use Illuminate\Database\Eloquent\Model as EloquentModel;
 use Illuminate\Support\Pluralizer;
@@ -279,11 +277,11 @@ class EloquentORMModelBuilder implements ContractsEloquentORMModel, ComponentBui
             /**
              * @var BluePrint
              */
-            $component = $component->addTrait(ViewModel::class);
+            $component = $component->addTrait(\Drewlabs\Core\Validator\Traits\ViewModel::class);
         }
         $component->setBaseClass(EloquentModel::class)
             ->asFinal()
-            ->addTrait(Model::class)
+            ->addTrait(\Drewlabs\Packages\Database\Traits\Model::class)
             // Model associated table
             ->addProperty(
                 PHPClassProperty(

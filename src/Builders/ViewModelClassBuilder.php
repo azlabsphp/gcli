@@ -30,8 +30,6 @@ use Drewlabs\ComponentGenerators\Traits\ViewModelBuilder;
 use Drewlabs\Contracts\Validator\CoreValidatable;
 use Drewlabs\Contracts\Validator\Validatable;
 
-use Drewlabs\Core\Validator\Traits\ViewModel;
-use Drewlabs\Packages\Http\Traits\HttpViewModel;
 use Illuminate\Support\Pluralizer;
 
 class ViewModelClassBuilder implements ComponentBuilder
@@ -184,7 +182,7 @@ class ViewModelClassBuilder implements ComponentBuilder
             /**
              * @var Blueprint
              */
-            $component = $this->hasHttpHandlers_ ? $component->addTrait(HttpViewModel::class) : $component->addTrait(ViewModel::class);
+            $component = $this->hasHttpHandlers_ ? $component->addTrait(\Drewlabs\Packages\Http\Traits\HttpViewModel::class) : $component->addTrait(\Drewlabs\Core\Validator\Traits\ViewModel::class);
         }
         // Returns the builded component
         return PHPScript(

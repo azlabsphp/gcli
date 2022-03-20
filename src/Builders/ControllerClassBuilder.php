@@ -26,7 +26,6 @@ use Drewlabs\ComponentGenerators\Traits\HasNamespaceAttribute;
 use Drewlabs\Contracts\Support\Actions\ActionHandler;
 use Drewlabs\Contracts\Validator\Validator;
 
-use Drewlabs\Packages\Http\Contracts\IActionResponseHandler;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
@@ -232,7 +231,7 @@ class ControllerClassBuilder implements ContractsControllerBuilder
                         ),
                         PHPFunctionParameter(
                             'response',
-                            IActionResponseHandler::class,
+                            \Drewlabs\Packages\Http\Contracts\IActionResponseHandler::class,
                         ),
                     ],
                     // Add the service class as parameter to the constructor
@@ -287,7 +286,7 @@ class ControllerClassBuilder implements ContractsControllerBuilder
             ->addProperty(
                 PHPClassProperty(
                     'response',
-                    IActionResponseHandler::class,
+                    \Drewlabs\Packages\Http\Contracts\IActionResponseHandler::class,
                     PHPTypesModifiers::PRIVATE,
                     null,
                     'Injected instance of the response handler class'
