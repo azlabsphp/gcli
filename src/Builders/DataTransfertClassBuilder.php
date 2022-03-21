@@ -146,6 +146,7 @@ class DataTransfertClassBuilder implements ComponentBuilder
          * @var BluePrint
          */
         $component = (PHPClass($this->name_ ?? self::DEFAULT_NAME))
+            ->addImplementation(\Drewlabs\PHPValue\Contracts\ValueInterface::class)
             ->addComment(
                 array_merge(
                     $this->propertyDocComments ?? [],
