@@ -2,6 +2,10 @@
 
 - Modify MVC component generator command, controller builder class by removing RESOURCE_ID constant and ViewModel builder to use HttpViewModel trait when building for Http Applications [x]
 
-## [2.1.21]
+## [2.1.21] 2022-03-20
 
 - Add support for php7.3 and php8.1 versions
+
+## [2.1.22] 2022-03-20
+
+- Bug fix in Dto class not implementingValueInterface interface
