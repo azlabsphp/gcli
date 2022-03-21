@@ -6,6 +6,6 @@
 
 - Add support for php7.3 and php8.1 versions
 
-## [2.1.22] 2022-03-20
+## [2.1.26] 2022-03-20
 
 - Bug fix in Dto class not implementingValueInterface interface
