@@ -15,7 +15,6 @@ namespace Drewlabs\ComponentGenerators;
 
 use Doctrine\DBAL\Schema\AbstractSchemaManager;
 use Doctrine\DBAL\Schema\Table;
-use Drewlabs\ComponentGenerators\Builders\DataTransfertClassBuilder;
 use Drewlabs\ComponentGenerators\Contracts\ControllerBuilder;
 use Drewlabs\ComponentGenerators\Contracts\ORMColumnDefinition;
 use Drewlabs\ComponentGenerators\Contracts\ORMModelDefinition as ContractsORMModelDefinition;
@@ -57,7 +56,7 @@ class DatabaseSchemaReverseEngineeringRunner
      *
      * @var string[]
      */
-    private $excepts_;
+    private $excepts_ = [];
 
     /**
      * @var \Closure
@@ -86,6 +85,12 @@ class DatabaseSchemaReverseEngineeringRunner
      */
     private $generateHttpHandlers_ = false;
 
+    /**
+     * 
+     * @var string[]
+     */
+    private $tables_ = [];
+
     public function __construct(
         AbstractSchemaManager $manager,
         string $blocComponentPath,
@@ -94,6 +99,18 @@ class DatabaseSchemaReverseEngineeringRunner
         $this->manager = $manager;
         $this->blocComponentPath_ = $blocComponentPath ?? 'app';
         $this->blocComponentNamespace_ = $blocComponentNamespace ?? self::DEFAULT_BLOC_COMPONENT_NAMESPACE;
+    }
+
+    /**
+     * Specifies the tables for which code should be generated
+     * 
+     * @param array $tables 
+     * @return self 
+     */
+    public function only(array $tables)
+    {
+        $this->tables_ = $tables;
+        return $this;
     }
 
     public function except(array $tables)
@@ -143,22 +160,12 @@ class DatabaseSchemaReverseEngineeringRunner
 
     public function run(?\Closure $callback = null)
     {
-        // TODO: Read the database table using doctrine Database access layer
-        // Filter tables during testing
-        $tables = $this->manager->listTables();
-        if (!empty($this->excepts_)) {
-            $tables = array_filter($tables, function ($table) {
-                return !\in_array($table->getName(), $this->excepts_, true);
-            });
-        }
-        if (null !== $this->tablesFilterFunc_) {
-            $tables = array_filter($tables, $this->tablesFilterFunc_);
-        }
-        // TODO : For each table create model components
+        // We apply filters to only generate code for tables that
+        // passes the filters
+        $tables = $this->applyFilters($this->manager->listTables());
         $models = $this->tablesToORMModelDefinitionGenerator($tables);
         foreach ($models as $value) {
             $components = [];
-            // TODO: Generate model file in the model namespace
             $hasTimeStamps = drewlabs_core_array_contains_all(array_map(static function ($column) {
                 return $column->name();
             }, $value->columns() ?? []), self::DEFAULT_TIMESTAMP_COLUMNS);
@@ -198,7 +205,6 @@ class DatabaseSchemaReverseEngineeringRunner
                 'path' => $this->blocComponentPath_,
                 'class' => $viewModel
             ];
-            // TODO : Generate Service file
             $service = ComponentBuilderHelpers::buildServiceDefinition(
                 true,
                 null,
@@ -209,9 +215,7 @@ class DatabaseSchemaReverseEngineeringRunner
                 'path' => $this->blocComponentPath_,
                 'class' => $service
             ];
-            // TODO: Generate Data transfert object, controllers and routes
             if ($this->generateHttpHandlers_) {
-                // TODO : Generate Data Transfert model file
                 $dtoObject = ComponentBuilderHelpers::buildDtoObjectDefinition(
                     iterator_to_array((function () use ($value) {
                         foreach ($value->columns() as $column) {
@@ -223,7 +227,6 @@ class DatabaseSchemaReverseEngineeringRunner
                     sprintf('%s\\%s', $this->blocComponentNamespace_ ?? self::DEFAULT_BLOC_COMPONENT_NAMESPACE, sprintf('%s%s', 'Dto', $this->subNamespace_ ? "\\$this->subNamespace_" : '')),
                     $modelClassPath
                 );
-                // TODO : Generate controller file from the model
                 $controller = $this->generateController($modelClassPath, $service, $viewModel, $dtoObject);
                 $content = $controller->getContent();
                 $routeName = $content instanceof ControllerBuilder ? $content->routeName() : ComponentBuilderHelpers::buildRouteName($controller->getName());
@@ -280,7 +283,7 @@ class DatabaseSchemaReverseEngineeringRunner
         return array_merge($rules);
     }
 
-    protected function generateController(?string $model = null, ?SourceFileInterface $service = null, ?SourceFileInterface $viewModel = null, ?SourceFileInterface $dtoObject = null)
+    private function generateController(?string $model = null, ?SourceFileInterface $service = null, ?SourceFileInterface $viewModel = null, ?SourceFileInterface $dtoObject = null)
     {
         $controller = ComponentBuilderHelpers::buildController(
             $model,
@@ -304,6 +307,26 @@ class DatabaseSchemaReverseEngineeringRunner
             $this->auth_
         );
         return $controller;
+    }
+
+    private function applyFilters(array $tables)
+    {
+        if (!empty($this->excepts_)) {
+            $tables = array_filter($tables, function ($table) {
+                return !\in_array($table->getName(), $this->excepts_, true);
+            });
+        }
+        // We apply a filter that returns only tables having the name
+        // matching the names specified in the {@see $this->tables_} properties
+        if (!empty($this->tables_)) {
+            $tables = array_filter($tables, function ($table) {
+                return \in_array($table->getName(), $this->tables_, true);
+            });
+        }
+        if (null !== $this->tablesFilterFunc_) {
+            $tables = array_filter($tables, $this->tablesFilterFunc_);
+        }
+        return $tables;
     }
 
     /**

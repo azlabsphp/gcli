@@ -13,6 +13,7 @@ declare(strict_types=1);
 
 namespace Drewlabs\ComponentGenerators\Extensions\Helpers;
 
+use Closure;
 use Doctrine\DBAL\DriverManager;
 use Drewlabs\ComponentGenerators\Extensions\Contracts\Progress;
 use Drewlabs\ComponentGenerators\Helpers\ComponentBuilderHelpers;
@@ -24,13 +25,64 @@ use function Drewlabs\ComponentGenerators\Proxy\DatabaseSchemaReverseEngineering
 
 class ReverseEngineerTaskRunner
 {
+    /**
+     * 
+     * @var string[]
+     */
+    private $exceptions = [];
+
+    /**
+     * 
+     * @var string[]
+     */
+    private $tables = [];
+
+    /**
+     * Specifies the tables for which code should be generated
+     * 
+     * @param array $tables 
+     * @return self 
+     */
+    public function only(array $tables)
+    {
+        $this->tables = $tables;
+        return $this;
+    }
+
+    /**
+     * Add exception to some tables during code generation
+     * 
+     * @param array $tables 
+     * @return self 
+     */
+    public function except(array $tables)
+    {
+        $this->exceptions = $tables;
+        return $this;
+    }
+
+    /**
+     * 
+     * @param array $options 
+     * @param string $srcPath 
+     * @param string $routingfilename 
+     * @param null|string $routePrefix 
+     * @param null|string $middleware 
+     * @param null|bool $forLumen 
+     * @param null|bool $disableCache 
+     * @param null|bool $noAuth 
+     * @param null|string $namespace 
+     * @param null|string $subPackage 
+     * @param null|string $schema 
+     * @param null|bool $hasHttpHandlers 
+     * @return Closure 
+     */
     public function run(
         array $options,
         string $srcPath,
         string $routingfilename,
         ?string $routePrefix = null,
         ?string $middleware = null,
-        ?array $exceptions = [],
         ?bool $forLumen = true,
         ?bool $disableCache = false,
         ?bool $noAuth = false,
@@ -51,7 +103,6 @@ class ReverseEngineerTaskRunner
             $routingfilename,
             $routePrefix,
             $middleware,
-            $exceptions,
             $forLumen,
             $disableCache,
             $noAuth,
@@ -99,11 +150,11 @@ class ReverseEngineerTaskRunner
             // #endregion Create migration runner
             $traversable = $runner->setSubNamespace($subPackage)
                 ->bindExceptMethod($tablesFilterFunc)
-                ->except($exceptions)
+                ->only($this->tables ?? [])
+                ->except($this->exceptions ?? [])
                 ->setSchema($schema)
                 ->run(static function ($tables) use ($namespace, $subPackage, $disableCache, $cachePath) {
                     if (!$disableCache) {
-                        // TODO : Add definitions to cache
                         ComponentBuilderHelpers::cacheComponentDefinitions(
                             $cachePath,
                             $tables,
@@ -174,7 +225,6 @@ class ReverseEngineerTaskRunner
             $subPackage
         ) {
 
-            // TODO : Cache route definitions if cache is not disabled
             if (!$disableCache) {
                 // Get route definitions from cache
                 $value = $cachePath ? RouteDefinitionsHelper::getCachedRouteDefinitions($cachePath) : null;
@@ -188,7 +238,6 @@ class ReverseEngineerTaskRunner
                     $value
                 )($forLumen);
             }
-            // TODO : Write the definitions to the route files
             RouteDefinitionsHelper::writeRouteDefinitions(
                 $routesDirectory,
                 $definitions,

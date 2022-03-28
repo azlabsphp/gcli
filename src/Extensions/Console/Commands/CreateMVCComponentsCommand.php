@@ -16,7 +16,6 @@ namespace Drewlabs\ComponentGenerators\Extensions\Console\Commands;
 use Drewlabs\ComponentGenerators\Extensions\Helpers\ReverseEngineerTaskRunner;
 use Drewlabs\ComponentGenerators\Extensions\ProgressbarIndicator;
 use Drewlabs\ComponentGenerators\Helpers\ComponentBuilderHelpers;
-use Drewlabs\Filesystem\Path;
 use function Drewlabs\Filesystem\Proxy\Path;
 use Illuminate\Console\Command;
 
@@ -30,26 +29,27 @@ class CreateMVCComponentsCommand extends Command
      * @var string
      */
     protected $signature = 'drewlabs:mvc:create {--srcPath= : Path to the business logic component folder}'
-        .'{--package= : Package namespace for components}'
-        .'{--subPackage= : Subpackage will group each component part in a subfolder}'
-        .'{--connectionURL= : Database connection URL}'
-        .'{--dbname= : Database name}'
-        .'{--host= : Database host name}'
-        .'{--port= : Database host port number}'
-        .'{--user= : Database authentication user}'
-        .'{--password= : Database authentication password}'
-        .'{--driver= : Database driver name}'
-        .'{--server_version= : Database server version}'
-        .'{--charset= : Database Connection collation}'
-        .'{--unix_socket= : Unix socket to use for connections}'
-        .'{--routePrefix= : The prefix for the generated route definitions}'
-        .'{--middleware= : Middleware group defined for the routes prefix}'
-        .'{--routingfilename= : Routing filename (Default = web.php)}'
-        .'{--excepts=* : List of tables not to be included in the generated output}'
-        .'{--disableCache : Caching tables not supported}'
-        .'{--noAuth : Indicates whether project controllers supports authentication}'
-        .'{--schema= : Schema prefix to database tables}'
-        .'{--http : Whether to generates controllers and routes}';
+        . '{--package= : Package namespace for components}'
+        . '{--subPackage= : Subpackage will group each component part in a subfolder}'
+        . '{--connectionURL= : Database connection URL}'
+        . '{--dbname= : Database name}'
+        . '{--host= : Database host name}'
+        . '{--port= : Database host port number}'
+        . '{--user= : Database authentication user}'
+        . '{--password= : Database authentication password}'
+        . '{--driver= : Database driver name}'
+        . '{--server_version= : Database server version}'
+        . '{--charset= : Database Connection collation}'
+        . '{--unix_socket= : Unix socket to use for connections}'
+        . '{--routePrefix= : The prefix for the generated route definitions}'
+        . '{--middleware= : Middleware group defined for the routes prefix}'
+        . '{--routingfilename= : Routing filename (Default = web.php)}'
+        . '{--excepts=* : List of tables not to be included in the generated output}'
+        . '{--disableCache : Caching tables not supported}'
+        . '{--noAuth : Indicates whether project controllers supports authentication}'
+        . '{--schema= : Schema prefix to database tables}'
+        . '{--http : Whether to generates controllers and routes}'
+        . '--only=* : Restrict the generator to generate code only for the specified table structures';
 
     /**
      * The console command description.
@@ -98,6 +98,7 @@ class CreateMVCComponentsCommand extends Command
         $routePrefix = $this->option('routePrefix') ?? null;
         $middleware = $this->option('middleware') ?? null;
         $default_driver = config('database.default');
+        $only = $this->option('only');
         $driver = $this->option('driver') ?
             (drewlabs_core_strings_starts_with(
                 $this->option('driver'),
@@ -147,21 +148,23 @@ class CreateMVCComponentsCommand extends Command
                 'charset' => $charset,
             ];
         }
-        (new ReverseEngineerTaskRunner())->run(
-            $options,
-            $srcPath,
-            $routingfilename,
-            $routePrefix,
-            $middleware,
-            $exceptions,
-            $forLumen,
-            $disableCache,
-            $noAuth,
-            $namespace,
-            $subPackage,
-            $this->option('schema') ?? null,
-            $httpHandlers
-        )(
+        (new ReverseEngineerTaskRunner())
+            ->except($exceptions ?? [])
+            ->only($only ?? [])
+            ->run(
+                $options,
+                $srcPath,
+                $routingfilename,
+                $routePrefix,
+                $middleware,
+                $forLumen,
+                $disableCache,
+                $noAuth,
+                $namespace,
+                $subPackage,
+                $this->option('schema') ?? null,
+                $httpHandlers
+            )(
             $this->laravel->basePath('routes'),
             $this->path_,
             $this->routesCachePath_,
