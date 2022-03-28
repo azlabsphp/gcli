@@ -9,3 +9,7 @@
 ## [2.1.26] 2022-03-20
 
 - Bug fix in Dto class not implementingValueInterface interface
+
+## [2.1.27] 2022-03-20
+
+- Add only filters to component generators
