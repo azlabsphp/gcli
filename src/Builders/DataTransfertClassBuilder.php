@@ -15,9 +15,7 @@ namespace Drewlabs\ComponentGenerators\Builders;
 
 use Drewlabs\CodeGenerator\Contracts\Blueprint;
 use function Drewlabs\CodeGenerator\Proxy\PHPClass;
-use function Drewlabs\CodeGenerator\Proxy\PHPClassMethod;
 use function Drewlabs\CodeGenerator\Proxy\PHPClassProperty;
-use function Drewlabs\CodeGenerator\Proxy\PHPVariable;
 use Drewlabs\CodeGenerator\Types\PHPTypesModifiers;
 use Drewlabs\ComponentGenerators\Contracts\ComponentBuilder;
 use Drewlabs\ComponentGenerators\Helpers\ComponentBuilderHelpers;
@@ -65,7 +63,6 @@ class DataTransfertClassBuilder implements ComponentBuilder
     private $hidden_ = [];
 
     /**
-     * 
      * @var array
      */
     private $propertyDocComments = [];
@@ -77,7 +74,7 @@ class DataTransfertClassBuilder implements ComponentBuilder
         ?string $path = null
     ) {
         if ($name) {
-            $this->setName(drewlabs_core_strings_as_camel_case(Pluralizer::singular($name)) . 'Dto');
+            $this->setName(drewlabs_core_strings_as_camel_case(Pluralizer::singular($name)).'Dto');
         }
         // Set the component write path
         $this->setWritePath($path ?? self::DEFAULT_PATH);
@@ -106,7 +103,7 @@ class DataTransfertClassBuilder implements ComponentBuilder
             array_reverse(explode('\\', $classname))[0] : (drewlabs_core_strings_contains($classname, '\\') ?
                 array_reverse(explode('\\', $classname))[0] :
                 $classname);
-        $this->setName(drewlabs_core_strings_as_camel_case(Pluralizer::singular($model_name)) . 'Dto');
+        $this->setName(drewlabs_core_strings_as_camel_case(Pluralizer::singular($model_name)).'Dto');
 
         // creates an object to if the model is a PHP string
         if (\is_string($model) && class_exists($model)) {
@@ -137,6 +134,7 @@ class DataTransfertClassBuilder implements ComponentBuilder
         if (!empty($attributes)) {
             $this->json_attributes_ = $attributes;
         }
+
         return $this;
     }
 
@@ -151,8 +149,8 @@ class DataTransfertClassBuilder implements ComponentBuilder
                 array_merge(
                     $this->propertyDocComments ?? [],
                     [
-                        " ",
-                        "@package " . $this->namespace_ ?? self::DEFAULT_NAMESPACE
+                        ' ',
+                        '@package '.$this->namespace_ ?? self::DEFAULT_NAMESPACE,
                     ]
                 )
             )
@@ -247,8 +245,9 @@ class DataTransfertClassBuilder implements ComponentBuilder
             } else {
                 $name = $value;
             }
-            $comments[] = "@property " . $this->getPHPType($name) . " " . Str::camelize(trim($key), false);
+            $comments[] = '@property '.$this->getPHPType($name).' '.Str::camelize(trim($key), false);
         }
+
         return $comments;
     }
 }

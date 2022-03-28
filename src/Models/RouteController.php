@@ -18,7 +18,7 @@ use Drewlabs\PHPValue\Value;
 class RouteController extends Value
 {
     protected $__PROPERTIES__ = [
-        'namespace', 'name'
+        'namespace', 'name',
     ];
 
     public function __serialize(): array

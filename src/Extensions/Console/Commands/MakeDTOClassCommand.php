@@ -54,7 +54,7 @@ class MakeDTOClassCommand extends Command
         // # End of parameters initialization
         ComponentsScriptWriter($basePath)->write(
             ComponentBuilderHelpers::buildDtoObjectDefinition(
-                iterator_to_array((function () use ($attributes) {
+                iterator_to_array((static function () use ($attributes) {
                     foreach ($attributes as $value) {
                         yield $value => 'mixed';
                     }

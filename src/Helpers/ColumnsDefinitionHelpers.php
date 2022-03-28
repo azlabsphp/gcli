@@ -26,7 +26,7 @@ class ColumnsDefinitionHelpers
      *
      * @param \Traversable<Column> $columns
      *
-     * @return Generator<mixed, ORMColumnDefinition, mixed, void>
+     * @return \Generator<mixed, ORMColumnDefinition, mixed, void>
      */
     public static function createColumnDefinitionsGenerator(string $table, \Traversable $columns)
     {

@@ -25,7 +25,6 @@ use Drewlabs\ComponentGenerators\Helpers\DataTypeToFluentValidationRulesHelper;
 
 use function Drewlabs\ComponentGenerators\Proxy\EloquentORMModelBuilder;
 use function Drewlabs\ComponentGenerators\Proxy\ORMModelDefinition;
-use Generator;
 
 class DatabaseSchemaReverseEngineeringRunner
 {
@@ -86,7 +85,6 @@ class DatabaseSchemaReverseEngineeringRunner
     private $generateHttpHandlers_ = false;
 
     /**
-     * 
      * @var string[]
      */
     private $tables_ = [];
@@ -102,14 +100,14 @@ class DatabaseSchemaReverseEngineeringRunner
     }
 
     /**
-     * Specifies the tables for which code should be generated
-     * 
-     * @param array $tables 
-     * @return self 
+     * Specifies the tables for which code should be generated.
+     *
+     * @return self
      */
     public function only(array $tables)
     {
         $this->tables_ = $tables;
+
         return $this;
     }
 
@@ -176,7 +174,7 @@ class DatabaseSchemaReverseEngineeringRunner
             $components['model'] = [
                 'path' => $this->blocComponentPath_,
                 'class' => $modelClass,
-                'definitions' => $value
+                'definitions' => $value,
             ];
             $modelClassPath = sprintf('%s\\%s', $modelClass->getNamespace(), drewlabs_core_strings_as_camel_case($modelClass->getName()));
             // TODO: Generate view model file for the model
@@ -203,7 +201,7 @@ class DatabaseSchemaReverseEngineeringRunner
             );
             $components['viewModel'] = [
                 'path' => $this->blocComponentPath_,
-                'class' => $viewModel
+                'class' => $viewModel,
             ];
             $service = ComponentBuilderHelpers::buildServiceDefinition(
                 true,
@@ -213,11 +211,11 @@ class DatabaseSchemaReverseEngineeringRunner
             );
             $components['service'] = [
                 'path' => $this->blocComponentPath_,
-                'class' => $service
+                'class' => $service,
             ];
             if ($this->generateHttpHandlers_) {
                 $dtoObject = ComponentBuilderHelpers::buildDtoObjectDefinition(
-                    iterator_to_array((function () use ($value) {
+                    iterator_to_array((static function () use ($value) {
                         foreach ($value->columns() as $column) {
                             yield $column->name() => $column->type();
                         }
@@ -240,8 +238,8 @@ class DatabaseSchemaReverseEngineeringRunner
                     ],
                     'dto' => [
                         'path' => $this->blocComponentPath_,
-                        'class' => $dtoObject
-                    ]
+                        'class' => $dtoObject,
+                    ],
                 ];
             }
             yield $components;
@@ -306,6 +304,7 @@ class DatabaseSchemaReverseEngineeringRunner
             sprintf('%s\\%s', $this->blocComponentNamespace_ ?? self::DEFAULT_BLOC_COMPONENT_NAMESPACE, sprintf('%s%s', 'Http\\Controllers', $this->subNamespace_ ? "\\$this->subNamespace_" : '')),
             $this->auth_
         );
+
         return $controller;
     }
 
@@ -326,23 +325,24 @@ class DatabaseSchemaReverseEngineeringRunner
         if (null !== $this->tablesFilterFunc_) {
             $tables = array_filter($tables, $this->tablesFilterFunc_);
         }
+
         return $tables;
     }
 
     /**
      * @param Table[] $tables
      *
-     * @return Generator<int, ContractsORMModelDefinition, mixed, void>
+     * @return \Generator<int, ContractsORMModelDefinition, mixed, void>
      */
     private function tablesToORMModelDefinitionGenerator(array $tables)
     {
         foreach ($tables as $table) {
             $name_ = $table->getName();
-            //# region get table primary key columns
+            // # region get table primary key columns
             $tPrimaryKey = $table->getPrimaryKey();
             $primaryKeyColumns = $tPrimaryKey ? $tPrimaryKey->getColumns() : [];
             $primaryKey = ($columnCount = \count($primaryKeyColumns)) <= 1 ? (1 === $columnCount ? $primaryKeyColumns[0] : null) : $primaryKeyColumns;
-            //# end region get table primary key columns
+            // # end region get table primary key columns
             // #region column definition
             $columns = drewlabs_core_fn_compose(
                 static function ($table_name) use ($table) {

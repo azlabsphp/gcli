@@ -24,14 +24,14 @@ use Illuminate\Contracts\Foundation\Application;
 class MakeViewModelCommand extends Command
 {
     protected $signature = 'drewlabs:mvc:make:viewmodel '
-        . '{--namespace= : View model namespace}'
-        . '{--path= : Project source code path}'
-        . '{--name= : Generated view model name}'
-        . '{--model= : Model attached to the view model class }'
-        . '{--single : Makes the view model single action validator}'
-        . '{--rules=* : List of default rules to apply to the view model }'
-        . '{--updateRules=* : List of rules to apply on update actions }'
-        . '{--http : Whether to create an HTTP Viewmodel or a simple Viewmodel }';
+        .'{--namespace= : View model namespace}'
+        .'{--path= : Project source code path}'
+        .'{--name= : Generated view model name}'
+        .'{--model= : Model attached to the view model class }'
+        .'{--single : Makes the view model single action validator}'
+        .'{--rules=* : List of default rules to apply to the view model }'
+        .'{--updateRules=* : List of rules to apply on update actions }'
+        .'{--http : Whether to create an HTTP Viewmodel or a simple Viewmodel }';
 
     protected $description = 'Creates a Drewlabs package MVC controller';
     /**
@@ -53,7 +53,7 @@ class MakeViewModelCommand extends Command
             EloquentORMModelBuilder::defaultClassPath($this->option('model')) :
             null;
         $namespace = $this->option('namespace') ??
-            boolval($this->option('http')) ?
+            (bool) ($this->option('http')) ?
             '\\App\\Http\\ViewModels' :
             '\\App\\ViewModels';
         $basePath = $this->app->basePath($this->option('path') ?? 'app');
@@ -69,7 +69,7 @@ class MakeViewModelCommand extends Command
                 $namespace,
                 $model,
                 $basePath,
-                boolval($this->option('http')) ?: false
+                (bool) ($this->option('http')) ?: false
             )
         );
         $this->info("View Model class successfully generated\n");

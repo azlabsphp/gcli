@@ -13,7 +13,6 @@ declare(strict_types=1);
 
 namespace Drewlabs\ComponentGenerators\Extensions\Helpers;
 
-use Closure;
 use Doctrine\DBAL\DriverManager;
 use Drewlabs\ComponentGenerators\Extensions\Contracts\Progress;
 use Drewlabs\ComponentGenerators\Helpers\ComponentBuilderHelpers;
@@ -26,56 +25,41 @@ use function Drewlabs\ComponentGenerators\Proxy\DatabaseSchemaReverseEngineering
 class ReverseEngineerTaskRunner
 {
     /**
-     * 
      * @var string[]
      */
     private $exceptions = [];
 
     /**
-     * 
      * @var string[]
      */
     private $tables = [];
 
     /**
-     * Specifies the tables for which code should be generated
-     * 
-     * @param array $tables 
-     * @return self 
+     * Specifies the tables for which code should be generated.
+     *
+     * @return self
      */
     public function only(array $tables)
     {
         $this->tables = $tables;
+
         return $this;
     }
 
     /**
-     * Add exception to some tables during code generation
-     * 
-     * @param array $tables 
-     * @return self 
+     * Add exception to some tables during code generation.
+     *
+     * @return self
      */
     public function except(array $tables)
     {
         $this->exceptions = $tables;
+
         return $this;
     }
 
     /**
-     * 
-     * @param array $options 
-     * @param string $srcPath 
-     * @param string $routingfilename 
-     * @param null|string $routePrefix 
-     * @param null|string $middleware 
-     * @param null|bool $forLumen 
-     * @param null|bool $disableCache 
-     * @param null|bool $noAuth 
-     * @param null|string $namespace 
-     * @param null|string $subPackage 
-     * @param null|string $schema 
-     * @param null|bool $hasHttpHandlers 
-     * @return Closure 
+     * @return \Closure
      */
     public function run(
         array $options,
@@ -168,7 +152,7 @@ class ReverseEngineerTaskRunner
              * @var Progress
              */
             $indicator = $onStartCallback($values);
-            $routes = iterator_to_array((function () use ($values, $subPackage, $indicator) {
+            $routes = iterator_to_array((static function () use ($values, $subPackage, $indicator) {
                 // TODO : IN FUTURE RELEASE BUILD MODEL RELATION METHOD
                 foreach ($values as $component) {
                     ComponentsScriptWriter(drewlabs_core_array_get($component, 'model.path'))->write(drewlabs_core_array_get($component, 'model.class'));
@@ -224,7 +208,6 @@ class ReverseEngineerTaskRunner
             $middleware,
             $subPackage
         ) {
-
             if (!$disableCache) {
                 // Get route definitions from cache
                 $value = $cachePath ? RouteDefinitionsHelper::getCachedRouteDefinitions($cachePath) : null;

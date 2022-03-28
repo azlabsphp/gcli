@@ -85,6 +85,7 @@ class ORMColumnDefinition extends Value implements ContractsORMColumnDefinition
     public function jsonSerialize()
     {
         $list = parent::jsonSerialize();
+
         return array_filter($list, static function ($value) {
             return null !== $value;
         });

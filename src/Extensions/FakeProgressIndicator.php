@@ -35,6 +35,6 @@ final class FakeProgressIndicator implements Progress
 
     public function complete(): void
     {
-        printf(sprintf("\nProgress completed!\n"));
+        printf("\nProgress completed!\n");
     }
 }

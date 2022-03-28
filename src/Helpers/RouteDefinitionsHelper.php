@@ -87,7 +87,7 @@ class RouteDefinitionsHelper
             bool $isLumen,
             ?string $prefix = null,
             ?string $middleware = null,
-            \Closure $callback = null
+            ?\Closure $callback = null
         ) use ($definitions, $filename, $basePath) {
             $adapter = LocalFileSystem($basePath);
             $contentBefore = '';
