@@ -29,12 +29,6 @@ use Drewlabs\ComponentGenerators\Helpers\ComponentBuilderHelpers;
 use function Drewlabs\ComponentGenerators\Proxy\PHPScript;
 use Drewlabs\ComponentGenerators\Traits\HasNamespaceAttribute;
 use Drewlabs\ComponentGenerators\Traits\ViewModelBuilder;
-use Drewlabs\Contracts\Data\Model\ActiveModel;
-use Drewlabs\Contracts\Data\Model\GuardedModel;
-use Drewlabs\Contracts\Data\Model\Parseable;
-use Drewlabs\Contracts\Data\Model\Relatable;
-use Drewlabs\Contracts\Validator\CoreValidatable;
-use Drewlabs\Contracts\Validator\Validatable;
 
 use Illuminate\Database\Eloquent\Model as EloquentModel;
 use Illuminate\Support\Pluralizer;
@@ -245,7 +239,7 @@ class EloquentORMModelBuilder implements ContractsEloquentORMModel, ComponentBui
                     PHPTypesModifiers::PUBLIC,
                     'Returns a fluent validation rules'
                 ))->addContents(
-                    'return '.PHPVariable('rules', null, $this->rules_ ?? [])->asRValue()->__toString()
+                    'return ' . PHPVariable('rules', null, $this->rules_ ?? [])->asRValue()->__toString()
                 )
             );
             if (!$this->isSingleActionValidator_) {
@@ -253,7 +247,7 @@ class EloquentORMModelBuilder implements ContractsEloquentORMModel, ComponentBui
                  * @var BluePrint|PHPClass
                  */
                 $component = $component
-                    ->addImplementation(Validatable::class)
+                    ->addImplementation(\Drewlabs\Contracts\Validator\Validatable::class)
                     ->addMethod(
                         PHPClassMethod(
                             'updateRules',
@@ -261,14 +255,14 @@ class EloquentORMModelBuilder implements ContractsEloquentORMModel, ComponentBui
                             'array<string,string|string[]>',
                             PHPTypesModifiers::PUBLIC,
                             'Returns a fluent validation rules applied during update actions'
-                        )->addContents('return '.PHPVariable('rules', null, $this->rules_ ?? [])->asRValue()->__toString())
+                        )->addContents('return ' . PHPVariable('rules', null, $this->rules_ ?? [])->asRValue()->__toString())
                     );
             } else {
                 /**
                  * @var Blueprint
                  */
                 $component = $component
-                    ->addImplementation(CoreValidatable::class);
+                    ->addImplementation(\Drewlabs\Contracts\Validator\CoreValidatable::class);
             }
         }
 
@@ -384,13 +378,9 @@ class EloquentORMModelBuilder implements ContractsEloquentORMModel, ComponentBui
          * @var BluePrint
          */
         $component = array_reduce([
-            ActiveModel::class,
-            Parseable::class,
-            Relatable::class,
-            GuardedModel::class,
+            \Drewlabs\Packages\Database\Contracts\AppModel::class,
         ], static function (Blueprint $carry, $curr) {
             $carry = $carry->addImplementation($curr);
-
             return $carry;
         }, $component);
 
@@ -427,8 +417,8 @@ class EloquentORMModelBuilder implements ContractsEloquentORMModel, ComponentBui
         $name_ = $table ?? $name ?? null;
         // TODO : REMOVE SCHEMA PREFIX IF ANY
         if ($name_ && $schema) {
-            $name_ = drewlabs_core_strings_starts_with($name_, $schema.'_') ?
-                drewlabs_core_strings_replace($schema.'_', '', $name_) : (drewlabs_core_strings_starts_with($name_, $schema) ?
+            $name_ = drewlabs_core_strings_starts_with($name_, $schema . '_') ?
+                drewlabs_core_strings_replace($schema . '_', '', $name_) : (drewlabs_core_strings_starts_with($name_, $schema) ?
                     drewlabs_core_strings_replace($schema, '', $name_) :
                     $name_);
         }

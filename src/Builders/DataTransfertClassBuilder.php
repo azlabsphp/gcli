@@ -22,7 +22,6 @@ use Drewlabs\ComponentGenerators\Helpers\ComponentBuilderHelpers;
 use function Drewlabs\ComponentGenerators\Proxy\PHPScript;
 
 use Drewlabs\ComponentGenerators\Traits\HasNamespaceAttribute;
-use Drewlabs\Contracts\Data\Model\Parseable;
 use Drewlabs\Core\Helpers\Str;
 use Drewlabs\PHPValue\Traits\ModelAwareValue;
 use Illuminate\Support\Pluralizer;
@@ -74,7 +73,7 @@ class DataTransfertClassBuilder implements ComponentBuilder
         ?string $path = null
     ) {
         if ($name) {
-            $this->setName(drewlabs_core_strings_as_camel_case(Pluralizer::singular($name)).'Dto');
+            $this->setName(drewlabs_core_strings_as_camel_case(Pluralizer::singular($name)) . 'Dto');
         }
         // Set the component write path
         $this->setWritePath($path ?? self::DEFAULT_PATH);
@@ -87,7 +86,7 @@ class DataTransfertClassBuilder implements ComponentBuilder
     }
 
     /**
-     * @param Parseable|string $model
+     * @param object|string $model
      *
      * @return self
      */
@@ -96,14 +95,14 @@ class DataTransfertClassBuilder implements ComponentBuilder
         if (null === $model) {
             return $this;
         }
-        $classname = ($model instanceof Parseable) || \is_object($model) ? \get_class($model) : $model;
+        $classname = \is_object($model) ? \get_class($model) : $model;
         $is_class_path = drewlabs_core_strings_contains($classname, '\\'); // && class_exists($model); To uncomment if there is need to validate class existence
         $model_name = 'Test';
         $model_name = $is_class_path ?
             array_reverse(explode('\\', $classname))[0] : (drewlabs_core_strings_contains($classname, '\\') ?
                 array_reverse(explode('\\', $classname))[0] :
                 $classname);
-        $this->setName(drewlabs_core_strings_as_camel_case(Pluralizer::singular($model_name)).'Dto');
+        $this->setName(drewlabs_core_strings_as_camel_case(Pluralizer::singular($model_name)) . 'Dto');
 
         // creates an object to if the model is a PHP string
         if (\is_string($model) && class_exists($model)) {
@@ -150,7 +149,7 @@ class DataTransfertClassBuilder implements ComponentBuilder
                     $this->propertyDocComments ?? [],
                     [
                         ' ',
-                        '@package '.$this->namespace_ ?? self::DEFAULT_NAMESPACE,
+                        '@package ' . $this->namespace_ ?? self::DEFAULT_NAMESPACE,
                     ]
                 )
             )
@@ -245,7 +244,7 @@ class DataTransfertClassBuilder implements ComponentBuilder
             } else {
                 $name = $value;
             }
-            $comments[] = '@property '.$this->getPHPType($name).' '.Str::camelize(trim($key), false);
+            $comments[] = '@property ' . $this->getPHPType($name) . ' ' . Str::camelize(trim($key), false);
         }
 
         return $comments;

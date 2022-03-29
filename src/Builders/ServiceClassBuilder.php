@@ -24,13 +24,7 @@ use Drewlabs\ComponentGenerators\Contracts\ComponentBuilder;
 use Drewlabs\ComponentGenerators\Helpers\ComponentBuilderHelpers;
 use function Drewlabs\ComponentGenerators\Proxy\PHPScript;
 use Drewlabs\ComponentGenerators\Traits\HasNamespaceAttribute;
-use Drewlabs\Contracts\Data\DML\DMLProvider;
-use Drewlabs\Contracts\Support\Actions\Action;
-use Drewlabs\Contracts\Support\Actions\ActionHandler;
 
-use Drewlabs\Contracts\Support\Actions\ActionPayload;
-use Drewlabs\Contracts\Support\Actions\ActionResult;
-use Drewlabs\Contracts\Support\Actions\Exceptions\InvalidActionException;
 use Illuminate\Support\Pluralizer;
 
 class ServiceClassBuilder implements ComponentBuilder
@@ -163,17 +157,17 @@ class ServiceClassBuilder implements ComponentBuilder
         }
 
         if ($this->asCRUD_) {
-            $component = $component->addClassPath(ActionPayload::class)
+            $component = $component->addClassPath(\Drewlabs\Contracts\Support\Actions\ActionPayload::class)
                 ->addFunctionPath(self::ACTION_RESULT_FUNCTION_PATH)
-                ->addClassPath(InvalidActionException::class);
+                ->addClassPath(\Drewlabs\Contracts\Support\Actions\Exceptions\InvalidActionException::class);
         }
 
-        $component->addImplementation(ActionHandler::class)
+        $component->addImplementation(\Drewlabs\Contracts\Support\Actions\ActionHandler::class)
             ->asFinal()
             ->addProperty(
                 PHPClassProperty(
                     'dbManager',
-                    DMLProvider::class,
+                    \Drewlabs\Contracts\Data\DML\DMLProvider::class,
                     PHPTypesModifiers::PRIVATE,
                     null,
                     'Database query manager'
@@ -186,7 +180,7 @@ class ServiceClassBuilder implements ComponentBuilder
                     [
                         (PHPFunctionParameter(
                             'manager',
-                            DMLProvider::class,
+                            \Drewlabs\Contracts\Data\DML\DMLProvider::class,
                             null
                         ))->asOptional(),
                     ],
@@ -208,14 +202,14 @@ class ServiceClassBuilder implements ComponentBuilder
                     [
                         PHPFunctionParameter(
                             'action',
-                            Action::class,
+                            \Drewlabs\Contracts\Support\Actions\Action::class,
                         ),
                         (PHPFunctionParameter(
                             'callback',
                             '\Closure',
                         ))->asOptional(),
                     ],
-                    ActionResult::class,
+                    \Drewlabs\Contracts\Support\Actions\ActionResult::class,
                     PHPTypesModifiers::PUBLIC,
                     '{@inheritDoc}'
                 )))
