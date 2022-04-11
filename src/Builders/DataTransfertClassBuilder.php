@@ -14,7 +14,9 @@ declare(strict_types=1);
 namespace Drewlabs\ComponentGenerators\Builders;
 
 use Drewlabs\CodeGenerator\Contracts\Blueprint;
+
 use function Drewlabs\CodeGenerator\Proxy\PHPClass;
+use function Drewlabs\CodeGenerator\Proxy\PHPClassMethod;
 use function Drewlabs\CodeGenerator\Proxy\PHPClassProperty;
 use Drewlabs\CodeGenerator\Types\PHPTypesModifiers;
 use Drewlabs\ComponentGenerators\Contracts\ComponentBuilder;
@@ -67,6 +69,12 @@ class DataTransfertClassBuilder implements ComponentBuilder
      */
     private $propertyDocComments = [];
 
+    /**
+     * 
+     * @var string
+     */
+    private $modelClassPath;
+
     public function __construct(
         array $json_attributes = [],
         ?string $name = null,
@@ -74,7 +82,7 @@ class DataTransfertClassBuilder implements ComponentBuilder
         ?string $path = null
     ) {
         if ($name) {
-            $this->setName(drewlabs_core_strings_as_camel_case(Pluralizer::singular($name)).'Dto');
+            $this->setName(drewlabs_core_strings_as_camel_case(Pluralizer::singular($name)) . 'Dto');
         }
         // Set the component write path
         $this->setWritePath($path ?? self::DEFAULT_PATH);
@@ -98,12 +106,15 @@ class DataTransfertClassBuilder implements ComponentBuilder
         }
         $classname = ($model instanceof Parseable) || \is_object($model) ? \get_class($model) : $model;
         $is_class_path = drewlabs_core_strings_contains($classname, '\\'); // && class_exists($model); To uncomment if there is need to validate class existence
+        if ($is_class_path) {
+            $this->modelClassPath = $classname;
+        }
         $model_name = 'Test';
         $model_name = $is_class_path ?
             array_reverse(explode('\\', $classname))[0] : (drewlabs_core_strings_contains($classname, '\\') ?
                 array_reverse(explode('\\', $classname))[0] :
                 $classname);
-        $this->setName(drewlabs_core_strings_as_camel_case(Pluralizer::singular($model_name)).'Dto');
+        $this->setName(drewlabs_core_strings_as_camel_case(Pluralizer::singular($model_name)) . 'Dto');
 
         // creates an object to if the model is a PHP string
         if (\is_string($model) && class_exists($model)) {
@@ -150,12 +161,27 @@ class DataTransfertClassBuilder implements ComponentBuilder
                     $this->propertyDocComments ?? [],
                     [
                         ' ',
-                        '@package '.$this->namespace_ ?? self::DEFAULT_NAMESPACE,
+                        '@package ' . $this->namespace_ ?? self::DEFAULT_NAMESPACE,
                     ]
                 )
             )
             ->addTrait(ModelAwareValue::class)
+            ->addTrait(\Drewlabs\Packages\Database\Traits\ContainerAware::class)
             ->addToNamespace($this->namespace_ ?? self::DEFAULT_NAMESPACE);
+
+        if ($this->modelClassPath) {
+            $component = $component->addMethod(
+                (PHPClassMethod(
+                    'resolveModel',
+                    [],
+                    "$this->modelClassPath",
+                    PHPTypesModifiers::PUBLIC,
+                    'Creates an instance of the attached model'
+                ))->addContents(
+                    "return self::createResolver($this->modelClassPath)()"
+                )
+            );
+        }
 
         $component = $component->addProperty(
             PHPClassProperty(
@@ -245,7 +271,7 @@ class DataTransfertClassBuilder implements ComponentBuilder
             } else {
                 $name = $value;
             }
-            $comments[] = '@property '.$this->getPHPType($name).' '.Str::camelize(trim($key), false);
+            $comments[] = '@property ' . $this->getPHPType($name) . ' ' . Str::camelize(trim($key), false);
         }
 
         return $comments;
