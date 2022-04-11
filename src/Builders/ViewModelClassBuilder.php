@@ -27,8 +27,6 @@ use Drewlabs\ComponentGenerators\Helpers\ComponentBuilderHelpers;
 use function Drewlabs\ComponentGenerators\Proxy\PHPScript;
 use Drewlabs\ComponentGenerators\Traits\HasNamespaceAttribute;
 use Drewlabs\ComponentGenerators\Traits\ViewModelBuilder;
-use Drewlabs\Contracts\Validator\CoreValidatable;
-use Drewlabs\Contracts\Validator\Validatable;
 
 use Illuminate\Support\Pluralizer;
 
@@ -145,7 +143,7 @@ class ViewModelClassBuilder implements ComponentBuilder
              * @var BluePrint|PHPClass
              */
             $component = $component
-                ->addImplementation(Validatable::class)
+                ->addImplementation(\Drewlabs\Contracts\Validator\Validatable::class)
                 ->addMethod(
                     PHPClassMethod(
                         'updateRules',
@@ -160,7 +158,7 @@ class ViewModelClassBuilder implements ComponentBuilder
              * @var Blueprint
              */
             $component = $component
-                ->addImplementation(CoreValidatable::class);
+                ->addImplementation(\Drewlabs\Contracts\Validator\CoreValidatable::class);
         }
         // Add inputs traits
         if ($this->hasInputsTraits_) {

@@ -13,3 +13,7 @@
 ## [2.1.27] 2022-03-20
 
 - Add only filters to component generators
+
+## [2.2.0] 2022-03-29
+
+- Makes contracts library a suggestion instead of a requirement

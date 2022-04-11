@@ -13,9 +13,7 @@ declare(strict_types=1);
 
 namespace Drewlabs\ComponentGenerators\Contracts;
 
-use Drewlabs\Contracts\Support\ArrayableInterface;
-
-interface Cacheable extends ArrayableInterface
+interface Cacheable
 {
     /**
      * Called for serialization.

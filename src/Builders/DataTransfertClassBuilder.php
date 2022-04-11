@@ -24,7 +24,6 @@ use Drewlabs\ComponentGenerators\Helpers\ComponentBuilderHelpers;
 use function Drewlabs\ComponentGenerators\Proxy\PHPScript;
 
 use Drewlabs\ComponentGenerators\Traits\HasNamespaceAttribute;
-use Drewlabs\Contracts\Data\Model\Parseable;
 use Drewlabs\Core\Helpers\Str;
 use Drewlabs\PHPValue\Traits\ModelAwareValue;
 use Illuminate\Support\Pluralizer;
@@ -95,7 +94,7 @@ class DataTransfertClassBuilder implements ComponentBuilder
     }
 
     /**
-     * @param Parseable|string $model
+     * @param object|string $model
      *
      * @return self
      */
@@ -104,7 +103,7 @@ class DataTransfertClassBuilder implements ComponentBuilder
         if (null === $model) {
             return $this;
         }
-        $classname = ($model instanceof Parseable) || \is_object($model) ? \get_class($model) : $model;
+        $classname = \is_object($model) ? \get_class($model) : $model;
         $is_class_path = drewlabs_core_strings_contains($classname, '\\'); // && class_exists($model); To uncomment if there is need to validate class existence
         if ($is_class_path) {
             $this->modelClassPath = $classname;

@@ -21,12 +21,10 @@
             "./helpers/config.php"
         ]
     },
-    "authors": [
-        {
-            "name": "azandrew-sidoine",
-            "email": "asmyns.platonnas29@gmail.com"
-        }
-    ],
+    "authors": [{
+        "name": "azandrew-sidoine",
+        "email": "asmyns.platonnas29@gmail.com"
+    }],
     "autoload-dev": {
         "classmap": [
             "tests/"
@@ -41,18 +39,12 @@
     "minimum-stability": "stable",
     "require": {
         "php": "^7.3|^7.4|^8.0|^8.1",
-        "drewlabs/contracts": "^2.0.20",
         "drewlabs/core-helpers": "^2.0",
         "drewlabs/filesystem": "^1.0",
         "drewlabs/psr7-stream": "^1.0",
         "drewlabs/php-value": "^0.1.5"
     },
-    "repositories": [
-        {
-            "type": "vcs",
-            "url": "git@github.com:liksoft/drewlabs-php-contracts.git"
-        },
-        {
+    "repositories": [{
             "type": "vcs",
             "url": "git@github.com:liksoft/drewlabs-php-core-helpers.git"
         },
@@ -77,11 +69,14 @@
         "laravel": {
             "providers": [
                 "Drewlabs\\ComponentGenerators\\Extensions\\Providers\\ServiceProvider"
-            ],
-            "aliases": {}
+            ]
         },
         "branch-alias": {
             "dev-master": "v2-dev-branch"
         }
+    },
+    "suggest": {
+        "drewlabs/contracts": "Required by generated model, service and view models (^1.0|^2.0).",
+        "drewlabs/support": "Required by generated controllers and services (^1.0|^2.0)."
     }
 }

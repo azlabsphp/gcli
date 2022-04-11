@@ -23,8 +23,6 @@ use Drewlabs\ComponentGenerators\Contracts\ControllerBuilder as ContractsControl
 use Drewlabs\ComponentGenerators\Helpers\ComponentBuilderHelpers;
 use function Drewlabs\ComponentGenerators\Proxy\PHPScript;
 use Drewlabs\ComponentGenerators\Traits\HasNamespaceAttribute;
-use Drewlabs\Contracts\Support\Actions\ActionHandler;
-use Drewlabs\Contracts\Validator\Validator;
 
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -188,9 +186,11 @@ class ControllerClassBuilder implements ContractsControllerBuilder
         if (!drewlabs_core_strings_contains($serviceClass, '\\')) {
             return $this;
         }
-
         $clazz = class_exists($serviceClass) ? new $serviceClass() : $clazz;
-        if ((null !== $clazz) && ($clazz instanceof ActionHandler)) {
+        if ((null !== $clazz) &&
+            interface_exists(\Drewlabs\Contracts\Support\Actions\ActionHandler::class) &&
+            ($clazz instanceof \Drewlabs\Contracts\Support\Actions\ActionHandler)
+        ) {
             $this->hasActionHandlerInterface_ = true;
             $this->serviceClass_ = $this->getClassFromClassPath($serviceClass);
         } else {
@@ -227,7 +227,7 @@ class ControllerClassBuilder implements ContractsControllerBuilder
                     [
                         PHPFunctionParameter(
                             'validator',
-                            Validator::class,
+                            \Drewlabs\Contracts\Validator\Validator::class,
                         ),
                         PHPFunctionParameter(
                             'response',
@@ -238,7 +238,7 @@ class ControllerClassBuilder implements ContractsControllerBuilder
                     (null !== $this->serviceClass_) || $this->hasActionHandlerInterface_ ? ($this->hasActionHandlerInterface_ ? [
                         PHPFunctionParameter(
                             'service',
-                            ActionHandler::class,
+                            \Drewlabs\Contracts\Support\Actions\ActionHandler::class,
                         )->asOptional(),
                     ] : [
                         PHPFunctionParameter(
@@ -266,7 +266,7 @@ class ControllerClassBuilder implements ContractsControllerBuilder
             $component = $component->addProperty(
                 PHPClassProperty(
                     'service',
-                    $this->hasActionHandlerInterface_ ? ActionHandler::class : $this->serviceClass_,
+                    $this->hasActionHandlerInterface_ ? \Drewlabs\Contracts\Support\Actions\ActionHandler::class : $this->serviceClass_,
                     PHPTypesModifiers::PRIVATE,
                     null,
                     'Injected instance of MVC service'
@@ -277,7 +277,7 @@ class ControllerClassBuilder implements ContractsControllerBuilder
         $component->addProperty(
             PHPClassProperty(
                 'validator',
-                Validator::class,
+                \Drewlabs\Contracts\Validator\Validator::class,
                 PHPTypesModifiers::PRIVATE,
                 null,
                 'Injected instance of the validator class'
@@ -309,7 +309,7 @@ class ControllerClassBuilder implements ContractsControllerBuilder
                     PHPTypesModifiers::PUBLIC,
                     [
                         'Handles http request action',
-                        '@Route /POST /'.$this->routeName_.'/{id}',
+                        '@Route /POST /' . $this->routeName_ . '/{id}',
                     ]
                 )
             );
@@ -362,7 +362,7 @@ class ControllerClassBuilder implements ContractsControllerBuilder
                 ],
                 'descriptors' => [
                     'Display or Returns a list of items',
-                    '@Route /GET /'.$this->routeName_.'[/{$id}]',
+                    '@Route /GET /' . $this->routeName_ . '[/{$id}]',
                 ],
                 'returns' => JsonResponse::class,
                 'contents' => array_merge(
@@ -408,7 +408,7 @@ class ControllerClassBuilder implements ContractsControllerBuilder
                 ],
                 'descriptors' => [
                     'Display or Returns an item matching the specified id',
-                    '@Route /GET /'.$this->routeName_.'/{$id}',
+                    '@Route /GET /' . $this->routeName_ . '/{$id}',
                 ],
                 'returns' => JsonResponse::class,
                 'contents' => array_merge(
@@ -438,7 +438,7 @@ class ControllerClassBuilder implements ContractsControllerBuilder
                 ],
                 'descriptors' => [
                     'Stores a new item in the storage',
-                    '@Route /POST /'.$this->routeName_,
+                    '@Route /POST /' . $this->routeName_,
                 ],
                 'returns' => JsonResponse::class,
                 'contents' => array_merge(
@@ -449,7 +449,7 @@ class ControllerClassBuilder implements ContractsControllerBuilder
                         "\$result = \$this->validator->validate($validatable, \$request->all(), function() use (\$request) {",
                         '// After validation logic goes here...',
                     ] : [
-                        '$viewModel_ = new '.drewlabs_core_strings_replace('::class', '', $validatable).'($request)',
+                        '$viewModel_ = new ' . drewlabs_core_strings_replace('::class', '', $validatable) . '($request)',
                         '',
                         '$result = $this->validator->validate($viewModel_, function() use ($viewModel_) {',
                     ],
@@ -497,8 +497,8 @@ class ControllerClassBuilder implements ContractsControllerBuilder
                 ],
                 'descriptors' => [
                     'Update the specified resource in storage.',
-                    '@Route /PUT /'.$this->routeName_.'/{id}',
-                    '@Route /PATCH /'.$this->routeName_.'/{id}',
+                    '@Route /PUT /' . $this->routeName_ . '/{id}',
+                    '@Route /PATCH /' . $this->routeName_ . '/{id}',
                 ],
                 'returns' => JsonResponse::class,
                 'contents' => array_merge(
@@ -509,7 +509,7 @@ class ControllerClassBuilder implements ContractsControllerBuilder
                         "\$result = \$this->validator->updating()->validate($validatable, \$request->all(), function() use (\$id, \$request) {",
                         '// After validation logic goes here...',
                     ] : [
-                        '$viewModel_ = new '.drewlabs_core_strings_replace('::class', '', $validatable).'($request)',
+                        '$viewModel_ = new ' . drewlabs_core_strings_replace('::class', '', $validatable) . '($request)',
                         '// Validate request inputs',
                         '$result = $this->validator->updating()->validate($viewModel_, function() use ($id, $viewModel_) {',
                     ],
@@ -552,7 +552,7 @@ class ControllerClassBuilder implements ContractsControllerBuilder
                 ],
                 'descriptors' => [
                     'Remove the specified resource from storage.',
-                    '@Route /DELETE /'.$this->routeName_.'/{id}',
+                    '@Route /DELETE /' . $this->routeName_ . '/{id}',
                 ],
                 'returns' => JsonResponse::class,
                 'contents' => [
