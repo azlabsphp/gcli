@@ -104,7 +104,7 @@ class DataTransfertClassBuilder implements ComponentBuilder
             return $this;
         }
         $classname = \is_object($model) ? \get_class($model) : $model;
-        $is_class_path = drewlabs_core_strings_contains($classname, '\\'); // && class_exists($model); To uncomment if there is need to validate class existence
+        $is_class_path = drewlabs_core_strings_contains($classname, '\\');
         if ($is_class_path) {
             $this->modelClassPath = $classname;
         }
@@ -155,6 +155,7 @@ class DataTransfertClassBuilder implements ComponentBuilder
          */
         $component = (PHPClass($this->name_ ?? self::DEFAULT_NAME))
             ->addImplementation(\Drewlabs\PHPValue\Contracts\ValueInterface::class)
+            ->addImplementation()
             ->addComment(
                 array_merge(
                     $this->propertyDocComments ?? [],
@@ -164,9 +165,13 @@ class DataTransfertClassBuilder implements ComponentBuilder
                     ]
                 )
             )
-            ->addTrait(ModelAwareValue::class)
-            ->addTrait(\Drewlabs\Packages\Database\Traits\ContainerAware::class)
+            ->addTrait(\Drewlabs\PHPValue\Traits\ModelAwareValue::class)
             ->addToNamespace($this->namespace_ ?? self::DEFAULT_NAMESPACE);
+
+        if (interface_exists(\Illuminate\Contracts\Routing\UrlRoutable::class)) {
+            $component = $component->addImplementation(\Illuminate\Contracts\Routing\UrlRoutable::class)
+                ->addTrait(\Drewlabs\Packages\Database\Traits\URLRoutableModelAware::class);
+        }
 
         if ($this->modelClassPath) {
             $component = $component->addMethod(

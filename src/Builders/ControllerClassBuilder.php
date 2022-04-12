@@ -590,16 +590,6 @@ class ControllerClassBuilder implements ContractsControllerBuilder
             },
             $component
                 ->addFunctionPath(self::ACTION_FUNCTION_PATH)
-            // REMOVE IN FUTURE RELEASE
-            // ->addConstant(
-            //     PHPClassProperty(
-            //         'RESOURCE_PRIMARY_KEY',
-            //         'string',
-            //         PHPTypesModifiers::PRIVATE,
-            //         null,
-            //         'Resource primary key name'
-            //     )
-            // )
         );
 
         // Returns the component back to the caller
