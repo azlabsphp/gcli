@@ -109,10 +109,7 @@ class DataTransfertClassBuilder implements ComponentBuilder
             $this->modelClassPath = $classname;
         }
         $model_name = 'Test';
-        $model_name = $is_class_path ?
-            array_reverse(explode('\\', $classname))[0] : (drewlabs_core_strings_contains($classname, '\\') ?
-                array_reverse(explode('\\', $classname))[0] :
-                $classname);
+        $model_name = $is_class_path ? $this->getClassNameFromPath($classname) : $classname;
         $this->setName(drewlabs_core_strings_as_camel_case(Pluralizer::singular($model_name)) . 'Dto');
 
         // creates an object to if the model is a PHP string
@@ -182,7 +179,7 @@ class DataTransfertClassBuilder implements ComponentBuilder
                     PHPTypesModifiers::PUBLIC,
                     'Creates an instance of the attached model'
                 ))->addContents(
-                    "return self::createResolver($this->modelClassPath)()"
+                    "return self::createResolver(" . $this->getClassNameFromPath($this->modelClassPath) . "::class)()"
                 )
             );
         }
@@ -227,7 +224,7 @@ class DataTransfertClassBuilder implements ComponentBuilder
     public static function defaultClassPath(?string $classname = null)
     {
         $classname = $classname ?? 'Test';
-        if (drewlabs_core_strings_contains($classname, '\\')) {
+        if (Str::contains($classname, '\\')) {
             return $classname;
         }
 
@@ -279,5 +276,10 @@ class DataTransfertClassBuilder implements ComponentBuilder
         }
 
         return $comments;
+    }
+
+    private function getClassNameFromPath(string $name)
+    {
+        return array_reverse(explode('\\', $name))[0];
     }
 }
