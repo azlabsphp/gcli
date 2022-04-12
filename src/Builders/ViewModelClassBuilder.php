@@ -143,7 +143,7 @@ class ViewModelClassBuilder implements ComponentBuilder
              * @var BluePrint|PHPClass
              */
             $component = $component
-                ->addImplementation(\Drewlabs\Contracts\Validator\Validatable::class)
+                ->addImplementation(\Drewlabs\Contracts\Validator\ViewModel::class)
                 ->addMethod(
                     PHPClassMethod(
                         'updateRules',
