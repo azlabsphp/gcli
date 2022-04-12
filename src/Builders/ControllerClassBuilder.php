@@ -187,8 +187,9 @@ class ControllerClassBuilder implements ContractsControllerBuilder
             return $this;
         }
         $clazz = class_exists($serviceClass) ? new $serviceClass() : $clazz;
+        $actionHandlerInterface = \Drewlabs\Contracts\Support\Actions\ActionHandler::class;
         if ((null !== $clazz) &&
-            interface_exists(\Drewlabs\Contracts\Support\Actions\ActionHandler::class) &&
+            interface_exists($actionHandlerInterface) &&
             ($clazz instanceof \Drewlabs\Contracts\Support\Actions\ActionHandler)
         ) {
             $this->hasActionHandlerInterface_ = true;
@@ -433,9 +434,10 @@ class ControllerClassBuilder implements ContractsControllerBuilder
             ],
             [
                 'name' => 'store',
-                'params' => [
+                'params' => array_filter([
                     PHPFunctionParameter('request', Request::class),
-                ],
+                    '[]' === $validatable ? null : PHPFunctionParameter('viewModel', $validatable)
+                ]),
                 'descriptors' => [
                     'Stores a new item in the storage',
                     '@Route /POST /' . $this->routeName_,
@@ -449,12 +451,10 @@ class ControllerClassBuilder implements ContractsControllerBuilder
                         "\$result = \$this->validator->validate($validatable, \$request->all(), function() use (\$request) {",
                         '// After validation logic goes here...',
                     ] : [
-                        '$viewModel_ = new ' . drewlabs_core_strings_replace('::class', '', $validatable) . '($request)',
-                        '',
-                        '$result = $this->validator->validate($viewModel_, function() use ($viewModel_) {',
+                        '$result = $this->validator->validate($viewModel, function() use ($viewModel) {',
                     ],
                     [
-                        '[]' === $validatable ? "\t\$query = \$request->get('_query') ?? []" : "\t\$query = \$viewModel_->get('_query') ?? []",
+                        '[]' === $validatable ? "\t\$query = \$request->get('_query') ?? []" : "\t\$query = \$viewModel->get('_query') ?? []",
                         "\treturn \$this->service->handle(Action([",
                         "\t\t'type' => 'CREATE',",
                     ],
@@ -468,11 +468,11 @@ class ControllerClassBuilder implements ContractsControllerBuilder
                         "\t\t\t\t\t\t\'id' => \$request->get('id'),",
                     ] : [
                         "\t\t'payload' => [",
-                        "\t\t\t\$viewModel_->all(),",
+                        "\t\t\t\$viewModel->all(),",
                         "\t\t\t[",
                         "\t\t\t\t'method' => \$query['method'] ?? null,",
-                        "\t\t\t\t'upsert_conditions' => \$query['upsert_conditions'] ?? (\$viewModel_->has(\$viewModel_->getPrimaryKey()) ?",
-                        "\t\t\t\t\t[\$viewModel_->getPrimaryKey() => \$viewModel_->get(\$viewModel_->getPrimaryKey()),] : []),",
+                        "\t\t\t\t'upsert_conditions' => \$query['upsert_conditions'] ?? (\$viewModel->has(\$viewModel->getPrimaryKey()) ?",
+                        "\t\t\t\t\t[\$viewModel->getPrimaryKey() => \$viewModel->get(\$viewModel->getPrimaryKey()),] : []),",
                     ],
                     [
                         "\t\t\t],",
@@ -491,10 +491,11 @@ class ControllerClassBuilder implements ContractsControllerBuilder
                 ),
             ], [
                 'name' => 'update',
-                'params' => [
+                'params' => array_filter([
                     PHPFunctionParameter('request', Request::class),
-                    (PHPFunctionParameter('id', null)),
-                ],
+                    '[]' === $validatable ? null : PHPFunctionParameter('viewModel', $validatable),
+                    PHPFunctionParameter('id', null),
+                ]),
                 'descriptors' => [
                     'Update the specified resource in storage.',
                     '@Route /PUT /' . $this->routeName_ . '/{id}',
@@ -503,18 +504,16 @@ class ControllerClassBuilder implements ContractsControllerBuilder
                 'returns' => JsonResponse::class,
                 'contents' => array_merge(
                     [
-                        '$request = $request->merge(["id" => $id])',
+                        '$viewModel = $viewModel->merge(["id" => $id])',
                     ],
                     '[]' === $validatable ? [
                         "\$result = \$this->validator->updating()->validate($validatable, \$request->all(), function() use (\$id, \$request) {",
                         '// After validation logic goes here...',
                     ] : [
-                        '$viewModel_ = new ' . drewlabs_core_strings_replace('::class', '', $validatable) . '($request)',
-                        '// Validate request inputs',
-                        '$result = $this->validator->updating()->validate($viewModel_, function() use ($id, $viewModel_) {',
+                        '$result = $this->validator->updating()->validate($viewModel, function() use ($id, $viewModel) {',
                     ],
                     [
-                        '[]' === $validatable ? "\t\$query = \$request->get('_query') ?? []" : "\t\$query = \$viewModel_->get('_query') ?? []",
+                        '[]' === $validatable ? "\t\$query = \$request->get('_query') ?? []" : "\t\$query = \$viewModel->get('_query') ?? []",
                         "\treturn \$this->service->handle(Action([",
                         "\t\t'type' => 'UPDATE',",
                     ],
@@ -526,7 +525,7 @@ class ControllerClassBuilder implements ContractsControllerBuilder
                     ] : [
                         "\t\t'payload' => [",
                         "\t\t\t\$id,",
-                        "\t\t\t\$viewModel_->all(),",
+                        "\t\t\t\$viewModel->all(),",
                         "\t\t\t['method' => \$query['method'] ?? null]",
                     ],
                     [

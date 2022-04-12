@@ -152,7 +152,6 @@ class DataTransfertClassBuilder implements ComponentBuilder
          */
         $component = (PHPClass($this->name_ ?? self::DEFAULT_NAME))
             ->addImplementation(\Drewlabs\PHPValue\Contracts\ValueInterface::class)
-            ->addImplementation()
             ->addComment(
                 array_merge(
                     $this->propertyDocComments ?? [],
