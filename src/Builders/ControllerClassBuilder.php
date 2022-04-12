@@ -24,7 +24,6 @@ use Drewlabs\ComponentGenerators\Helpers\ComponentBuilderHelpers;
 use function Drewlabs\ComponentGenerators\Proxy\PHPScript;
 use Drewlabs\ComponentGenerators\Traits\HasNamespaceAttribute;
 
-use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Pluralizer;
@@ -353,48 +352,44 @@ class ControllerClassBuilder implements ContractsControllerBuilder
 
     private function addResourcesActions(Blueprint $component)
     {
-        $validatable = null === $this->viewModelClass_ ? '[]' : sprintf('%s::class', $this->viewModelClass_);
+        $vmParamName = null === $this->viewModelClass_ ? 'request' : 'viewModel';
         $actions = [
             [
                 'name' => 'index',
                 'params' => [
-                    PHPFunctionParameter('request', Request::class),
-                    PHPFunctionParameter('id', null, 'null')->asOptional(),
+                    null === $this->viewModelClass_ ? PHPFunctionParameter($vmParamName, Request::class) : PHPFunctionParameter($vmParamName, $this->viewModelClass_),
                 ],
                 'descriptors' => [
                     'Display or Returns a list of items',
                     '@Route /GET /' . $this->routeName_ . '[/{$id}]',
                 ],
-                'returns' => JsonResponse::class,
+                'returns' => 'mixed',
                 'contents' => array_merge(
                     [
-                        'if (null !== $id) {',
-                        "\treturn \$this->show(\$request, \$id)",
-                        '}',
                         $this->hasAuthenticatable_ ? '// TODO : Provides policy handlers' : null,
                     ],
                     // Transformer part
                     $this->dtoClass_ ? [
-                        '$tranformFunc_ = function($items) use ($request) {',
-                        "\treturn map_query_result(\$items, function (\$value)  use (\$request)  {",
-                        "\t\treturn \$value ? (new $this->dtoClass_(\$value))->mergeHidden(\$request->get('_hidden') ?? []) : \$value",
+                        "\$tranformFunc_ = function(\$items) use (\$$vmParamName) {",
+                        "\treturn map_query_result(\$items, function (\$value)  use (\$$vmParamName)  {",
+                        "\t\treturn \$value ? (new $this->dtoClass_(\$value))->mergeHidden(\${$vmParamName}->get('_hidden') ?? []) : \$value",
                         "\t});",
                         '};',
                     ] : [],
                     $this->isResourceController_ ? [
-                        (null !== $this->modelName_) ? "\$filters = drewlabs_databse_parse_client_request_query(new $this->modelName_, \$request)" : null,
+                        (null !== $this->modelName_) ? "\$filters = drewlabs_databse_parse_client_request_query(new $this->modelName_, \${$vmParamName})" : null,
                         '',
                         '$result = $this->service->handle(Action([',
                         "\t'type' => 'SELECT',",
-                        "\t'payload' => \$request->has('per_page') ? [",
+                        "\t'payload' => \${$vmParamName}->has('per_page') ? [",
                         "\t\t\$filters,",
-                        "\t\t(int)\$request->get('per_page'),",
-                        "\t\t\$request->has('_columns') ? (is_array(\$colums_ = \$request->get('_columns')) ? \$colums_ : (@json_decode(\$colums_, true) ?? ['*'])): ['*'],",
-                        "\t\t\$request->has('page') ? (int)\$request->get('page') : null,",
+                        "\t\t(int)\${$vmParamName}->get('per_page'),",
+                        "\t\t\${$vmParamName}->has('_columns') ? (is_array(\$colums_ = \${$vmParamName}->get('_columns')) ? \$colums_ : (@json_decode(\$colums_, true) ?? ['*'])): ['*'],",
+                        "\t\t\${$vmParamName}->has('page') ? (int)\${$vmParamName}->get('page') : null,",
                         "\t] :",
                         "\t[",
                         "\t\t\$filters,",
-                        "\t\t\$request->has('_columns') ? (is_array(\$colums_ = \$request->get('_columns')) ? \$colums_ : (@json_decode(\$colums_, true) ?? ['*']))  : ['*'],",
+                        "\t\t\${$vmParamName}->has('_columns') ? (is_array(\$colums_ = \${$vmParamName}->get('_columns')) ? \$colums_ : (@json_decode(\$colums_, true) ?? ['*']))  : ['*'],",
                         "\t],",
                         $this->dtoClass_ ? ']), $tranformFunc_)' : ']))',
                         'return $this->response->ok($result)',
@@ -404,14 +399,14 @@ class ControllerClassBuilder implements ContractsControllerBuilder
             [
                 'name' => 'show',
                 'params' => [
-                    PHPFunctionParameter('request', Request::class),
+                    null === $this->viewModelClass_ ? PHPFunctionParameter($vmParamName, Request::class) : PHPFunctionParameter($vmParamName, $this->viewModelClass_),
                     PHPFunctionParameter('id', null),
                 ],
                 'descriptors' => [
                     'Display or Returns an item matching the specified id',
                     '@Route /GET /' . $this->routeName_ . '/{$id}',
                 ],
-                'returns' => JsonResponse::class,
+                'returns' => 'mixed',
                 'contents' => array_merge(
                     [
                         $this->hasAuthenticatable_ ? '// TODO: Provide Policy handlers if required' : null,
@@ -419,12 +414,12 @@ class ControllerClassBuilder implements ContractsControllerBuilder
                         "\t'type' => 'SELECT',",
                         "\t'payload' => [",
                         "\t\t\$id,",
-                        "\t\t\$request->has('_columns') ? (is_array(\$colums_ = \$request->get('_columns')) ? \$colums_ : (@json_decode(\$colums_, true) ?? ['*'])): ['*'],",
+                        "\t\t\${$vmParamName}->has('_columns') ? (is_array(\$colums_ = \${$vmParamName}->get('_columns')) ? \$colums_ : (@json_decode(\$colums_, true) ?? ['*'])): ['*'],",
                         "\t],",
                     ],
                     null !== $this->dtoClass_ ? [
-                        ']), function($value) use ($request) {',
-                        "\treturn null !== \$value ? (new $this->dtoClass_(\$value))->mergeHidden(\$request->get('_hidden') ?? []) : \$value",
+                        "]), function(\$value) use (\$$vmParamName) {",
+                        "\treturn null !== \$value ? (new $this->dtoClass_(\$value))->mergeHidden(\${$vmParamName}->get('_hidden') ?? []) : \$value",
                         '});',
                     ] : [']))'],
                     [
@@ -435,30 +430,30 @@ class ControllerClassBuilder implements ContractsControllerBuilder
             [
                 'name' => 'store',
                 'params' => array_filter([
-                    PHPFunctionParameter('request', Request::class),
-                    '[]' === $validatable ? null : PHPFunctionParameter('viewModel', $validatable)
+                    null === $this->viewModelClass_ ? PHPFunctionParameter('request', Request::class) : null,
+                    null === $this->viewModelClass_ ? null : PHPFunctionParameter('viewModel', $this->viewModelClass_)
                 ]),
                 'descriptors' => [
                     'Stores a new item in the storage',
                     '@Route /POST /' . $this->routeName_,
                 ],
-                'returns' => JsonResponse::class,
+                'returns' => 'mixed',
                 'contents' => array_merge(
                     [
                         '// validate request inputs',
                     ],
-                    '[]' === $validatable ? [
-                        "\$result = \$this->validator->validate($validatable, \$request->all(), function() use (\$request) {",
+                    null === $this->viewModelClass_ ? [
+                        "\$result = \$this->validator->validate([], \$request->all(), function() use (\$request) {",
                         '// After validation logic goes here...',
                     ] : [
                         '$result = $this->validator->validate($viewModel, function() use ($viewModel) {',
                     ],
                     [
-                        '[]' === $validatable ? "\t\$query = \$request->get('_query') ?? []" : "\t\$query = \$viewModel->get('_query') ?? []",
+                        null === $this->viewModelClass_ ? "\t\$query = \$request->get('_query') ?? []" : "\t\$query = \$viewModel->get('_query') ?? []",
                         "\treturn \$this->service->handle(Action([",
                         "\t\t'type' => 'CREATE',",
                     ],
-                    '[]' === $validatable ? [
+                    null === $this->viewModelClass_ ? [
                         "\t\t'payload' => [",
                         "\t\t\t\$request->all(),",
                         "\t\t\t\$request->has('id') ?",
@@ -492,8 +487,8 @@ class ControllerClassBuilder implements ContractsControllerBuilder
             ], [
                 'name' => 'update',
                 'params' => array_filter([
-                    PHPFunctionParameter('request', Request::class),
-                    '[]' === $validatable ? null : PHPFunctionParameter('viewModel', $validatable),
+                    null === $this->viewModelClass_ ? PHPFunctionParameter('request', Request::class) : null,
+                    null === $this->viewModelClass_ ? null : PHPFunctionParameter('viewModel', $this->viewModelClass_),
                     PHPFunctionParameter('id', null),
                 ]),
                 'descriptors' => [
@@ -501,23 +496,23 @@ class ControllerClassBuilder implements ContractsControllerBuilder
                     '@Route /PUT /' . $this->routeName_ . '/{id}',
                     '@Route /PATCH /' . $this->routeName_ . '/{id}',
                 ],
-                'returns' => JsonResponse::class,
+                'returns' => 'mixed',
                 'contents' => array_merge(
                     [
                         '$viewModel = $viewModel->merge(["id" => $id])',
                     ],
-                    '[]' === $validatable ? [
-                        "\$result = \$this->validator->updating()->validate($validatable, \$request->all(), function() use (\$id, \$request) {",
+                    null === $this->viewModelClass_ ? [
+                        "\$result = \$this->validator->updating()->validate([], \$request->all(), function() use (\$id, \$request) {",
                         '// After validation logic goes here...',
                     ] : [
                         '$result = $this->validator->updating()->validate($viewModel, function() use ($id, $viewModel) {',
                     ],
                     [
-                        '[]' === $validatable ? "\t\$query = \$request->get('_query') ?? []" : "\t\$query = \$viewModel->get('_query') ?? []",
+                        null === $this->viewModelClass_ ? "\t\$query = \$request->get('_query') ?? []" : "\t\$query = \$viewModel->get('_query') ?? []",
                         "\treturn \$this->service->handle(Action([",
                         "\t\t'type' => 'UPDATE',",
                     ],
-                    '[]' === $validatable ? [
+                    null === $this->viewModelClass_ ? [
                         "\t\t'payload' => [",
                         "\t\t\t\$id,",
                         "\t\t\t\$request->all(),",
@@ -546,14 +541,14 @@ class ControllerClassBuilder implements ContractsControllerBuilder
             [
                 'name' => 'destroy',
                 'params' => [
-                    PHPFunctionParameter('request', Request::class),
+                    null === $this->viewModelClass_ ? PHPFunctionParameter($vmParamName, Request::class) : PHPFunctionParameter($vmParamName, $this->viewModelClass_),
                     (PHPFunctionParameter('id', null)),
                 ],
                 'descriptors' => [
                     'Remove the specified resource from storage.',
                     '@Route /DELETE /' . $this->routeName_ . '/{id}',
                 ],
-                'returns' => JsonResponse::class,
+                'returns' => 'mixed',
                 'contents' => [
                     $this->hasAuthenticatable_ ? '// TODO: Provide Policy handlers if required' : null,
                     '$result = $this->service->handle(Action([',
