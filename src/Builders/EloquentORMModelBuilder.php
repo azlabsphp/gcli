@@ -378,7 +378,7 @@ class EloquentORMModelBuilder implements ContractsEloquentORMModel, ComponentBui
          * @var BluePrint
          */
         $component = array_reduce([
-            \Drewlabs\Packages\Database\Contracts\AppModel::class,
+            \Drewlabs\Packages\Database\Contracts\ORMModel::class,
         ], static function (Blueprint $carry, $curr) {
             $carry = $carry->addImplementation($curr);
             return $carry;
