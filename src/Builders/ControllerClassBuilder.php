@@ -23,7 +23,7 @@ use Drewlabs\ComponentGenerators\Contracts\ControllerBuilder as ContractsControl
 use Drewlabs\ComponentGenerators\Helpers\ComponentBuilderHelpers;
 use function Drewlabs\ComponentGenerators\Proxy\PHPScript;
 use Drewlabs\ComponentGenerators\Traits\HasNamespaceAttribute;
-
+use Drewlabs\Core\Helpers\Str;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Pluralizer;
@@ -40,6 +40,8 @@ class ControllerClassBuilder implements ContractsControllerBuilder
     public const DEFAULT_NAMESPACE = 'App\\Http\\Controllers';
 
     private const ACTION_FUNCTION_PATH = 'Drewlabs\\Support\\Proxy\\Action';
+
+    private const USE_QUERY_RESULT_PROXY = 'Drewlabs\\Packages\\Database\\Proxy\\useMapQueryResult';
 
     private const DEFAULT_NAME = 'TestsController';
 
@@ -256,6 +258,12 @@ class ControllerClassBuilder implements ContractsControllerBuilder
                     ] : [])
             )
             ->addToNamespace($this->namespace_ ?? self::DEFAULT_NAMESPACE);
+        if ($this->dtoClass_) {
+            /**
+             * @var Blueprint
+             */
+            $component = $component->addFunctionPath(self::USE_QUERY_RESULT_PROXY);
+        }
         foreach ($this->classPaths_ ?? [] as $value) {
             /**
              * @var Blueprint
@@ -368,32 +376,30 @@ class ControllerClassBuilder implements ContractsControllerBuilder
                     [
                         $this->hasAuthenticatable_ ? '// TODO : Provides policy handlers' : null,
                     ],
-                    // Transformer part
-                    $this->dtoClass_ ? [
-                        "\$tranformFunc_ = function(\$items) use (\$$vmParamName) {",
-                        "\treturn map_query_result(\$items, function (\$value)  use (\$$vmParamName)  {",
-                        "\t\treturn \$value ? (new $this->dtoClass_(\$value))->mergeHidden(\${$vmParamName}->get('_hidden') ?? []) : \$value",
-                        "\t});",
-                        '};',
-                    ] : [],
-                    $this->isResourceController_ ? [
+                    $this->isResourceController_ ? array_merge([
                         (null !== $this->modelName_) ? "\$filters = drewlabs_databse_parse_client_request_query(new $this->modelName_, \${$vmParamName})" : null,
                         '',
-                        '$result = $this->service->handle(Action([',
-                        "\t'type' => 'SELECT',",
-                        "\t'payload' => \${$vmParamName}->has('per_page') ? [",
-                        "\t\t\$filters,",
-                        "\t\t(int)\${$vmParamName}->get('per_page'),",
-                        "\t\t\${$vmParamName}->has('_columns') ? (is_array(\$colums_ = \${$vmParamName}->get('_columns')) ? \$colums_ : (@json_decode(\$colums_, true) ?? ['*'])): ['*'],",
-                        "\t\t\${$vmParamName}->has('page') ? (int)\${$vmParamName}->get('page') : null,",
-                        "\t] :",
-                        "\t[",
-                        "\t\t\$filters,",
-                        "\t\t\${$vmParamName}->has('_columns') ? (is_array(\$colums_ = \${$vmParamName}->get('_columns')) ? \$colums_ : (@json_decode(\$colums_, true) ?? ['*']))  : ['*'],",
-                        "\t],",
-                        $this->dtoClass_ ? ']), $tranformFunc_)' : ']))',
-                        'return $this->response->ok($result)',
-                    ] : []
+                        '$result = $this->service->handle(', // \t
+                        "\tAction([",
+                        "\t\t'type' => 'SELECT',",
+                        "\t\t'payload' => \${$vmParamName}->has('per_page') ? [",
+                        "\t\t\t\$filters,",
+                        "\t\t\t(int)\${$vmParamName}->get('per_page'),",
+                        "\t\t\t\${$vmParamName}->has('_columns') ? (is_array(\$colums_ = \${$vmParamName}->get('_columns')) ? \$colums_ : (@json_decode(\$colums_, true) ?? ['*'])): ['*'],",
+                        "\t\t\t\${$vmParamName}->has('page') ? (int)\${$vmParamName}->get('page') : null,",
+                        "\t\t] :",
+                        "\t\t\t[",
+                        "\t\t\t\t\$filters,",
+                        "\t\t\t\t\${$vmParamName}->has('_columns') ? (is_array(\$colums_ = \${$vmParamName}->get('_columns')) ? \$colums_ : (@json_decode(\$colums_, true) ?? ['*']))  : ['*'],",
+                        "\t\t\t],",
+
+                    ], $this->dtoClass_ ? [
+                        "\t]),",
+                        "\tuseMapQueryResult(function (\$value)  use (\$$vmParamName) {",
+                        "\t\treturn \$value ? (new $this->dtoClass_(\$value))->mergeHidden(\${$vmParamName}->get('_hidden') ?? []) : \$value;",
+                        "\t})",
+                        ")",
+                    ] : [']))'], ['return $this->response->ok($result)',]) : []
                 ),
             ],
             [

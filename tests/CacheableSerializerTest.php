@@ -13,8 +13,8 @@ declare(strict_types=1);
 
 namespace Drewlabs\ComponentGenerators\Tests;
 
-use Drewlabs\ComponentGenerators\Extensions\CacheableSerializer;
-use Drewlabs\ComponentGenerators\Extensions\CacheableTables;
+use Drewlabs\ComponentGenerators\Cache\CacheableSerializer;
+use Drewlabs\ComponentGenerators\Cache\CacheableTables;
 
 use function Drewlabs\Filesystem\Proxy\Path;
 
