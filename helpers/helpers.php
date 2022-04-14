@@ -21,7 +21,7 @@ if (!function_exists('drewlabs_code_generator_is_running_lumen_app')) {
      */
     function drewlabs_code_generator_is_running_lumen_app($callback)
     {
-        return ("Laravel\Lumen\Application" === get_class($callback)) && preg_match('/(5\.[5-8]\..*)|(6\..*)|(7\..*)|(8\..*)/', $callback->version());
+        return ("Laravel\Lumen\Application" === get_class($callback)) && preg_match('/(5\.[5-8]\..*)|(6\..*)|(7\..*)|(8\..*)|(9\..*)/', $callback->version());
     }
 }
 
