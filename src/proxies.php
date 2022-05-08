@@ -24,7 +24,7 @@ use Drewlabs\ComponentGenerators\ComponentsScriptWriter;
 use Drewlabs\ComponentGenerators\Contracts\ORMColumnDefinition as ContractsORMColumnDefinition;
 use Drewlabs\ComponentGenerators\Contracts\ORMModelDefinition;
 use Drewlabs\ComponentGenerators\Contracts\ScriptWriter;
-use Drewlabs\ComponentGenerators\DatabaseSchemaReverseEngineeringRunner;
+use Drewlabs\ComponentGenerators\DBSchemaReverseEngineeringService;
 use Drewlabs\ComponentGenerators\ORMColumnDefinition;
 use Drewlabs\ComponentGenerators\ORMModelDefinition as ComponentGeneratorsORMModelDefinition;
 use Drewlabs\ComponentGenerators\PHP\PHPScriptFile;
@@ -160,14 +160,14 @@ function PHPScript(
  *
  * @param string $blocComponentNamespace
  *
- * @return DatabaseSchemaReverseEngineeringRunner
+ * @return DBSchemaReverseEngineeringService
  */
 function DatabaseSchemaReverseEngineeringRunner(
     AbstractSchemaManager $manager,
     string $blocComponentPath,
     ?string $blocComponentNamespace = 'App'
 ) {
-    return new DatabaseSchemaReverseEngineeringRunner(
+    return new DBSchemaReverseEngineeringService(
         $manager,
         $blocComponentPath,
         $blocComponentNamespace

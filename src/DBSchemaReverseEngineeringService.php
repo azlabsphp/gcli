@@ -26,7 +26,7 @@ use Drewlabs\ComponentGenerators\Helpers\DataTypeToFluentValidationRulesHelper;
 use function Drewlabs\ComponentGenerators\Proxy\EloquentORMModelBuilder;
 use function Drewlabs\ComponentGenerators\Proxy\ORMModelDefinition;
 
-class DatabaseSchemaReverseEngineeringRunner
+class DBSchemaReverseEngineeringService
 {
     /**
      * @var array

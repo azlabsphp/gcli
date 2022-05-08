@@ -13,9 +13,11 @@ declare(strict_types=1);
 
 namespace Drewlabs\ComponentGenerators\Extensions\Console\Commands;
 
+use Drewlabs\ComponentGenerators\DBDriverOptions;
 use Drewlabs\ComponentGenerators\Extensions\Helpers\ReverseEngineerTaskRunner;
 use Drewlabs\ComponentGenerators\Extensions\ProgressbarIndicator;
 use Drewlabs\ComponentGenerators\Helpers\ComponentBuilderHelpers;
+
 use function Drewlabs\Filesystem\Proxy\Path;
 use Illuminate\Console\Command;
 
@@ -97,24 +99,7 @@ class CreateMVCComponentsCommand extends Command
         $routingfilename = $this->option('routingfilename') ?? 'web.php';
         $routePrefix = $this->option('routePrefix') ?? null;
         $middleware = $this->option('middleware') ?? null;
-        $default_driver = config('database.default');
         $only = $this->option('only');
-        $driver = $this->option('driver') ?
-            (drewlabs_core_strings_starts_with(
-                $this->option('driver'),
-                'pdo'
-            ) ? $this->option('driver') :
-                sprintf(
-                    'pdo_%s',
-                    $this->option('driver')
-                )) : sprintf('pdo_%s', $default_driver);
-        $database = $this->option('dbname') ?? config("database.connections.$default_driver.database");
-        $port = $this->option('port') ?? config("database.connections.$default_driver.port");
-        $username = $this->option('user') ?? config("database.connections.$default_driver.username");
-        $host = $this->option('host') ?? config("database.connections.$default_driver.host");
-        $password = $this->option('password') ?? config("database.connections.$default_driver.password");
-        $charset = $this->option('charset') ?? ('pdo_mysql' === $driver ? 'utf8mb4' : 'utf8');
-        $server_version = $this->option('server_version') ?? null;
 
         $exceptions = $this->option('excepts') ?? [];
         $disableCache = $this->option('disableCache');
@@ -137,10 +122,27 @@ class CreateMVCComponentsCommand extends Command
                 'url' => $url,
             ];
         } else {
+            $default_driver = config('database.default');
+            $driver = $this->option('driver') ?
+                (drewlabs_core_strings_starts_with(
+                    $this->option('driver'),
+                    'pdo'
+                ) ? $this->option('driver') :
+                    sprintf(
+                        'pdo_%s',
+                        $this->option('driver')
+                    )) : sprintf('pdo_%s', $default_driver);
+            $database = $this->option('dbname') ?? config("database.connections.$default_driver.database");
+            $port = $this->option('port') ?? config("database.connections.$default_driver.port");
+            $username = $this->option('user') ?? config("database.connections.$default_driver.username");
+            $host = $this->option('host') ?? config("database.connections.$default_driver.host");
+            $password = $this->option('password') ?? config("database.connections.$default_driver.password");
+            $charset = $this->option('charset') ?? ('pdo_mysql' === $driver ? 'utf8mb4' : ('pdo_sqlite' === $driver ? null : 'utf8'));
+            $server_version = $this->option('server_version') ?? null;
             $options = [
                 'dbname' => $database,
-                'host' => $host ?? '127.0.0.1',
-                'port' => $port ?? 3306,
+                'host' =>  $driver === 'pdo_sqlite' ? null : $host ?? '127.0.0.1',
+                'port' =>  $driver === 'pdo_sqlite' ? null : $port ?? 3306,
                 'user' => $username,
                 'password' => $password,
                 'driver' => $driver ?? 'pdo_sqlite',
@@ -148,11 +150,14 @@ class CreateMVCComponentsCommand extends Command
                 'charset' => $charset,
             ];
         }
+        $dbOptions = new DBDriverOptions($options);
         (new ReverseEngineerTaskRunner())
             ->except($exceptions ?? [])
             ->only($only ?? [])
             ->run(
-                $options,
+                $dbOptions
+                    ->prepare()
+                    ->get(),
                 $srcPath,
                 $routingfilename,
                 $routePrefix,
