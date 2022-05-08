@@ -17,8 +17,7 @@
         },
         "files": [
             "./src/proxies.php",
-            "./helpers/helpers.php",
-            "./helpers/config.php"
+            "./helpers.php"
         ]
     },
     "authors": [{
