@@ -33,3 +33,7 @@
 ## [2.2.7] 2022-05-08
 
 - Moved helpers.php out of helpers folder
+
+## [2.2.8] 2022-05-08
+
+- Fixed bug when code generator is run against an SQLite database
