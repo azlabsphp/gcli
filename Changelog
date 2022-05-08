@@ -29,3 +29,7 @@
 ## [2.2.5] 2022-04-14
 
 - Fixed issues in CacheableSerializerTest and updated ControllerBuilder class
+
+## [2.2.7] 2022-05-08
+
+- Moved helpers.php out of helpers folder
