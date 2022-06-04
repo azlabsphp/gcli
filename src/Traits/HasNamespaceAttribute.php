@@ -13,6 +13,8 @@ declare(strict_types=1);
 
 namespace Drewlabs\ComponentGenerators\Traits;
 
+use Drewlabs\Core\Helpers\Str;
+
 use function Drewlabs\Filesystem\Proxy\Path;
 
 trait HasNamespaceAttribute
@@ -33,7 +35,7 @@ trait HasNamespaceAttribute
         if (null === $path_ || empty($path_)) {
             // Get the list of files in the current workspace
             $currentWsClasses = array_filter(get_declared_classes(), static function ($item) use ($namespace) {
-                return drewlabs_core_strings_starts_with($item, $namespace);
+                return Str::startsWith($item, $namespace);
             });
             // Get the first element of the list if any
             if (null === ($first = $currentWsClasses[0] ?? null)) {
@@ -57,13 +59,13 @@ trait HasNamespaceAttribute
 
     private function createPathFromNamespace(string $namespace)
     {
-        $folders = drewlabs_core_strings_to_array($namespace, '\\');
+        $folders = Str::split($namespace, '\\');
         if (empty($folders)) {
             return $this;
         }
         $folder0 = $folders[0];
         $remaining = \array_slice($folders, 1);
-        $path = implode(\DIRECTORY_SEPARATOR, array_merge([drewlabs_core_strings_to_lower_case($folder0)], $remaining));
+        $path = implode(\DIRECTORY_SEPARATOR, array_merge([Str::lower($folder0)], $remaining));
         $this->setWritePath($path);
 
         return $this;

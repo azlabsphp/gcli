@@ -17,6 +17,9 @@ use Drewlabs\CodeGenerator\Exceptions\PHPVariableException;
 use Drewlabs\ComponentGenerators\Cache\CacheableSerializer;
 use Drewlabs\ComponentGenerators\Cache\CacheableTables;
 use Drewlabs\ComponentGenerators\Contracts\SourceFileInterface;
+use Drewlabs\Core\Helpers\Str;
+use Drewlabs\Filesystem\Exceptions\CreateDirectoryException;
+
 use function Drewlabs\ComponentGenerators\Proxy\DataTransfertClassBuilder;
 use function Drewlabs\ComponentGenerators\Proxy\EloquentORMModelBuilder;
 use function Drewlabs\ComponentGenerators\Proxy\MVCControllerBuilder;
@@ -28,22 +31,36 @@ use function Drewlabs\ComponentGenerators\Proxy\ViewModelBuilder;
 use Drewlabs\Filesystem\Exceptions\FileNotFoundException;
 use Drewlabs\Filesystem\Exceptions\ReadFileException;
 use Drewlabs\Filesystem\Exceptions\UnableToRetrieveMetadataException;
+use InvalidArgumentException;
+use Drewlabs\Filesystem\Exceptions\WriteOperationFailedException;
+use Drewlabs\ComponentGenerators\Builders\EloquentORMModelBuilder as EloquentORMModelBuilderClass;
+use Drewlabs\Core\Helpers\Arr;
+use RuntimeException;
+
 use function Drewlabs\Filesystem\Proxy\Path;
 
 class ComponentBuilderHelpers
 {
     /**
-     * @param bool $vm
-     *
-     * @return SourceFileInterface
+     * 
+     * @param string $table 
+     * @param array $columns 
+     * @param string $namespace 
+     * @param string $primaryKey 
+     * @param bool $increments 
+     * @param bool $isViewModel 
+     * @param array $hidden 
+     * @param array $appends 
+     * @param null|string $comments 
+     * @return EloquentORMModelBuilderClass 
      */
-    public static function buildModelDefinition(
+    public static function createModelBuilder(
         string $table,
         array $columns = [],
         string $namespace = 'App\\Models',
         string $primaryKey = 'id',
         bool $increments = true,
-        $vm = false,
+        $isViewModel = false,
         array $hidden = [],
         array $appends = [],
         ?string $comments = null
@@ -55,9 +72,9 @@ class ComponentBuilderHelpers
                 'table' => $table,
                 'columns' => array_map(
                     static function ($definition) {
-                        $name = drewlabs_core_strings_before('|', $definition);
-                        $least = explode(',', drewlabs_core_strings_after('|', $definition) ?? '');
-                        $type = $least[0] ?? null;
+                        $name = Str::before('|', $definition);
+                        $least = explode(',', Str::after('|', $definition) ?? '');
+                        $type = Arr::first($least) ?? null;
                         // TODO : Load the remaining parts
                         return ORMColumnDefinition(
                             [
@@ -67,13 +84,12 @@ class ComponentBuilderHelpers
                         );
                     },
                     array_filter(array_map(static function ($column) {
-                        if (\is_string($column) && !drewlabs_core_strings_contains($column, '|')) {
+                        if (\is_string($column) && !Str::contains($column, '|')) {
                             $column = sprintf('%s|', $column);
                         }
-
                         return $column;
                     }, $columns), static function ($definition) {
-                        return null !== $definition && drewlabs_core_strings_contains($definition, '|');
+                        return null !== $definition && Str::contains($definition, '|');
                     })
                 ),
                 'increments' => $increments,
@@ -82,15 +98,60 @@ class ComponentBuilderHelpers
             ])
         )->setHiddenColumns($hidden ?? [])
             ->setAppends($appends ?? []);
-        if ($vm) {
+        if ($isViewModel) {
             $component = $component->asViewModel();
         }
-
-        return $component->build();
+        return $component;
     }
 
     /**
-     * @return SourceFileInterface
+     * 
+     * @param string $table 
+     * @param array $columns 
+     * @param string $namespace 
+     * @param string $primaryKey 
+     * @param bool $increments 
+     * @param bool $vm 
+     * @param array $hidden 
+     * @param array $appends 
+     * @param null|string $comments 
+     * @return SourceFileInterface 
+     * @throws RuntimeException 
+     * @throws PHPVariableException 
+     * @throws UnableToRetrieveMetadataException 
+     */
+    public static function buildModelDefinitionSourceFile(
+        string $table,
+        array $columns = [],
+        string $namespace = 'App\\Models',
+        string $primaryKey = 'id',
+        bool $increments = true,
+        $vm = false,
+        array $hidden = [],
+        array $appends = [],
+        ?string $comments = null
+    ) {
+        return static::createModelBuilder(
+            $table,
+            $columns,
+            $namespace,
+            $primaryKey,
+            $increments,
+            $vm,
+            $hidden,
+            $appends,
+            $comments
+        )->build();
+    }
+
+    /**
+     * 
+     * @param bool $asCRUD 
+     * @param null|string $name 
+     * @param null|string $namespace 
+     * @param null|string $model 
+     * @return SourceFileInterface 
+     * @throws UnableToRetrieveMetadataException 
      */
     public static function buildServiceDefinition(
         bool $asCRUD = false,
@@ -112,9 +173,18 @@ class ComponentBuilderHelpers
     }
 
     /**
-     * @throws PHPVariableException
-     *
-     * @return SourceFileInterface
+     * 
+     * @param bool $single 
+     * @param array $rules 
+     * @param array $updateRules 
+     * @param null|string $name 
+     * @param null|string $namespace 
+     * @param null|string $path 
+     * @param null|string $model 
+     * @param null|bool $hasHttpHandlers 
+     * @return SourceFileInterface 
+     * @throws PHPVariableException 
+     * @throws UnableToRetrieveMetadataException 
      */
     public static function buildViewModelDefinition(
         bool $single = false,
@@ -129,12 +199,12 @@ class ComponentBuilderHelpers
         $rulesParserFunc = static function ($definitions) {
             $definitions_ = [];
             foreach ($definitions as $key => $value) {
-                if (\is_string($value) && !drewlabs_core_strings_contains($value, '=')) {
+                if (\is_string($value) && !Str::contains($value, '=')) {
                     continue;
                 }
                 if (is_numeric($key) && \is_string($value)) {
-                    $k = drewlabs_core_strings_before('=', $value);
-                    $v = drewlabs_core_strings_after('=', $value);
+                    $k = Str::before('=', $value);
+                    $v = Str::after('=', $value);
                     $definitions_[$k] = $v;
                     continue;
                 }
@@ -146,9 +216,7 @@ class ComponentBuilderHelpers
         };
         $component = ViewModelBuilder($name, $namespace, $path);
         if (\is_string($model)) {
-            $component = $component->bindModel(
-                $model
-            );
+            $component = $component->bindModel($model);
         }
         if (!$single) {
             $component = $component->setUpdateRules(
@@ -175,9 +243,14 @@ class ComponentBuilderHelpers
     }
 
     /**
-     * @throws PHPVariableException
-     *
-     * @return SourceFileInterface
+     * 
+     * @param array $attributes 
+     * @param array $hidden 
+     * @param null|string $name 
+     * @param null|string $namespace 
+     * @param null|string $model 
+     * @return SourceFileInterface 
+     * @throws UnableToRetrieveMetadataException 
      */
     public static function buildDtoObjectDefinition(
         array $attributes = [],
@@ -199,12 +272,15 @@ class ComponentBuilderHelpers
     }
 
     /**
-     * @param mixed|null $model
-     * @param mixed|null $service
-     * @param mixed|null $viewModel
-     * @param mixed|null $dto
-     *
-     * @return SourceFileInterface
+     * 
+     * @param mixed $model 
+     * @param mixed $service 
+     * @param mixed $viewModel 
+     * @param mixed $dto 
+     * @param null|string $name 
+     * @param null|string $namespace 
+     * @param bool $auth 
+     * @return SourceFileInterface 
      */
     public static function buildController(
         $model = null,
@@ -239,23 +315,31 @@ class ComponentBuilderHelpers
         return $component->build();
     }
 
+    /**
+     * 
+     * @param string $namespace 
+     * @param string $path 
+     * @return string 
+     * @throws UnableToRetrieveMetadataException 
+     */
     public static function rebuildComponentPath(string $namespace, string $path)
     {
-        $namespaceFolder = drewlabs_core_strings_after_last('\\', $namespace);
+        $namespace = $namespace ?? '';
+        $namespace_dir = Str::contains($namespace ?? '', '\\') ? Str::afterLast('\\', $namespace) : $namespace;
         $basename = Path($path)->basename();
-        if (drewlabs_core_strings_to_lower_case($namespaceFolder) !== drewlabs_core_strings_to_lower_case($basename)) {
+        if (Str::lower($namespace_dir) !== Str::lower($basename)) {
             // If the last part of both namespace and path are not the same
             $parts = array_reverse(explode('\\', $namespace));
             foreach ($parts as $value) {
-                if (drewlabs_core_strings_contains($path, $value)) {
+                if (Str::contains($path, $value)) {
                     $path = sprintf('%s%s%s', rtrim(
                         $path,
                         \DIRECTORY_SEPARATOR
                     ), \DIRECTORY_SEPARATOR, ltrim(
-                        drewlabs_core_strings_replace(
+                        Str::replace(
                             '\\',
                             \DIRECTORY_SEPARATOR,
-                            drewlabs_core_strings_after_last($value, $namespace)
+                            Str::afterLast($value, $namespace)
                         ),
                         \DIRECTORY_SEPARATOR
                     ));
@@ -267,18 +351,32 @@ class ComponentBuilderHelpers
         return $path;
     }
 
+    /**
+     * 
+     * @param string $classname 
+     * @return string 
+     */
     public static function buildRouteName(string $classname)
     {
         if (empty($classname) || (null === $classname)) {
             $classname = 'TestsController';
         }
 
-        return drewlabs_core_strings_as_snake_case(
-            drewlabs_core_strings_replace('Controller', '', $classname),
-            '-'
-        );
+        return Str::snakeCase(Str::replace('Controller', '', $classname), '-');
     }
 
+    /**
+     * 
+     * @param string $path 
+     * @param array $tables 
+     * @param null|string $namespace 
+     * @param null|string $subPackage 
+     * @return void 
+     * @throws UnableToRetrieveMetadataException 
+     * @throws CreateDirectoryException 
+     * @throws InvalidArgumentException 
+     * @throws WriteOperationFailedException 
+     */
     public static function cacheComponentDefinitions(string $path, array $tables, ?string $namespace = null, ?string $subPackage = null)
     {
         (new CacheableSerializer($path))->dump(

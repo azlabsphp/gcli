@@ -13,11 +13,18 @@ declare(strict_types=1);
 
 namespace Drewlabs\ComponentGenerators;
 
+use Drewlabs\ComponentGenerators\Builders\DtoAttributesFactory;
+use Drewlabs\ComponentGenerators\Builders\ViewModelRulesFactory;
 use Drewlabs\ComponentGenerators\Contracts\ORMColumnDefinition;
 use Drewlabs\ComponentGenerators\Contracts\ORMModelDefinition as ContractsORMModelDefinition;
+use Drewlabs\ComponentGenerators\Helpers\DataTypeToFluentValidationRulesHelper;
 use Drewlabs\PHPValue\Value;
 
-class ORMModelDefinition extends Value implements ContractsORMModelDefinition
+/**
+ * 
+ * @package Drewlabs\ComponentGenerators
+ */
+class ORMModelDefinition extends Value implements ContractsORMModelDefinition, DtoAttributesFactory, ViewModelRulesFactory
 {
     protected $__PROPERTIES__ = [
         'primaryKey_' => 'primaryKey',
@@ -33,7 +40,7 @@ class ORMModelDefinition extends Value implements ContractsORMModelDefinition
     {
         foreach ($value as $value) {
             if (!($value instanceof ORMColumnDefinition)) {
-                throw new \InvalidArgumentException('$columns parameter must be a list of '.ORMColumnDefinition::class.' items');
+                throw new \InvalidArgumentException('$columns parameter must be a list of ' . ORMColumnDefinition::class . ' items');
             }
         }
 
@@ -73,5 +80,54 @@ class ORMModelDefinition extends Value implements ContractsORMModelDefinition
     public function namespace(): ?string
     {
         return $this->namespace_ ?? '\\App\\Models';
+    }
+
+    public function createDtoAttributes()
+    {
+        return iterator_to_array((function (ContractsORMModelDefinition $model) {
+            /**
+             * @var ORMColumnDefinition
+             */
+            foreach ($model->columns() as $column) {
+                yield $column->name() => $column->type();
+            }
+        })($this));
+    }
+
+    public function createRules(bool $update = false)
+    {
+        return iterator_to_array((function (ContractsORMModelDefinition $model) use ($update) {
+            foreach ($model->columns() as $value) {
+                yield $value->name() => $this->getColumRules($value, $model->primaryKey(), $update);
+            }
+        })($this));
+    }
+
+    private function getColumRules(ORMColumnDefinition $column, ?string $primaryKey = null, $useUpdateRules = false)
+    {
+        $evaluateIfPrimaryKeyFunc = static function ($key) use ($column) {
+            if ($column->name() === $key) {
+                return DataTypeToFluentValidationRulesHelper::SOMETIMES;
+            }
+            return null !== $key ?
+                sprintf(
+                    '%s:%s',
+                    DataTypeToFluentValidationRulesHelper::REQUIRED_WITHOUT,
+                    $key
+                ) : DataTypeToFluentValidationRulesHelper::REQUIRED;
+        };
+        $rules[] = $column->required() ?
+            ($useUpdateRules ? DataTypeToFluentValidationRulesHelper::SOMETIMES :
+                $evaluateIfPrimaryKeyFunc($primaryKey)) :
+            DataTypeToFluentValidationRulesHelper::NULLABLE;
+        $rules = [...$rules, ...(DataTypeToFluentValidationRulesHelper::getRule($column->type()))];
+        if ($constraints = $column->foreignConstraint()) {
+            $rules = [...$rules, ...(DataTypeToFluentValidationRulesHelper::getRule($constraints))];
+        }
+        if (($constraints = $column->unique()) && !($useUpdateRules)) {
+            $rules = [...$rules, ...(DataTypeToFluentValidationRulesHelper::getRule($constraints))];
+        }
+
+        return array_merge($rules);
     }
 }

@@ -13,6 +13,11 @@ declare(strict_types=1);
 
 namespace Drewlabs\ComponentGenerators\Extensions\Console\Commands;
 
+use Drewlabs\ComponentGenerators\Builders\DtoAttributesFactory;
+use Drewlabs\ComponentGenerators\Builders\ViewModelRulesFactory;
+use Drewlabs\ComponentGenerators\Contracts\ORMModelDefinition;
+use Drewlabs\ComponentGenerators\Contracts\SourceFileInterface;
+use Drewlabs\ComponentGenerators\Extensions\Console\ComponentCommandsHelpers;
 use Drewlabs\ComponentGenerators\Helpers\ComponentBuilderHelpers;
 use function Drewlabs\ComponentGenerators\Proxy\ComponentsScriptWriter;
 use Illuminate\Console\Command;
@@ -23,16 +28,17 @@ use Illuminate\Contracts\Foundation\Application;
 class MakeModelCommand extends Command
 {
     protected $signature = 'drewlabs:mvc:make:model '
-        .'{--increments : Makes the model primary key incrementable}'
-        .'{--asViewModel : Generate the model as a view model class}'
-        .'{--comment= Comment to be added to the model }'
-        .'{--table= : Table name to attached to the model }'
-        .'{--namespace= : Component namespace }'
-        .'{--primaryKey= : Model primary key }'
-        .'{--path= : Project source code path }'
-        .'{--columns=* : List of model table fillable columns}'
-        .'{--hidden=* List of hidden properties}'
-        .'{--appends=* List of properties to append to the model }';
+        . '{--increments : Makes the model primary key incrementable}'
+        . '{--asViewModel : Generate the model as a view model class}'
+        . '{--comment= Comment to be added to the model }'
+        . '{--table= : Table name to attached to the model }'
+        . '{--namespace= : Component namespace }'
+        . '{--primaryKey= : Model primary key }'
+        . '{--path= : Project source code path }'
+        . '{--columns=* : List of model table fillable columns. (column|type) }'
+        . '{--hidden=* List of hidden properties}'
+        . '{--appends=* List of properties to append to the model }'
+        . '{--all : Creates service, dto, view model and controller classes }';
 
     protected $description = 'Creates a model using Drewlabs package model definitions';
     /**
@@ -64,19 +70,44 @@ class MakeModelCommand extends Command
 
         $basePath = $this->app->basePath($this->option('path') ?? 'app');
         // # End of parameters initialization
+        $builder = ComponentBuilderHelpers::createModelBuilder(
+            $table,
+            $columns ?? [],
+            $namespace,
+            $primaryKey,
+            $increments,
+            $vm,
+            $this->option('hidden'),
+            $this->option('appends') ?? [],
+            $this->option('comment') ?? null
+        );
+        $definition = $builder->getDefinition();
+        $component = $builder->build();
+        ComponentsScriptWriter($basePath)->write($component);
+        if ($this->option('all')) {
+            static::createComponents($basePath, $component, $definition);
+        }
+        $this->info("Model successfully generated for table : $table\n");
+    }
+
+    public static function createComponents($basePath, SourceFileInterface $component, ?ORMModelDefinition $definition = null)
+    {
+        $modelClassPath = sprintf("\\%s\\%s", $component->getNamespace(), $component->getName());
+        $service = $service ?? sprintf("%sService", $component->getName());
+        $dto = $dto ?? sprintf("%sDto", $component->getName());
+        $viewModel = $viewModel ?? sprintf("%sViewModel", $component->getName());
+        $serviceClass = ComponentCommandsHelpers::createService($component->getNamespace(), $basePath, $modelClassPath, $service);
+        $dtoClass = ComponentCommandsHelpers::createDto($component->getNamespace(), $basePath, $modelClassPath, $dto, $definition instanceof DtoAttributesFactory ? $definition->createDtoAttributes() : []);
+        $viewModelClass = ComponentCommandsHelpers::createViewModel($component->getNamespace(), $basePath, $modelClassPath, $viewModel, $definition instanceof ViewModelRulesFactory ? $definition->createRules() : [], $definition instanceof ViewModelRulesFactory ? $definition->createRules(true) : []);
         ComponentsScriptWriter($basePath)->write(
-            ComponentBuilderHelpers::buildModelDefinition(
-                $table,
-                $columns ?? [],
-                $namespace,
-                $primaryKey,
-                $increments,
-                $vm,
-                $this->option('hidden'),
-                $this->option('appends') ?? [],
-                $this->option('comment') ?? null
+            ComponentBuilderHelpers::buildController(
+                $modelClassPath,
+                $serviceClass,
+                $viewModelClass,
+                $dtoClass,
+                null,
+                sprintf("\\%s\\Services", ComponentCommandsHelpers::getBaseNamespace($component->getNamespace()) ?? "App"),
             )
         );
-        $this->info("Model successfully generated for table : $table\n");
     }
 }

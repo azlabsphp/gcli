@@ -13,31 +13,45 @@ declare(strict_types=1);
 
 namespace Drewlabs\ComponentGenerators\Helpers;
 
+use Closure;
 use Drewlabs\ComponentGenerators\Contracts\ForeignKeyConstraintDefinition;
 use Drewlabs\ComponentGenerators\Contracts\UniqueKeyConstraintDefinition;
+use Drewlabs\Core\Helpers\Str;
 
+/**
+ * 
+ * @package Drewlabs\ComponentGenerators\Helpers
+ */
 class DataTypeToFluentValidationRulesHelper
 {
     /**
      * @Rule required if
      */
     public const REQUIRED_IF = 'required_if';
+
     /**
      * @Rule required without
      */
     public const REQUIRED_WITHOUT = 'required_without';
+
     /**
      * @Rule required
      */
     public const REQUIRED = 'required';
+
     /**
      * @Rule nullable
      */
     public const NULLABLE = 'nullable';
+
     /**
      * @Rule sometimes
      */
     public const SOMETIMES = 'sometimes';
+    
+    /**
+     * @var array
+     */
     private const TYPE_MAPS = [
         'bigint' => 'integer',
         'int' => 'integer',
@@ -88,14 +102,20 @@ class DataTypeToFluentValidationRulesHelper
         );
     }
 
+    /**
+     * 
+     * @param string $type 
+     * @param null|Closure $filterFn 
+     * @return array 
+     */
     private static function getSimpleRule(string $type, ?\Closure $filterFn = null)
     {
-        if (!drewlabs_core_strings_contains($type, ':')) {
+        if (!Str::contains($type, ':')) {
             return array_filter([self::TYPE_MAPS[$type] ?? null], $filterFn ?? static function ($item) {
                 return null !== $item;
             });
         }
-        [$part0, $part1] = [drewlabs_core_strings_before(':', $type), drewlabs_core_strings_after(':', $type)];
+        [$part0, $part1] = [Str::before(':', $type), Str::after(':', $type)];
         [$rule1, $rule2] = [self::TYPE_MAPS[$part0] ?? null, null];
         if (\in_array($rule1, ['string', 'numeric', 'integer'], true)) {
             $rule2 = "max:{$part1}";

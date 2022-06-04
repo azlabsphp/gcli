@@ -13,15 +13,15 @@ declare(strict_types=1);
 
 namespace Drewlabs\ComponentGenerators\PHP;
 
-use Drewlabs\CodeGenerator\Contracts\NamespaceComponent;
 use Drewlabs\CodeGenerator\Contracts\Stringable;
 use Drewlabs\ComponentGenerators\Contracts\SourceFileInterface;
+use Drewlabs\Core\Helpers\Str;
 
 class PHPScriptFile implements SourceFileInterface
 {
     private const DEFAULT_HEADER = <<<EOT
 /*
- * This file is auto generated using the Drewlabs Code Generator package
+ * This file is auto generated using the Drewlabs Code Generator package (v2.3)
  *
  * (c) Sidoine Azandrew <contact@liksoft.tg>
  *
@@ -146,8 +146,6 @@ EOT;
 
     public function getName()
     {
-        return drewlabs_core_strings_contains($this->name_ ?? '', '.') ?
-            drewlabs_core_strings_before('.', $this->name_) :
-            $this->name_ ?? 'Test';
+        return Str::contains($this->name_ ?? '', '.') ? Str::before('.', $this->name_) : $this->name_ ?? 'Test';
     }
 }

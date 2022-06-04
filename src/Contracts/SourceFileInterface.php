@@ -13,7 +13,6 @@ declare(strict_types=1);
 
 namespace Drewlabs\ComponentGenerators\Contracts;
 
-use Drewlabs\CodeGenerator\Contracts\NamespaceComponent;
 use Drewlabs\CodeGenerator\Contracts\Stringable;
 
 interface SourceFileInterface extends Writable, Stringable

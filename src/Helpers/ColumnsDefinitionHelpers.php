@@ -13,10 +13,12 @@ declare(strict_types=1);
 
 namespace Drewlabs\ComponentGenerators\Helpers;
 
+use Closure;
 use Doctrine\DBAL\Schema\Column;
 use Drewlabs\ComponentGenerators\ORMColumnDefinition;
 use Drewlabs\ComponentGenerators\ORMColumnForeignKeyConstraintDefinition;
 use Drewlabs\ComponentGenerators\ORMColumnUniqueKeyDefinition;
+use Drewlabs\Core\Helpers\Iter;
 use Generator;
 
 class ColumnsDefinitionHelpers
@@ -80,12 +82,17 @@ class ColumnsDefinitionHelpers
         };
     }
 
+    /**
+     * 
+     * @param array $indexes 
+     * @return Closure 
+     */
     public static function bindUniqueConstraintsToColumns($indexes = [])
     {
         $indexes = empty($indexes) ? [] : $indexes;
         $uniqueIndexes = [];
         if (!empty($indexes)) {
-            $uniqueIndexes = (iterator_to_array(drewlabs_core_iter_filter((static function ($keys) {
+            $uniqueIndexes = (iterator_to_array(Iter::filter((static function ($keys) {
                 foreach ($keys as $key) {
                     /**
                      * @var Index

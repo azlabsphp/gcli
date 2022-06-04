@@ -29,7 +29,7 @@ use Drewlabs\ComponentGenerators\Helpers\ComponentBuilderHelpers;
 use function Drewlabs\ComponentGenerators\Proxy\PHPScript;
 use Drewlabs\ComponentGenerators\Traits\HasNamespaceAttribute;
 use Drewlabs\ComponentGenerators\Traits\ViewModelBuilder;
-
+use Drewlabs\Core\Helpers\Str;
 use Illuminate\Database\Eloquent\Model as EloquentModel;
 use Illuminate\Support\Pluralizer;
 
@@ -120,11 +120,18 @@ class EloquentORMModelBuilder implements ContractsEloquentORMModel, ComponentBui
      */
     private $isViewModel_ = false;
 
+    /**
+     * 
+     * @var ORMModelDefinition
+     */
+    private $defintion;
+
     public function __construct(
         ORMModelDefinition $defintion,
         ?string $schema = null,
         ?string $path = null
     ) {
+        $this->setDefinition($defintion);
         [$table, $name] = [$defintion->table(), $defintion->name()];
         $this->setComponentBaseDefintions($schema, $table, $name);
         // Set the primary key
@@ -398,17 +405,35 @@ class EloquentORMModelBuilder implements ContractsEloquentORMModel, ComponentBui
     public static function defaultClassPath(?string $classname = null)
     {
         $classname = $classname ?? 'Test';
-        if (drewlabs_core_strings_contains($classname, '\\')) {
+        if (Str::contains($classname, '\\')) {
             return $classname;
         }
 
         return sprintf('%s%s%s', self::DEFAULT_NAMESPACE, '\\', $classname);
     }
 
+    /**
+     * 
+     * @param ORMModelDefinition $value 
+     * @return void 
+     */
+    public function setDefinition(ORMModelDefinition $value)
+    {
+        $this->defintion = $value;
+    }
+
+    /**
+     * 
+     * @return ORMModelDefinition 
+     */
+    public function getDefinition()
+    {
+        return $this->defintion;
+    }
+
     private function setComponentBaseDefintions($schema, $table, $name)
     {
-        $table = (null === $table) ? (null !== $name ?
-            drewlabs_core_strings_as_snake_case(Pluralizer::plural($name)) : null) : $table;
+        $table = (null === $table) ? (null !== $name ? Str::snakeCase(Pluralizer::plural($name)) : null) : $table;
         // Set the table name
         if ($table) {
             $this->setTableName($table);
@@ -417,12 +442,12 @@ class EloquentORMModelBuilder implements ContractsEloquentORMModel, ComponentBui
         $name_ = $table ?? $name ?? null;
         // TODO : REMOVE SCHEMA PREFIX IF ANY
         if ($name_ && $schema) {
-            $name_ = drewlabs_core_strings_starts_with($name_, $schema . '_') ?
-                drewlabs_core_strings_replace($schema . '_', '', $name_) : (drewlabs_core_strings_starts_with($name_, $schema) ?
-                    drewlabs_core_strings_replace($schema, '', $name_) :
+            $name_ = Str::startsWith($name_, $schema . '_') ?
+                Str::replace($schema . '_', '', $name_) : (Str::startsWith($name_, $schema) ?
+                    Str::replace($schema, '', $name_) :
                     $name_);
         }
-        $name = $name_ ? drewlabs_core_strings_as_camel_case(Pluralizer::singular($name_)) : self::DEFAULT_NAME;
+        $name = $name_ ? Str::camelize(Pluralizer::singular($name_)) : self::DEFAULT_NAME;
         if ($name) {
             $this->setName($name);
         }

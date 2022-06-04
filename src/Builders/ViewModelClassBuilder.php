@@ -27,7 +27,7 @@ use Drewlabs\ComponentGenerators\Helpers\ComponentBuilderHelpers;
 use function Drewlabs\ComponentGenerators\Proxy\PHPScript;
 use Drewlabs\ComponentGenerators\Traits\HasNamespaceAttribute;
 use Drewlabs\ComponentGenerators\Traits\ViewModelBuilder;
-
+use Drewlabs\Core\Helpers\Str;
 use Illuminate\Support\Pluralizer;
 
 class ViewModelClassBuilder implements ComponentBuilder
@@ -73,7 +73,7 @@ class ViewModelClassBuilder implements ComponentBuilder
         ?string $path = null
     ) {
         if (null !== $name) {
-            $this->setName(drewlabs_core_strings_as_camel_case(Pluralizer::singular($name)).'ViewModel');
+            $this->setName(!Str::endsWith($name, 'ViewModel') ? Str::camelize(Pluralizer::singular($name)).'ViewModel' : Str::camelize(Pluralizer::singular($name)));
         }
         // Set the component write path
         $this->setWritePath($path ?? self::DEFAULT_PATH);
@@ -86,7 +86,7 @@ class ViewModelClassBuilder implements ComponentBuilder
         if (empty($model)) {
             return $this;
         }
-        $isClassPath = drewlabs_core_strings_contains($model, '\\');
+        $isClassPath = Str::contains($model, '\\');
         if ($isClassPath) {
             $this->modelClassPath_ = $model;
         }
@@ -97,8 +97,10 @@ class ViewModelClassBuilder implements ComponentBuilder
         if ($isClassPath) {
             $this->modelName_ = $isClassPath ? array_reverse(explode('\\', $this->modelClassPath_))[0] : $this->modelClassPath_;
         }
-        $name = drewlabs_core_strings_as_camel_case(Pluralizer::singular($this->modelName_)).'ViewModel';
-        $this->setName($name);
+        $name = Str::camelize(Pluralizer::singular($this->modelName_)).'ViewModel';
+        if (empty($this->name())) {
+            $this->setName($name);
+        }
 
         return $this;
     }
@@ -112,6 +114,7 @@ class ViewModelClassBuilder implements ComponentBuilder
 
     public function build()
     {
+        // var_dump([$this->name()]);
         /**
          * @var BluePrint|PHPClass
          */
@@ -181,6 +184,12 @@ class ViewModelClassBuilder implements ComponentBuilder
              * @var Blueprint
              */
             $component = $this->hasHttpHandlers_ ? $component->addTrait(\Drewlabs\Packages\Http\Traits\HttpViewModel::class) : $component->addTrait(\Drewlabs\Core\Validator\Traits\ViewModel::class);
+
+            // Here we add the CreatesFilters trait to the view model
+            /**
+             * @var Blueprint
+             */
+            $component = $component->addTrait(\Drewlabs\Packages\Database\Traits\CreatesFilters::class);
         }
         // Returns the builded component
         return PHPScript(
@@ -196,7 +205,7 @@ class ViewModelClassBuilder implements ComponentBuilder
     public static function defaultClassPath(?string $classname = null)
     {
         $classname = $classname ?? 'Test';
-        if (drewlabs_core_strings_contains($classname, '\\')) {
+        if (Str::contains($classname, '\\')) {
             return $classname;
         }
 

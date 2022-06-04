@@ -18,6 +18,8 @@ use Drewlabs\ComponentGenerators\Extensions\Contracts\Progress;
 use Drewlabs\ComponentGenerators\Helpers\ComponentBuilderHelpers;
 use Drewlabs\ComponentGenerators\Helpers\RouteDefinitionsHelper;
 use Drewlabs\ComponentGenerators\Models\RouteController;
+use Drewlabs\Core\Helpers\Arr;
+use Drewlabs\Core\Helpers\Str;
 
 use function Drewlabs\ComponentGenerators\Proxy\ComponentsScriptWriter;
 use function Drewlabs\ComponentGenerators\Proxy\DatabaseSchemaReverseEngineeringRunner;
@@ -105,17 +107,17 @@ class ReverseEngineerTaskRunner
             // TODO : Create a table filtering function that removes drewlabs packages tables from
             // the generated tables
             $tablesFilterFunc = static function ($table) {
-                return !(drewlabs_core_strings_contains($table->getName(), 'auth_') ||
-                    drewlabs_core_strings_starts_with($table->getName(), 'acl_') ||
+                return !(Str::contains($table->getName(), 'auth_') ||
+                    Str::startsWith($table->getName(), 'acl_') ||
                     ('accounts_verifications' === $table->getName()) ||
-                    drewlabs_core_strings_contains($table->getName(), 'file_authorization') ||
-                    drewlabs_core_strings_contains($table->getName(), 'uploaded_file') ||
-                    drewlabs_core_strings_contains($table->getName(), 'server_authorized_') ||
-                    drewlabs_core_strings_contains($table->getName(), 'shared_files') ||
-                    drewlabs_core_strings_contains($table->getName(), 'form_') ||
+                    Str::contains($table->getName(), 'file_authorization') ||
+                    Str::contains($table->getName(), 'uploaded_file') ||
+                    Str::contains($table->getName(), 'server_authorized_') ||
+                    Str::contains($table->getName(), 'shared_files') ||
+                    Str::contains($table->getName(), 'form_') ||
                     ('forms' === $table->getName()) ||
                     ('migrations' === $table->getName()) ||
-                    (drewlabs_core_strings_starts_with($table->getName(), 'log_model_')));
+                    (Str::startsWith($table->getName(), 'log_model_')));
             };
             // Execute the runner
             // # Create the migrations runner
@@ -155,13 +157,13 @@ class ReverseEngineerTaskRunner
             $routes = iterator_to_array((static function () use ($values, $subPackage, $indicator) {
                 // TODO : IN FUTURE RELEASE BUILD MODEL RELATION METHOD
                 foreach ($values as $component) {
-                    ComponentsScriptWriter(drewlabs_core_array_get($component, 'model.path'))->write(drewlabs_core_array_get($component, 'model.class'));
-                    ComponentsScriptWriter(drewlabs_core_array_get($component, 'viewModel.path'))->write(drewlabs_core_array_get($component, 'viewModel.class'));
-                    ComponentsScriptWriter(drewlabs_core_array_get($component, 'service.path'))->write(drewlabs_core_array_get($component, 'service.class'));
-                    if (null !== $controller = drewlabs_core_array_get($component, 'controller')) {
-                        ComponentsScriptWriter(drewlabs_core_array_get($controller, 'dto.path'))->write(drewlabs_core_array_get($controller, 'dto.class'));
-                        ComponentsScriptWriter(drewlabs_core_array_get($controller, 'path'))->write(drewlabs_core_array_get($controller, 'class'));
-                        yield drewlabs_core_array_get($controller, 'route.name') => new RouteController(['namespace' => $subPackage, 'name' => drewlabs_core_array_get($controller, 'route.classPath')]);
+                    ComponentsScriptWriter(Arr::get($component, 'model.path'))->write(Arr::get($component, 'model.class'));
+                    ComponentsScriptWriter(Arr::get($component, 'viewModel.path'))->write(Arr::get($component, 'viewModel.class'));
+                    ComponentsScriptWriter(Arr::get($component, 'service.path'))->write(Arr::get($component, 'service.class'));
+                    if (null !== $controller = Arr::get($component, 'controller')) {
+                        ComponentsScriptWriter(Arr::get($controller, 'dto.path'))->write(Arr::get($controller, 'dto.class'));
+                        ComponentsScriptWriter(Arr::get($controller, 'path'))->write(Arr::get($controller, 'class'));
+                        yield Arr::get($controller, 'route.name') => new RouteController(['namespace' => $subPackage, 'name' => Arr::get($controller, 'route.classPath')]);
                     }
                     $indicator->advance();
                 }

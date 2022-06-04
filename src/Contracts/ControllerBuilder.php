@@ -32,11 +32,11 @@ interface ControllerBuilder extends ComponentBuilder
     /**
      * Bind a model class or name to the constructor. This is used in generating the controller name and some method.
      *
-     * @param bool $asViewModelClass
+     * @param bool $asvm
      *
      * @return self
      */
-    public function bindModel(string $value, $asViewModelClass = false);
+    public function bindModel(string $value, $asvm = false);
 
     /**
      * Bind a view model to the controller that will be used for validation.

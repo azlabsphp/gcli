@@ -24,7 +24,7 @@ use Drewlabs\ComponentGenerators\Contracts\ComponentBuilder;
 use Drewlabs\ComponentGenerators\Helpers\ComponentBuilderHelpers;
 use function Drewlabs\ComponentGenerators\Proxy\PHPScript;
 use Drewlabs\ComponentGenerators\Traits\HasNamespaceAttribute;
-
+use Drewlabs\Core\Helpers\Str;
 use Illuminate\Support\Pluralizer;
 
 class ServiceClassBuilder implements ComponentBuilder
@@ -77,7 +77,7 @@ class ServiceClassBuilder implements ComponentBuilder
         ?string $path = null
     ) {
         if ($name) {
-            $this->setName(drewlabs_core_strings_as_camel_case(Pluralizer::singular($name)).'Service');
+            $this->setName(Str::camelize(Pluralizer::singular($name)).'Service');
         }
         // Set the component write path
         $this->setWritePath($path ?? self::DEFAULT_PATH);
@@ -91,7 +91,7 @@ class ServiceClassBuilder implements ComponentBuilder
         if (empty($classPath)) {
             return $this;
         }
-        $is_class_path = drewlabs_core_strings_contains($classPath, '\\'); // && class_exists($model); To uncomment if there is need to validate class existence
+        $is_class_path = Str::contains($classPath, '\\'); // && class_exists($model); To uncomment if there is need to validate class existence
         if ($is_class_path) {
             $this->modelName_ = array_reverse(explode('\\', $classPath))[0];
             // Add the model class to the list of class paths
@@ -99,7 +99,7 @@ class ServiceClassBuilder implements ComponentBuilder
         } else {
             $this->modelName_ = $classPath;
         }
-        $name = drewlabs_core_strings_as_camel_case(Pluralizer::singular($this->modelName_)).'Service';
+        $name = Str::camelize(Pluralizer::singular($this->modelName_)).'Service';
         $this->setName($name);
 
         return $this;
@@ -122,23 +122,21 @@ class ServiceClassBuilder implements ComponentBuilder
         $handlMethodLines = [
             $this->asCRUD_ ? '$payload = $action->payload()' : null,
             $this->asCRUD_ ? '$payload = $payload instanceof ActionPayload ? $payload->toArray() : (is_array($payload) ? $payload : [])' : null,
+            $this->asCRUD_ ? "\t\t\$payload = null !== \$callback ? array_merge(\$payload, [\$callback]) : \$payload" : null,
             $this->asCRUD_ ? '' : null,
             '// Handle switch statements',
             'switch (strtoupper($action->type())) {',
             "\tcase \"CREATE\":",
             "\t\t//Create handler code goes here",
-            $this->asCRUD_ ? "\t\t\$payload = null !== \$callback ? array_merge(\$payload, [\$callback]) : \$payload" : null,
             $this->asCRUD_ ? "\t\treturn ActionResult(\$this->dbManager->create(...\$payload))" : "\t\treturn",
             "\tcase \"UPDATE\":",
             "\t\t//Update handler code goes here",
-            $this->asCRUD_ ? "\t\t\$payload = null !== \$callback ? array_merge(\$payload, [\$callback]) : \$payload" : null,
             $this->asCRUD_ ? "\t\treturn ActionResult(\$this->dbManager->update(...\$payload))" : "\t\treturn",
             "\tcase \"DELETE\":",
             "\t\t//Delete handler code goes here",
             $this->asCRUD_ ? "\t\treturn ActionResult(\$this->dbManager->delete(...\$payload))" : "\t\treturn",
             "\tcase \"SELECT\":",
             "\t\t//Select handler code goes here",
-            $this->asCRUD_ ? "\t\t\$payload = null !== \$callback ? array_merge(\$payload, [\$callback]) : \$payload" : null,
             $this->asCRUD_ ? "\t\treturn ActionResult(\$this->dbManager->select(...\$payload))" : "\t\treturn",
             "\tdefault:",
             "\t\t//Provides default handler or throws exception",
@@ -230,7 +228,7 @@ class ServiceClassBuilder implements ComponentBuilder
     public static function defaultClassPath(?string $classname = null)
     {
         $classname = $classname ?? 'Test';
-        if (drewlabs_core_strings_contains($classname, '\\')) {
+        if (Str::contains($classname, '\\')) {
             return $classname;
         }
 

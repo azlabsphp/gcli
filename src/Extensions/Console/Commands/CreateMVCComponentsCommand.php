@@ -17,6 +17,7 @@ use Drewlabs\ComponentGenerators\DBDriverOptions;
 use Drewlabs\ComponentGenerators\Extensions\Helpers\ReverseEngineerTaskRunner;
 use Drewlabs\ComponentGenerators\Extensions\ProgressbarIndicator;
 use Drewlabs\ComponentGenerators\Helpers\ComponentBuilderHelpers;
+use Drewlabs\Core\Helpers\Str;
 
 use function Drewlabs\Filesystem\Proxy\Path;
 use Illuminate\Console\Command;
@@ -124,7 +125,7 @@ class CreateMVCComponentsCommand extends Command
         } else {
             $default_driver = config('database.default');
             $driver = $this->option('driver') ?
-                (drewlabs_core_strings_starts_with(
+                (Str::startsWith(
                     $this->option('driver'),
                     'pdo'
                 ) ? $this->option('driver') :

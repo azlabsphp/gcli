@@ -25,7 +25,6 @@ use function Drewlabs\ComponentGenerators\Proxy\PHPScript;
 
 use Drewlabs\ComponentGenerators\Traits\HasNamespaceAttribute;
 use Drewlabs\Core\Helpers\Str;
-use Drewlabs\PHPValue\Traits\ModelAwareValue;
 use Illuminate\Support\Pluralizer;
 
 class DataTransfertClassBuilder implements ComponentBuilder
@@ -81,7 +80,7 @@ class DataTransfertClassBuilder implements ComponentBuilder
         ?string $path = null
     ) {
         if ($name) {
-            $this->setName(drewlabs_core_strings_as_camel_case(Pluralizer::singular($name)) . 'Dto');
+            $this->setName(Str::camelize(Pluralizer::singular($name)) . 'Dto');
         }
         // Set the component write path
         $this->setWritePath($path ?? self::DEFAULT_PATH);
@@ -104,13 +103,13 @@ class DataTransfertClassBuilder implements ComponentBuilder
             return $this;
         }
         $classname = \is_object($model) ? \get_class($model) : $model;
-        $is_class_path = drewlabs_core_strings_contains($classname, '\\');
-        if ($is_class_path) {
+        $isClassPath = Str::contains($classname, '\\');
+        if ($isClassPath) {
             $this->modelClassPath = $classname;
         }
         $model_name = 'Test';
-        $model_name = $is_class_path ? $this->getClassNameFromPath($classname) : $classname;
-        $this->setName(drewlabs_core_strings_as_camel_case(Pluralizer::singular($model_name)) . 'Dto');
+        $model_name = $isClassPath ? $this->getClassNameFromPath($classname) : $classname;
+        $this->setName(Str::camelize(Pluralizer::singular($model_name)) . 'Dto');
 
         // creates an object to if the model is a PHP string
         if (\is_string($model) && class_exists($model)) {
@@ -236,10 +235,10 @@ class DataTransfertClassBuilder implements ComponentBuilder
         // Convert values to camel case for associatve values
         foreach (array_filter($values ?? []) as $key => $value) {
             if (!is_numeric($key)) {
-                $attributes[drewlabs_core_strings_as_camel_case(ltrim(rtrim($key, '_'), '_'), false)] = $value;
+                $attributes[Str::camelize(ltrim(rtrim($key, '_'), '_'), false)] = $value;
                 continue;
             }
-            $attributes[drewlabs_core_strings_as_camel_case(ltrim(rtrim($value, '_'), '_'), false)] = $value;
+            $attributes[Str::camelize(ltrim(rtrim($value, '_'), '_'), false)] = $value;
         }
 
         return $attributes;

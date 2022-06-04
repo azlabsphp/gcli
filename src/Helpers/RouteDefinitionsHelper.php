@@ -13,22 +13,42 @@ declare(strict_types=1);
 
 namespace Drewlabs\ComponentGenerators\Helpers;
 
+use Closure;
 use Drewlabs\ComponentGenerators\Cache\CacheableRoutes;
 use Drewlabs\ComponentGenerators\Cache\CacheableSerializer;
 use Drewlabs\ComponentGenerators\Models\RouteController;
+use Drewlabs\Core\Helpers\Arr;
+use Drewlabs\Core\Helpers\Str;
+use Drewlabs\Filesystem\Exceptions\CreateDirectoryException;
 use Drewlabs\Filesystem\Exceptions\FileNotFoundException;
 use Drewlabs\Filesystem\Exceptions\ReadFileException;
 use Drewlabs\Filesystem\Exceptions\UnableToRetrieveMetadataException;
+use InvalidArgumentException;
+use Drewlabs\Filesystem\Exceptions\WriteOperationFailedException;
+
 use function Drewlabs\Filesystem\Proxy\LocalFileSystem;
 
 use League\Flysystem\Config;
 
+/**
+ * 
+ * @package Drewlabs\ComponentGenerators\Helpers
+ */
 class RouteDefinitionsHelper
 {
+    /**
+     * @var string
+     */
     public const ROUTE_DEFINITION_START = "\n// Drewlabs Generated MVC Route Defnitions, Please Do not delete to avoid duplicates route definitions";
 
+    /**
+     * @var string
+     */
     public const ROUTE_DEFINITION_END = "// !End Drewlabs Generated MVC Route Defnitions, Please Do not delete to avoid duplicates route definitions\n";
 
+    /**
+     * @var array
+     */
     public const HTTP_VERB_MAP = [
         'index' => 'get',
         'store' => 'post',
@@ -47,7 +67,7 @@ class RouteDefinitionsHelper
             $classPath = $controller->getName();
             $namespace = $controller->getNamespace();
             if ($isLumen) {
-                $classPath = drewlabs_core_strings_contains($classPath, '\\') ? array_reverse(explode('\\', $classPath))[0] ?? $classPath : $classPath;
+                $classPath = Str::contains($classPath, '\\') ? array_reverse(explode('\\', $classPath))[0] ?? $classPath : $classPath;
                 $classPath = !empty($namespace) ?
                     sprintf('%s\\%s', $namespace, $classPath) :
                     $classPath;
@@ -63,10 +83,10 @@ class RouteDefinitionsHelper
             $lines = [];
             $definitions = ['index' => "'/${name}/{id?}'", 'store' => "'/${name}'", 'update' => "'/${name}/{id}'", 'destroy' => "'/${name}/{id}'"];
             foreach ($definitions as $method => $route) {
-                if (drewlabs_core_strings_contains($classPath, '\\') && class_exists($classPath)) {
+                if (Str::contains($classPath, '\\') && class_exists($classPath)) {
                     $lines[] = sprintf("Route::%s($route, [\\$classPath::class, '$method']);", self::HTTP_VERB_MAP[$method]);
                 } else {
-                    $classPath = drewlabs_core_strings_contains($classPath, '\\') ? array_reverse(explode('\\', $classPath))[0] ?? $classPath : $classPath;
+                    $classPath = Str::contains($classPath, '\\') ? array_reverse(explode('\\', $classPath))[0] ?? $classPath : $classPath;
                     $classPath = !empty($namespace) ?
                         sprintf('%s\\%s', $namespace, $classPath) :
                         $classPath;
@@ -78,6 +98,13 @@ class RouteDefinitionsHelper
         };
     }
 
+    /**
+     * 
+     * @param string $basePath 
+     * @param array $definitions 
+     * @param string $filename 
+     * @return Closure 
+     */
     public static function writeRouteDefinitions(
         string $basePath,
         array $definitions,
@@ -101,11 +128,11 @@ class RouteDefinitionsHelper
                 }
                 // Read the generated script start and end values
                 if (
-                    drewlabs_core_strings_contains($content, self::ROUTE_DEFINITION_START) ||
-                    (drewlabs_core_strings_contains($content, self::ROUTE_DEFINITION_END))
+                    Str::contains($content, self::ROUTE_DEFINITION_START) ||
+                    (Str::contains($content, self::ROUTE_DEFINITION_END))
                 ) {
-                    $contentBefore = drewlabs_core_strings_before(self::ROUTE_DEFINITION_START, $content);
-                    $contentAfter = drewlabs_core_strings_after(self::ROUTE_DEFINITION_END, $content);
+                    $contentBefore = Str::before(self::ROUTE_DEFINITION_START, $content);
+                    $contentAfter = Str::after(self::ROUTE_DEFINITION_END, $content);
                 } else {
                     $contentBefore = $content;
                 }
@@ -138,14 +165,14 @@ class RouteDefinitionsHelper
                     ),
                 );
                 if ($groupContainer) {
-                    $groupContainer = drewlabs_core_strings_replace('\\/', '/', $groupContainer);
+                    $groupContainer = Str::replace('\\/', '/', $groupContainer);
                 } else {
                     $groupContainer = '';
                 }
                 $output .= sprintf(
                     '%s%s, function() %s {',
                     $isLumen ? '$router->group(' : 'Route::group(',
-                    drewlabs_core_strings_replace(
+                    Str::replace(
                         '"',
                         '',
                         $groupContainer
@@ -153,7 +180,7 @@ class RouteDefinitionsHelper
                     $isLumen ? 'use ($router)' : ''
                 );
             }
-            $definitions = drewlabs_core_array_map(
+            $definitions = Arr::map(
                 $definitions ?? [],
                 static function ($definition) use ($has_group_definition) {
                     return $has_group_definition ? array_map(static function ($line) {
@@ -180,6 +207,17 @@ class RouteDefinitionsHelper
         };
     }
 
+    /**
+     * 
+     * @param string $path 
+     * @param array $routes 
+     * @param null|string $namespace 
+     * @return void 
+     * @throws UnableToRetrieveMetadataException 
+     * @throws CreateDirectoryException 
+     * @throws InvalidArgumentException 
+     * @throws WriteOperationFailedException 
+     */
     public static function cacheRouteDefinitions(string $path, array $routes, ?string $namespace = null)
     {
         (new CacheableSerializer($path))->dump(new CacheableRoutes([

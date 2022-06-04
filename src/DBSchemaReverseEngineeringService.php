@@ -16,12 +16,12 @@ namespace Drewlabs\ComponentGenerators;
 use Doctrine\DBAL\Schema\AbstractSchemaManager;
 use Doctrine\DBAL\Schema\Table;
 use Drewlabs\ComponentGenerators\Contracts\ControllerBuilder;
-use Drewlabs\ComponentGenerators\Contracts\ORMColumnDefinition;
-use Drewlabs\ComponentGenerators\Contracts\ORMModelDefinition as ContractsORMModelDefinition;
 use Drewlabs\ComponentGenerators\Contracts\SourceFileInterface;
 use Drewlabs\ComponentGenerators\Helpers\ColumnsDefinitionHelpers;
 use Drewlabs\ComponentGenerators\Helpers\ComponentBuilderHelpers;
-use Drewlabs\ComponentGenerators\Helpers\DataTypeToFluentValidationRulesHelper;
+use Drewlabs\Core\Helpers\Arr;
+use Drewlabs\Core\Helpers\Functional;
+use Drewlabs\Core\Helpers\Str;
 
 use function Drewlabs\ComponentGenerators\Proxy\EloquentORMModelBuilder;
 use function Drewlabs\ComponentGenerators\Proxy\ORMModelDefinition;
@@ -164,7 +164,7 @@ class DBSchemaReverseEngineeringService
         $models = $this->tablesToORMModelDefinitionGenerator($tables);
         foreach ($models as $value) {
             $components = [];
-            $hasTimeStamps = drewlabs_core_array_contains_all(array_map(static function ($column) {
+            $hasTimeStamps = Arr::containsAll(array_map(static function ($column) {
                 return $column->name();
             }, $value->columns() ?? []), self::DEFAULT_TIMESTAMP_COLUMNS);
             $modelClass = EloquentORMModelBuilder(
@@ -176,22 +176,14 @@ class DBSchemaReverseEngineeringService
                 'class' => $modelClass,
                 'definitions' => $value,
             ];
-            $modelClassPath = sprintf('%s\\%s', $modelClass->getNamespace(), drewlabs_core_strings_as_camel_case($modelClass->getName()));
+            $modelClassPath = sprintf('%s\\%s', $modelClass->getNamespace(), Str::camelize($modelClass->getName()));
             // TODO: Generate view model file for the model
             // TODO: Build rules from model defintions
             $viewModel = ComponentBuilderHelpers::buildViewModelDefinition(
                 false,
                 // Rules must be provided
-                iterator_to_array((function (ContractsORMModelDefinition $model) {
-                    foreach ($model->columns() as $value) {
-                        yield $value->name() => $this->getColumRules($value, $model->primaryKey());
-                    }
-                })($value)),
-                iterator_to_array((function (ContractsORMModelDefinition $model) {
-                    foreach ($model->columns() as $value) {
-                        yield $value->name() => $this->getColumRules($value, $model->primaryKey(), true);
-                    }
-                })($value)),
+                $value->createRules(),
+                $value->createRules(true),
                 null,
                 sprintf('%s\\%s', $this->blocComponentNamespace_ ?? self::DEFAULT_BLOC_COMPONENT_NAMESPACE, sprintf('%s%s', $this->generateHttpHandlers_ ? 'Http\\ViewModels' : 'ViewModels', $this->subNamespace_ ? "\\$this->subNamespace_" : '')),
                 sprintf('%s%s', $this->generateHttpHandlers_ ? 'Http/ViewModels' : 'ViewModels', $this->subNamespace_ ? "/$this->subNamespace_" : ''),
@@ -215,11 +207,7 @@ class DBSchemaReverseEngineeringService
             ];
             if ($this->generateHttpHandlers_) {
                 $dtoObject = ComponentBuilderHelpers::buildDtoObjectDefinition(
-                    iterator_to_array((static function () use ($value) {
-                        foreach ($value->columns() as $column) {
-                            yield $column->name() => $column->type();
-                        }
-                    })()),
+                    $value->createDtoAttributes(),
                     [],
                     null,
                     sprintf('%s\\%s', $this->blocComponentNamespace_ ?? self::DEFAULT_BLOC_COMPONENT_NAMESPACE, sprintf('%s%s', 'Dto', $this->subNamespace_ ? "\\$this->subNamespace_" : '')),
@@ -228,7 +216,7 @@ class DBSchemaReverseEngineeringService
                 $controller = $this->generateController($modelClassPath, $service, $viewModel, $dtoObject);
                 $content = $controller->getContent();
                 $routeName = $content instanceof ControllerBuilder ? $content->routeName() : ComponentBuilderHelpers::buildRouteName($controller->getName());
-                $controllerClassPath = sprintf('%s\\%s', $content->getNamespace(), drewlabs_core_strings_as_camel_case($controller->getName()));
+                $controllerClassPath = sprintf('%s\\%s', $content->getNamespace(), Str::camelize($controller->getName()));
                 $components['controller'] = [
                     'path' => $this->blocComponentPath_,
                     'class' => $controller,
@@ -252,35 +240,6 @@ class DBSchemaReverseEngineeringService
         }
     }
 
-    public function getColumRules(ORMColumnDefinition $column, ?string $primaryKey = null, $useUpdateRules = false)
-    {
-        $evaluateIfPrimaryKeyFunc = static function ($key) use ($column) {
-            if ($column->name() === $key) {
-                return DataTypeToFluentValidationRulesHelper::SOMETIMES;
-            }
-
-            return null !== $key ?
-                sprintf(
-                    '%s:%s',
-                    DataTypeToFluentValidationRulesHelper::REQUIRED_WITHOUT,
-                    $key
-                ) : DataTypeToFluentValidationRulesHelper::REQUIRED;
-        };
-        $rules[] = $column->required() ?
-            ($useUpdateRules ? DataTypeToFluentValidationRulesHelper::SOMETIMES :
-                $evaluateIfPrimaryKeyFunc($primaryKey)) :
-            DataTypeToFluentValidationRulesHelper::NULLABLE;
-        $rules = [...$rules, ...(DataTypeToFluentValidationRulesHelper::getRule($column->type()))];
-        if ($constraints = $column->foreignConstraint()) {
-            $rules = [...$rules, ...(DataTypeToFluentValidationRulesHelper::getRule($constraints))];
-        }
-        if (($constraints = $column->unique()) && !($useUpdateRules)) {
-            $rules = [...$rules, ...(DataTypeToFluentValidationRulesHelper::getRule($constraints))];
-        }
-
-        return array_merge($rules);
-    }
-
     private function generateController(?string $model = null, ?SourceFileInterface $service = null, ?SourceFileInterface $viewModel = null, ?SourceFileInterface $dtoObject = null)
     {
         $controller = ComponentBuilderHelpers::buildController(
@@ -288,17 +247,17 @@ class DBSchemaReverseEngineeringService
             $service ? sprintf(
                 '%s\\%s',
                 $service->getNamespace(),
-                drewlabs_core_strings_as_camel_case($service->getName())
+                Str::camelize($service->getName())
             ) : null,
             $viewModel ? sprintf(
                 '%s\\%s',
                 $viewModel->getNamespace(),
-                drewlabs_core_strings_as_camel_case($viewModel->getName())
+                Str::camelize($viewModel->getName())
             ) : null,
             $dtoObject ? sprintf(
                 '%s\\%s',
                 $dtoObject->getNamespace(),
-                drewlabs_core_strings_as_camel_case($dtoObject->getName())
+                Str::camelize($dtoObject->getName())
             ) : null,
             null,
             sprintf('%s\\%s', $this->blocComponentNamespace_ ?? self::DEFAULT_BLOC_COMPONENT_NAMESPACE, sprintf('%s%s', 'Http\\Controllers', $this->subNamespace_ ? "\\$this->subNamespace_" : '')),
@@ -332,7 +291,7 @@ class DBSchemaReverseEngineeringService
     /**
      * @param Table[] $tables
      *
-     * @return \Generator<int, ContractsORMModelDefinition, mixed, void>
+     * @return \Generator<int, ORMModelDefinition, mixed, void>
      */
     private function tablesToORMModelDefinitionGenerator(array $tables)
     {
@@ -344,7 +303,7 @@ class DBSchemaReverseEngineeringService
             $primaryKey = ($columnCount = \count($primaryKeyColumns)) <= 1 ? (1 === $columnCount ? $primaryKeyColumns[0] : null) : $primaryKeyColumns;
             // # end region get table primary key columns
             // #region column definition
-            $columns = drewlabs_core_fn_compose(
+            $columns = Functional::compose(
                 static function ($table_name) use ($table) {
                     return ColumnsDefinitionHelpers::createColumnDefinitionsGenerator($table_name, new \ArrayIterator($table->getColumns()));
                 },
