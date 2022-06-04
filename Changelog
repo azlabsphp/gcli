@@ -37,3 +37,7 @@
 ## [2.2.8] 2022-05-08
 
 - Fixed bug when code generator is run against an SQLite database
+
+## [2.2.9] 2022-06-04
+
+- Updated the generated code to output for controllers & fixed bug in view model and controller generators
