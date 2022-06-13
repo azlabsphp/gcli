@@ -42,6 +42,6 @@
 
 - Updated the generated code to output for controllers & fixed bug in view model and controller generators
 
-## [2.2.10] 2022-06-13
+## [2.3.1] 2022-06-13
 
 - Update command for model, dto, controller and service
