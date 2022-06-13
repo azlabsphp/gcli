@@ -18,7 +18,6 @@ use Drewlabs\CodeGenerator\Exceptions\PHPVariableException;
 use Drewlabs\ComponentGenerators\Builders\DtoAttributesFactory;
 use Drewlabs\ComponentGenerators\Builders\EloquentORMModelBuilder;
 use Drewlabs\ComponentGenerators\Builders\ViewModelRulesFactory;
-use Drewlabs\ComponentGenerators\Contracts\ComponentBuilder;
 use Drewlabs\ComponentGenerators\Extensions\Console\ComponentCommandsHelpers;
 use Drewlabs\ComponentGenerators\Helpers\ComponentBuilderHelpers;
 use Drewlabs\Core\Helpers\Str;
@@ -58,7 +57,7 @@ class MakeControllerCommand extends Command
 
     public function handle()
     {
-        $name = $this->option('name') ?? null;
+        $name = $this->argument('name') ?? null;
         $model = $this->option('model') ? EloquentORMModelBuilder::defaultClassPath($this->option('model')) : null;
         $namespace = $this->option('namespace') ?? '\\App\\Http\\Controllers';
         $basePath = $this->app->basePath($this->option('path') ?? 'app');
@@ -80,41 +79,47 @@ class MakeControllerCommand extends Command
     }
 
     /**
-     * 
-     * @param mixed $namespace 
-     * @param mixed $name 
-     * @param mixed $basePath 
-     * @param Closure $pluralizer 
-     * @param mixed $model 
-     * @param mixed $service 
-     * @param mixed $dto 
-     * @param mixed $viewModel 
-     * @return void 
-     * @throws UnableToRetrieveMetadataException 
-     * @throws PHPVariableException 
+     *
+     * @param mixed $namespace
+     * @param mixed $name
+     * @param mixed $basePath
+     * @param Closure $pluralizer
+     * @param mixed $model
+     * @param mixed $service
+     * @param mixed $dto
+     * @param mixed $viewModel
+     * @return void
+     * @throws UnableToRetrieveMetadataException
+     * @throws PHPVariableException
      */
     public static function createComponents($namespace, $name, $basePath, \Closure $pluralizer, $model = null, $service = null, $dto = null, $viewModel = null)
     {
         $modelClassPath = $model;
         $modelComponent = null;
+        $modelName = Str::contains($modelClassPath, '\\') ? Str::afterLast('\\', $modelClassPath) : $modelClassPath;
+        $modelNamespace = sprintf("\\%s\\Models", ComponentCommandsHelpers::getBaseNamespace($namespace) ?? "App");
         if (null !== $model && !class_exists($model) && !class_exists(EloquentORMModelBuilder::defaultClassPath($model))) {
-            $model_name = Str::contains($model, '\\') ? Str::afterLast('\\', $model) : $model;
-            $model_namespace = sprintf("\\%s\\Models", ComponentCommandsHelpers::getBaseNamespace($namespace) ?? "App");
             $modelComponent = ComponentBuilderHelpers::createModelBuilder(
-                $pluralizer($model_name),
+                $pluralizer($modelName),
                 $columns ?? [],
-                $model_namespace,
+                $modelNamespace,
             );
             ComponentsScriptWriter($basePath)->write($modelComponent->build());
-            $modelClassPath = sprintf("%s\\%s", $model_namespace, $model_name);
-            $service = $service ?? sprintf("%sService", $model_name);
-            $dto = $dto ?? sprintf("%sDto", $model_name);
-            $viewModel = $viewModel ?? sprintf("%sViewModel", $model_name);
+            $modelClassPath = sprintf("%s\\%s", $modelNamespace, $modelName);
+            $service = $service ?? sprintf("%sService", $modelName);
+            $dto = $dto ?? sprintf("%sDto", $modelName);
+            $viewModel = $viewModel ?? sprintf("%sViewModel", $modelName);
         }
-        $definition = $modelComponent->getDefinition();
-        $serviceClass = ComponentCommandsHelpers::createService($namespace, $basePath, $modelClassPath, $service);
-        $dtoClass = ComponentCommandsHelpers::createDto($namespace, $basePath, $modelClassPath, $dto, $definition instanceof DtoAttributesFactory ? $definition->createDtoAttributes() : []);
-        $viewModelClass = ComponentCommandsHelpers::createViewModel($namespace, $basePath, $modelClassPath, $viewModel, $definition instanceof ViewModelRulesFactory ? $definition->createRules() : [], $definition instanceof ViewModelRulesFactory ? $definition->createRules(true) : []);
+        if ($modelComponent) {
+            $definition = $modelComponent->getDefinition();
+            $serviceClass = ComponentCommandsHelpers::createService($namespace, $basePath, $modelClassPath, $service);
+            $dtoClass = ComponentCommandsHelpers::createDto($namespace, $basePath, $modelClassPath, $dto, $definition instanceof DtoAttributesFactory ? $definition->createDtoAttributes() : []);
+            $viewModelClass = ComponentCommandsHelpers::createViewModel($namespace, $basePath, $modelClassPath, $viewModel, $definition instanceof ViewModelRulesFactory ? $definition->createRules() : [], $definition instanceof ViewModelRulesFactory ? $definition->createRules(true) : []);
+        } else {
+            $serviceClass =  sprintf("%s\\%s", sprintf("\\%s\\Services", ComponentCommandsHelpers::getBaseNamespace($namespace) ?? "App"), "${modelName}Service");
+            $dtoClass =  sprintf("%s\\%s", sprintf("\\%s\\Dto", ComponentCommandsHelpers::getBaseNamespace($namespace) ?? "App"), "${modelName}Dto");
+            $viewModelClass =  sprintf("%s\\%s", sprintf("\\%s\\Http\\ViewModels", ComponentCommandsHelpers::getBaseNamespace($namespace) ?? "App"), "${modelName}ViewModel");
+        }
         ComponentsScriptWriter($basePath)->write(
             ComponentBuilderHelpers::buildController(
                 $modelClassPath,

@@ -106,7 +106,7 @@ class MakeModelCommand extends Command
                 $viewModelClass,
                 $dtoClass,
                 null,
-                sprintf("\\%s\\Services", ComponentCommandsHelpers::getBaseNamespace($component->getNamespace()) ?? "App"),
+                sprintf("\\%s\\Http\\Controllers", ComponentCommandsHelpers::getBaseNamespace($component->getNamespace()) ?? "App"),
             )
         );
     }

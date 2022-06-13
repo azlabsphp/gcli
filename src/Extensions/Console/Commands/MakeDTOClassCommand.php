@@ -24,12 +24,12 @@ use Illuminate\Contracts\Foundation\Application;
 class MakeDTOClassCommand extends Command
 {
     protected $signature = 'drewlabs:mvc:make:dto '
-        .'{--namespace= : View model namespace }'
-        .'{--path= : Project source code path }'
-        .'{--name= : Generated view model name }'
-        .'{--model= : Model attached to the view model class }'
-        .'{--attributes=* : List of Jsonable attributes }'
-        .'{--hidden=* : List of hidden attributes }';
+        . '{name=TestDto : Generated view model name }'
+        . '{--namespace= : View model namespace }'
+        . '{--path= : Project source code path }'
+        . '{--model= : Model attached to the view model class }'
+        . '{--attributes=* : List of Jsonable attributes }'
+        . '{--hidden=* : List of hidden attributes }';
 
     protected $description = 'Creates a Drewlabs package MVC controller';
     /**
@@ -45,7 +45,7 @@ class MakeDTOClassCommand extends Command
 
     public function handle()
     {        // Parameters initialization
-        $name = $this->option('name') ?? null;
+        $name = $this->argument('name') ?? null;
         $model = $this->option('model') ? EloquentORMModelBuilder::defaultClassPath($this->option('model')) : null;
         $namespace = $this->option('namespace') ?? '\\App\\Dto';
         $basePath = $this->app->basePath($this->option('path') ?? 'app');

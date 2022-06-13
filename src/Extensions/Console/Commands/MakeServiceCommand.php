@@ -24,11 +24,11 @@ use Illuminate\Contracts\Foundation\Application;
 class MakeServiceCommand extends Command
 {
     protected $signature = 'drewlabs:mvc:make:service '
-        .'{--namespace= : Controller namespace}'
-        .'{--path= : Project source code path}'
-        .'{--name= : Controller name}'
-        .'{--model= : Model attached to the controller generated code}'
-        .'{--asCRUD : Generate a CRUD Service }';
+        . '{name=TestService : Service name }'
+        . '{--namespace= : Controller namespace}'
+        . '{--path= : Project source code path}'
+        . '{--model= : Model attached to the controller generated code}'
+        . '{--asCRUD : Generate a CRUD Service }';
 
     protected $description = 'Creates a Drewlabs package MVC controller';
     /**
@@ -46,7 +46,7 @@ class MakeServiceCommand extends Command
     {
 
         // Parameters initialization
-        $name = $this->option('name') ?? null;
+        $name = $this->argument('name') ?? null;
         $model = $this->option('model') ?
             EloquentORMModelBuilder::defaultClassPath($this->option('model')) :
             null;

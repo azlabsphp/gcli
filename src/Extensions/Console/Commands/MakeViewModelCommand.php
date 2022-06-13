@@ -24,14 +24,14 @@ use Illuminate\Contracts\Foundation\Application;
 class MakeViewModelCommand extends Command
 {
     protected $signature = 'drewlabs:mvc:make:viewmodel '
-        .'{--namespace= : View model namespace}'
-        .'{--path= : Project source code path}'
-        .'{--name= : Generated view model name}'
-        .'{--model= : Model attached to the view model class }'
-        .'{--single : Makes the view model single action validator}'
-        .'{--rules=* : List of default rules to apply to the view model }'
-        .'{--updateRules=* : List of rules to apply on update actions }'
-        .'{--http : Whether to create an HTTP Viewmodel or a simple Viewmodel }';
+        . '{name=TestViewModel : View model class name }'
+        . '{--namespace= : View model namespace}'
+        . '{--path= : Project source code path}'
+        . '{--model= : Model attached to the view model class }'
+        . '{--single : Makes the view model single action validator}'
+        . '{--rules=* : List of default rules to apply to the view model }'
+        . '{--updateRules=* : List of rules to apply on update actions }'
+        . '{--http : Whether to create an HTTP Viewmodel or a simple Viewmodel }';
 
     protected $description = 'Creates a Drewlabs package MVC controller';
     /**
