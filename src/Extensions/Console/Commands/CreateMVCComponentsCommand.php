@@ -13,6 +13,7 @@ declare(strict_types=1);
 
 namespace Drewlabs\ComponentGenerators\Extensions\Console\Commands;
 
+use Drewlabs\ComponentGenerators\Contracts\Writable;
 use Drewlabs\ComponentGenerators\DBDriverOptions;
 use Drewlabs\ComponentGenerators\Extensions\Helpers\ReverseEngineerTaskRunner;
 use Drewlabs\ComponentGenerators\Extensions\ProgressbarIndicator;
@@ -52,6 +53,7 @@ class CreateMVCComponentsCommand extends Command
         . '{--noAuth : Indicates whether project controllers supports authentication}'
         . '{--schema= : Schema prefix to database tables}'
         . '{--http : Whether to generates controllers and routes}'
+        . '{--force : Force rewrite of existing classes }'
         . '{--only=* : Restrict the generator to generate code only for the specified table structures}';
 
     /**
@@ -177,11 +179,16 @@ class CreateMVCComponentsCommand extends Command
             // Creates the progress indicator
             function ($values) {
                 $this->info("Started reverse engineering process...\n");
-
                 return new ProgressbarIndicator($this->output->createProgressBar(\count($values)));
             },
             function () {
                 $this->info("\nReverse engineering completed successfully!\n");
+            },
+            function(Writable $writable) use ($srcPath) {
+                if ($this->option('force')) {
+                    return true;
+                }
+                return $this->confirm("Override existing class at $srcPath ?" . DIRECTORY_SEPARATOR . $writable->getPath());
             }
         );
     }

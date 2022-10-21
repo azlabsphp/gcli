@@ -14,12 +14,14 @@ declare(strict_types=1);
 namespace Drewlabs\ComponentGenerators\Extensions\Helpers;
 
 use Doctrine\DBAL\DriverManager;
+use Drewlabs\ComponentGenerators\Contracts\Writable;
 use Drewlabs\ComponentGenerators\Extensions\Contracts\Progress;
 use Drewlabs\ComponentGenerators\Helpers\ComponentBuilderHelpers;
 use Drewlabs\ComponentGenerators\Helpers\RouteDefinitionsHelper;
 use Drewlabs\ComponentGenerators\Models\RouteController;
 use Drewlabs\Core\Helpers\Arr;
 use Drewlabs\Core\Helpers\Str;
+use Drewlabs\ComponentGenerators\ComponentsScriptWriter as ComponentsScriptWriterClass;
 
 use function Drewlabs\ComponentGenerators\Proxy\ComponentsScriptWriter;
 use function Drewlabs\ComponentGenerators\Proxy\DatabaseSchemaReverseEngineeringRunner;
@@ -82,7 +84,8 @@ class ReverseEngineerTaskRunner
             string $cachePath,
             string $routesCachePath,
             \Closure $onStartCallback,
-            ?\Closure $onCompleteCallback = null
+            ?\Closure $onCompleteCallback = null,
+            ?\Closure $onExistsCallback = null
         ) use (
             $options,
             $srcPath,
@@ -154,15 +157,15 @@ class ReverseEngineerTaskRunner
              * @var Progress
              */
             $indicator = $onStartCallback($values);
-            $routes = iterator_to_array((static function () use ($values, $subPackage, $indicator) {
+            $routes = iterator_to_array((function () use ($values, $subPackage, $indicator, &$onExistsCallback) {
                 // TODO : IN FUTURE RELEASE BUILD MODEL RELATION METHOD
                 foreach ($values as $component) {
-                    ComponentsScriptWriter(Arr::get($component, 'model.path'))->write(Arr::get($component, 'model.class'));
-                    ComponentsScriptWriter(Arr::get($component, 'viewModel.path'))->write(Arr::get($component, 'viewModel.class'));
-                    ComponentsScriptWriter(Arr::get($component, 'service.path'))->write(Arr::get($component, 'service.class'));
+                    static::writeComponentSourceCode(Arr::get($component, 'model.path'), Arr::get($component, 'model.class'), $onExistsCallback);
+                    static::writeComponentSourceCode(Arr::get($component, 'viewModel.path'), Arr::get($component, 'viewModel.class'), $onExistsCallback);
+                    static::writeComponentSourceCode(Arr::get($component, 'service.path'), Arr::get($component, 'service.class'), $onExistsCallback);
                     if (null !== $controller = Arr::get($component, 'controller')) {
-                        ComponentsScriptWriter(Arr::get($controller, 'dto.path'))->write(Arr::get($controller, 'dto.class'));
-                        ComponentsScriptWriter(Arr::get($controller, 'path'))->write(Arr::get($controller, 'class'));
+                        static::writeComponentSourceCode(Arr::get($controller, 'dto.path'), Arr::get($controller, 'dto.class'), $onExistsCallback);
+                        static::writeComponentSourceCode(Arr::get($controller, 'path'), Arr::get($controller, 'class'), $onExistsCallback);
                         yield Arr::get($controller, 'route.name') => new RouteController(['namespace' => $subPackage, 'name' => Arr::get($controller, 'route.classPath')]);
                     }
                     $indicator->advance();
@@ -243,5 +246,19 @@ class ReverseEngineerTaskRunner
                 }
             );
         };
+    }
+
+    private static function writeComponentSourceCode($path, Writable $writable, callable $callback = null)
+    {
+        /**
+         * @var ComponentsScriptWriterClass
+         */
+        $instance = ComponentsScriptWriter($path);
+        if (!$instance->fileExists($writable)) {
+            return $instance->write($writable);
+        }
+        if (!isset($callback) || (isset($callback) && $callback($writable) === true)) {
+            return $instance->write($writable);
+        }
     }
 }

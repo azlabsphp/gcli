@@ -19,6 +19,8 @@ use function Drewlabs\Filesystem\Proxy\LocalFileSystem;
 
 use League\Flysystem\Config;
 use League\Flysystem\FilesystemAdapter;
+use League\Flysystem\FilesystemException;
+use League\Flysystem\UnableToCheckExistence;
 
 class ComponentsScriptWriter implements ScriptWriter
 {
@@ -44,5 +46,22 @@ class ComponentsScriptWriter implements ScriptWriter
             $writable->__toString(),
             new Config()
         );
+    }
+
+    /**
+     * Check if source script already exists
+     * 
+     * @param Writable $writable 
+     * @return bool 
+     * @throws FilesystemException 
+     * @throws UnableToCheckExistence 
+     */
+    public function fileExists(Writable $writable)
+    {
+        try {
+            return $this->fileSystemAdapter_->fileExists($writable->getPath());
+        } catch (UnableToCheckExistence $th) {
+            return false;
+        }
     }
 }

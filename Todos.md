@@ -32,3 +32,4 @@
 - Generate static::creating entry for non incrementable models []
 - Generate relation method to foreign keys definitions []
 - Create command generator command []
+- Add override prompt for recreating mvc components using command []
