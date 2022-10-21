@@ -76,6 +76,8 @@
     },
     "suggest": {
         "drewlabs/contracts": "Required by generated model, service and view models (^2.5).",
-        "drewlabs/support": "Required by generated controllers and services (^2.3)."
+        "drewlabs/support": "Required by generated controllers and services (^2.3).",
+        "drewlabs/database": "Required by generated model, service and view models (^2.5).",
+        "drewlabs/http": "Required by generated model, service and view models (^2.3)."
     }
 }

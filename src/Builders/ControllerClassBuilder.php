@@ -39,10 +39,18 @@ class ControllerClassBuilder implements ContractsControllerBuilder
      */
     public const DEFAULT_NAMESPACE = 'App\\Http\\Controllers';
 
+
+    private const DATABASE_ACTIONS_PATH = [
+        'Drewlabs\\Packages\\Database\\Proxy\\CreateQueryAction',
+        'Drewlabs\\Packages\\Database\\Proxy\\SelectQueryAction',
+        'Drewlabs\\Packages\\Database\\Proxy\\UpdateQueryAction',
+        'Drewlabs\\Packages\\Database\\Proxy\\DeleteQueryAction',
+    ];
+
     /**
      * @var string
      */
-    private const ACTION_FUNCTION_PATH = 'Drewlabs\\Support\\Proxy\\Action';
+    // private const ACTION_FUNCTION_PATH = 'Drewlabs\\Support\\Proxy\\Action';
 
     /**
      * @var string
@@ -387,29 +395,30 @@ class ControllerClassBuilder implements ContractsControllerBuilder
                     [
                         $this->hasAuthenticatable_ ? '// TODO : Provides policy handlers' : null,
                     ],
-                    $this->mustGenerateActionContents() ? array_merge([
-                        '',
-                        '$result = $this->service->handle(', // \t
-                        "\tAction([",
-                        "\t\t'type' => 'SELECT',",
-                        "\t\t'payload' => \${$vmParamName}->has('per_page') ? [",
-                        "\t\t\t\$viewModel->makeFilters(),",
-                        "\t\t\t(int)\${$vmParamName}->get('per_page'),",
-                        "\t\t\t\${$vmParamName}->has('_columns') ? (is_array(\$colums_ = \${$vmParamName}->get('_columns')) ? \$colums_ : (@json_decode(\$colums_, true) ?? ['*'])): ['*'],",
-                        "\t\t\t\${$vmParamName}->has('page') ? (int)\${$vmParamName}->get('page') : null,",
-                        "\t\t] :",
-                        "\t\t\t[",
-                        "\t\t\t\t\$viewModel->makeFilters(),",
-                        "\t\t\t\t\${$vmParamName}->has('_columns') ? (is_array(\$colums_ = \${$vmParamName}->get('_columns')) ? \$colums_ : (@json_decode(\$colums_, true) ?? ['*']))  : ['*'],",
-                        "\t\t\t],",
+                    $this->mustGenerateActionContents() ? array_merge(
+                        [
+                            '',
+                            '$result = $this->service->handle(', // \t
+                            "\t\${$vmParamName}->has('per_page') ? SelectQueryAction(",
+                            "\t\t\$viewModel->makeFilters(),",
+                            "\t\t(int)\${$vmParamName}->get('per_page'),",
+                            "\t\t\${$vmParamName}->has('_columns') ? (is_array(\$colums_ = \${$vmParamName}->get('_columns')) ? \$colums_ : (@json_decode(\$colums_, true) ?? ['*'])): ['*'],",
+                            "\t\t\${$vmParamName}->has('page') ? (int)\${$vmParamName}->get('page') : null,",
+                            "\t) : SelectQueryAction(",
+                            "\t\t\$viewModel->makeFilters(),",
+                            "\t\t\${$vmParamName}->has('_columns') ? (is_array(\$colums_ = \${$vmParamName}->get('_columns')) ? \$colums_ : (@json_decode(\$colums_, true) ?? ['*']))  : ['*'],",
+                            "\t),",
 
-                    ], $this->dtoClass_ ? [
-                        "\t]),",
-                        "\tuseMapQueryResult(function (\$value)  use (\$$vmParamName) {",
-                        "\t\treturn \$value ? (new $this->dtoClass_(\$value))->mergeHidden(\${$vmParamName}->get('_hidden') ?? []) : \$value;",
-                        "\t})",
-                        ")",
-                    ] : [']))'], ['return $this->response->ok($result)',]) : []
+                        ],
+                        $this->dtoClass_ ? [
+                            "\tuseMapQueryResult(function (\$value)  use (\$$vmParamName) {",
+                            "\t\treturn \$value ? (new $this->dtoClass_(\$value))->mergeHidden(\${$vmParamName}->get('_hidden') ?? []) : \$value;",
+                            "\t})",
+                            ")",
+                        ] :
+                            [')'],
+                        ['return $this->response->ok($result)',]
+                    ) : []
                 ),
             ],
             [
@@ -426,18 +435,19 @@ class ControllerClassBuilder implements ContractsControllerBuilder
                 'contents' => $this->mustGenerateActionContents() ? array_merge(
                     [
                         $this->hasAuthenticatable_ ? '// TODO: Provide Policy handlers if required' : null,
-                        '$result = $this->service->handle(Action([',
-                        "\t'type' => 'SELECT',",
-                        "\t'payload' => [",
+                        '$result = $this->service->handle(',
+                        "\tSelectQueryAction(",
                         "\t\t\$id,",
                         "\t\t\${$vmParamName}->has('_columns') ? (is_array(\$colums_ = \${$vmParamName}->get('_columns')) ? \$colums_ : (@json_decode(\$colums_, true) ?? ['*'])): ['*'],",
-                        "\t],",
                     ],
                     null !== $this->dtoClass_ ? [
-                        "]), function(\$value) use (\$$vmParamName) {",
-                        "\treturn null !== \$value ? (new $this->dtoClass_(\$value))->mergeHidden(\${$vmParamName}->get('_hidden') ?? []) : \$value",
-                        '});',
-                    ] : [']))'],
+                        "\t),",
+                        "\tfunction (\$value) use (\$$vmParamName) {",
+                        "\t\treturn null !== \$value ? (new $this->dtoClass_(\$value))->mergeHidden(\${$vmParamName}->get('_hidden') ?? []) : \$value",
+                        "\t}",
+                        ")"
+                    ] :
+                        ['))'],
                     [
                         'return $this->response->ok($result)',
                     ]
@@ -459,40 +469,31 @@ class ControllerClassBuilder implements ContractsControllerBuilder
                         '// validate request inputs',
                     ],
                     null === $this->viewModelClass_ ? [
-                        "\$result = \$this->validator->validate([], \$request->all(), function() use (\$request) {",
+                        "\$result = \$this->validator->validate([], \$request->all(), function () use (\$request) {",
                         '// After validation logic goes here...',
                     ] : [
-                        '$result = $this->validator->validate($viewModel, function() use ($viewModel) {',
+                        '$result = $this->validator->validate($viewModel, function () use ($viewModel) {',
                     ],
                     [
                         (null === $this->viewModelClass_) ? "\t\$query = \$request->get('_query') ?? []" : "\t\$query = \$viewModel->get('_query') ?? []",
-                        "\treturn \$this->service->handle(Action([",
-                        "\t\t'type' => 'CREATE',",
+                        (null === $this->viewModelClass_) ? "\treturn \$this->service->handle(CreateQueryAction(\$request, [" : "\treturn \$this->service->handle(CreateQueryAction(\$viewModel, [",
                     ],
                     (null === $this->viewModelClass_) ? [
-                        "\t\t'payload' => [",
-                        "\t\t\t\$request->all(),",
-                        "\t\t\t[",
-                        "\t\t\t\t'relations' => \$query['relations'] ?? [],",
-                        "\t\t\t\t'upsert_conditions' => \$query['upsert_conditions'] ?? (\$request->has('id') ?",
-                        "\t\t\t\t\t['id' => \$request->get('id'),] : []),",
+                        "\t\t'relations' => \$query['relations'] ?? [],",
+                        "\t\t'upsert_conditions' => \$query['upsert_conditions'] ?? (\$request->has('id') ?",
+                        "\t\t\t['id' => \$request->get('id'),] : []),",
                     ] : [
-                        "\t\t'payload' => [",
-                        "\t\t\t\$viewModel->all(),",
-                        "\t\t\t[",
-                        "\t\t\t\t'relations' => \$query['relations'] ?? [],",
-                        "\t\t\t\t'upsert_conditions' => \$query['upsert_conditions'] ?? (\$viewModel->has(\$viewModel->getPrimaryKey()) ?",
-                        "\t\t\t\t\t[\$viewModel->getPrimaryKey() => \$viewModel->get(\$viewModel->getPrimaryKey()),] : []),",
+                        "\t\t'relations' => \$query['relations'] ?? [],",
+                        "\t\t'upsert_conditions' => \$query['upsert_conditions'] ?? (\$viewModel->has(\$viewModel->getPrimaryKey()) ?",
+                        "\t\t\t[\$viewModel->getPrimaryKey() => \$viewModel->get(\$viewModel->getPrimaryKey()),] : []),",
                     ],
                     [
-                        "\t\t\t],",
-                        "\t\t],",
+                        null === $this->dtoClass_  ? "\t])," : "\t]), function (\$value) {",
                     ],
                     null !== $this->dtoClass_ ? [
-                        "\t]), function(\$value) {",
                         "\t\treturn null !== \$value ? new $this->dtoClass_(\$value) : \$value",
                         "\t});",
-                    ] : ["\t]))"],
+                    ] : ["\t)"],
                     [
                         '});',
                         '',
@@ -517,35 +518,23 @@ class ControllerClassBuilder implements ContractsControllerBuilder
                         (null !== $this->viewModelClass_) ? '$viewModel = $viewModel->merge(["id" => $id])' : '$request = $request->merge(["id" => $id])',
                     ],
                     null === $this->viewModelClass_ ? [
-                        "\$result = \$this->validator->updating()->validate([], \$request->all(), function() use (\$id, \$request) {",
+                        "\$result = \$this->validator->updating()->validate([], \$request->all(), function () use (\$id, \$request) {",
                         '// After validation logic goes here...',
                     ] : [
-                        '$result = $this->validator->updating()->validate($viewModel, function() use ($id, $viewModel) {',
+                        '$result = $this->validator->updating()->validate($viewModel, function () use ($id, $viewModel) {',
                     ],
                     [
                         null === $this->viewModelClass_ ? "\t\$query = \$request->get('_query') ?? []" : "\t\$query = \$viewModel->get('_query') ?? []",
-                        "\treturn \$this->service->handle(Action([",
-                        "\t\t'type' => 'UPDATE',",
+                        (null === $this->viewModelClass_) ? "\treturn \$this->service->handle(UpdateQueryAction(\$id, \$request, [" : "\treturn \$this->service->handle(UpdateQueryAction(\$id, \$viewModel, [",
                     ],
-                    (null === $this->viewModelClass_) ? [
-                        "\t\t'payload' => [",
-                        "\t\t\t\$id,",
-                        "\t\t\t\$request->all(),",
-                        "\t\t\t['relations' => \$query['relations'] ?? [],]",
-                    ] : [
-                        "\t\t'payload' => [",
-                        "\t\t\t\$id,",
-                        "\t\t\t\$viewModel->all(),",
-                        "\t\t\t['relations' => \$query['relations'] ?? []]",
-                    ],
+                    ["\t\t'relations' => \$query['relations'] ?? [],"],
                     [
-                        "\t\t],",
+                        null === $this->dtoClass_  ? "\t\t])," : "\t]), function (\$value) {",
                     ],
                     null !== $this->dtoClass_ ? [
-                        "\t]), function(\$value) {",
                         "\t\treturn null !== \$value ? new $this->dtoClass_(\$value) : \$value",
                         "\t});",
-                    ] : ["\t]))"],
+                    ] : ["\t)"],
                     [
                         '});',
                         '',
@@ -566,40 +555,36 @@ class ControllerClassBuilder implements ContractsControllerBuilder
                 'returns' => 'mixed',
                 'contents' => $this->mustGenerateActionContents() ? [
                     $this->hasAuthenticatable_ ? '// TODO: Provide Policy handlers if required' : null,
-                    '$result = $this->service->handle(Action([',
-                    "\t'type' => 'DELETE',",
-                    "\t'payload' => [\$id],",
-                    ']))',
+                    '$result = $this->service->handle(DeleteQueryAction($id))',
                     'return $this->response->ok($result)',
                 ] : [],
             ],
         ];
-        $component = array_reduce(
-            $actions,
-            static function (Blueprint $carry, $action) {
-                $method = PHPClassMethod(
-                    $action['name'],
-                    $action['params'],
-                    $action['returns'] ?? null,
-                    PHPTypesModifiers::PUBLIC,
-                    $action['descriptors']
-                );
-                if ($contents = $action['contents'] ?? null) {
-                    $contents = \is_array($contents) ? $contents : [$contents];
-                    foreach (array_filter($contents, static function ($item) {
-                        return null !== $item;
-                    }) as $value) {
-                        // code...
-                        $method = $method->addLine($value);
-                    }
-                }
-                $carry = $carry->addMethod($method);
 
-                return $carry;
-            },
-            $component
-                ->addFunctionPath(self::ACTION_FUNCTION_PATH)
-        );
+        foreach (static::DATABASE_ACTIONS_PATH as $functionPath) {
+            $component = $component->addFunctionPath($functionPath);
+        }
+        $component = array_reduce($actions, static function (Blueprint $carry, $action) {
+            $method = PHPClassMethod(
+                $action['name'],
+                $action['params'],
+                $action['returns'] ?? null,
+                PHPTypesModifiers::PUBLIC,
+                $action['descriptors']
+            );
+            if ($contents = $action['contents'] ?? null) {
+                $contents = \is_array($contents) ? $contents : [$contents];
+                foreach (array_filter($contents, static function ($item) {
+                    return null !== $item;
+                }) as $value) {
+                    // code...
+                    $method = $method->addLine($value);
+                }
+            }
+            $carry = $carry->addMethod($method);
+
+            return $carry;
+        }, $component);
 
         // Returns the component back to the caller
         return $component;

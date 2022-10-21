@@ -31,7 +31,6 @@ class ServiceClassBuilder implements ComponentBuilder
 {
     use HasNamespaceAttribute;
 
-    public const ACTION_RESULT_FUNCTION_PATH = 'Drewlabs\\Support\\Proxy\\ActionResult';
 
     /**
      * Service default class namespace.
@@ -40,7 +39,11 @@ class ServiceClassBuilder implements ComponentBuilder
      */
     public const DEFAULT_NAMESPACE = 'App\\Services';
 
-    private const DML_MANAGER_PROXY = 'Drewlabs\\Packages\\Database\\Proxy\\DMLManager';
+
+    private const CLASS_FUNCTION_PATHS = [
+        'Drewlabs\\Packages\\Database\\Proxy\\useDMLQueryActionCommand',
+        'Drewlabs\\Packages\\Database\\Proxy\\DMLManager'
+    ];
 
     /**
      * @var string
@@ -77,7 +80,7 @@ class ServiceClassBuilder implements ComponentBuilder
         ?string $path = null
     ) {
         if ($name) {
-            $this->setName(Str::camelize(Pluralizer::singular($name)).'Service');
+            $this->setName(Str::camelize(Pluralizer::singular($name)) . 'Service');
         }
         // Set the component write path
         $this->setWritePath($path ?? self::DEFAULT_PATH);
@@ -99,7 +102,7 @@ class ServiceClassBuilder implements ComponentBuilder
         } else {
             $this->modelName_ = $classPath;
         }
-        $name = Str::camelize(Pluralizer::singular($this->modelName_)).'Service';
+        $name = Str::camelize(Pluralizer::singular($this->modelName_)) . 'Service';
         $this->setName($name);
 
         return $this;
@@ -120,44 +123,18 @@ class ServiceClassBuilder implements ComponentBuilder
     public function build()
     {
         $handlMethodLines = [
-            $this->asCRUD_ ? '$payload = $action->payload()' : null,
-            $this->asCRUD_ ? '$payload = $payload instanceof ActionPayload ? $payload->toArray() : (is_array($payload) ? $payload : [])' : null,
-            $this->asCRUD_ ? "\t\t\$payload = null !== \$callback ? array_merge(\$payload, [\$callback]) : \$payload" : null,
-            $this->asCRUD_ ? '' : null,
-            '// Handle switch statements',
-            'switch (strtoupper($action->type())) {',
-            "\tcase \"CREATE\":",
-            "\t\t//Create handler code goes here",
-            $this->asCRUD_ ? "\t\treturn ActionResult(\$this->dbManager->create(...\$payload))" : "\t\treturn",
-            "\tcase \"UPDATE\":",
-            "\t\t//Update handler code goes here",
-            $this->asCRUD_ ? "\t\treturn ActionResult(\$this->dbManager->update(...\$payload))" : "\t\treturn",
-            "\tcase \"DELETE\":",
-            "\t\t//Delete handler code goes here",
-            $this->asCRUD_ ? "\t\treturn ActionResult(\$this->dbManager->delete(...\$payload))" : "\t\treturn",
-            "\tcase \"SELECT\":",
-            "\t\t//Select handler code goes here",
-            $this->asCRUD_ ? "\t\treturn ActionResult(\$this->dbManager->select(...\$payload))" : "\t\treturn",
-            "\tdefault:",
-            "\t\t//Provides default handler or throws exception",
-            $this->asCRUD_ ? "\t\tthrow new InvalidActionException(\"This \" . __CLASS__ . \" can only handle CREATE,DELETE,UPDATE AND SELECT actions\")" : "\t\treturn",
-            '}',
+            $this->asCRUD_ ? "return useDMLQueryActionCommand(\$this->dbManager)(\$action, \$callback)" : "#code..."
         ];
-        /**
-         * @var BluePrint|PHPClass
-         */
-        $component = (PHPClass($this->name_ ?? self::DEFAULT_NAME))
-            ->addFunctionPath(self::DML_MANAGER_PROXY);
-        // ->addClassPath(EloquentDMLManager::class);
+        $component = (PHPClass($this->name_ ?? self::DEFAULT_NAME));
+        foreach (static::CLASS_FUNCTION_PATHS as $functionPath) {
+            /**
+             * @var BluePrint|PHPClass
+             */
+            $component = $component->addFunctionPath($functionPath);
+        }
 
         foreach ($this->classPaths_ ?? [] as $value) {
             $component = $component->addClassPath($value);
-        }
-
-        if ($this->asCRUD_) {
-            $component = $component->addClassPath(\Drewlabs\Contracts\Support\Actions\ActionPayload::class)
-                ->addFunctionPath(self::ACTION_RESULT_FUNCTION_PATH)
-                ->addClassPath(\Drewlabs\Contracts\Support\Actions\Exceptions\InvalidActionException::class);
         }
 
         $component->addImplementation(\Drewlabs\Contracts\Support\Actions\ActionHandler::class)
@@ -210,7 +187,7 @@ class ServiceClassBuilder implements ComponentBuilder
                     \Drewlabs\Contracts\Support\Actions\ActionResult::class,
                     PHPTypesModifiers::PUBLIC,
                     '{@inheritDoc}'
-                )))
+                )->throws(\Drewlabs\Contracts\Support\Actions\Exceptions\InvalidActionException::class)))
             )
             ->addToNamespace($this->namespace_ ?? self::DEFAULT_NAMESPACE);
 
