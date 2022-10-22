@@ -68,7 +68,6 @@ class DataTransfertClassBuilder implements ComponentBuilder
     private $propertyDocComments = [];
 
     /**
-     * 
      * @var string
      */
     private $modelClassPath;
@@ -80,7 +79,7 @@ class DataTransfertClassBuilder implements ComponentBuilder
         ?string $path = null
     ) {
         if ($name) {
-            $this->setName(Str::camelize(Pluralizer::singular($name)) . 'Dto');
+            $this->setName(Str::camelize(Pluralizer::singular($name)).'Dto');
         }
         // Set the component write path
         $this->setWritePath($path ?? self::DEFAULT_PATH);
@@ -109,7 +108,7 @@ class DataTransfertClassBuilder implements ComponentBuilder
         }
         $model_name = 'Test';
         $model_name = $isClassPath ? $this->getClassNameFromPath($classname) : $classname;
-        $this->setName(Str::camelize(Pluralizer::singular($model_name)) . 'Dto');
+        $this->setName(Str::camelize(Pluralizer::singular($model_name)).'Dto');
 
         // creates an object to if the model is a PHP string
         if (\is_string($model) && class_exists($model)) {
@@ -156,7 +155,7 @@ class DataTransfertClassBuilder implements ComponentBuilder
                     $this->propertyDocComments ?? [],
                     [
                         ' ',
-                        '@package ' . $this->namespace_ ?? self::DEFAULT_NAMESPACE,
+                        '@package '.$this->namespace_ ?? self::DEFAULT_NAMESPACE,
                     ]
                 )
             )
@@ -177,7 +176,7 @@ class DataTransfertClassBuilder implements ComponentBuilder
                     PHPTypesModifiers::PUBLIC,
                     'Creates an instance of the attached model'
                 ))->addContents(
-                    "return self::createResolver(" . $this->getClassNameFromPath($this->modelClassPath) . "::class)()"
+                    'return self::createResolver('.$this->getClassNameFromPath($this->modelClassPath).'::class)()'
                 )
             );
         }
@@ -270,7 +269,7 @@ class DataTransfertClassBuilder implements ComponentBuilder
             } else {
                 $name = $value;
             }
-            $comments[] = '@property ' . $this->getPHPType($name) . ' ' . Str::camelize(trim($key), false);
+            $comments[] = '@property '.$this->getPHPType($name).' '.Str::camelize(trim($key), false);
         }
 
         return $comments;

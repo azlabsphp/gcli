@@ -13,7 +13,6 @@ declare(strict_types=1);
 
 namespace Drewlabs\ComponentGenerators\Helpers;
 
-use Closure;
 use Doctrine\DBAL\Schema\Column;
 use Drewlabs\ComponentGenerators\ORMColumnDefinition;
 use Drewlabs\ComponentGenerators\ORMColumnForeignKeyConstraintDefinition;
@@ -83,9 +82,9 @@ class ColumnsDefinitionHelpers
     }
 
     /**
-     * 
-     * @param array $indexes 
-     * @return Closure 
+     * @param array $indexes
+     *
+     * @return \Closure
      */
     public static function bindUniqueConstraintsToColumns($indexes = [])
     {

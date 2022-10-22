@@ -24,12 +24,12 @@ use Illuminate\Contracts\Foundation\Application;
 class MakeDTOClassCommand extends Command
 {
     protected $signature = 'drewlabs:mvc:make:dto '
-        . '{name=TestDto : Generated view model name }'
-        . '{--namespace= : View model namespace }'
-        . '{--path= : Project source code path }'
-        . '{--model= : Model attached to the view model class }'
-        . '{--attributes=* : List of Jsonable attributes }'
-        . '{--hidden=* : List of hidden attributes }';
+        .'{name=TestDto : Generated view model name }'
+        .'{--namespace= : View model namespace }'
+        .'{--path= : Project source code path }'
+        .'{--model= : Model attached to the view model class }'
+        .'{--attributes=* : List of Jsonable attributes }'
+        .'{--hidden=* : List of hidden attributes }';
 
     protected $description = 'Creates a Drewlabs package MVC controller';
     /**

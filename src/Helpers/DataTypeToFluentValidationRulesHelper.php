@@ -13,15 +13,10 @@ declare(strict_types=1);
 
 namespace Drewlabs\ComponentGenerators\Helpers;
 
-use Closure;
 use Drewlabs\ComponentGenerators\Contracts\ForeignKeyConstraintDefinition;
 use Drewlabs\ComponentGenerators\Contracts\UniqueKeyConstraintDefinition;
 use Drewlabs\Core\Helpers\Str;
 
-/**
- * 
- * @package Drewlabs\ComponentGenerators\Helpers
- */
 class DataTypeToFluentValidationRulesHelper
 {
     /**
@@ -48,7 +43,7 @@ class DataTypeToFluentValidationRulesHelper
      * @Rule sometimes
      */
     public const SOMETIMES = 'sometimes';
-    
+
     /**
      * @var array
      */
@@ -103,10 +98,7 @@ class DataTypeToFluentValidationRulesHelper
     }
 
     /**
-     * 
-     * @param string $type 
-     * @param null|Closure $filterFn 
-     * @return array 
+     * @return array
      */
     private static function getSimpleRule(string $type, ?\Closure $filterFn = null)
     {

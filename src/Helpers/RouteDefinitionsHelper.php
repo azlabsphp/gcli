@@ -23,17 +23,12 @@ use Drewlabs\Filesystem\Exceptions\CreateDirectoryException;
 use Drewlabs\Filesystem\Exceptions\FileNotFoundException;
 use Drewlabs\Filesystem\Exceptions\ReadFileException;
 use Drewlabs\Filesystem\Exceptions\UnableToRetrieveMetadataException;
-use InvalidArgumentException;
 use Drewlabs\Filesystem\Exceptions\WriteOperationFailedException;
 
 use function Drewlabs\Filesystem\Proxy\LocalFileSystem;
 
 use League\Flysystem\Config;
 
-/**
- * 
- * @package Drewlabs\ComponentGenerators\Helpers
- */
 class RouteDefinitionsHelper
 {
     /**
@@ -99,11 +94,7 @@ class RouteDefinitionsHelper
     }
 
     /**
-     * 
-     * @param string $basePath 
-     * @param array $definitions 
-     * @param string $filename 
-     * @return Closure 
+     * @return \Closure
      */
     public static function writeRouteDefinitions(
         string $basePath,
@@ -208,15 +199,12 @@ class RouteDefinitionsHelper
     }
 
     /**
-     * 
-     * @param string $path 
-     * @param array $routes 
-     * @param null|string $namespace 
-     * @return void 
-     * @throws UnableToRetrieveMetadataException 
-     * @throws CreateDirectoryException 
-     * @throws InvalidArgumentException 
-     * @throws WriteOperationFailedException 
+     * @throws UnableToRetrieveMetadataException
+     * @throws CreateDirectoryException
+     * @throws \InvalidArgumentException
+     * @throws WriteOperationFailedException
+     *
+     * @return void
      */
     public static function cacheRouteDefinitions(string $path, array $routes, ?string $namespace = null)
     {

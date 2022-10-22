@@ -1,30 +1,37 @@
 <?php
 
+declare(strict_types=1);
+
+/*
+ * This file is part of the Drewlabs package.
+ *
+ * (c) Sidoine Azandrew <azandrewdevelopper@gmail.com>
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
+
 namespace Drewlabs\ComponentGenerators\Extensions\Console;
 
 use Drewlabs\CodeGenerator\Exceptions\PHPVariableException;
 use Drewlabs\ComponentGenerators\Builders\EloquentORMModelBuilder;
 use Drewlabs\ComponentGenerators\Helpers\ComponentBuilderHelpers;
-use Drewlabs\Core\Helpers\Str;
-
 use function Drewlabs\ComponentGenerators\Proxy\ComponentsScriptWriter;
+
+use Drewlabs\Core\Helpers\Str;
 
 class ComponentCommandsHelpers
 {
     /**
-     * 
-     * @param string $namespace 
-     * @param string $basePath 
-     * @param string|null $model 
-     * @param string|null $class 
-     * @return void 
-     * @throws UnableToRetrieveMetadataException 
+     * @throws UnableToRetrieveMetadataException
+     *
+     * @return void
      */
-    public static function createService(string $namespace, string $basePath, ?string  $model = null, ?string $class = null)
+    public static function createService(string $namespace, string $basePath, ?string $model = null, ?string $class = null)
     {
         if (null !== $class && !class_exists($class) && !class_exists(EloquentORMModelBuilder::defaultClassPath($class))) {
             $name = Str::contains($class, '\\') ? Str::afterLast('\\', $class) : $class;
-            $class_name_space = sprintf("\\%s\\Services", static::getBaseNamespace($namespace) ?? "App");
+            $class_name_space = sprintf('\\%s\\Services', static::getBaseNamespace($namespace) ?? 'App');
             ComponentsScriptWriter($basePath)->write(
                 ComponentBuilderHelpers::buildServiceDefinition(
                     true,
@@ -33,25 +40,21 @@ class ComponentCommandsHelpers
                     $model
                 )
             );
-            return sprintf("%s\\%s", $class_name_space, $name);
+
+            return sprintf('%s\\%s', $class_name_space, $name);
         }
     }
 
     /**
-     * 
-     * @param string $namespace 
-     * @param string $basePath 
-     * @param null|string $model 
-     * @param null|string $class 
-     * @param array $attributes 
-     * @return string|void 
-     * @throws PHPVariableException 
+     * @throws PHPVariableException
+     *
+     * @return string|void
      */
-    public static function createDto(string $namespace, string $basePath, ?string  $model = null, ?string $class = null, array $attributes = [])
+    public static function createDto(string $namespace, string $basePath, ?string $model = null, ?string $class = null, array $attributes = [])
     {
         if (null !== $class && !class_exists($class) && !class_exists(EloquentORMModelBuilder::defaultClassPath($class))) {
             $name = Str::contains($class, '\\') ? Str::afterLast('\\', $class) : $class;
-            $class_name_space = sprintf("\\%s\\Dto", static::getBaseNamespace($namespace) ?? "App");
+            $class_name_space = sprintf('\\%s\\Dto', static::getBaseNamespace($namespace) ?? 'App');
             ComponentsScriptWriter($basePath)->write(
                 ComponentBuilderHelpers::buildDtoObjectDefinition(
                     $attributes ?? [],
@@ -61,26 +64,21 @@ class ComponentCommandsHelpers
                     $model
                 )
             );
-            return sprintf("%s\\%s", $class_name_space, $name);
+
+            return sprintf('%s\\%s', $class_name_space, $name);
         }
     }
 
     /**
-     * 
-     * @param string $namespace 
-     * @param string $basePath 
-     * @param null|string $model 
-     * @param null|string $class 
-     * @param array $rules 
-     * @param array $updateRules 
-     * @return string|void 
-     * @throws PHPVariableException 
+     * @throws PHPVariableException
+     *
+     * @return string|void
      */
-    public static function createViewModel(string $namespace, string $basePath, ?string  $model = null, ?string $class = null, array $rules = [], array $updateRules = [])
+    public static function createViewModel(string $namespace, string $basePath, ?string $model = null, ?string $class = null, array $rules = [], array $updateRules = [])
     {
         if (null !== $class && !class_exists($class) && !class_exists(EloquentORMModelBuilder::defaultClassPath($class))) {
             $name = Str::contains($class, '\\') ? Str::afterLast('\\', $class) : $class;
-            $class_namespace = sprintf("\\%s\\Http\\ViewModels", static::getBaseNamespace($namespace) ?? "App");
+            $class_namespace = sprintf('\\%s\\Http\\ViewModels', static::getBaseNamespace($namespace) ?? 'App');
             ComponentsScriptWriter($basePath)->write(
                 ComponentBuilderHelpers::buildViewModelDefinition(
                     false,
@@ -93,20 +91,22 @@ class ComponentCommandsHelpers
                     true
                 )
             );
-            return sprintf("%s\\%s", $class_namespace, $name);
+
+            return sprintf('%s\\%s', $class_namespace, $name);
         }
     }
 
     /**
-     * 
-     * @param mixed $namespace 
-     * @return string 
+     * @param mixed $namespace
+     *
+     * @return string
      */
     public static function getBaseNamespace($namespace)
     {
         if (Str::startsWith($namespace, '\\')) {
             return Str::before('\\', Str::ltrim($namespace, '\\'));
         }
+
         return Str::before('\\', $namespace);
     }
 }

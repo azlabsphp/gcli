@@ -20,10 +20,6 @@ use Drewlabs\ComponentGenerators\Contracts\ORMModelDefinition as ContractsORMMod
 use Drewlabs\ComponentGenerators\Helpers\DataTypeToFluentValidationRulesHelper;
 use Drewlabs\PHPValue\Value;
 
-/**
- * 
- * @package Drewlabs\ComponentGenerators
- */
 class ORMModelDefinition extends Value implements ContractsORMModelDefinition, DtoAttributesFactory, ViewModelRulesFactory
 {
     protected $__PROPERTIES__ = [
@@ -40,7 +36,7 @@ class ORMModelDefinition extends Value implements ContractsORMModelDefinition, D
     {
         foreach ($value as $value) {
             if (!($value instanceof ORMColumnDefinition)) {
-                throw new \InvalidArgumentException('$columns parameter must be a list of ' . ORMColumnDefinition::class . ' items');
+                throw new \InvalidArgumentException('$columns parameter must be a list of '.ORMColumnDefinition::class.' items');
             }
         }
 
@@ -84,8 +80,8 @@ class ORMModelDefinition extends Value implements ContractsORMModelDefinition, D
 
     public function createDtoAttributes()
     {
-        return iterator_to_array((function (ContractsORMModelDefinition $model) {
-            /**
+        return iterator_to_array((static function (ContractsORMModelDefinition $model) {
+            /*
              * @var ORMColumnDefinition
              */
             foreach ($model->columns() as $column) {
@@ -109,6 +105,7 @@ class ORMModelDefinition extends Value implements ContractsORMModelDefinition, D
             if ($column->name() === $key) {
                 return DataTypeToFluentValidationRulesHelper::SOMETIMES;
             }
+
             return null !== $key ?
                 sprintf(
                     '%s:%s',

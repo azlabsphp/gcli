@@ -14,17 +14,17 @@ declare(strict_types=1);
 namespace Drewlabs\ComponentGenerators\Extensions\Helpers;
 
 use Doctrine\DBAL\DriverManager;
+use Drewlabs\ComponentGenerators\ComponentsScriptWriter as ComponentsScriptWriterClass;
 use Drewlabs\ComponentGenerators\Contracts\Writable;
 use Drewlabs\ComponentGenerators\Extensions\Contracts\Progress;
 use Drewlabs\ComponentGenerators\Helpers\ComponentBuilderHelpers;
 use Drewlabs\ComponentGenerators\Helpers\RouteDefinitionsHelper;
 use Drewlabs\ComponentGenerators\Models\RouteController;
-use Drewlabs\Core\Helpers\Arr;
-use Drewlabs\Core\Helpers\Str;
-use Drewlabs\ComponentGenerators\ComponentsScriptWriter as ComponentsScriptWriterClass;
-
 use function Drewlabs\ComponentGenerators\Proxy\ComponentsScriptWriter;
 use function Drewlabs\ComponentGenerators\Proxy\DatabaseSchemaReverseEngineeringRunner;
+
+use Drewlabs\Core\Helpers\Arr;
+use Drewlabs\Core\Helpers\Str;
 
 class ReverseEngineerTaskRunner
 {
@@ -157,7 +157,7 @@ class ReverseEngineerTaskRunner
              * @var Progress
              */
             $indicator = $onStartCallback($values);
-            $routes = iterator_to_array((function () use ($values, $subPackage, $indicator, &$onExistsCallback) {
+            $routes = iterator_to_array((static function () use ($values, $subPackage, $indicator, &$onExistsCallback) {
                 // TODO : IN FUTURE RELEASE BUILD MODEL RELATION METHOD
                 foreach ($values as $component) {
                     static::writeComponentSourceCode(Arr::get($component, 'model.path'), Arr::get($component, 'model.class'), $onExistsCallback);
@@ -248,7 +248,7 @@ class ReverseEngineerTaskRunner
         };
     }
 
-    private static function writeComponentSourceCode($path, Writable $writable, callable $callback = null)
+    private static function writeComponentSourceCode($path, Writable $writable, ?callable $callback = null)
     {
         /**
          * @var ComponentsScriptWriterClass
@@ -257,7 +257,7 @@ class ReverseEngineerTaskRunner
         if (!$instance->fileExists($writable)) {
             return $instance->write($writable);
         }
-        if (!isset($callback) || (isset($callback) && $callback($writable) === true)) {
+        if (!isset($callback) || (isset($callback) && true === $callback($writable))) {
             return $instance->write($writable);
         }
     }

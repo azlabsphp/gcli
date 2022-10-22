@@ -39,7 +39,6 @@ class ControllerClassBuilder implements ContractsControllerBuilder
      */
     public const DEFAULT_NAMESPACE = 'App\\Http\\Controllers';
 
-
     private const DATABASE_ACTIONS_PATH = [
         'Drewlabs\\Packages\\Database\\Proxy\\CreateQueryAction',
         'Drewlabs\\Packages\\Database\\Proxy\\SelectQueryAction',
@@ -265,7 +264,7 @@ class ControllerClassBuilder implements ContractsControllerBuilder
                         PHPFunctionParameter(
                             'service',
                             $this->serviceClass_,
-                        )->asOptional(),
+                        ),
                     ]) : [],
                 ),
                 array_merge([
@@ -336,7 +335,7 @@ class ControllerClassBuilder implements ContractsControllerBuilder
                     PHPTypesModifiers::PUBLIC,
                     [
                         'Handles http request action',
-                        '@Route /POST /' . $this->routeName_ . '/{id}',
+                        '@Route /POST /'.$this->routeName_.'/{id}',
                     ]
                 )
             );
@@ -388,7 +387,7 @@ class ControllerClassBuilder implements ContractsControllerBuilder
                 ],
                 'descriptors' => [
                     'Display or Returns a list of items',
-                    '@Route /GET /' . $this->routeName_ . '[/{$id}]',
+                    '@Route /GET /'.$this->routeName_.'[/{$id}]',
                 ],
                 'returns' => 'mixed',
                 'contents' => array_merge(
@@ -414,10 +413,10 @@ class ControllerClassBuilder implements ContractsControllerBuilder
                             "\tuseMapQueryResult(function (\$value)  use (\$$vmParamName) {",
                             "\t\treturn \$value ? (new $this->dtoClass_(\$value))->mergeHidden(\${$vmParamName}->get('_hidden') ?? []) : \$value;",
                             "\t})",
-                            ")",
+                            ')',
                         ] :
                             [')'],
-                        ['return $this->response->ok($result)',]
+                        ['return $this->response->ok($result)']
                     ) : []
                 ),
             ],
@@ -429,7 +428,7 @@ class ControllerClassBuilder implements ContractsControllerBuilder
                 ],
                 'descriptors' => [
                     'Display or Returns an item matching the specified id',
-                    '@Route /GET /' . $this->routeName_ . '/{$id}',
+                    '@Route /GET /'.$this->routeName_.'/{$id}',
                 ],
                 'returns' => 'mixed',
                 'contents' => $this->mustGenerateActionContents() ? array_merge(
@@ -445,7 +444,7 @@ class ControllerClassBuilder implements ContractsControllerBuilder
                         "\tfunction (\$value) use (\$$vmParamName) {",
                         "\t\treturn null !== \$value ? (new $this->dtoClass_(\$value))->mergeHidden(\${$vmParamName}->get('_hidden') ?? []) : \$value",
                         "\t}",
-                        ")"
+                        ')',
                     ] :
                         ['))'],
                     [
@@ -457,11 +456,11 @@ class ControllerClassBuilder implements ContractsControllerBuilder
                 'name' => 'store',
                 'params' => array_filter([
                     null === $this->viewModelClass_ ? PHPFunctionParameter('request', Request::class) : null,
-                    null === $this->viewModelClass_ ? null : PHPFunctionParameter('viewModel', $this->viewModelClass_)
+                    null === $this->viewModelClass_ ? null : PHPFunctionParameter('viewModel', $this->viewModelClass_),
                 ]),
                 'descriptors' => [
                     'Stores a new item in the storage',
-                    '@Route /POST /' . $this->routeName_,
+                    '@Route /POST /'.$this->routeName_,
                 ],
                 'returns' => 'mixed',
                 'contents' => $this->mustGenerateActionContents() ? array_merge(
@@ -469,7 +468,7 @@ class ControllerClassBuilder implements ContractsControllerBuilder
                         '// validate request inputs',
                     ],
                     null === $this->viewModelClass_ ? [
-                        "\$result = \$this->validator->validate([], \$request->all(), function () use (\$request) {",
+                        '$result = $this->validator->validate([], $request->all(), function () use ($request) {',
                         '// After validation logic goes here...',
                     ] : [
                         '$result = $this->validator->validate($viewModel, function () use ($viewModel) {',
@@ -488,7 +487,7 @@ class ControllerClassBuilder implements ContractsControllerBuilder
                         "\t\t\t[\$viewModel->getPrimaryKey() => \$viewModel->get(\$viewModel->getPrimaryKey()),] : []),",
                     ],
                     [
-                        null === $this->dtoClass_  ? "\t])," : "\t]), function (\$value) {",
+                        null === $this->dtoClass_ ? "\t])," : "\t]), function (\$value) {",
                     ],
                     null !== $this->dtoClass_ ? [
                         "\t\treturn null !== \$value ? new $this->dtoClass_(\$value) : \$value",
@@ -509,8 +508,8 @@ class ControllerClassBuilder implements ContractsControllerBuilder
                 ]),
                 'descriptors' => [
                     'Update the specified resource in storage.',
-                    '@Route /PUT /' . $this->routeName_ . '/{id}',
-                    '@Route /PATCH /' . $this->routeName_ . '/{id}',
+                    '@Route /PUT /'.$this->routeName_.'/{id}',
+                    '@Route /PATCH /'.$this->routeName_.'/{id}',
                 ],
                 'returns' => 'mixed',
                 'contents' => $this->mustGenerateActionContents() ? array_merge(
@@ -518,7 +517,7 @@ class ControllerClassBuilder implements ContractsControllerBuilder
                         (null !== $this->viewModelClass_) ? '$viewModel = $viewModel->merge(["id" => $id])' : '$request = $request->merge(["id" => $id])',
                     ],
                     null === $this->viewModelClass_ ? [
-                        "\$result = \$this->validator->updating()->validate([], \$request->all(), function () use (\$id, \$request) {",
+                        '$result = $this->validator->updating()->validate([], $request->all(), function () use ($id, $request) {',
                         '// After validation logic goes here...',
                     ] : [
                         '$result = $this->validator->updating()->validate($viewModel, function () use ($id, $viewModel) {',
@@ -529,7 +528,7 @@ class ControllerClassBuilder implements ContractsControllerBuilder
                     ],
                     ["\t\t'relations' => \$query['relations'] ?? [],"],
                     [
-                        null === $this->dtoClass_  ? "\t\t])," : "\t]), function (\$value) {",
+                        null === $this->dtoClass_ ? "\t\t])," : "\t]), function (\$value) {",
                     ],
                     null !== $this->dtoClass_ ? [
                         "\t\treturn null !== \$value ? new $this->dtoClass_(\$value) : \$value",
@@ -550,7 +549,7 @@ class ControllerClassBuilder implements ContractsControllerBuilder
                 ],
                 'descriptors' => [
                     'Remove the specified resource from storage.',
-                    '@Route /DELETE /' . $this->routeName_ . '/{id}',
+                    '@Route /DELETE /'.$this->routeName_.'/{id}',
                 ],
                 'returns' => 'mixed',
                 'contents' => $this->mustGenerateActionContents() ? [

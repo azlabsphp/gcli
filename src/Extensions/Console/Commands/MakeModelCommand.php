@@ -28,17 +28,17 @@ use Illuminate\Contracts\Foundation\Application;
 class MakeModelCommand extends Command
 {
     protected $signature = 'drewlabs:mvc:make:model '
-        . '{--increments : Makes the model primary key incrementable}'
-        . '{--asViewModel : Generate the model as a view model class}'
-        . '{--comment= Comment to be added to the model }'
-        . '{--table= : Table name to attached to the model }'
-        . '{--namespace= : Component namespace }'
-        . '{--primaryKey= : Model primary key }'
-        . '{--path= : Project source code path }'
-        . '{--columns=* : List of model table fillable columns. (column|type) }'
-        . '{--hidden=* List of hidden properties}'
-        . '{--appends=* List of properties to append to the model }'
-        . '{--all : Creates service, dto, view model and controller classes }';
+        .'{--increments : Makes the model primary key incrementable}'
+        .'{--asViewModel : Generate the model as a view model class}'
+        .'{--comment= Comment to be added to the model }'
+        .'{--table= : Table name to attached to the model }'
+        .'{--namespace= : Component namespace }'
+        .'{--primaryKey= : Model primary key }'
+        .'{--path= : Project source code path }'
+        .'{--columns=* : List of model table fillable columns. (column|type) }'
+        .'{--hidden=* List of hidden properties}'
+        .'{--appends=* List of properties to append to the model }'
+        .'{--all : Creates service, dto, view model and controller classes }';
 
     protected $description = 'Creates a model using Drewlabs package model definitions';
     /**
@@ -92,10 +92,10 @@ class MakeModelCommand extends Command
 
     public static function createComponents($basePath, SourceFileInterface $component, ?ORMModelDefinition $definition = null)
     {
-        $modelClassPath = sprintf("\\%s\\%s", $component->getNamespace(), $component->getName());
-        $service = $service ?? sprintf("%sService", $component->getName());
-        $dto = $dto ?? sprintf("%sDto", $component->getName());
-        $viewModel = $viewModel ?? sprintf("%sViewModel", $component->getName());
+        $modelClassPath = sprintf('\\%s\\%s', $component->getNamespace(), $component->getName());
+        $service = $service ?? sprintf('%sService', $component->getName());
+        $dto = $dto ?? sprintf('%sDto', $component->getName());
+        $viewModel = $viewModel ?? sprintf('%sViewModel', $component->getName());
         $serviceClass = ComponentCommandsHelpers::createService($component->getNamespace(), $basePath, $modelClassPath, $service);
         $dtoClass = ComponentCommandsHelpers::createDto($component->getNamespace(), $basePath, $modelClassPath, $dto, $definition instanceof DtoAttributesFactory ? $definition->createDtoAttributes() : []);
         $viewModelClass = ComponentCommandsHelpers::createViewModel($component->getNamespace(), $basePath, $modelClassPath, $viewModel, $definition instanceof ViewModelRulesFactory ? $definition->createRules() : [], $definition instanceof ViewModelRulesFactory ? $definition->createRules(true) : []);
@@ -106,7 +106,7 @@ class MakeModelCommand extends Command
                 $viewModelClass,
                 $dtoClass,
                 null,
-                sprintf("\\%s\\Http\\Controllers", ComponentCommandsHelpers::getBaseNamespace($component->getNamespace()) ?? "App"),
+                sprintf('\\%s\\Http\\Controllers', ComponentCommandsHelpers::getBaseNamespace($component->getNamespace()) ?? 'App'),
             )
         );
     }

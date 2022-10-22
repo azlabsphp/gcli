@@ -14,45 +14,35 @@ declare(strict_types=1);
 namespace Drewlabs\ComponentGenerators\Helpers;
 
 use Drewlabs\CodeGenerator\Exceptions\PHPVariableException;
+use Drewlabs\ComponentGenerators\Builders\EloquentORMModelBuilder as EloquentORMModelBuilderClass;
 use Drewlabs\ComponentGenerators\Cache\CacheableSerializer;
 use Drewlabs\ComponentGenerators\Cache\CacheableTables;
 use Drewlabs\ComponentGenerators\Contracts\SourceFileInterface;
-use Drewlabs\Core\Helpers\Str;
-use Drewlabs\Filesystem\Exceptions\CreateDirectoryException;
-
 use function Drewlabs\ComponentGenerators\Proxy\DataTransfertClassBuilder;
+
 use function Drewlabs\ComponentGenerators\Proxy\EloquentORMModelBuilder;
 use function Drewlabs\ComponentGenerators\Proxy\MVCControllerBuilder;
-
 use function Drewlabs\ComponentGenerators\Proxy\MVCServiceBuilder;
+
 use function Drewlabs\ComponentGenerators\Proxy\ORMColumnDefinition;
 use function Drewlabs\ComponentGenerators\Proxy\ORMModelDefinition;
 use function Drewlabs\ComponentGenerators\Proxy\ViewModelBuilder;
+use Drewlabs\Core\Helpers\Arr;
+use Drewlabs\Core\Helpers\Str;
+use Drewlabs\Filesystem\Exceptions\CreateDirectoryException;
 use Drewlabs\Filesystem\Exceptions\FileNotFoundException;
 use Drewlabs\Filesystem\Exceptions\ReadFileException;
 use Drewlabs\Filesystem\Exceptions\UnableToRetrieveMetadataException;
-use InvalidArgumentException;
 use Drewlabs\Filesystem\Exceptions\WriteOperationFailedException;
-use Drewlabs\ComponentGenerators\Builders\EloquentORMModelBuilder as EloquentORMModelBuilderClass;
-use Drewlabs\Core\Helpers\Arr;
-use RuntimeException;
 
 use function Drewlabs\Filesystem\Proxy\Path;
 
 class ComponentBuilderHelpers
 {
     /**
-     * 
-     * @param string $table 
-     * @param array $columns 
-     * @param string $namespace 
-     * @param string $primaryKey 
-     * @param bool $increments 
-     * @param bool $isViewModel 
-     * @param array $hidden 
-     * @param array $appends 
-     * @param null|string $comments 
-     * @return EloquentORMModelBuilderClass 
+     * @param bool $isViewModel
+     *
+     * @return EloquentORMModelBuilderClass
      */
     public static function createModelBuilder(
         string $table,
@@ -87,6 +77,7 @@ class ComponentBuilderHelpers
                         if (\is_string($column) && !Str::contains($column, '|')) {
                             $column = sprintf('%s|', $column);
                         }
+
                         return $column;
                     }, $columns), static function ($definition) {
                         return null !== $definition && Str::contains($definition, '|');
@@ -101,24 +92,18 @@ class ComponentBuilderHelpers
         if ($isViewModel) {
             $component = $component->asViewModel();
         }
+
         return $component;
     }
 
     /**
-     * 
-     * @param string $table 
-     * @param array $columns 
-     * @param string $namespace 
-     * @param string $primaryKey 
-     * @param bool $increments 
-     * @param bool $vm 
-     * @param array $hidden 
-     * @param array $appends 
-     * @param null|string $comments 
-     * @return SourceFileInterface 
-     * @throws RuntimeException 
-     * @throws PHPVariableException 
-     * @throws UnableToRetrieveMetadataException 
+     * @param bool $vm
+     *
+     * @throws \RuntimeException
+     * @throws PHPVariableException
+     * @throws UnableToRetrieveMetadataException
+     *
+     * @return SourceFileInterface
      */
     public static function buildModelDefinitionSourceFile(
         string $table,
@@ -145,13 +130,9 @@ class ComponentBuilderHelpers
     }
 
     /**
-     * 
-     * @param bool $asCRUD 
-     * @param null|string $name 
-     * @param null|string $namespace 
-     * @param null|string $model 
-     * @return SourceFileInterface 
-     * @throws UnableToRetrieveMetadataException 
+     * @throws UnableToRetrieveMetadataException
+     *
+     * @return SourceFileInterface
      */
     public static function buildServiceDefinition(
         bool $asCRUD = false,
@@ -173,18 +154,10 @@ class ComponentBuilderHelpers
     }
 
     /**
-     * 
-     * @param bool $single 
-     * @param array $rules 
-     * @param array $updateRules 
-     * @param null|string $name 
-     * @param null|string $namespace 
-     * @param null|string $path 
-     * @param null|string $model 
-     * @param null|bool $hasHttpHandlers 
-     * @return SourceFileInterface 
-     * @throws PHPVariableException 
-     * @throws UnableToRetrieveMetadataException 
+     * @throws PHPVariableException
+     * @throws UnableToRetrieveMetadataException
+     *
+     * @return SourceFileInterface
      */
     public static function buildViewModelDefinition(
         bool $single = false,
@@ -243,14 +216,9 @@ class ComponentBuilderHelpers
     }
 
     /**
-     * 
-     * @param array $attributes 
-     * @param array $hidden 
-     * @param null|string $name 
-     * @param null|string $namespace 
-     * @param null|string $model 
-     * @return SourceFileInterface 
-     * @throws UnableToRetrieveMetadataException 
+     * @throws UnableToRetrieveMetadataException
+     *
+     * @return SourceFileInterface
      */
     public static function buildDtoObjectDefinition(
         array $attributes = [],
@@ -272,15 +240,12 @@ class ComponentBuilderHelpers
     }
 
     /**
-     * 
-     * @param mixed $model 
-     * @param mixed $service 
-     * @param mixed $viewModel 
-     * @param mixed $dto 
-     * @param null|string $name 
-     * @param null|string $namespace 
-     * @param bool $auth 
-     * @return SourceFileInterface 
+     * @param mixed $model
+     * @param mixed $service
+     * @param mixed $viewModel
+     * @param mixed $dto
+     *
+     * @return SourceFileInterface
      */
     public static function buildController(
         $model = null,
@@ -316,11 +281,9 @@ class ComponentBuilderHelpers
     }
 
     /**
-     * 
-     * @param string $namespace 
-     * @param string $path 
-     * @return string 
-     * @throws UnableToRetrieveMetadataException 
+     * @throws UnableToRetrieveMetadataException
+     *
+     * @return string
      */
     public static function rebuildComponentPath(string $namespace, string $path)
     {
@@ -352,9 +315,7 @@ class ComponentBuilderHelpers
     }
 
     /**
-     * 
-     * @param string $classname 
-     * @return string 
+     * @return string
      */
     public static function buildRouteName(string $classname)
     {
@@ -366,16 +327,12 @@ class ComponentBuilderHelpers
     }
 
     /**
-     * 
-     * @param string $path 
-     * @param array $tables 
-     * @param null|string $namespace 
-     * @param null|string $subPackage 
-     * @return void 
-     * @throws UnableToRetrieveMetadataException 
-     * @throws CreateDirectoryException 
-     * @throws InvalidArgumentException 
-     * @throws WriteOperationFailedException 
+     * @throws UnableToRetrieveMetadataException
+     * @throws CreateDirectoryException
+     * @throws \InvalidArgumentException
+     * @throws WriteOperationFailedException
+     *
+     * @return void
      */
     public static function cacheComponentDefinitions(string $path, array $tables, ?string $namespace = null, ?string $subPackage = null)
     {

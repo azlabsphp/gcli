@@ -19,12 +19,12 @@ use Drewlabs\ComponentGenerators\Contracts\ControllerBuilder;
 use Drewlabs\ComponentGenerators\Contracts\SourceFileInterface;
 use Drewlabs\ComponentGenerators\Helpers\ColumnsDefinitionHelpers;
 use Drewlabs\ComponentGenerators\Helpers\ComponentBuilderHelpers;
-use Drewlabs\Core\Helpers\Arr;
-use Drewlabs\Core\Helpers\Functional;
-use Drewlabs\Core\Helpers\Str;
-
 use function Drewlabs\ComponentGenerators\Proxy\EloquentORMModelBuilder;
 use function Drewlabs\ComponentGenerators\Proxy\ORMModelDefinition;
+use Drewlabs\Core\Helpers\Arr;
+
+use Drewlabs\Core\Helpers\Functional;
+use Drewlabs\Core\Helpers\Str;
 
 class DBSchemaReverseEngineeringService
 {

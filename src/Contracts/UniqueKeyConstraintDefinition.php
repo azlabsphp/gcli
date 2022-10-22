@@ -13,10 +13,6 @@ declare(strict_types=1);
 
 namespace Drewlabs\ComponentGenerators\Contracts;
 
-/**
- * 
- * @package Drewlabs\ComponentGenerators\Contracts
- */
 interface UniqueKeyConstraintDefinition
 {
     /**

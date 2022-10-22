@@ -31,7 +31,6 @@ class ServiceClassBuilder implements ComponentBuilder
 {
     use HasNamespaceAttribute;
 
-
     /**
      * Service default class namespace.
      *
@@ -39,10 +38,9 @@ class ServiceClassBuilder implements ComponentBuilder
      */
     public const DEFAULT_NAMESPACE = 'App\\Services';
 
-
     private const CLASS_FUNCTION_PATHS = [
         'Drewlabs\\Packages\\Database\\Proxy\\useDMLQueryActionCommand',
-        'Drewlabs\\Packages\\Database\\Proxy\\DMLManager'
+        'Drewlabs\\Packages\\Database\\Proxy\\DMLManager',
     ];
 
     /**
@@ -80,7 +78,7 @@ class ServiceClassBuilder implements ComponentBuilder
         ?string $path = null
     ) {
         if ($name) {
-            $this->setName(Str::camelize(Pluralizer::singular($name)) . 'Service');
+            $this->setName(Str::camelize(Pluralizer::singular($name)).'Service');
         }
         // Set the component write path
         $this->setWritePath($path ?? self::DEFAULT_PATH);
@@ -102,7 +100,7 @@ class ServiceClassBuilder implements ComponentBuilder
         } else {
             $this->modelName_ = $classPath;
         }
-        $name = Str::camelize(Pluralizer::singular($this->modelName_)) . 'Service';
+        $name = Str::camelize(Pluralizer::singular($this->modelName_)).'Service';
         $this->setName($name);
 
         return $this;
@@ -123,7 +121,7 @@ class ServiceClassBuilder implements ComponentBuilder
     public function build()
     {
         $handlMethodLines = [
-            $this->asCRUD_ ? "return useDMLQueryActionCommand(\$this->dbManager)(\$action, \$callback)" : "#code..."
+            $this->asCRUD_ ? 'return useDMLQueryActionCommand($this->dbManager)($action, $callback)' : '#code...',
         ];
         $component = (PHPClass($this->name_ ?? self::DEFAULT_NAME));
         foreach (static::CLASS_FUNCTION_PATHS as $functionPath) {

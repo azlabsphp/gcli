@@ -33,28 +33,28 @@ class CreateMVCComponentsCommand extends Command
      * @var string
      */
     protected $signature = 'drewlabs:mvc:create {--srcPath= : Path to the business logic component folder}'
-        . '{--package= : Package namespace for components}'
-        . '{--subPackage= : Subpackage will group each component part in a subfolder}'
-        . '{--connectionURL= : Database connection URL}'
-        . '{--dbname= : Database name}'
-        . '{--host= : Database host name}'
-        . '{--port= : Database host port number}'
-        . '{--user= : Database authentication user}'
-        . '{--password= : Database authentication password}'
-        . '{--driver= : Database driver name}'
-        . '{--server_version= : Database server version}'
-        . '{--charset= : Database Connection collation}'
-        . '{--unix_socket= : Unix socket to use for connections}'
-        . '{--routePrefix= : The prefix for the generated route definitions}'
-        . '{--middleware= : Middleware group defined for the routes prefix}'
-        . '{--routingfilename= : Routing filename (Default = web.php)}'
-        . '{--excepts=* : List of tables not to be included in the generated output}'
-        . '{--disableCache : Caching tables not supported}'
-        . '{--noAuth : Indicates whether project controllers supports authentication}'
-        . '{--schema= : Schema prefix to database tables}'
-        . '{--http : Whether to generates controllers and routes}'
-        . '{--force : Force rewrite of existing classes }'
-        . '{--only=* : Restrict the generator to generate code only for the specified table structures}';
+        .'{--package= : Package namespace for components}'
+        .'{--subPackage= : Subpackage will group each component part in a subfolder}'
+        .'{--connectionURL= : Database connection URL}'
+        .'{--dbname= : Database name}'
+        .'{--host= : Database host name}'
+        .'{--port= : Database host port number}'
+        .'{--user= : Database authentication user}'
+        .'{--password= : Database authentication password}'
+        .'{--driver= : Database driver name}'
+        .'{--server_version= : Database server version}'
+        .'{--charset= : Database Connection collation}'
+        .'{--unix_socket= : Unix socket to use for connections}'
+        .'{--routePrefix= : The prefix for the generated route definitions}'
+        .'{--middleware= : Middleware group defined for the routes prefix}'
+        .'{--routingfilename= : Routing filename (Default = web.php)}'
+        .'{--excepts=* : List of tables not to be included in the generated output}'
+        .'{--disableCache : Caching tables not supported}'
+        .'{--noAuth : Indicates whether project controllers supports authentication}'
+        .'{--schema= : Schema prefix to database tables}'
+        .'{--http : Whether to generates controllers and routes}'
+        .'{--force : Force rewrite of existing classes }'
+        .'{--only=* : Restrict the generator to generate code only for the specified table structures}';
 
     /**
      * The console command description.
@@ -144,8 +144,8 @@ class CreateMVCComponentsCommand extends Command
             $server_version = $this->option('server_version') ?? null;
             $options = [
                 'dbname' => $database,
-                'host' =>  $driver === 'pdo_sqlite' ? null : $host ?? '127.0.0.1',
-                'port' =>  $driver === 'pdo_sqlite' ? null : $port ?? 3306,
+                'host' => 'pdo_sqlite' === $driver ? null : $host ?? '127.0.0.1',
+                'port' => 'pdo_sqlite' === $driver ? null : $port ?? 3306,
                 'user' => $username,
                 'password' => $password,
                 'driver' => $driver ?? 'pdo_sqlite',
@@ -173,23 +173,25 @@ class CreateMVCComponentsCommand extends Command
                 $this->option('schema') ?? null,
                 $httpHandlers
             )(
-            $this->laravel->basePath('routes'),
-            $this->path_,
-            $this->routesCachePath_,
+                $this->laravel->basePath('routes'),
+                $this->path_,
+                $this->routesCachePath_,
             // Creates the progress indicator
             function ($values) {
                 $this->info("Started reverse engineering process...\n");
+
                 return new ProgressbarIndicator($this->output->createProgressBar(\count($values)));
             },
-            function () {
+                function () {
                 $this->info("\nReverse engineering completed successfully!\n");
             },
-            function(Writable $writable) use ($srcPath) {
+                function (Writable $writable) use ($srcPath) {
                 if ($this->option('force')) {
                     return true;
                 }
-                return $this->confirm("Override existing class at $srcPath ?" . DIRECTORY_SEPARATOR . $writable->getPath());
+
+                return $this->confirm("Override existing class at $srcPath ?".\DIRECTORY_SEPARATOR.$writable->getPath());
             }
-        );
+            );
     }
 }

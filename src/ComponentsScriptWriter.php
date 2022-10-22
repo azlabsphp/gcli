@@ -49,12 +49,12 @@ class ComponentsScriptWriter implements ScriptWriter
     }
 
     /**
-     * Check if source script already exists
-     * 
-     * @param Writable $writable 
-     * @return bool 
-     * @throws FilesystemException 
-     * @throws UnableToCheckExistence 
+     * Check if source script already exists.
+     *
+     * @throws FilesystemException
+     * @throws UnableToCheckExistence
+     *
+     * @return bool
      */
     public function fileExists(Writable $writable)
     {
