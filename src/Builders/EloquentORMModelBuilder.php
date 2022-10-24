@@ -245,7 +245,7 @@ class EloquentORMModelBuilder implements ContractsEloquentORMModel, ComponentBui
                     PHPTypesModifiers::PUBLIC,
                     'Returns a fluent validation rules'
                 ))->addContents(
-                    'return '.PHPVariable('rules', null, $this->rules_ ?? [])->asRValue()->__toString()
+                    'return ' . PHPVariable('rules', null, $this->rules_ ?? [])->asRValue()->__toString()
                 )
             );
             if (!$this->isSingleActionValidator_) {
@@ -261,7 +261,7 @@ class EloquentORMModelBuilder implements ContractsEloquentORMModel, ComponentBui
                             'array<string,string|string[]>',
                             PHPTypesModifiers::PUBLIC,
                             'Returns a fluent validation rules applied during update actions'
-                        )->addContents('return '.PHPVariable('rules', null, $this->rules_ ?? [])->asRValue()->__toString())
+                        )->addContents('return ' . PHPVariable('rules', null, $this->rules_ ?? [])->asRValue()->__toString())
                     );
             } else {
                 /**
@@ -344,6 +344,9 @@ class EloquentORMModelBuilder implements ContractsEloquentORMModel, ComponentBui
             ->addToNamespace($this->namespace_ ?? self::DEFAULT_NAMESPACE);
 
         if (null !== $this->primaryKey_) {
+            /**
+             * @var Blueprint
+             */
             $component = $component->addProperty(
                 PHPClassProperty(
                     'primaryKey',
@@ -356,14 +359,10 @@ class EloquentORMModelBuilder implements ContractsEloquentORMModel, ComponentBui
         }
 
         if ((null !== $this->autoIncrements_) && !$this->autoIncrements_) {
-            $component = $component->addProperty(
-                PHPClassProperty(
-                    'incrementing',
-                    'bool',
-                    PHPTypesModifiers::PUBLIC,
-                    false,
-                    'Indicates whether the primary key of the model is incrementable'
-                )
+            $component = $component->addTrait(
+                trait_exists(\Illuminate\Database\Eloquent\Concerns\HasUuids::class) ?
+                    \Illuminate\Database\Eloquent\Concerns\HasUuids::class :
+                    \Drewlabs\Packages\Database\Traits\HasUuids::class
             );
         }
 
@@ -439,8 +438,8 @@ class EloquentORMModelBuilder implements ContractsEloquentORMModel, ComponentBui
         $name_ = $table ?? $name ?? null;
         // TODO : REMOVE SCHEMA PREFIX IF ANY
         if ($name_ && $schema) {
-            $name_ = Str::startsWith($name_, $schema.'_') ?
-                Str::replace($schema.'_', '', $name_) : (Str::startsWith($name_, $schema) ?
+            $name_ = Str::startsWith($name_, $schema . '_') ?
+                Str::replace($schema . '_', '', $name_) : (Str::startsWith($name_, $schema) ?
                     Str::replace($schema, '', $name_) :
                     $name_);
         }
