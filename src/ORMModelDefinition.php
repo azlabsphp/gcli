@@ -101,11 +101,10 @@ class ORMModelDefinition extends Value implements ContractsORMModelDefinition, D
 
     private function getColumRules(ORMColumnDefinition $column, ?string $primaryKey = null, $useUpdateRules = false)
     {
-
-        $rules[] = $column->required() || !$column->hasDefault() ?
-            ($useUpdateRules ? DataTypeToFluentValidationRulesHelper::SOMETIMES :
-                $this->createColumnRule($column, $primaryKey)) :
-            DataTypeToFluentValidationRulesHelper::NULLABLE;
+        $rules[] = !$column->required() ? DataTypeToFluentValidationRulesHelper::NULLABLE :
+            ($column->required() && $column->hasDefault() ?
+            DataTypeToFluentValidationRulesHelper::NULLABLE : ($useUpdateRules ? DataTypeToFluentValidationRulesHelper::SOMETIMES :
+                $this->createColumnRule($column, $primaryKey)));
 
         if ($column->name() === $primaryKey) {
             $rules[] = DataTypeToFluentValidationRulesHelper::getExistsRule($this->table(), $primaryKey);
@@ -127,7 +126,6 @@ class ORMModelDefinition extends Value implements ContractsORMModelDefinition, D
         if ($column->name() === $key) {
             return DataTypeToFluentValidationRulesHelper::SOMETIMES;
         }
-
         return null !== $key ?
             sprintf(
                 '%s:%s',

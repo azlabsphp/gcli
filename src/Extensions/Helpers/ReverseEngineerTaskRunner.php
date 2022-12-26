@@ -25,6 +25,9 @@ use function Drewlabs\ComponentGenerators\Proxy\DatabaseSchemaReverseEngineering
 
 use Drewlabs\Core\Helpers\Arr;
 use Drewlabs\Core\Helpers\Str;
+use League\Flysystem\FilesystemException;
+use League\Flysystem\UnableToCheckExistence;
+use League\Flysystem\UnableToWriteFile;
 
 class ReverseEngineerTaskRunner
 {
@@ -206,7 +209,7 @@ class ReverseEngineerTaskRunner
         ?string $middleware = null,
         ?string $subPackage = null
     ) {
-        return static function (array $routes = [], $partial) use (
+        return static function (array $routes = [], bool $partial = false) use (
             $disableCache,
             $cachePath,
             $lumen,
@@ -216,7 +219,7 @@ class ReverseEngineerTaskRunner
             $middleware,
             $subPackage
         ) {
-            if (!$disableCache || !$partial) {
+            if (!$disableCache && !$partial) {
                 // Get route definitions from cache
                 $value = $cachePath ? RouteDefinitionsHelper::getCachedRouteDefinitions($cachePath) : null;
                 $routes = array_merge($routes, $value ? $value->getRoutes() : []);
@@ -252,6 +255,17 @@ class ReverseEngineerTaskRunner
         };
     }
 
+    /**
+     * Write the source code for a given OOP component to disk
+     * 
+     * @param mixed $path 
+     * @param Writable $writable 
+     * @param null|callable $callback 
+     * @return void 
+     * @throws FilesystemException 
+     * @throws UnableToCheckExistence 
+     * @throws UnableToWriteFile 
+     */
     private static function writeComponentSourceCode($path, Writable $writable, ?callable $callback = null)
     {
         /**
