@@ -14,20 +14,22 @@ declare(strict_types=1);
 namespace Drewlabs\ComponentGenerators\Helpers;
 
 use Doctrine\DBAL\Schema\Column;
-use Drewlabs\ComponentGenerators\ORMColumnDefinition;
+use Drewlabs\ComponentGenerators\ORMColumnDefinition as ColumnDefinition;
 use Drewlabs\ComponentGenerators\ORMColumnForeignKeyConstraintDefinition;
 use Drewlabs\ComponentGenerators\ORMColumnUniqueKeyDefinition;
 use Drewlabs\Core\Helpers\Iter;
 use Generator;
 
+use function Drewlabs\ComponentGenerators\Proxy\ORMColumnDefinition;
+
 class ColumnsDefinitionHelpers
 {
     /**
-     * Create an iterator or a generator of {@link ORMColumnDefinition} from a list of doctrine dbal column instance.
+     * Create an iterator or a generator of {@link ColumnDefinition} from a list of doctrine dbal column instance.
      *
      * @param \Traversable<Column> $columns
      *
-     * @return \Generator<mixed, ORMColumnDefinition, mixed, void>
+     * @return \Generator<mixed, ColumnDefinition, mixed, void>
      */
     public static function createColumnDefinitionsGenerator(string $table, \Traversable $columns)
     {
@@ -39,9 +41,10 @@ class ColumnsDefinitionHelpers
                 $regex = (null === $length && 'bigint' === $column->getType()->getName()) ? \PHP_INT_MAX : $length;
             }
             // Evaluate other types in the future
-            yield $column->getName() => new ORMColumnDefinition([
+            yield $column->getName() => ORMColumnDefinition([
                 'name' => $column->getName(),
                 'table' => $table,
+                'default' => $column->getDefault(),
                 'required' => $column->getNotnull(),
                 'unsigned' => $column->getUnsigned(),
                 'type' => $regex ? sprintf('%s:%s', $column->getType()->getName(), $regex) : sprintf('%s', $column->getType()->getName()),
@@ -68,7 +71,7 @@ class ColumnsDefinitionHelpers
 
         return static function ($definitions) use ($foreignKeys) {
             /**
-             * @var ORMColumnDefinition[]
+             * @var ColumnDefinition[]
              */
             $definitions = \is_array($definitions) ? $definitions : iterator_to_array($definitions);
             foreach ($foreignKeys as $key => $value) {
@@ -106,7 +109,7 @@ class ColumnsDefinitionHelpers
 
         return static function ($definitions) use ($uniqueIndexes) {
             /**
-             * @var ORMColumnDefinition[]
+             * @var ColumnDefinition[]
              */
             $definitions = \is_array($definitions) ? $definitions : iterator_to_array($definitions);
             // Set the unique constraint on the definition

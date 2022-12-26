@@ -180,8 +180,11 @@ class ReverseEngineerTaskRunner
                     $routingfilename,
                     $routePrefix,
                     $middleware,
-                    $subPackage
-                )($routes);
+                    $subPackage,
+                // In case the generator is running for specific tables,
+                // generated routes, consider appending the new table routes
+                // to existing routes
+                )($routes, !empty($this->tables));
                 $indicator->advance();
             }
             if ((null !== $indicator) && ($indicator instanceof Progress)) {
@@ -195,7 +198,7 @@ class ReverseEngineerTaskRunner
 
     protected function writeRoutes(
         ?bool $disableCache,
-        ?bool $forLumen = false,
+        ?bool $lumen = false,
         ?string $routesDirectory = null,
         ?string $cachePath = null,
         ?string $routingfilename = null,
@@ -203,17 +206,17 @@ class ReverseEngineerTaskRunner
         ?string $middleware = null,
         ?string $subPackage = null
     ) {
-        return static function (array $routes = []) use (
+        return static function (array $routes = [], $partial) use (
             $disableCache,
             $cachePath,
-            $forLumen,
+            $lumen,
             $routesDirectory,
             $routingfilename,
             $prefix,
             $middleware,
             $subPackage
         ) {
-            if (!$disableCache) {
+            if (!$disableCache || !$partial) {
                 // Get route definitions from cache
                 $value = $cachePath ? RouteDefinitionsHelper::getCachedRouteDefinitions($cachePath) : null;
                 $routes = array_merge($routes, $value ? $value->getRoutes() : []);
@@ -224,14 +227,15 @@ class ReverseEngineerTaskRunner
                 $definitions[$key] = RouteDefinitionsHelper::for(
                     $key,
                     $value
-                )($forLumen);
+                )($lumen);
             }
             RouteDefinitionsHelper::writeRouteDefinitions(
                 $routesDirectory,
                 $definitions,
-                $routingfilename
+                $routingfilename,
+                $partial
             )(
-                $forLumen,
+                $lumen,
                 $prefix,
                 $middleware,
                 static function () use ($routes, $disableCache, $cachePath, $subPackage) {
@@ -262,3 +266,4 @@ class ReverseEngineerTaskRunner
         }
     }
 }
+ 

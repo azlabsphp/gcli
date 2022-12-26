@@ -24,6 +24,7 @@ class ORMColumnDefinition extends Value implements ContractsORMColumnDefinition
         'table_' => 'table',
         'name_' => 'name',
         'type_' => 'type',
+        'default_' => 'default',
         'foreignKeyConstraint_' => 'foreignKeyConstraint',
         'uniqueKeyConstraint_' => 'uniqueKeyConstraint',
         'required_' => 'required',
@@ -80,6 +81,11 @@ class ORMColumnDefinition extends Value implements ContractsORMColumnDefinition
     public function getTable()
     {
         return $this->table_;
+    }
+
+    public function hasDefault()
+    {
+        return null !== $this->default_;
     }
 
     public function jsonSerialize()

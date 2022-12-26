@@ -63,4 +63,11 @@ interface ORMColumnDefinition
      * @return bool
      */
     public function unsigned();
+
+    /**
+     * Checks if the current column has default value
+     * 
+     * @return bool 
+     */
+    public function hasDefault();
 }

@@ -49,11 +49,6 @@ class ControllerClassBuilder implements ContractsControllerBuilder
     /**
      * @var string
      */
-    // private const ACTION_FUNCTION_PATH = 'Drewlabs\\Support\\Proxy\\Action';
-
-    /**
-     * @var string
-     */
     private const USE_QUERY_RESULT_PROXY = 'Drewlabs\\Packages\\Database\\Proxy\\useMapQueryResult';
 
     /**
@@ -209,7 +204,7 @@ class ControllerClassBuilder implements ContractsControllerBuilder
         $actionHandlerInterface = \Drewlabs\Contracts\Support\Actions\ActionHandler::class;
         if ((null !== $clazz) &&
             interface_exists($actionHandlerInterface) &&
-            ($clazz instanceof \Drewlabs\Contracts\Support\Actions\ActionHandler)
+            is_a($clazz, \Drewlabs\Contracts\Support\Actions\ActionHandler::class, true)
         ) {
             $this->hasActionHandlerInterface_ = true;
             $this->serviceClass_ = $this->getClassFromClassPath($serviceClass);
@@ -251,7 +246,7 @@ class ControllerClassBuilder implements ContractsControllerBuilder
                         ),
                         PHPFunctionParameter(
                             'response',
-                            \Drewlabs\Packages\Http\Contracts\IActionResponseHandler::class,
+                            \Drewlabs\Packages\Http\Contracts\ResponseHandler::class,
                         ),
                     ],
                     // Add the service class as parameter to the constructor
@@ -292,7 +287,9 @@ class ControllerClassBuilder implements ContractsControllerBuilder
             $component = $component->addProperty(
                 PHPClassProperty(
                     'service',
-                    $this->hasActionHandlerInterface_ ? \Drewlabs\Contracts\Support\Actions\ActionHandler::class : $this->serviceClass_,
+                    $this->hasActionHandlerInterface_ ? 
+                    \Drewlabs\Contracts\Support\Actions\ActionHandler::class : 
+                    $this->serviceClass_,
                     PHPTypesModifiers::PRIVATE,
                     null,
                     'Injected instance of MVC service'
@@ -312,7 +309,7 @@ class ControllerClassBuilder implements ContractsControllerBuilder
             ->addProperty(
                 PHPClassProperty(
                     'response',
-                    \Drewlabs\Packages\Http\Contracts\IActionResponseHandler::class,
+                    \Drewlabs\Packages\Http\Contracts\ResponseHandler::class,
                     PHPTypesModifiers::PRIVATE,
                     null,
                     'Injected instance of the response handler class'
@@ -335,7 +332,7 @@ class ControllerClassBuilder implements ContractsControllerBuilder
                     PHPTypesModifiers::PUBLIC,
                     [
                         'Handles http request action',
-                        '@Route /POST /'.$this->routeName_.'/{id}',
+                        '@Route /POST /' . $this->routeName_ . '/{id}',
                     ]
                 )
             );
@@ -387,7 +384,7 @@ class ControllerClassBuilder implements ContractsControllerBuilder
                 ],
                 'descriptors' => [
                     'Display or Returns a list of items',
-                    '@Route /GET /'.$this->routeName_.'[/{$id}]',
+                    '@Route /GET /' . $this->routeName_ . '[/{$id}]',
                 ],
                 'returns' => 'mixed',
                 'contents' => array_merge(
@@ -428,7 +425,7 @@ class ControllerClassBuilder implements ContractsControllerBuilder
                 ],
                 'descriptors' => [
                     'Display or Returns an item matching the specified id',
-                    '@Route /GET /'.$this->routeName_.'/{$id}',
+                    '@Route /GET /' . $this->routeName_ . '/{$id}',
                 ],
                 'returns' => 'mixed',
                 'contents' => $this->mustGenerateActionContents() ? array_merge(
@@ -460,7 +457,7 @@ class ControllerClassBuilder implements ContractsControllerBuilder
                 ]),
                 'descriptors' => [
                     'Stores a new item in the storage',
-                    '@Route /POST /'.$this->routeName_,
+                    '@Route /POST /' . $this->routeName_,
                 ],
                 'returns' => 'mixed',
                 'contents' => $this->mustGenerateActionContents() ? array_merge(
@@ -508,8 +505,8 @@ class ControllerClassBuilder implements ContractsControllerBuilder
                 ]),
                 'descriptors' => [
                     'Update the specified resource in storage.',
-                    '@Route /PUT /'.$this->routeName_.'/{id}',
-                    '@Route /PATCH /'.$this->routeName_.'/{id}',
+                    '@Route /PUT /' . $this->routeName_ . '/{id}',
+                    '@Route /PATCH /' . $this->routeName_ . '/{id}',
                 ],
                 'returns' => 'mixed',
                 'contents' => $this->mustGenerateActionContents() ? array_merge(
@@ -549,7 +546,7 @@ class ControllerClassBuilder implements ContractsControllerBuilder
                 ],
                 'descriptors' => [
                     'Remove the specified resource from storage.',
-                    '@Route /DELETE /'.$this->routeName_.'/{id}',
+                    '@Route /DELETE /' . $this->routeName_ . '/{id}',
                 ],
                 'returns' => 'mixed',
                 'contents' => $this->mustGenerateActionContents() ? [

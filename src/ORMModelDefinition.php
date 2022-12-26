@@ -36,7 +36,7 @@ class ORMModelDefinition extends Value implements ContractsORMModelDefinition, D
     {
         foreach ($value as $value) {
             if (!($value instanceof ORMColumnDefinition)) {
-                throw new \InvalidArgumentException('$columns parameter must be a list of '.ORMColumnDefinition::class.' items');
+                throw new \InvalidArgumentException('$columns parameter must be a list of ' . ORMColumnDefinition::class . ' items');
             }
         }
 
@@ -101,23 +101,17 @@ class ORMModelDefinition extends Value implements ContractsORMModelDefinition, D
 
     private function getColumRules(ORMColumnDefinition $column, ?string $primaryKey = null, $useUpdateRules = false)
     {
-        $evaluateIfPrimaryKeyFunc = static function ($key) use ($column) {
-            if ($column->name() === $key) {
-                return DataTypeToFluentValidationRulesHelper::SOMETIMES;
-            }
 
-            return null !== $key ?
-                sprintf(
-                    '%s:%s',
-                    DataTypeToFluentValidationRulesHelper::REQUIRED_WITHOUT,
-                    $key
-                ) : DataTypeToFluentValidationRulesHelper::REQUIRED;
-        };
-        $rules[] = $column->required() ?
+        $rules[] = $column->required() || !$column->hasDefault() ?
             ($useUpdateRules ? DataTypeToFluentValidationRulesHelper::SOMETIMES :
-                $evaluateIfPrimaryKeyFunc($primaryKey)) :
+                $this->createColumnRule($column, $primaryKey)) :
             DataTypeToFluentValidationRulesHelper::NULLABLE;
-        $rules = [...$rules, ...(DataTypeToFluentValidationRulesHelper::getRule($column->type()))];
+
+        if ($column->name() === $primaryKey) {
+            $rules[] = DataTypeToFluentValidationRulesHelper::getExistsRule($this->table(), $primaryKey);
+        }
+        $columnRules = DataTypeToFluentValidationRulesHelper::getRule($column->type());
+        $rules = [...$rules, ...$columnRules];
         if ($constraints = $column->foreignConstraint()) {
             $rules = [...$rules, ...(DataTypeToFluentValidationRulesHelper::getRule($constraints))];
         }
@@ -126,5 +120,19 @@ class ORMModelDefinition extends Value implements ContractsORMModelDefinition, D
         }
 
         return array_merge($rules);
+    }
+
+    private function createColumnRule(ORMColumnDefinition $column, string $key = null)
+    {
+        if ($column->name() === $key) {
+            return DataTypeToFluentValidationRulesHelper::SOMETIMES;
+        }
+
+        return null !== $key ?
+            sprintf(
+                '%s:%s',
+                DataTypeToFluentValidationRulesHelper::REQUIRED_WITHOUT,
+                $key
+            ) : DataTypeToFluentValidationRulesHelper::REQUIRED;
     }
 }

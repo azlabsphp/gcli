@@ -66,18 +66,15 @@ class ComponentBuilderHelpers
                         $least = explode(',', Str::after('|', $definition) ?? '');
                         $type = Arr::first($least) ?? null;
                         // TODO : Load the remaining parts
-                        return ORMColumnDefinition(
-                            [
-                                'name' => $name,
-                                'type' => empty($type) ? null : $type,
-                            ]
-                        );
+                        return ORMColumnDefinition([
+                            'name' => $name,
+                            'type' => empty($type) ? null : $type,
+                        ]);
                     },
                     array_filter(array_map(static function ($column) {
                         if (\is_string($column) && !Str::contains($column, '|')) {
                             $column = sprintf('%s|', $column);
                         }
-
                         return $column;
                     }, $columns), static function ($definition) {
                         return null !== $definition && Str::contains($definition, '|');
