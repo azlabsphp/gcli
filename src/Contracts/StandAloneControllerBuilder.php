@@ -13,7 +13,7 @@ declare(strict_types=1);
 
 namespace Drewlabs\ComponentGenerators\Contracts;
 
-interface StandaloneControllerBuilder
+interface StandAloneControllerBuilder
 {
     /**
      * Makes the controller a standalone controller builder
