@@ -408,7 +408,7 @@ class ControllerClassBuilder implements ContractsControllerBuilder
                         ],
                         $this->dtoClass_ ? [
                             "\tuseMapQueryResult(function (\$value)  use (\$$vmParamName) {",
-                            "\t\treturn \$value ? (new $this->dtoClass_(\$value))->mergeHidden(\${$vmParamName}->get('_hidden') ?? []) : \$value;",
+                            "\t\treturn \$value ? (new $this->dtoClass_(\$value))->mergeHidden(\${$vmParamName}->get('_hidden') ?? []) : \$value",
                             "\t})",
                             ')',
                         ] :

@@ -330,7 +330,7 @@ class EloquentORMModelBuilder implements ContractsEloquentORMModel, ComponentBui
                     'array',
                     PHPTypesModifiers::PUBLIC,
                     $this->relationMethods_ ?? [],
-                    'List of fillable properties of the current model'
+                    'List of model relation methods'
                 )
             )->addMethod(
                 (PHPClassMethod(
