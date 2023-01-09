@@ -25,7 +25,10 @@ use Drewlabs\ComponentGenerators\Helpers\ComponentBuilderHelpers;
 use function Drewlabs\ComponentGenerators\Proxy\PHPScript;
 use Drewlabs\ComponentGenerators\Traits\HasNamespaceAttribute;
 use Drewlabs\Core\Helpers\Str;
+use Drewlabs\Filesystem\Exceptions\UnableToRetrieveMetadataException;
 use Illuminate\Support\Pluralizer;
+use InvalidArgumentException;
+use RuntimeException;
 
 class ServiceClassBuilder implements ComponentBuilder
 {
@@ -72,14 +75,25 @@ class ServiceClassBuilder implements ComponentBuilder
      */
     private $modelName_ = 'Test';
 
+    /**
+     * Creates a service builder class
+     * 
+     * @param (null|string)|null $name 
+     * @param (null|string)|null $namespace 
+     * @param (null|string)|null $path 
+     * @return void 
+     * @throws InvalidArgumentException 
+     * @throws RuntimeException 
+     * @throws UnableToRetrieveMetadataException 
+     */
     public function __construct(
         ?string $name = null,
         ?string $namespace = null,
         ?string $path = null
     ) {
-        if ($name) {
-            $this->setName(Str::camelize(Pluralizer::singular($name)).'Service');
-        }
+        $this->setName($name ? (!Str::endsWith($name, 'Service') ?
+            Str::camelize(Pluralizer::singular($name)) . 'Service' :
+            Str::camelize(Pluralizer::singular($name))) : self::DEFAULT_NAME);
         // Set the component write path
         $this->setWritePath($path ?? self::DEFAULT_PATH);
 
@@ -92,17 +106,14 @@ class ServiceClassBuilder implements ComponentBuilder
         if (empty($classPath)) {
             return $this;
         }
-        $is_class_path = Str::contains($classPath, '\\'); // && class_exists($model); To uncomment if there is need to validate class existence
-        if ($is_class_path) {
+        $isclasspath = Str::contains($classPath, '\\'); // && class_exists($model); To uncomment if there is need to validate class existence
+        if ($isclasspath) {
             $this->modelName_ = array_reverse(explode('\\', $classPath))[0];
-            // Add the model class to the list of class paths
             $this->classPaths_[$classPath] = $classPath;
         } else {
             $this->modelName_ = $classPath;
         }
-        $name = Str::camelize(Pluralizer::singular($this->modelName_)).'Service';
-        $this->setName($name);
-
+        $this->setName(Str::camelize(Pluralizer::singular($this->modelName_)) . 'Service');
         return $this;
     }
 
@@ -123,7 +134,7 @@ class ServiceClassBuilder implements ComponentBuilder
         $handlMethodLines = [
             $this->asCRUD_ ? 'return useDMLQueryActionCommand($this->dbManager)($action, $callback)' : '#code...',
         ];
-        $component = (PHPClass($this->name_ ?? self::DEFAULT_NAME));
+        $component = (PHPClass($this->name()));
         foreach (static::CLASS_FUNCTION_PATHS as $functionPath) {
             /**
              * @var BluePrint|PHPClass

@@ -13,6 +13,7 @@ declare(strict_types=1);
 
 namespace Drewlabs\ComponentGenerators\Helpers;
 
+use Closure;
 use Drewlabs\ComponentGenerators\Contracts\ForeignKeyConstraintDefinition;
 use Drewlabs\ComponentGenerators\Contracts\UniqueKeyConstraintDefinition;
 use Drewlabs\Core\Helpers\Str;
@@ -65,7 +66,7 @@ class DataTypeToFluentValidationRulesHelper
      *
      * @return array
      */
-    public static function getRule($definition, ?\Closure $filterFn = null)
+    public static function getRule($definition, ?\Closure $predicate = null)
     {
         // Handle Foreign key definition rules
         if ($definition instanceof ForeignKeyConstraintDefinition) {
@@ -73,14 +74,40 @@ class DataTypeToFluentValidationRulesHelper
         }
         // Handle unique columns definitions
         if ($definition instanceof UniqueKeyConstraintDefinition) {
-            return [self::getExistsRule($definition->getTable(), $definition->getColumns())];
+            return [self::getUniqueRule($definition)];
         }
         // Handle unique rules
         if (!\is_string($definition)) {
-            throw new \Exception('$definition parameter type must be a PHP string or instance of '.ForeignKeyConstraintDefinition::class);
+            throw new \Exception('$definition parameter type must be a PHP string or instance of ' . ForeignKeyConstraintDefinition::class);
         }
         // Here we handle string types
-        return self::getSimpleRule($definition, $filterFn);
+        return self::getSimpleRule($definition, $predicate);
+    }
+
+    /**
+     * Returns the unique validation rule
+     * 
+     * @param UniqueKeyConstraintDefinition $metadata 
+     * @return string 
+     */
+    public static function getUniqueRule(UniqueKeyConstraintDefinition $metadata, string $primaryKey = null, bool $updates = false)
+    {
+        $columns = $metadata->getColumns();
+        return !$updates ? "expr:\$this->has('$primaryKey') ? '" . sprintf(
+            'unique:%s,%s,%s,<>,',
+            $metadata->getTable(),
+            \is_array($columns) ? ($columns[0] ?? 'id') : ($columns ?? 'id'),
+            $primaryKey,
+        ) . "' . \$this->$primaryKey : '" . sprintf(
+            'unique:%s,%s',
+            $metadata->getTable(),
+            \is_array($columns) ? ($columns[0] ?? 'id') : ($columns ?? 'id')
+        ) . "'" : "expr:'" . sprintf(
+            'unique:%s,%s,%s,<>,',
+            $metadata->getTable(),
+            \is_array($columns) ? ($columns[0] ?? 'id') : ($columns ?? 'id'),
+            $primaryKey,
+        ) . "' . \$this->$primaryKey";
     }
 
     /**
@@ -98,12 +125,15 @@ class DataTypeToFluentValidationRulesHelper
     }
 
     /**
-     * @return array
+     * 
+     * @param string $type 
+     * @param (null|Closure)|null $predicate 
+     * @return array 
      */
-    private static function getSimpleRule(string $type, ?\Closure $filterFn = null)
+    private static function getSimpleRule(string $type, ?\Closure $predicate = null)
     {
         if (!Str::contains($type, ':')) {
-            return array_filter([self::TYPE_MAPS[$type] ?? null], $filterFn ?? static function ($item) {
+            return array_filter([self::TYPE_MAPS[$type] ?? null], $predicate ?? static function ($item) {
                 return null !== $item;
             });
         }
@@ -117,7 +147,7 @@ class DataTypeToFluentValidationRulesHelper
             $rule1 = "$rule1:{$format}";
         }
 
-        return array_filter([$rule1, $rule2], $filterFn ?? static function ($item) {
+        return array_filter([$rule1, $rule2], $predicate ?? static function ($item) {
             return null !== $item;
         });
     }

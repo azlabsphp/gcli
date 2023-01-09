@@ -19,6 +19,7 @@ use Drewlabs\ComponentGenerators\Contracts\ORMColumnDefinition;
 use Drewlabs\ComponentGenerators\Contracts\ORMModelDefinition as ContractsORMModelDefinition;
 use Drewlabs\ComponentGenerators\Helpers\DataTypeToFluentValidationRulesHelper;
 use Drewlabs\PHPValue\Value;
+use Exception;
 
 class ORMModelDefinition extends Value implements ContractsORMModelDefinition, DtoAttributesFactory, ViewModelRulesFactory
 {
@@ -99,11 +100,19 @@ class ORMModelDefinition extends Value implements ContractsORMModelDefinition, D
         })($this));
     }
 
-    private function getColumRules(ORMColumnDefinition $column, ?string $primaryKey = null, $useUpdateRules = false)
+    /**
+     * 
+     * @param ORMColumnDefinition $column 
+     * @param (null|string)|null $primaryKey 
+     * @param bool $updates 
+     * @return array 
+     * @throws Exception 
+     */
+    private function getColumRules(ORMColumnDefinition $column, ?string $primaryKey = null, $updates = false)
     {
         $rules[] = !$column->required() ? DataTypeToFluentValidationRulesHelper::NULLABLE :
             ($column->required() && $column->hasDefault() ?
-            DataTypeToFluentValidationRulesHelper::NULLABLE : ($useUpdateRules ? DataTypeToFluentValidationRulesHelper::SOMETIMES :
+            DataTypeToFluentValidationRulesHelper::NULLABLE : ($updates ? DataTypeToFluentValidationRulesHelper::SOMETIMES :
                 $this->createColumnRule($column, $primaryKey)));
 
         if ($column->name() === $primaryKey) {
@@ -114,8 +123,8 @@ class ORMModelDefinition extends Value implements ContractsORMModelDefinition, D
         if ($constraints = $column->foreignConstraint()) {
             $rules = [...$rules, ...(DataTypeToFluentValidationRulesHelper::getRule($constraints))];
         }
-        if (($constraints = $column->unique()) && !($useUpdateRules)) {
-            $rules = [...$rules, ...(DataTypeToFluentValidationRulesHelper::getRule($constraints))];
+        if (($constraints = $column->unique()) && ($column->name() !== $primaryKey)) {
+            $rules = [...$rules, DataTypeToFluentValidationRulesHelper::getUniqueRule($constraints, $primaryKey, $updates)];
         }
 
         return array_merge($rules);

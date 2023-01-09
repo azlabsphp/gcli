@@ -28,7 +28,10 @@ use function Drewlabs\ComponentGenerators\Proxy\PHPScript;
 use Drewlabs\ComponentGenerators\Traits\HasNamespaceAttribute;
 use Drewlabs\ComponentGenerators\Traits\ViewModelBuilder;
 use Drewlabs\Core\Helpers\Str;
+use Drewlabs\Filesystem\Exceptions\UnableToRetrieveMetadataException;
 use Illuminate\Support\Pluralizer;
+use InvalidArgumentException;
+use RuntimeException;
 
 class ViewModelClassBuilder implements ComponentBuilder
 {
@@ -67,14 +70,27 @@ class ViewModelClassBuilder implements ComponentBuilder
      */
     private $modelName_;
 
+    /**
+     * Creates an instance of view model class
+     * 
+     * @param (null|string)|null $name 
+     * @param (null|string)|null $namespace 
+     * @param (null|string)|null $path 
+     * @return void 
+     * @throws InvalidArgumentException 
+     * @throws RuntimeException 
+     * @throws UnableToRetrieveMetadataException 
+     */
     public function __construct(
         ?string $name = null,
         ?string $namespace = null,
         ?string $path = null
     ) {
-        if (null !== $name) {
-            $this->setName(!Str::endsWith($name, 'ViewModel') ? Str::camelize(Pluralizer::singular($name)).'ViewModel' : Str::camelize(Pluralizer::singular($name)));
-        }
+        $this->setName($name ?
+            (!Str::endsWith($name, 'ViewModel') ?
+                Str::camelize(Pluralizer::singular($name)) . 'ViewModel' :
+                Str::camelize(Pluralizer::singular($name))) :
+            self::DEFAULT_NAME);
         // Set the component write path
         $this->setWritePath($path ?? self::DEFAULT_PATH);
         // Set the component namespace
@@ -86,22 +102,18 @@ class ViewModelClassBuilder implements ComponentBuilder
         if (empty($model)) {
             return $this;
         }
-        $isClassPath = Str::contains($model, '\\');
-        if ($isClassPath) {
+        $isclasspath = Str::contains($model, '\\');
+        $this->modelName_ = 'Test';
+        if ($isclasspath) {
             $this->modelClassPath_ = $model;
         }
         if (\is_object($model)) {
             $this->modelClassPath_ = \get_class($model);
         }
-        $this->modelName_ = 'Test';
-        if ($isClassPath) {
-            $this->modelName_ = $isClassPath ? array_reverse(explode('\\', $this->modelClassPath_))[0] : $this->modelClassPath_;
+        if ($isclasspath) {
+            $this->modelName_ = $isclasspath ? array_reverse(explode('\\', $this->modelClassPath_))[0] : $this->modelClassPath_;
         }
-        $name = Str::camelize(Pluralizer::singular($this->modelName_)).'ViewModel';
-        if (empty($this->name())) {
-            $this->setName($name);
-        }
-
+        $this->setName(Str::camelize(Pluralizer::singular($this->modelName_)) . 'ViewModel');
         return $this;
     }
 
@@ -114,11 +126,10 @@ class ViewModelClassBuilder implements ComponentBuilder
 
     public function build()
     {
-        // var_dump([$this->name()]);
         /**
          * @var BluePrint|PHPClass
          */
-        $component = (PHPClass($this->name() ?? self::DEFAULT_NAME))
+        $component = (PHPClass($this->name()))
             ->addToNamespace($this->namespace() ?? self::DEFAULT_NAMESPACE)
             ->addMethod(
                 PHPClassMethod(
@@ -128,7 +139,7 @@ class ViewModelClassBuilder implements ComponentBuilder
                     PHPTypesModifiers::PUBLIC,
                     'Returns a fluent validation rules'
                 )->addContents(
-                    'return '.PHPVariable('rules', null, $this->rules_ ?? [])->asRValue()->__toString()
+                    'return ' . PHPVariable('rules', null, $this->rules_ ?? [])->asRValue()->__toString()
                 )
             )->addMethod(
                 PHPClassMethod(
@@ -154,7 +165,7 @@ class ViewModelClassBuilder implements ComponentBuilder
                         'array<string,string|string[]>',
                         PHPTypesModifiers::PUBLIC,
                         'Returns a fluent validation rules applied during update actions'
-                    )->addContents('return '.PHPVariable('rules', null, $this->updateRules_ ?? [])->asRValue()->__toString())
+                    )->addContents('return ' . PHPVariable('rules', null, $this->updateRules_ ?? [])->asRValue()->__toString())
                 );
         } else {
             /**
@@ -174,7 +185,7 @@ class ViewModelClassBuilder implements ComponentBuilder
                         'model_',
                         PHPTypes::STRING,
                         PHPTypesModifiers::PRIVATE,
-                        $this->modelName_.'::class',
+                        $this->modelName_ . '::class',
                         'Model class associated with the view model'
                     )
                 );

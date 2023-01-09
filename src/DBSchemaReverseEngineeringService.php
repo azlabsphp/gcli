@@ -13,9 +13,14 @@ declare(strict_types=1);
 
 namespace Drewlabs\ComponentGenerators;
 
+use Closure;
+use Doctrine\DBAL\Exception;
 use Doctrine\DBAL\Schema\AbstractSchemaManager;
+use Doctrine\DBAL\Schema\SchemaException;
 use Doctrine\DBAL\Schema\Table;
+use Drewlabs\CodeGenerator\Exceptions\PHPVariableException;
 use Drewlabs\ComponentGenerators\Contracts\ControllerBuilder;
+use Drewlabs\ComponentGenerators\Contracts\ORMColumnDefinition;
 use Drewlabs\ComponentGenerators\Contracts\SourceFileInterface;
 use Drewlabs\ComponentGenerators\Helpers\ColumnsDefinitionHelpers;
 use Drewlabs\ComponentGenerators\Helpers\ComponentBuilderHelpers;
@@ -25,6 +30,10 @@ use Drewlabs\Core\Helpers\Arr;
 
 use Drewlabs\Core\Helpers\Functional;
 use Drewlabs\Core\Helpers\Str;
+use Generator;
+use Exception as GlobalException;
+use InvalidArgumentException;
+use Drewlabs\Filesystem\Exceptions\UnableToRetrieveMetadataException;
 
 class DBSchemaReverseEngineeringService
 {
@@ -89,6 +98,13 @@ class DBSchemaReverseEngineeringService
      */
     private $tables_ = [];
 
+    /**
+     * Creates a database reverse engineering service instance
+     * 
+     * @param AbstractSchemaManager $manager 
+     * @param string $blocComponentPath 
+     * @param string $blocComponentNamespace 
+     */
     public function __construct(
         AbstractSchemaManager $manager,
         string $blocComponentPath,
@@ -156,80 +172,113 @@ class DBSchemaReverseEngineeringService
         return $this;
     }
 
-    public function run(?\Closure $callback = null)
+    /**
+     * Execute a reverse engeneering flow on database tables
+     * 
+     * @param array $foreignKeys
+     * @param array $tablesindexes
+     * @param (null|Closure)|null $callback
+     * @return Generator<int, array, mixed, void> 
+     * @throws Exception 
+     * @throws SchemaException 
+     * @throws GlobalException 
+     * @throws InvalidArgumentException 
+     * @throws PHPVariableException 
+     * @throws UnableToRetrieveMetadataException 
+     */
+    public function run(array &$foreignKeys, array &$tablesindexes, ?\Closure $callback = null)
     {
         // We apply filters to only generate code for tables that
         // passes the filters
         $tables = $this->applyFilters($this->manager->listTables());
         $models = $this->tablesToORMModelDefinitionGenerator($tables);
+        $index = 0;
         foreach ($models as $value) {
-            $components = [];
+            $index += 1;
+            $tablesindexes[$value->table()] = $index - 1;
+            // for column foreign constraint push the constraint to the foreign key array
+            /**
+             * @var ORMColumnDefinition $column
+             */
+            foreach ($value->columns() as $column) {
+                if ($constraint = $column->foreignConstraint()) {
+                    $foreignKeys[] = $constraint;
+                }
+            }
+            $components = ['table' => $value->table()];
             $hasTimeStamps = Arr::containsAll(array_map(static function ($column) {
                 return $column->name();
             }, $value->columns() ?? []), self::DEFAULT_TIMESTAMP_COLUMNS);
-            $modelClass = EloquentORMModelBuilder(
-                $value,
-                $this->schema_
-            )->hasTimestamps($hasTimeStamps)->build();
+            $builder = EloquentORMModelBuilder($value, $this->schema_)->hasTimestamps($hasTimeStamps);
+            $modelclasspath = $builder->getClassPath();
             $components['model'] = [
                 'path' => $this->blocComponentPath_,
-                'class' => $modelClass,
+                'class' => $builder,
                 'definitions' => $value,
+                'classPath' => $modelclasspath
             ];
-            $modelClassPath = sprintf('%s\\%s', $modelClass->getNamespace(), Str::camelize($modelClass->getName()));
-            // TODO: Generate view model file for the model
-            // TODO: Build rules from model defintions
-            $viewModel = ComponentBuilderHelpers::buildViewModelDefinition(
+            $viewmodel = ComponentBuilderHelpers::createViewModelBuilder(
                 false,
-                // Rules must be provided
                 $value->createRules(),
                 $value->createRules(true),
                 null,
-                sprintf('%s\\%s', $this->blocComponentNamespace_ ?? self::DEFAULT_BLOC_COMPONENT_NAMESPACE, sprintf('%s%s', $this->generateHttpHandlers_ ? 'Http\\ViewModels' : 'ViewModels', $this->subNamespace_ ? "\\$this->subNamespace_" : '')),
-                sprintf('%s%s', $this->generateHttpHandlers_ ? 'Http/ViewModels' : 'ViewModels', $this->subNamespace_ ? "/$this->subNamespace_" : ''),
-                // TODO Add namespace method to component items
-                $modelClassPath,
+                sprintf(
+                    '%s\\%s',
+                    $this->blocComponentNamespace_ ?? self::DEFAULT_BLOC_COMPONENT_NAMESPACE,
+                    sprintf('%s%s', $this->generateHttpHandlers_ ? 'Http\\ViewModels' : 'ViewModels', $this->subNamespace_ ? "\\$this->subNamespace_" : '')
+                ),
+                sprintf(
+                    '%s%s',
+                    $this->generateHttpHandlers_ ? 'Http/ViewModels' : 'ViewModels',
+                    $this->subNamespace_ ? "/$this->subNamespace_" : ''
+                ),
+                $modelclasspath,
                 $this->generateHttpHandlers_ ?: false
             );
-            $components['viewModel'] = [
-                'path' => $this->blocComponentPath_,
-                'class' => $viewModel,
-            ];
-            $service = ComponentBuilderHelpers::buildServiceDefinition(
+            $service = ComponentBuilderHelpers::createServiceBuilder(
                 true,
                 null,
-                sprintf('%s\\%s', $this->blocComponentNamespace_ ?? self::DEFAULT_BLOC_COMPONENT_NAMESPACE, sprintf('%s%s', 'Services', $this->subNamespace_ ? "\\$this->subNamespace_" : '')),
-                $modelClassPath
+                sprintf(
+                    '%s\\%s',
+                    $this->blocComponentNamespace_ ?? self::DEFAULT_BLOC_COMPONENT_NAMESPACE,
+                    sprintf('%s%s', 'Services', $this->subNamespace_ ? "\\$this->subNamespace_" : '')
+                ),
+                $modelclasspath
             );
-            $components['service'] = [
-                'path' => $this->blocComponentPath_,
-                'class' => $service,
-            ];
             if ($this->generateHttpHandlers_) {
-                $dtoObject = ComponentBuilderHelpers::buildDtoObjectDefinition(
+                $dto = ComponentBuilderHelpers::createDtoBuilder(
                     $value->createDtoAttributes(),
                     [],
                     null,
-                    sprintf('%s\\%s', $this->blocComponentNamespace_ ?? self::DEFAULT_BLOC_COMPONENT_NAMESPACE, sprintf('%s%s', 'Dto', $this->subNamespace_ ? "\\$this->subNamespace_" : '')),
-                    $modelClassPath
+                    sprintf(
+                        '%s\\%s',
+                        $this->blocComponentNamespace_ ?? self::DEFAULT_BLOC_COMPONENT_NAMESPACE,
+                        sprintf(
+                            '%s%s',
+                            'Dto',
+                            $this->subNamespace_ ? "\\$this->subNamespace_" : ''
+                        )
+                    ),
+                    $modelclasspath
                 );
-                $controller = $this->generateController($modelClassPath, $service, $viewModel, $dtoObject);
-                $content = $controller->getContent();
-                $routeName = $content instanceof ControllerBuilder ? $content->routeName() : ComponentBuilderHelpers::buildRouteName($controller->getName());
-                $controllerClassPath = sprintf('%s\\%s', $content->getNamespace(), Str::camelize($controller->getName()));
                 $components['controller'] = [
                     'path' => $this->blocComponentPath_,
-                    'class' => $controller,
+                    'class' => $this->createControllerFactoryMethod($modelclasspath),
                     'route' => [
-                        'name' => $routeName,
-                        'classPath' => $controllerClassPath,
+                        'nameBuilder' => function ($controller) {
+                            return $controller instanceof ControllerBuilder ?
+                                $controller->routeName() :
+                                ComponentBuilderHelpers::buildRouteName($controller->getName());
+                        },
+                        'classPathBuilder' => function (SourceFileInterface $controller) {
+                            return sprintf('%s\\%s', $controller->getNamespace(), Str::camelize($controller->getName()));
+                        }
                     ],
-                    'dto' => [
-                        'path' => $this->blocComponentPath_,
-                        'class' => $dtoObject,
-                    ],
+                    'dto' => ['path' => $this->blocComponentPath_, 'class' => $dto],
                 ];
             }
+            $components['viewModel'] = ['path' => $this->blocComponentPath_, 'class' => $viewmodel];
+            $components['service'] = ['path' => $this->blocComponentPath_, 'class' => $service];
             yield $components;
         }
 
@@ -240,31 +289,41 @@ class DBSchemaReverseEngineeringService
         }
     }
 
-    private function generateController(?string $model = null, ?SourceFileInterface $service = null, ?SourceFileInterface $viewModel = null, ?SourceFileInterface $dtoObject = null)
+    /**
+     * Creates a factory method that create the controller script
+     * 
+     * @param (null|string)|null $model 
+     * @return Closure((null|SourceFileInterface)|null $service = null, (null|SourceFileInterface)|null $viewModel = null, (null|SourceFileInterface)|null $dtoObject = null): SourceFileInterface 
+     */
+    private function createControllerFactoryMethod(?string $model = null)
     {
-        $controller = ComponentBuilderHelpers::buildController(
-            $model,
-            $service ? sprintf(
-                '%s\\%s',
-                $service->getNamespace(),
-                Str::camelize($service->getName())
-            ) : null,
-            $viewModel ? sprintf(
-                '%s\\%s',
-                $viewModel->getNamespace(),
-                Str::camelize($viewModel->getName())
-            ) : null,
-            $dtoObject ? sprintf(
-                '%s\\%s',
-                $dtoObject->getNamespace(),
-                Str::camelize($dtoObject->getName())
-            ) : null,
-            null,
-            sprintf('%s\\%s', $this->blocComponentNamespace_ ?? self::DEFAULT_BLOC_COMPONENT_NAMESPACE, sprintf('%s%s', 'Http\\Controllers', $this->subNamespace_ ? "\\$this->subNamespace_" : '')),
-            $this->auth_
-        );
-
-        return $controller;
+        return function (
+            ?SourceFileInterface $service = null,
+            ?SourceFileInterface $viewModel = null,
+            ?SourceFileInterface $dtoObject = null
+        ) use ($model) {
+            return ComponentBuilderHelpers::buildController(
+                $model,
+                $service ? sprintf(
+                    '%s\\%s',
+                    $service->getNamespace(),
+                    Str::camelize($service->getName())
+                ) : null,
+                $viewModel ? sprintf(
+                    '%s\\%s',
+                    $viewModel->getNamespace(),
+                    Str::camelize($viewModel->getName())
+                ) : null,
+                $dtoObject ? sprintf(
+                    '%s\\%s',
+                    $dtoObject->getNamespace(),
+                    Str::camelize($dtoObject->getName())
+                ) : null,
+                null,
+                sprintf('%s\\%s', $this->blocComponentNamespace_ ?? self::DEFAULT_BLOC_COMPONENT_NAMESPACE, sprintf('%s%s', 'Http\\Controllers', $this->subNamespace_ ? "\\$this->subNamespace_" : '')),
+                $this->auth_
+            );
+        };
     }
 
     private function applyFilters(array $tables)

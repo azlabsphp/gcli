@@ -55,17 +55,17 @@ class ORMColumnDefinition extends Value implements ContractsORMColumnDefinition
 
     public function unique()
     {
-        return $this->unique_;
+        return $this->uniqueKeyConstraint_;
     }
 
     public function required()
     {
-        return $this->required_ || false;
+        return boolval($this->required_) || false;
     }
 
     public function unsigned()
     {
-        return $this->uniqueKeyConstraint_ || false;
+        return boolval($this->unsigned_) || false;
     }
 
     /**

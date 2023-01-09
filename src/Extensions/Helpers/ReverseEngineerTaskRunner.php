@@ -13,13 +13,21 @@ declare(strict_types=1);
 
 namespace Drewlabs\ComponentGenerators\Extensions\Helpers;
 
+use Closure;
 use Doctrine\DBAL\DriverManager;
 use Drewlabs\ComponentGenerators\ComponentsScriptWriter as ComponentsScriptWriterClass;
+use Drewlabs\ComponentGenerators\Contracts\ComponentBuilder;
+use Drewlabs\ComponentGenerators\Contracts\ForeignKeyConstraintDefinition;
+use Drewlabs\ComponentGenerators\Contracts\ProvidesRelations;
 use Drewlabs\ComponentGenerators\Contracts\Writable;
 use Drewlabs\ComponentGenerators\Extensions\Contracts\Progress;
 use Drewlabs\ComponentGenerators\Helpers\ComponentBuilderHelpers;
 use Drewlabs\ComponentGenerators\Helpers\RouteDefinitionsHelper;
 use Drewlabs\ComponentGenerators\Models\RouteController;
+use Drewlabs\ComponentGenerators\BasicRelation;
+use Drewlabs\ComponentGenerators\Extensions\Traits\ReverseEngineerRelations;
+use Drewlabs\ComponentGenerators\RelationTypes;
+
 use function Drewlabs\ComponentGenerators\Proxy\ComponentsScriptWriter;
 use function Drewlabs\ComponentGenerators\Proxy\DatabaseSchemaReverseEngineeringRunner;
 
@@ -28,9 +36,12 @@ use Drewlabs\Core\Helpers\Str;
 use League\Flysystem\FilesystemException;
 use League\Flysystem\UnableToCheckExistence;
 use League\Flysystem\UnableToWriteFile;
+use RuntimeException;
 
 class ReverseEngineerTaskRunner
 {
+    use ReverseEngineerRelations;
+
     /**
      * @var string[]
      */
@@ -72,15 +83,18 @@ class ReverseEngineerTaskRunner
         array $options,
         string $srcPath,
         string $routingfilename,
-        ?string $routePrefix = null,
-        ?string $middleware = null,
-        ?bool $forLumen = true,
-        ?bool $disableCache = false,
-        ?bool $noAuth = false,
-        ?string $namespace = null,
-        ?string $subPackage = null,
-        ?string $schema = null,
-        ?bool $hasHttpHandlers = false
+        string $routePrefix = null,
+        string $middleware = null,
+        bool $forLumen = true,
+        bool $disableCache = false,
+        bool $noAuth = false,
+        string $namespace = null,
+        string $subPackage = null,
+        string $schema = null,
+        bool $hasHttpHandlers = false,
+        bool $providesRelations = false,
+        array $manytomany = [],
+        array $toones = []
     ) {
         return function (
             string $routesDirectory,
@@ -101,7 +115,10 @@ class ReverseEngineerTaskRunner
             $namespace,
             $subPackage,
             $schema,
-            $hasHttpHandlers
+            $hasHttpHandlers,
+            $providesRelations,
+            $manytomany,
+            $toones
         ) {
             $onCompleteCallback = $onCompleteCallback ?? static function () {
                 printf("\nTask Completed successfully...\n");
@@ -110,7 +127,6 @@ class ReverseEngineerTaskRunner
             $schemaManager = $connection->createSchemaManager();
             // For Mariadb server
             $schemaManager->getDatabasePlatform()->registerDoctrineTypeMapping('enum', 'string');
-            // TODO : Create a table filtering function that removes drewlabs packages tables from
             // the generated tables
             $tablesFilterFunc = static function ($table) {
                 return !(Str::contains($table->getName(), 'auth_') ||
@@ -139,37 +155,76 @@ class ReverseEngineerTaskRunner
             if ($noAuth) {
                 $runner = $runner->withoutAuth();
             }
+            /**
+             * @var ForeignKeyConstraintDefinition[]
+             */
+            $foreignKeys = [];
+            /**
+             * @var array<string,int>
+             */
+            $tablesindexes = [];
             // #endregion Create migration runner
             $traversable = $runner->setSubNamespace($subPackage)
                 ->bindExceptMethod($tablesFilterFunc)
                 ->only($this->tables ?? [])
                 ->except($this->exceptions ?? [])
                 ->setSchema($schema)
-                ->run(static function ($tables) use ($namespace, $subPackage, $disableCache, $cachePath) {
-                    if (!$disableCache) {
-                        ComponentBuilderHelpers::cacheComponentDefinitions(
-                            $cachePath,
-                            $tables,
-                            $namespace,
-                            $subPackage
-                        );
+                ->run(
+                    $foreignKeys,
+                    $tablesindexes,
+                    static function ($tables) use ($namespace, $subPackage, $disableCache, $cachePath) {
+                        if (!$disableCache) {
+                            ComponentBuilderHelpers::cacheComponentDefinitions(
+                                $cachePath,
+                                $tables,
+                                $namespace,
+                                $subPackage
+                            );
+                        }
                     }
-                });
+                );
             $values = iterator_to_array($traversable);
             /**
              * @var Progress
              */
             $indicator = $onStartCallback($values);
-            $routes = iterator_to_array((static function () use ($values, $subPackage, $indicator, &$onExistsCallback) {
-                // TODO : IN FUTURE RELEASE BUILD MODEL RELATION METHOD
+            // #region Create components models relations
+            $relations = $providesRelations ? self::resolveRelations($values, $tablesindexes, $foreignKeys, $manytomany, $toones) : [];
+            // #endregion Create components models relations
+            $routes = iterator_to_array((static function () use ($values, $subPackage, $indicator, $relations, &$onExistsCallback) {
                 foreach ($values as $component) {
-                    static::writeComponentSourceCode(Arr::get($component, 'model.path'), Arr::get($component, 'model.class'), $onExistsCallback);
-                    static::writeComponentSourceCode(Arr::get($component, 'viewModel.path'), Arr::get($component, 'viewModel.class'), $onExistsCallback);
-                    static::writeComponentSourceCode(Arr::get($component, 'service.path'), Arr::get($component, 'service.class'), $onExistsCallback);
+                    $modelbuilder = Arr::get($component, 'model.class');
+                    if (($modelbuilder instanceof ProvidesRelations) && is_array($componentrelations = $relations[Arr::get($component, 'model.classPath')] ?? [])) {
+                        $modelbuilder = $modelbuilder->provideRelations($componentrelations);
+                    }
+                    $viewmodelsourcecode = self::resolveWritable(Arr::get($component, 'viewModel.class'));
+                    $servicesourcecode = self::resolveWritable(Arr::get($component, 'service.class'));
+                    static::writeComponentSourceCode(Arr::get($component, 'model.path'), self::resolveWritable($modelbuilder), $onExistsCallback);
+                    static::writeComponentSourceCode(Arr::get($component, 'viewModel.path'), $viewmodelsourcecode, $onExistsCallback);
+                    static::writeComponentSourceCode(Arr::get($component, 'service.path'), $servicesourcecode, $onExistsCallback);
                     if (null !== $controller = Arr::get($component, 'controller')) {
-                        static::writeComponentSourceCode(Arr::get($controller, 'dto.path'), Arr::get($controller, 'dto.class'), $onExistsCallback);
-                        static::writeComponentSourceCode(Arr::get($controller, 'path'), Arr::get($controller, 'class'), $onExistsCallback);
-                        yield Arr::get($controller, 'route.name') => new RouteController(['namespace' => $subPackage, 'name' => Arr::get($controller, 'route.classPath')]);
+                        $dtobuiler = Arr::get($controller, 'dto.class');
+                        if (is_array($componentrelations) && method_exists($dtobuiler, 'setCasts')) {
+                            $currentDtoCasts = [];
+                            /**
+                             * @var BasicRelation $_current
+                             */
+                            foreach ($componentrelations as $_current) {
+                                $currentDtoCasts[$_current->getName()] = in_array($_current->getType(), [RelationTypes::ONE_TO_MANY, RelationTypes::MANY_TO_MANY]) ?
+                                    'collectionOf:\\' . ltrim($_current->getCastClassPath(), '\\') :
+                                    'value:\\' . ltrim($_current->getCastClassPath(), '\\');
+                            }
+                            $dtobuiler->setCasts($currentDtoCasts);
+                        }
+                        $dtosourcecode = self::resolveWritable($dtobuiler);
+                        static::writeComponentSourceCode(Arr::get($controller, 'dto.path'), $dtosourcecode,  $onExistsCallback);
+                        // Call the controller factory builder function with the required parameters
+                        $controllersource = self::resolveWritable(Arr::get($controller, 'class'), $servicesourcecode, $viewmodelsourcecode, $dtosourcecode);
+                        $name =  is_callable($nameBuilder = Arr::get($controller, 'route.nameBuilder')) ? $nameBuilder($controllersource) : Arr::get($controller, 'route.name'); //
+                        $classPath = is_callable($classPathBuilder = Arr::get($controller, 'route.classPathBuilder')) ? $classPathBuilder($controllersource) : Arr::get($controller, 'route.classPath');
+                        static::writeComponentSourceCode(Arr::get($controller, 'path'), $controllersource, $onExistsCallback);
+                        $routeController = new RouteController(['namespace' => $subPackage, 'name' => $classPath]);
+                        yield $name => $routeController;
                     }
                     $indicator->advance();
                 }
@@ -184,9 +239,9 @@ class ReverseEngineerTaskRunner
                     $routePrefix,
                     $middleware,
                     $subPackage,
-                // In case the generator is running for specific tables,
-                // generated routes, consider appending the new table routes
-                // to existing routes
+                    // In case the generator is running for specific tables,
+                    // generated routes, consider appending the new table routes
+                    // to existing routes
                 )($routes, !empty($this->tables));
                 $indicator->advance();
             }
@@ -199,6 +254,19 @@ class ReverseEngineerTaskRunner
         };
     }
 
+    /**
+     * Write app routes to disk
+     * 
+     * @param null|bool $disableCache 
+     * @param null|bool $lumen 
+     * @param (null|string)|null $routesDirectory 
+     * @param (null|string)|null $cachePath 
+     * @param (null|string)|null $routingfilename 
+     * @param (null|string)|null $prefix 
+     * @param (null|string)|null $middleware 
+     * @param (null|string)|null $subPackage 
+     * @return Closure(array $routes = [], bool $partial = false): void 
+     */
     protected function writeRoutes(
         ?bool $disableCache,
         ?bool $lumen = false,
@@ -279,5 +347,27 @@ class ReverseEngineerTaskRunner
             return $instance->write($writable);
         }
     }
+
+    /**
+     * Resolve writable instance
+     * 
+     * @param mixed $component 
+     * @param mixed $args 
+     * @return mixed 
+     * @throws RuntimeException 
+     */
+    private static function resolveWritable($component, ...$args)
+    {
+        if ($component instanceof Writable) {
+            return $component;
+        }
+        if ($component instanceof ComponentBuilder) {
+            return $component->build();
+        }
+        if (is_callable($component)) {
+            return $component(...$args);
+        }
+
+        throw new RuntimeException('Unsupported type ' . (is_object($component)  && !is_null($component) ? get_class($component) : gettype($component)));
+    }
 }
- 

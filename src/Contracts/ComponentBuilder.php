@@ -21,9 +21,16 @@ interface ComponentBuilder
     public function build();
 
     /**
-     * Returns the path where the script should be written to.
+     * Source code script path getter
      */
     public function getWritePath(): string;
+
+    /**
+     * Source code class path getter
+     * 
+     * @return string 
+     */
+    public function getClassPath();
 
     /**
      * Set the path where the component will be written to.

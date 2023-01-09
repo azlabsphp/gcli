@@ -19,11 +19,20 @@ use Drewlabs\ComponentGenerators\Extensions\Helpers\ReverseEngineerTaskRunner;
 use Drewlabs\ComponentGenerators\Extensions\ProgressbarIndicator;
 use Drewlabs\ComponentGenerators\Helpers\ComponentBuilderHelpers;
 use Drewlabs\Core\Helpers\Str;
+use Drewlabs\Filesystem\Exceptions\ReadFileException;
+use Drewlabs\Filesystem\Exceptions\UnableToRetrieveMetadataException;
+use Drewlabs\Filesystem\Exceptions\FileNotFoundException;
+use Generator;
 
 use function Drewlabs\Filesystem\Proxy\Path;
 use Illuminate\Console\Command;
 
 use Illuminate\Container\Container;
+use InvalidArgumentException;
+use RuntimeException;
+use Illuminate\Contracts\Container\BindingResolutionException;
+use Psr\Container\NotFoundExceptionInterface;
+use Psr\Container\ContainerExceptionInterface;
 
 class CreateMVCComponentsCommand extends Command
 {
@@ -54,6 +63,9 @@ class CreateMVCComponentsCommand extends Command
         . '{--schema= : Schema prefix to database tables}'
         . '{--http : Whether to generates controllers and routes}'
         . '{--force : Force rewrite of existing classes }'
+        . '{--relations : Generates relations for model and relations casting entries for data transfer object }'
+        . '{--manytomany=* :  List of many to many relations. (ex - lefttable->middletable->righttable)}'
+        . '{--toones=* :  List of one to one relations. (ex - lefttable->righttable)}'
         . '{--only=* : Restrict the generator to generate code only for the specified table structures}';
 
     /**
@@ -94,6 +106,19 @@ class CreateMVCComponentsCommand extends Command
         );
     }
 
+    /**
+     * Handle drewlabs:mvc:create command execution
+     * 
+     * @return void 
+     * @throws InvalidArgumentException 
+     * @throws RuntimeException 
+     * @throws ReadFileException 
+     * @throws UnableToRetrieveMetadataException 
+     * @throws FileNotFoundException 
+     * @throws BindingResolutionException 
+     * @throws NotFoundExceptionInterface 
+     * @throws ContainerExceptionInterface 
+     */
     public function handle()
     {
         $forLumen = drewlabs_code_generator_is_running_lumen_app(Container::getInstance());
@@ -112,17 +137,13 @@ class CreateMVCComponentsCommand extends Command
                 $exceptions = array_merge($exceptions, $value->getTables());
             }
         }
-
         $noAuth = $this->option('noAuth');
         $namespace = $this->option('package') ?? 'App';
         $subPackage = $this->option('subPackage');
         $httpHandlers = $this->option('http');
         // !Ends Local variables initialization
-
         if (null !== ($url = $this->option('connectionURL'))) {
-            $options = [
-                'url' => $url,
-            ];
+            $options = [ 'url' => $url ];
         } else {
             $default_driver = config('database.default');
             $driver = $this->option('driver') ?
@@ -168,7 +189,10 @@ class CreateMVCComponentsCommand extends Command
                 $namespace,
                 $subPackage,
                 $this->option('schema') ?? null,
-                $httpHandlers
+                $httpHandlers,
+                boolval($this->option('relations')),
+                iterator_to_array($this->flattenComposed($this->option('toones') ?? [])),
+                iterator_to_array($this->flattenComposed($this->option('manytomany') ?? []))
             )(
             $this->laravel->basePath('routes'),
             $this->path_,
@@ -188,5 +212,25 @@ class CreateMVCComponentsCommand extends Command
                 return $this->confirm("Override existing class at $srcPath ?" . \DIRECTORY_SEPARATOR . $writable->getPath());
             }
         );
+    }
+
+    /**
+     * Creates a generator of flatten array
+     * 
+     * @param array $composed 
+     * @return Generator<int, string, mixed, void> 
+     */
+    private function flattenComposed(array $composed)
+    {
+        foreach ($composed as $relation) {
+            if (false !== strpos((string)$relation, ',')) {
+                $values = explode(',', (string)$relation);
+                foreach ($values as $part) {
+                    yield $part;
+                }
+                continue;
+            }
+            yield $relation;
+        }
     }
 }

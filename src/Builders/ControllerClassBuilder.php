@@ -127,9 +127,9 @@ class ControllerClassBuilder implements ContractsControllerBuilder
         ?string $namespace = null,
         ?string $path = null
     ) {
-        if ($name) {
-            $this->setName(sprintf('%s%s', Str::camelize(Pluralizer::plural($name)), 'Controller'));
-        }
+        $this->setName($name ? (!Str::endsWith($name, 'Controller') ?
+            Str::camelize(Pluralizer::plural($name)) . 'Controller' :
+            Str::camelize(Pluralizer::plural($name))) : self::DEFAULT_NAME);
         // Set the component write path
         $this->setWritePath($path ?? self::DEFAULT_PATH);
 
@@ -156,21 +156,13 @@ class ControllerClassBuilder implements ContractsControllerBuilder
         if (empty($value)) {
             return $this;
         }
-        // TODO: Makes this controller as a resource controller
         $this->asResourceController();
-        // TODO : Generate and set the controller name
         $isClassPath = Str::contains($value, '\\'); // && class_exists($model); To uncomment if there is need to validate class existence
-        if ($isClassPath) {
-            $this->modelName_ = array_reverse(explode('\\', $value))[0];
-        } else {
-            $this->modelName_ = Str::contains($value, '\\') ? array_reverse(explode('\\', $value))[0] : $value;
-        }
+        $this->modelName_ = $isClassPath ? array_reverse(explode('\\', $value))[0] : (Str::contains($value, '\\') ? array_reverse(explode('\\', $value))[0] : $value);
         $this->setName(sprintf('%s%s', Str::camelize(Pluralizer::plural($this->modelName_)), 'Controller'));
-        // TODO Set the view model class property if specified
         if ($isClassPath && $asvm) {
             $this->bindViewModel($value);
         }
-
         return $this;
     }
 
@@ -231,11 +223,11 @@ class ControllerClassBuilder implements ContractsControllerBuilder
     public function build()
     {
         // Set the route name of the controller
-        $this->setRouteName($this->name_ ?? self::DEFAULT_NAME);
+        $this->setRouteName($this->name());
         /**
          * @var Blueprint
          */
-        $component = PHPClass($this->name_ ?? self::DEFAULT_NAME)
+        $component = PHPClass($this->name())
             ->asFinal()
             ->addConstructor(
                 array_merge(
@@ -287,9 +279,9 @@ class ControllerClassBuilder implements ContractsControllerBuilder
             $component = $component->addProperty(
                 PHPClassProperty(
                     'service',
-                    $this->hasActionHandlerInterface_ ? 
-                    \Drewlabs\Contracts\Support\Actions\ActionHandler::class : 
-                    $this->serviceClass_,
+                    $this->hasActionHandlerInterface_ ?
+                        \Drewlabs\Contracts\Support\Actions\ActionHandler::class :
+                        $this->serviceClass_,
                     PHPTypesModifiers::PRIVATE,
                     null,
                     'Injected instance of MVC service'

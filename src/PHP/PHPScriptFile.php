@@ -146,6 +146,8 @@ EOT;
 
     public function getName()
     {
-        return Str::contains($this->name_ ?? '', '.') ? Str::before('.', $this->name_) : $this->name_ ?? 'Test';
+        return Str::contains($this->name_ ?? '', '.') ?
+            Str::before('.', $this->name_) :
+            $this->name_ ?? 'Test';
     }
 }

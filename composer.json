@@ -6,7 +6,7 @@
         "illuminate/support": "^7.0|^8.0|^9.0",
         "illuminate/console": "^7.0|^8.0|^9.0",
         "illuminate/database": "^7.0|^8.0|^9.0",
-        "drewlabs/code-generator": "^2.0",
+        "drewlabs/code-generator": "^2.3",
         "doctrine/dbal": "^3.3"
     },
     "license": "MIT",

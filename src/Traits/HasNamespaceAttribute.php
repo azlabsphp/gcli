@@ -56,6 +56,11 @@ trait HasNamespaceAttribute
     {
         return $this->namespace_;
     }
+    
+    public function getClassPath()
+    {
+        return sprintf('%s\\%s', $this->namespace(),$this->name());
+    }
 
     private function createPathFromNamespace(string $namespace)
     {

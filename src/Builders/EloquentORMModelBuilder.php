@@ -14,26 +14,34 @@ declare(strict_types=1);
 namespace Drewlabs\ComponentGenerators\Builders;
 
 use Drewlabs\CodeGenerator\Contracts\Blueprint;
+use Drewlabs\CodeGenerator\Contracts\CallableInterface;
 
 use function Drewlabs\CodeGenerator\Proxy\PHPClass;
 use function Drewlabs\CodeGenerator\Proxy\PHPClassMethod;
 use function Drewlabs\CodeGenerator\Proxy\PHPClassProperty;
 use function Drewlabs\CodeGenerator\Proxy\PHPVariable;
 use Drewlabs\CodeGenerator\Types\PHPTypesModifiers;
-
+use Drewlabs\ComponentGenerators\BasicRelation;
 use Drewlabs\ComponentGenerators\Contracts\ComponentBuilder;
 use Drewlabs\ComponentGenerators\Contracts\EloquentORMModelBuilder as ContractsEloquentORMModel;
 use Drewlabs\ComponentGenerators\Contracts\ORMColumnDefinition;
 use Drewlabs\ComponentGenerators\Contracts\ORMModelDefinition;
+use Drewlabs\ComponentGenerators\Contracts\ProvidesRelations;
 use Drewlabs\ComponentGenerators\Helpers\ComponentBuilderHelpers;
+use Drewlabs\ComponentGenerators\ManyThoughRelation;
+use Drewlabs\ComponentGenerators\RelationTypes;
+
 use function Drewlabs\ComponentGenerators\Proxy\PHPScript;
 use Drewlabs\ComponentGenerators\Traits\HasNamespaceAttribute;
 use Drewlabs\ComponentGenerators\Traits\ViewModelBuilder;
 use Drewlabs\Core\Helpers\Str;
+use Drewlabs\Filesystem\Exceptions\UnableToRetrieveMetadataException;
 use Illuminate\Database\Eloquent\Model as EloquentModel;
 use Illuminate\Support\Pluralizer;
+use InvalidArgumentException;
+use RuntimeException;
 
-class EloquentORMModelBuilder implements ContractsEloquentORMModel, ComponentBuilder
+class EloquentORMModelBuilder implements ContractsEloquentORMModel, ComponentBuilder, ProvidesRelations
 {
     use HasNamespaceAttribute;
     use ViewModelBuilder;
@@ -43,19 +51,19 @@ class EloquentORMModelBuilder implements ContractsEloquentORMModel, ComponentBui
      *
      * @var string
      */
-    public const DEFAULT_NAME = 'Test';
+    const DEFAULT_NAME = 'Test';
 
     /**
      * The namespace of the model.
      *
      * @var string
      */
-    public const DEFAULT_NAMESPACE = 'App\\Models';
+    const DEFAULT_NAMESPACE = 'App\\Models';
 
     /**
      * @var string
      */
-    private const DEFAULT_PATH = 'Models';
+    const DEFAULT_PATH = 'Models';
 
     /**
      * List of appendable model properties.
@@ -125,13 +133,31 @@ class EloquentORMModelBuilder implements ContractsEloquentORMModel, ComponentBui
      */
     private $defintion;
 
+    /**
+     * List of model relations to provide
+     * 
+     * @var (\Drewlabs\ComponentGenerators\BasicRelation|\Drewlabs\ComponentGenerators\ManyThroughTablesRelation)[]
+     */
+    private $relations;
+
+    /**
+     * Creates a model builder class instance
+     * 
+     * @param ORMModelDefinition $defintion 
+     * @param (null|string)|null $schema 
+     * @param (null|string)|null $path 
+     * @return void 
+     * @throws InvalidArgumentException 
+     * @throws RuntimeException 
+     * @throws UnableToRetrieveMetadataException 
+     */
     public function __construct(
         ORMModelDefinition $defintion,
         ?string $schema = null,
         ?string $path = null
     ) {
         $this->setDefinition($defintion);
-        [$table, $name] = [$defintion->table(), $defintion->name()];
+        [$table, $name] = [$defintion->table(), $defintion->name() ?? self::DEFAULT_NAME];
         $this->setComponentBaseDefintions($schema, $table, $name);
         // Set the primary key
         if ($defintion->primaryKey()) {
@@ -224,9 +250,15 @@ class EloquentORMModelBuilder implements ContractsEloquentORMModel, ComponentBui
         return $this->addInputsTraits();
     }
 
+    public function provideRelations(array $relations = [])
+    {
+        $this->relations = $relations;
+        return $this;
+    }
+
     public function build()
     {
-        $component = (PHPClass($this->name_));
+        $component = (PHPClass($this->name()));
         if ($this->isViewModel_) {
             /**
              * @var BluePrint
@@ -390,6 +422,9 @@ class EloquentORMModelBuilder implements ContractsEloquentORMModel, ComponentBui
             return $carry;
         }, $component);
 
+        // If the generator is configured to provide model relation, the relation is generated
+        $component = $this->addRelations($component);
+
         // Returns the builded component
         return PHPScript(
             $component->getName(),
@@ -427,6 +462,15 @@ class EloquentORMModelBuilder implements ContractsEloquentORMModel, ComponentBui
         return $this->defintion;
     }
 
+    /**
+     * Set the base properties of the current component
+     * 
+     * @param mixed $schema 
+     * @param mixed $table 
+     * @param mixed $name 
+     * @return void 
+     * @throws InvalidArgumentException 
+     */
     private function setComponentBaseDefintions($schema, $table, $name)
     {
         $table = (null === $table) ? (null !== $name ? Str::snakeCase(Pluralizer::plural($name)) : null) : $table;
@@ -443,9 +487,116 @@ class EloquentORMModelBuilder implements ContractsEloquentORMModel, ComponentBui
                     Str::replace($schema, '', $name_) :
                     $name_);
         }
-        $name = $name_ ? Str::camelize(Pluralizer::singular($name_)) : self::DEFAULT_NAME;
+        $name = Str::camelize(Pluralizer::singular($name_));
         if ($name) {
             $this->setName($name);
         }
+    }
+
+    /**
+     * Add model releation methods
+     * 
+     * @param Blueprint $component
+     * 
+     * @return Blueprint 
+     */
+    private function addRelations(BluePrint $component)
+    {
+        if (empty($this->relations)) {
+            return $component;
+        }
+        foreach ($this->relations as $relation) {
+            $type = $relation->getType();
+            if ($type === RelationTypes::ONE_TO_MANY || $type === RelationTypes::ONE_TO_ONE) {
+                $component = $component->addMethod($this->createOneOrManyMethodTemplate($relation, $type));
+                continue;
+            }
+            if ($type === RelationTypes::MANY_TO_ONE) {
+                $component = $component->addMethod($this->createBelongsToTemplate($relation));
+                continue;
+            }
+            // TODO: If possibe, add support for other relation definitions
+            if ($type === RelationTypes::MANY_TO_MANY && $relation instanceof \Drewlabs\ComponentGenerators\ManyThoughRelation) {
+                $component = $component->addMethod($this->createManyToManyRelationTemplate($relation));
+                continue;
+            }
+        }
+        return $component;
+    }
+
+
+    /**
+     * Creates a HasMany or HasOne method template
+     * 
+     * @param BasicRelation $relation 
+     * @param string $type 
+     * @return CallableInterface 
+     */
+    private function createOneOrManyMethodTemplate(\Drewlabs\ComponentGenerators\BasicRelation $relation, string $type)
+    {
+        $model = $relation->getModel();
+        $local = $relation->getLocal();
+        $reference = $relation->getReference();
+        $returns = $type === RelationTypes::ONE_TO_MANY ?
+            \Illuminate\Database\Eloquent\Relations\HasMany::class :
+            \Illuminate\Database\Eloquent\Relations\HasOne::class;
+        $method = $type === RelationTypes::ONE_TO_MANY ? 'hasMany' : 'hasOne';
+        return  PHPClassMethod($relation->getName(), [], $returns, 'public')->addLine("return \$this->$method(\\$model::class, '$local', '$reference')");
+    }
+
+    /**
+     * Creates a belongs to method template
+     * 
+     * @param BasicRelation $relation 
+     * @return CallableInterface 
+     */
+    private function createBelongsToTemplate(\Drewlabs\ComponentGenerators\BasicRelation $relation)
+    {
+        $model = $relation->getModel();
+        $local = $relation->getLocal();
+        $reference = $relation->getReference();
+        $returns = \Illuminate\Database\Eloquent\Relations\BelongsTo::class;
+        return PHPClassMethod($relation->getName(), [], $returns, 'public')->addLine("return \$this->belongsTo(\\$model::class, '$local', '$reference')");
+    }
+
+    /**
+     * Creates a many to many relation method template
+     * 
+     * @param ManyThoughRelation $relation
+     * 
+     * @return CallableInterface 
+     */
+    private function createManyToManyRelationTemplate(\Drewlabs\ComponentGenerators\ManyThoughRelation $relation)
+    {
+        $returns = \Illuminate\Database\Eloquent\Relations\BelongsToMany::class;
+        $left = $relation->getLeftTable();
+        $right = $relation->getRightTable();
+        $leftforeignkey = $relation->getLeftForeignKey();
+        $rightforeignkey = $relation->getRightForeignKey();
+        $leftlocalkey = $relation->getLeftLocalKey();
+        $rightlocalkey = $relation->getRightLocalKey();
+        $through = $relation->getThroughTable();
+        $line = "return \$this->belongsToMany(\\$left::class, ";
+        if ($right) {
+            $line .= "$right::class, ";
+        }
+        if ($leftforeignkey) {
+            $line .= "'$leftforeignkey', ";
+        }
+        if ($rightforeignkey) {
+            $line .= "'$rightforeignkey', ";
+        }
+        if ($leftlocalkey) {
+            $line .= "'$leftlocalkey', ";
+        }
+        if ($rightlocalkey) {
+            $line .= "'$rightlocalkey'";
+        }
+        $line .= ')';
+
+        if ($through) {
+            $line .= "->using(\\$through::class)";
+        }
+        return PHPClassMethod($relation->getName(), [], $returns, 'public')->addLine($line);
     }
 }
