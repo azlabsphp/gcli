@@ -23,4 +23,11 @@ interface ProvidesRelations
      * @return self|ORMModelBuilder
      */
     public function provideRelations(array $relations = []);
+
+    /**
+     * Makes the model a pivot model
+     * 
+     * @return self|ORMModelBuilder 
+     */
+    public function asPivot();
 }

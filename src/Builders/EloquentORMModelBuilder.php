@@ -140,6 +140,14 @@ class EloquentORMModelBuilder implements ContractsEloquentORMModel, ComponentBui
      */
     private $relations;
 
+
+    /**
+     * Makes the table a pivot table
+     * 
+     * @var bool
+     */
+    private $aspivot;
+
     /**
      * Creates a model builder class instance
      * 
@@ -253,6 +261,12 @@ class EloquentORMModelBuilder implements ContractsEloquentORMModel, ComponentBui
     public function provideRelations(array $relations = [])
     {
         $this->relations = $relations;
+        return $this;
+    }
+
+    public function asPivot()
+    {
+        $this->aspivot = true;
         return $this;
     }
 
@@ -402,6 +416,12 @@ class EloquentORMModelBuilder implements ContractsEloquentORMModel, ComponentBui
             );
         }
 
+        // Checks if the model is a pivot table model
+        // and add the required laravel pivot trait to the model
+        if ($this->aspivot) {
+            $component = $component->addTrait(\Illuminate\Database\Eloquent\Relations\Concerns\AsPivot::class);
+        }
+
         if (!$this->hasTimestamps_) {
             $component = $component->addProperty(
                 PHPClassProperty(
@@ -527,10 +547,6 @@ class EloquentORMModelBuilder implements ContractsEloquentORMModel, ComponentBui
                  */
                 $component = $component->addMethod($this->createManyToManyRelationTemplate($relation));
                 $this->relationMethods_[] = $relation->getName();
-                if ($haspivot === false) {
-                    $component = $component->addTrait(\Illuminate\Database\Eloquent\Relations\Concerns\AsPivot::class);
-                }
-                $haspivot = true;
                 continue;
             }
         }

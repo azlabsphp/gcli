@@ -25,7 +25,10 @@ use Drewlabs\ComponentGenerators\Helpers\ComponentBuilderHelpers;
 use Drewlabs\ComponentGenerators\Helpers\RouteDefinitionsHelper;
 use Drewlabs\ComponentGenerators\Models\RouteController;
 use Drewlabs\ComponentGenerators\BasicRelation;
+use Drewlabs\ComponentGenerators\Builders\DataTransfertClassBuilder;
+use Drewlabs\ComponentGenerators\Builders\ViewModelClassBuilder;
 use Drewlabs\ComponentGenerators\Extensions\Traits\ReverseEngineerRelations;
+use Drewlabs\ComponentGenerators\ManyThoughRelation;
 use Drewlabs\ComponentGenerators\RelationTypes;
 
 use function Drewlabs\ComponentGenerators\Proxy\ComponentsScriptWriter;
@@ -189,21 +192,33 @@ class ReverseEngineerTaskRunner
              */
             $indicator = $onStartCallback($values);
             // #region Create components models relations
-            $relations = $providesRelations ? self::resolveRelations($values, $tablesindexes, $foreignKeys, $manytomany, $toones) : [];
+            list($relations, $pivots) = $providesRelations ? self::resolveRelations($values, $tablesindexes, $foreignKeys, $manytomany, $toones) : [];
             // #endregion Create components models relations
-            $routes = iterator_to_array((static function () use ($values, $subPackage, $indicator, $relations, &$onExistsCallback) {
+            $routes = iterator_to_array((static function () use ($values, $subPackage, $indicator, $relations, $pivots, &$onExistsCallback) {
                 foreach ($values as $component) {
                     $modelbuilder = Arr::get($component, 'model.class');
                     if (($modelbuilder instanceof ProvidesRelations) && is_array($componentrelations = $relations[Arr::get($component, 'model.classPath')] ?? [])) {
                         $modelbuilder = $modelbuilder->provideRelations($componentrelations);
+                        if (in_array(Arr::get($component, 'table'), $pivots)) {
+                            $modelbuilder = $modelbuilder->asPivot();
+                        }
                     }
-                    $viewmodelsourcecode = self::resolveWritable(Arr::get($component, 'viewModel.class'));
+                    /**
+                     * @var ViewModelClassBuilder
+                     */
+                    $viewmodelbuilder = Arr::get($component, 'viewModel.class');
+                    /**
+                     * @var DataTransfertClassBuilder
+                     */
+                    if ($dtobuiler = Arr::get($component, 'controller.dto.class')) {
+                        $viewmodelbuilder = $viewmodelbuilder->setDTOClassPath($dtobuiler->getClassPath());
+                    }
+                    $viewmodelsourcecode = self::resolveWritable($viewmodelbuilder);
                     $servicesourcecode = self::resolveWritable(Arr::get($component, 'service.class'));
                     static::writeComponentSourceCode(Arr::get($component, 'model.path'), self::resolveWritable($modelbuilder), $onExistsCallback);
                     static::writeComponentSourceCode(Arr::get($component, 'viewModel.path'), $viewmodelsourcecode, $onExistsCallback);
                     static::writeComponentSourceCode(Arr::get($component, 'service.path'), $servicesourcecode, $onExistsCallback);
                     if (null !== $controller = Arr::get($component, 'controller')) {
-                        $dtobuiler = Arr::get($controller, 'dto.class');
                         if (is_array($componentrelations) && method_exists($dtobuiler, 'setCasts')) {
                             $currentDtoCasts = [];
                             /**

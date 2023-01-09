@@ -45,6 +45,7 @@ trait ReverseEngineerRelations
     ) {
 
         $relations = [];
+        $pivots = [];
         $manytomanyrelations = [];
         /**
          * @var ManyThroughTablesRelation[]
@@ -139,6 +140,7 @@ trait ReverseEngineerRelations
                                         $manythroughmatch->getRightLocalkey(),
                                         ($righttabledtobuilder = Arr::get($righttablecomponent, 'controller.dto.class')) ? $righttabledtobuilder->getClassPath() : null
                                     ));
+                                    $pivots[] = $table;
                                 }
                             }
                         }
@@ -170,7 +172,7 @@ trait ReverseEngineerRelations
                 }
             }
         }
-        return $relations;
+        return [$relations, $pivots];
     }
 
     /**

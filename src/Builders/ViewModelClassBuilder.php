@@ -70,6 +70,13 @@ class ViewModelClassBuilder implements ComponentBuilder
      */
     private $modelName_;
 
+
+    /**
+     * 
+     * @var string
+     */
+    private $dtoclasspath;
+
     /**
      * Creates an instance of view model class
      * 
@@ -121,6 +128,12 @@ class ViewModelClassBuilder implements ComponentBuilder
     {
         $this->hasHttpHandlers_ = true;
 
+        return $this;
+    }
+
+    public function setDTOClassPath(string $classname)
+    {
+        $this->dtoclasspath = $classname;
         return $this;
     }
 
@@ -190,6 +203,23 @@ class ViewModelClassBuilder implements ComponentBuilder
                     )
                 );
                 $component = $component->addClassPath($this->modelClassPath_);
+            }
+
+            if ($this->dtoclasspath) {
+                /**
+                 * @var Blueprint
+                 */
+                $component = $component->addProperty(
+                    PHPClassProperty(
+                        'dtoclass_',
+                        PHPTypes::STRING,
+                        PHPTypesModifiers::PRIVATE,
+                        Str::afterLast('\\', $this->dtoclasspath) . "::class",
+                        'Data transfer class associated with the view model'
+                    )
+                );
+                $component = $component->addClassPath($this->dtoclasspath);
+
             }
             /**
              * @var Blueprint
