@@ -188,21 +188,14 @@ class ControllerClassBuilder implements ContractsControllerBuilder
 
     public function bindService(string $serviceClass)
     {
-        $clazz = null;
         if (!Str::contains($serviceClass, '\\')) {
             return $this;
         }
-        $clazz = class_exists($serviceClass) ? new $serviceClass() : $clazz;
         $actionHandlerInterface = \Drewlabs\Contracts\Support\Actions\ActionHandler::class;
-        if ((null !== $clazz) &&
-            interface_exists($actionHandlerInterface) &&
-            is_a($clazz, \Drewlabs\Contracts\Support\Actions\ActionHandler::class, true)
-        ) {
+        if (interface_exists($actionHandlerInterface) && is_a($serviceClass, $actionHandlerInterface, true)) {
             $this->hasActionHandlerInterface_ = true;
-            $this->serviceClass_ = $this->getClassFromClassPath($serviceClass);
-        } else {
-            $this->serviceClass_ = $this->getClassFromClassPath($serviceClass);
         }
+        $this->serviceClass_ = $this->getClassFromClassPath($serviceClass);
         $this->classPaths_[] = $serviceClass;
 
         return $this;

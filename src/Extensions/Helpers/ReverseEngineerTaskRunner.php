@@ -93,8 +93,8 @@ class ReverseEngineerTaskRunner
         string $schema = null,
         bool $hasHttpHandlers = false,
         bool $providesRelations = false,
-        array $manytomany = [],
-        array $toones = []
+        array $toones = [],
+        array $manytomany = []
     ) {
         return function (
             string $routesDirectory,

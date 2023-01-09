@@ -505,19 +505,23 @@ class EloquentORMModelBuilder implements ContractsEloquentORMModel, ComponentBui
         if (empty($this->relations)) {
             return $component;
         }
+        $this->relationMethods_ = $this->relationMethods_ ?? [];
         foreach ($this->relations as $relation) {
             $type = $relation->getType();
             if ($type === RelationTypes::ONE_TO_MANY || $type === RelationTypes::ONE_TO_ONE) {
                 $component = $component->addMethod($this->createOneOrManyMethodTemplate($relation, $type));
+                $this->relationMethods_[] = $relation->getName();
                 continue;
             }
             if ($type === RelationTypes::MANY_TO_ONE) {
                 $component = $component->addMethod($this->createBelongsToTemplate($relation));
+                $this->relationMethods_[] = $relation->getName();
                 continue;
             }
             // TODO: If possibe, add support for other relation definitions
             if ($type === RelationTypes::MANY_TO_MANY && $relation instanceof \Drewlabs\ComponentGenerators\ManyThoughRelation) {
                 $component = $component->addMethod($this->createManyToManyRelationTemplate($relation));
+                $this->relationMethods_[] = $relation->getName();
                 continue;
             }
         }
