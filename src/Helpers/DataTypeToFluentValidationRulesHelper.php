@@ -93,21 +93,21 @@ class DataTypeToFluentValidationRulesHelper
     public static function getUniqueRule(UniqueKeyConstraintDefinition $metadata, string $primaryKey = null, bool $updates = false)
     {
         $columns = $metadata->getColumns();
-        return !$updates ? "expr:\$this->has('$primaryKey') ? '" . sprintf(
-            'unique:%s,%s,%s,<>,',
+        return !$updates ? "expr:\$this->has('$primaryKey') ? " . sprintf(
+            "\\Illuminate\\Validation\\Rule::unique('%s', '%s')->where('%s', '<>', \$this->$primaryKey)->__toString()",
             $metadata->getTable(),
             \is_array($columns) ? ($columns[0] ?? 'id') : ($columns ?? 'id'),
             $primaryKey,
-        ) . "' . \$this->$primaryKey : '" . sprintf(
-            'unique:%s,%s',
+        ) . sprintf(
+            ": 'unique:%s,%s",
             $metadata->getTable(),
             \is_array($columns) ? ($columns[0] ?? 'id') : ($columns ?? 'id')
-        ) . "'" : "expr:'" . sprintf(
-            'unique:%s,%s,%s,<>,',
+        ) . "'" : "expr:" . sprintf(
+            "\\Illuminate\\Validation\\Rule::unique('%s', '%s')->where('%s', '<>', \$this->$primaryKey)->__toString()",
             $metadata->getTable(),
             \is_array($columns) ? ($columns[0] ?? 'id') : ($columns ?? 'id'),
             $primaryKey,
-        ) . "' . \$this->$primaryKey";
+        );
     }
 
     /**
