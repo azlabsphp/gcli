@@ -507,6 +507,7 @@ class EloquentORMModelBuilder implements ContractsEloquentORMModel, ComponentBui
             return $component;
         }
         $this->relationMethods_ = $this->relationMethods_ ?? [];
+        $haspivot = false;
         foreach ($this->relations as $relation) {
             $type = $relation->getType();
             if ($type === RelationTypes::ONE_TO_MANY || $type === RelationTypes::ONE_TO_ONE) {
@@ -521,8 +522,15 @@ class EloquentORMModelBuilder implements ContractsEloquentORMModel, ComponentBui
             }
             // TODO: If possibe, add support for other relation definitions
             if ($type === RelationTypes::MANY_TO_MANY && $relation instanceof \Drewlabs\ComponentGenerators\ManyThoughRelation) {
+                /**
+                 * @var BluePrint
+                 */
                 $component = $component->addMethod($this->createManyToManyRelationTemplate($relation));
                 $this->relationMethods_[] = $relation->getName();
+                if ($haspivot === false) {
+                    $component = $component->addTrait(\Illuminate\Database\Eloquent\Relations\Concerns\AsPivot::class);
+                }
+                $haspivot = true;
                 continue;
             }
         }
@@ -583,7 +591,7 @@ class EloquentORMModelBuilder implements ContractsEloquentORMModel, ComponentBui
         $through = $relation->getThroughTable();
         $line = "return \$this->belongsToMany(\\$left::class, ";
         if ($right) {
-            $line .= "$right::class, ";
+            $line .= "'$right', ";
         }
         if ($leftforeignkey) {
             $line .= "'$leftforeignkey', ";
