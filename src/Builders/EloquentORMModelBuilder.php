@@ -311,6 +311,10 @@ class EloquentORMModelBuilder implements ContractsEloquentORMModel, ComponentBui
              */
             $component = $component->addTrait(\Drewlabs\Core\Validator\Traits\ViewModel::class);
         }
+
+        // If the generator is configured to provide model relation, the relation is generated
+        $component = $this->addRelations($component);
+        
         $component->setBaseClass(EloquentModel::class)
             ->asFinal()
             ->addTrait(\Drewlabs\Packages\Database\Traits\Model::class)
@@ -421,9 +425,6 @@ class EloquentORMModelBuilder implements ContractsEloquentORMModel, ComponentBui
 
             return $carry;
         }, $component);
-
-        // If the generator is configured to provide model relation, the relation is generated
-        $component = $this->addRelations($component);
 
         // Returns the builded component
         return PHPScript(

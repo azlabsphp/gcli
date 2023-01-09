@@ -125,14 +125,16 @@ trait ReverseEngineerRelations
                                 if (
                                     !isset($manytomanyrelations[$table]) &&
                                     !is_null($lefttableclasspath = Arr::get($lefttablecomponent, 'model.classPath')) &&
-                                    !is_null($righttableclasspath = Arr::get($righttablecomponent, 'model.classPath'))
+                                    // Because laravel prefer the table name of the right table instead of the model
+                                    // we provides the table name instead
+                                    !is_null($righttable = Arr::get($righttablecomponent, 'table'))
                                 ) {
                                     $manytomanyrelations[$table] = true;
                                     $relations = self::mergearray($relations, $foreignclasspath, new ManyThoughRelation(
                                         Str::camelize(Pluralizer::plural($manythroughmatch->rightTable()), false),
                                         RelationTypes::MANY_TO_MANY,
                                         $lefttableclasspath,
-                                        $righttableclasspath,
+                                        $righttable,
                                         $modelclasspath,
                                         $manythroughmatch->getLeftForeignKey(),
                                         $manythroughmatch->getRightForeignKey(),
