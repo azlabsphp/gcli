@@ -64,9 +64,11 @@ class CreateMVCComponentsCommand extends Command
         . '{--http : Whether to generates controllers and routes}'
         . '{--force : Force rewrite of existing classes }'
         . '{--relations : Generates relations for model and relations casting entries for data transfer object }'
-        . '{--manytomany=* :  List of many to many relations. (ex - lefttable->middletable->righttable)}'
-        . '{--toones=* :  List of one to one relations. (ex - lefttable->righttable)}'
-        . '{--only=* : Restrict the generator to generate code only for the specified table structures}';
+        . '{--manytomany=* :  List of many to many relations. (ex - lefttable->middletable->righttable) }'
+        . '{--toones=* :  List of one to one relations. (ex - lefttable->righttable) }'
+        . '{--manythroughs=* :  List of many through relations. (ex - lefttable->middletable->righttable) }'
+        . '{--onethroughs=* :  List of one through relations. (ex - lefttable->middletable->righttable) }'
+        . '{--only=* : Restrict the generator to generate code only for the specified table structures }';
 
     /**
      * The console command description.
@@ -192,7 +194,9 @@ class CreateMVCComponentsCommand extends Command
                 $httpHandlers,
                 boolval($this->option('relations')),
                 iterator_to_array($this->flattenComposed($this->option('toones') ?? [])),
-                iterator_to_array($this->flattenComposed($this->option('manytomany') ?? []))
+                iterator_to_array($this->flattenComposed($this->option('manytomany') ?? [])),
+                iterator_to_array($this->flattenComposed($this->option('onethroughs') ?? [])),
+                iterator_to_array($this->flattenComposed($this->option('manythroughs') ?? []))
             )(
             $this->laravel->basePath('routes'),
             $this->path_,
