@@ -599,6 +599,12 @@ class EloquentORMModelBuilder implements ContractsEloquentORMModel, ComponentBui
     }
 
 
+    /**
+     * Createa a one to one through or a one to many though relation method template for the model
+     * 
+     * @param ThoughRelation $relation 
+     * @return CallableInterface 
+     */
     private function createThroughRelationTemplate(\Drewlabs\ComponentGenerators\ThoughRelation $relation)
     {
         $returns = $relation->getType() === RelationTypes::ONE_TO_MANY_THROUGH ?
@@ -611,8 +617,8 @@ class EloquentORMModelBuilder implements ContractsEloquentORMModel, ComponentBui
         $leftlocalkey = $relation->getLeftLocalKey();
         $rightlocalkey = $relation->getRightLocalKey();
         $line = $relation->getType() === RelationTypes::ONE_TO_MANY_THROUGH ?
-            "return \$this->hasManyThrough(\\$left::class, $right::class, " :
-            "return \$this->hasOneThrough(\\$left::class, $right::class, ";
+            "return \$this->hasManyThrough(\\$left::class, \\$right::class, " :
+            "return \$this->hasOneThrough(\\$left::class, \\$right::class, ";
         if ($leftforeignkey) {
             $line .= "'$leftforeignkey', ";
         }

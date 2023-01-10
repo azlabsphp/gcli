@@ -232,11 +232,15 @@ class ReverseEngineerTaskRunner
                     if (null !== $controller = Arr::get($component, 'controller')) {
                         if (is_array($componentrelations) && method_exists($dtobuiler, 'setCasts')) {
                             $currentDtoCasts = [];
-                            /**
-                             * @var BasicRelation $_current
-                             */
                             foreach ($componentrelations as $_current) {
-                                $currentDtoCasts[$_current->getName()] = in_array($_current->getType(), [RelationTypes::ONE_TO_MANY, RelationTypes::MANY_TO_MANY]) ?
+                                $currentDtoCasts[$_current->getName()] = in_array(
+                                    $_current->getType(),
+                                    [
+                                        RelationTypes::ONE_TO_MANY,
+                                        RelationTypes::MANY_TO_MANY,
+                                        RelationTypes::ONE_TO_MANY_THROUGH
+                                    ]
+                                ) ?
                                     'collectionOf:\\' . ltrim($_current->getCastClassPath(), '\\') :
                                     'value:\\' . ltrim($_current->getCastClassPath(), '\\');
                             }
