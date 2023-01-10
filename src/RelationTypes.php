@@ -41,4 +41,14 @@ class RelationTypes
      * Defines a many to many relation
      */
     const MANY_TO_MANY = '* -> *';
+
+    /**
+     * Defines a one to one through relation type
+     */
+    const ONE_TO_ONE_THROUGH = '1 -> t -> 1';
+
+    /**
+     * Defines a one to one through relation type
+     */
+    const ONE_TO_MANY_THROUGH = '1 -> t -> *';
 }

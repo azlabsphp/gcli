@@ -14,14 +14,15 @@ declare(strict_types=1);
 namespace Drewlabs\ComponentGenerators\Extensions\Traits;
 
 use Drewlabs\ComponentGenerators\BasicRelation;
-use Drewlabs\ComponentGenerators\ManyThoughRelation;
-use Drewlabs\ComponentGenerators\ManyThroughTablesRelation;
+use Drewlabs\ComponentGenerators\ThoughRelation;
+use Drewlabs\ComponentGenerators\ThroughRelationTables;
 use Drewlabs\ComponentGenerators\RelationTypes;
 use Drewlabs\ComponentGenerators\ToOneTablesRelation;
 use Drewlabs\Core\Helpers\Arr;
 use Drewlabs\Core\Helpers\Str;
 use Illuminate\Support\Pluralizer;
 use InvalidArgumentException;
+use Drewlabs\ComponentGenerators\Contracts\ForeignKeyConstraintDefinition;
 
 trait ReverseEngineerRelations
 {
@@ -30,7 +31,7 @@ trait ReverseEngineerRelations
      * 
      * @param array $values 
      * @param array $tablesindexes
-     * @param array $foreignKeys 
+     * @param ForeignKeyConstraintDefinition[] $foreignKeys 
      * @param array $manytomany 
      * @param array $toones 
      * @return array 
@@ -41,40 +42,25 @@ trait ReverseEngineerRelations
         array $tablesindexes,
         array $foreignKeys,
         array $manytomany,
-        array $toones
+        array $toones,
+        array $manythroughs = [],
+        array $onethroughs = []
     ) {
 
         $relations = [];
         $pivots = [];
-        $manytomanyrelations = [];
         /**
-         * @var ManyThroughTablesRelation[]
+         * @var ThroughRelationTables[]
          */
-        $manytomanyobjects = array_map(function ($current) use ($foreignKeys) {
-            $object = ManyThroughTablesRelation::create($current);
-            $left = array_values(array_filter($foreignKeys, function ($foreign) use ($object) {
-                return $foreign->getLocalTableName() === $object->intermediateTable() && $foreign->getForeignTableName() === $object->leftTable();
-            }));
-            $right = array_values(!empty($left) ? array_filter($foreignKeys, function ($foreign) use ($object) {
-                return $foreign->getLocalTableName() === $object->intermediateTable() && $foreign->getForeignTableName() === $object->rightTable();
-            }) : []);
-            if (!empty($left) && !empty($right)) {
-                // The local key is the foreign key on symfony foreign keys constraint 
-                // and the foreign column the table primary key
-                $object = $object->setLeftForeignKey($left[0]->localColumns()[0])
-                    ->setRightForeignKey($right[0]->localColumns()[0])
-                    ->setLeftLocalkey($left[0]->getForeignColumns()[0])
-                    ->setRightLocalkey($right[0]->getForeignColumns()[0]);
-            }
-            return $object;
-        }, $manytomany ?? []);
-
+        $manytomany = self::projectToMany($foreignKeys, $manytomany);
         /**
          * @var ToOneTablesRelation[]
          */
         $ones = array_map(function ($current) {
             return ToOneTablesRelation::create($current);
         }, $toones ?? []);
+        $manythroughs = self::projectTrhough($foreignKeys, $manythroughs);
+        $onethroughs = self::projectTrhough($foreignKeys, $onethroughs);
         foreach ($values as $component) {
             if ($table = Arr::get($component, 'table')) {
                 foreach ($foreignKeys as $foreign) {
@@ -109,55 +95,19 @@ trait ReverseEngineerRelations
                         $filterResult = array_filter($ones, function (ToOneTablesRelation $currrent) use ($foreigntable, $table) {
                             return ($currrent->leftTable() === $foreigntable) && ($currrent->rightTable() === $table);
                         });
-                        $manytomanyresult = array_filter($manytomanyobjects, function (ManyThroughTablesRelation $currrent) use ($foreigntable, $table) {
-                            return $currrent->intermediateTable() === $table;
-                        });
-
-                        if (!empty($manytomanyresult)) {
-                            $manythroughmatch = $manytomanyresult[0];
-                            $lefttableresult = array_values(array_filter($values, function ($c) use ($manythroughmatch) {
-                                return Arr::get($c, 'table', null) === $manythroughmatch->leftTable();
-                            }));
-                            $righttableresult = array_values(!empty($lefttableresult) ? array_filter($values, function ($c) use ($manythroughmatch) {
-                                return Arr::get($c, 'table', null) === $manythroughmatch->rightTable();
-                            }) : []);
-                            if (!empty($lefttableresult) && !empty($righttableresult)) {
-                                list($righttablecomponent, $lefttablecomponent) = [$righttableresult[0], $lefttableresult[0]];
-                                if (
-                                    !isset($manytomanyrelations[$table]) &&
-                                    !is_null($lefttableclasspath = Arr::get($lefttablecomponent, 'model.classPath'))
-                                ) {
-                                    $manytomanyrelations[$table] = true;
-                                    $relations = self::mergearray($relations, $foreignclasspath, new ManyThoughRelation(
-                                        Str::camelize(Pluralizer::plural($manythroughmatch->rightTable()), false),
-                                        RelationTypes::MANY_TO_MANY,
-                                        $lefttableclasspath,
-                                        $table,
-                                        $modelclasspath,
-                                        $manythroughmatch->getLeftForeignKey(),
-                                        $manythroughmatch->getRightForeignKey(),
-                                        $manythroughmatch->getLeftLocalkey(),
-                                        $manythroughmatch->getRightLocalkey(),
-                                        ($righttabledtobuilder = Arr::get($righttablecomponent, 'controller.dto.class')) ? $righttabledtobuilder->getClassPath() : null
-                                    ));
-                                    $pivots[] = $table;
-                                }
-                            }
-                        }
                         $relations = self::mergearray(
-                            $relations,
-                            $foreignclasspath,
-                            new BasicRelation(
-                                Str::camelize(!empty($filterResult) ? Pluralizer::singular($table) : Pluralizer::plural($table), false),
-                                $modelclasspath,
-                                $foreigncolum,
-                                $localcolumn,
-                                !empty($filterResult) ? RelationTypes::ONE_TO_ONE : RelationTypes::ONE_TO_MANY,
-                                ($_dtobuilder = Arr::get($component, 'controller.dto.class')) ? $_dtobuilder->getClassPath() : null
-                            )
-                        );
-                        $relations = self::mergearray(
-                            $relations,
+                            self::mergearray(
+                                $relations,
+                                $foreignclasspath,
+                                new BasicRelation(
+                                    Str::camelize(!empty($filterResult) ? Pluralizer::singular($table) : Pluralizer::plural($table), false),
+                                    $modelclasspath,
+                                    $foreigncolum,
+                                    $localcolumn,
+                                    !empty($filterResult) ? RelationTypes::ONE_TO_ONE : RelationTypes::ONE_TO_MANY,
+                                    ($_dtobuilder = Arr::get($component, 'controller.dto.class')) ? $_dtobuilder->getClassPath() : null
+                                )
+                            ),
                             $modelclasspath,
                             new BasicRelation(
                                 Str::camelize(Pluralizer::singular($foreigntable), false),
@@ -170,9 +120,225 @@ trait ReverseEngineerRelations
                         );
                     }
                 }
+                //#region many to many relations
+                $relations = self::appendManyToMany(
+                    $manytomany,
+                    $table,
+                    $values,
+                    Arr::get($component, 'model.classPath'),
+                    $relations,
+                    $pivots
+                );
+                //#endregion many to many relations
+                //#region append to 1 -> many right relation
+                $relations = self::appendToRightRelation(
+                    $manythroughs,
+                    RelationTypes::ONE_TO_MANY_THROUGH,
+                    $table,
+                    $values,
+                    Arr::get($component, 'model.classPath'),
+                    $relations
+                );
+                //#endregion append to 1 -> many right relation
+                //#region append to 1 -> 1 right relation
+                $relations = self::appendToRightRelation(
+                    $onethroughs,
+                    RelationTypes::ONE_TO_ONE_THROUGH,
+                    $table,
+                    $values,
+                    Arr::get($component, 'model.classPath'),
+                    $relations
+                );
+                //#endregion append to 1 -> 1 right relation
             }
         }
-        return [$relations, $pivots];
+        return [$relations, array_unique($pivots)];
+    }
+
+    /**
+     * 
+     * @param mixed $throughs 
+     * @param string $type 
+     * @param string $table 
+     * @param array $values 
+     * @param string $classpath 
+     * @param mixed $relations 
+     * @return mixed 
+     * @throws InvalidArgumentException 
+     */
+    private static function appendToRightRelation(
+        $throughs,
+        string $type,
+        string $table,
+        array $values,
+        string $classpath,
+        $relations
+    ) {
+        /**
+         * @var ThroughRelationTables[]
+         */
+        $result = array_values(array_filter($throughs, function (ThroughRelationTables $currrent) use ($table) {
+            return $currrent->leftTable() === $table;
+        }));
+        if (empty($result)) {
+            return $relations;
+        }
+        $through = $result[0] ?? null;
+        if (null === $through) {
+            return $relations;
+        }
+        $intermediate = array_values(array_filter($values, function ($c) use ($through) {
+            return Arr::get($c, 'table', null) === $through->intermediateTable();
+        }));
+        $right = array_values(!empty($intermediate) ? array_filter($values, function ($c) use ($through) {
+            return Arr::get($c, 'table', null) === $through->rightTable();
+        }) : []);
+
+        if (
+            empty($intermediate) ||
+            empty($right) ||
+            is_null($rightclasspath =
+                Arr::get($right[0] ?? [], 'model.classPath')) ||
+            is_null($intermediateclasspath = Arr::get($intermediate[0], 'model.classPath'))
+        ) {
+            return $relations;
+        }
+        return self::mergearray($relations, $classpath, new ThoughRelation(
+            $type === RelationTypes::ONE_TO_ONE_THROUGH ?  Str::camelize(Pluralizer::singular($through->rightTable()), false) : Str::camelize(Pluralizer::plural($through->rightTable()), false),
+            $type,
+            $rightclasspath,
+            $intermediateclasspath,
+            null,
+            $through->getLeftForeignKey(),
+            $through->getRightForeignKey(),
+            $through->getLeftLocalkey(),
+            $through->getRightLocalkey(),
+            ($dtobuilder = Arr::get($right[0], 'controller.dto.class')) ? $dtobuilder->getClassPath() : null
+        ));
+    }
+
+
+    /**
+     * 
+
+     * @param mixed $objects 
+     * @param string $table 
+     * @param array $values 
+     * @param string $classpath 
+     * @param array $relations 
+     * @param array $pivots 
+     * @return array 
+     * @throws InvalidArgumentException 
+     */
+    private static function appendManyToMany(
+        $objects,
+        string $table,
+        array $values,
+        string $classpath,
+        array $relations,
+        array &$pivots
+    ) {
+        // #region Many To Many relations
+        /**
+         * @var ThroughRelationTables[]
+         */
+        $result = array_values(array_filter($objects, function (ThroughRelationTables $currrent) use ($table) {
+            return $currrent->leftTable() === $table;
+        }));
+        if (empty($result)) {
+            return $relations;
+        }
+        $match = $result[0] ?? null;
+        if (null === $match) {
+            return $relations;
+        }
+        $intermediate = array_values(array_filter($values, function ($c) use ($match) {
+            return Arr::get($c, 'table', null) === $match->intermediateTable();
+        }));
+        $right = array_values(!empty($intermediate) ? array_filter($values, function ($c) use ($match) {
+            return Arr::get($c, 'table', null) === $match->rightTable();
+        }) : []);
+        if (empty($intermediate) || empty($right)) {
+            return $relations;
+        }
+        if (
+            is_null($rightclasspath = Arr::get($right[0] ?? [], 'model.classPath')) ||
+            is_null($righttable = Arr::get($right[0] ?? [], 'table')) ||
+            is_null($throughclasspath = Arr::get($intermediate[0] ?? [], 'model.classPath'))  ||
+            is_null($throughtable = Arr::get($intermediate[0] ?? [], 'table'))
+        ) {
+            return $relations;
+        }
+        $pivots[] = $throughtable;
+        return self::mergearray($relations, $classpath, new ThoughRelation(
+            Str::camelize(Pluralizer::plural($match->rightTable()), false),
+            RelationTypes::MANY_TO_MANY,
+            $rightclasspath,
+            $throughtable,
+            $throughclasspath,
+            $match->getLeftForeignKey(),
+            $match->getRightForeignKey(),
+            $match->getLeftLocalkey(),
+            $match->getRightLocalkey(),
+            ($dtobuilder = Arr::get($right[0], 'controller.dto.class')) ? $dtobuilder->getClassPath() : null
+        ));
+        // #endregion Many To Many relations
+    }
+
+    /**
+     * Project through relations to supported class instance
+     * 
+     * @param mixed $foreignKeys 
+     * @param array $throughs 
+     * @return array<array-key, \Drewlabs\ComponentGenerators\ThroughRelationTables> 
+     */
+    private static function projectTrhough($foreignKeys, array $throughs)
+    {
+        return  array_map(function ($current) use ($foreignKeys) {
+            $object = ThroughRelationTables::create($current);
+            $left = array_values(array_filter($foreignKeys, function ($foreign) use ($object) {
+                return $foreign->getLocalTableName() === $object->intermediateTable() && $foreign->getForeignTableName() === $object->leftTable();
+            }));
+            $right = array_values(!empty($left) ? array_filter($foreignKeys, function ($foreign) use ($object) {
+                return $foreign->getLocalTableName() === $object->rightTable() && $foreign->getForeignTableName() === $object->intermediateTable();
+            }) : []);
+            if (!empty($left) && !empty($right)) {
+                $object = $object->setLeftForeignKey($left[0]->localColumns()[0])
+                    ->setRightForeignKey($right[0]->localColumns()[0])
+                    ->setLeftLocalkey($left[0]->getForeignColumns()[0])
+                    ->setRightLocalkey($right[0]->getForeignColumns()[0]);
+            }
+            return $object;
+        }, $throughs);
+    }
+
+    /**
+     * Project many to many relation to supported class instance
+     * 
+     * @param array $foreignKeys 
+     * @param array $array 
+     * @return array<array-key, \Drewlabs\ComponentGenerators\ThroughRelationTables> 
+     */
+    private static function projectToMany(array $foreignKeys, array $array)
+    {
+        return array_map(function ($current) use ($foreignKeys) {
+            $object = ThroughRelationTables::create($current);
+            $left = array_values(array_filter($foreignKeys, function ($foreign) use ($object) {
+                return $foreign->getLocalTableName() === $object->intermediateTable() && $foreign->getForeignTableName() === $object->leftTable();
+            }));
+            $right = array_values(!empty($left) ? array_filter($foreignKeys, function ($foreign) use ($object) {
+                return $foreign->getLocalTableName() === $object->intermediateTable() && $foreign->getForeignTableName() === $object->rightTable();
+            }) : []);
+            if (!empty($left) && !empty($right)) {
+                // The local key is the foreign key on symfony foreign keys constraint 
+                // and the foreign column the table primary key
+                $object = $object->setLeftForeignKey($left[0]->localColumns()[0])
+                    ->setRightForeignKey($right[0]->localColumns()[0])
+                    ->setLeftLocalkey($left[0]->getForeignColumns()[0])
+                    ->setRightLocalkey($right[0]->getForeignColumns()[0]);
+            }
+            return $object;
+        }, $array ?? []);
     }
 
     /**

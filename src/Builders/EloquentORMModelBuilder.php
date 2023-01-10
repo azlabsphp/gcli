@@ -28,7 +28,7 @@ use Drewlabs\ComponentGenerators\Contracts\ORMColumnDefinition;
 use Drewlabs\ComponentGenerators\Contracts\ORMModelDefinition;
 use Drewlabs\ComponentGenerators\Contracts\ProvidesRelations;
 use Drewlabs\ComponentGenerators\Helpers\ComponentBuilderHelpers;
-use Drewlabs\ComponentGenerators\ManyThoughRelation;
+use Drewlabs\ComponentGenerators\ThoughRelation;
 use Drewlabs\ComponentGenerators\RelationTypes;
 
 use function Drewlabs\ComponentGenerators\Proxy\PHPScript;
@@ -136,7 +136,7 @@ class EloquentORMModelBuilder implements ContractsEloquentORMModel, ComponentBui
     /**
      * List of model relations to provide
      * 
-     * @var (\Drewlabs\ComponentGenerators\BasicRelation|\Drewlabs\ComponentGenerators\ManyThroughTablesRelation)[]
+     * @var (\Drewlabs\ComponentGenerators\BasicRelation|\Drewlabs\ComponentGenerators\ThroughRelationTables)[]
      */
     private $relations;
 
@@ -328,7 +328,7 @@ class EloquentORMModelBuilder implements ContractsEloquentORMModel, ComponentBui
 
         // If the generator is configured to provide model relation, the relation is generated
         $component = $this->addRelations($component);
-        
+
         $component->setBaseClass(EloquentModel::class)
             ->asFinal()
             ->addTrait(\Drewlabs\Packages\Database\Traits\Model::class)
@@ -540,12 +540,22 @@ class EloquentORMModelBuilder implements ContractsEloquentORMModel, ComponentBui
                 $this->relationMethods_[] = $relation->getName();
                 continue;
             }
-            // TODO: If possibe, add support for other relation definitions
-            if ($type === RelationTypes::MANY_TO_MANY && $relation instanceof \Drewlabs\ComponentGenerators\ManyThoughRelation) {
+            if ($type === RelationTypes::MANY_TO_MANY && $relation instanceof \Drewlabs\ComponentGenerators\ThoughRelation) {
                 /**
                  * @var BluePrint
                  */
                 $component = $component->addMethod($this->createManyToManyRelationTemplate($relation));
+                $this->relationMethods_[] = $relation->getName();
+                continue;
+            }
+            if (
+                in_array($type, [RelationTypes::ONE_TO_MANY_THROUGH, RelationTypes::ONE_TO_ONE_THROUGH]) &&
+                $relation instanceof \Drewlabs\ComponentGenerators\ThoughRelation
+            ) {
+                /**
+                 * @var BluePrint
+                 */
+                $component = $component->addMethod($this->createThroughRelationTemplate($relation));
                 $this->relationMethods_[] = $relation->getName();
                 continue;
             }
@@ -588,14 +598,45 @@ class EloquentORMModelBuilder implements ContractsEloquentORMModel, ComponentBui
         return PHPClassMethod($relation->getName(), [], $returns, 'public')->addLine("return \$this->belongsTo(\\$model::class, '$local', '$reference')");
     }
 
+
+    private function createThroughRelationTemplate(\Drewlabs\ComponentGenerators\ThoughRelation $relation)
+    {
+        $returns = $relation->getType() === RelationTypes::ONE_TO_MANY_THROUGH ?
+            \Illuminate\Database\Eloquent\Relations\HasManyThrough::class :
+            \Illuminate\Database\Eloquent\Relations\HasOneThrough::class;
+        $left = $relation->getLeftTable();
+        $right = $relation->getRightTable();
+        $leftforeignkey = $relation->getLeftForeignKey();
+        $rightforeignkey = $relation->getRightForeignKey();
+        $leftlocalkey = $relation->getLeftLocalKey();
+        $rightlocalkey = $relation->getRightLocalKey();
+        $line = $relation->getType() === RelationTypes::ONE_TO_MANY_THROUGH ?
+            "return \$this->hasManyThrough(\\$left::class, $right::class, " :
+            "return \$this->hasOneThrough(\\$left::class, $right::class, ";
+        if ($leftforeignkey) {
+            $line .= "'$leftforeignkey', ";
+        }
+        if ($rightforeignkey) {
+            $line .= "'$rightforeignkey', ";
+        }
+        if ($leftlocalkey) {
+            $line .= "'$leftlocalkey', ";
+        }
+        if ($rightlocalkey) {
+            $line .= "'$rightlocalkey'";
+        }
+        $line .= ')';
+        return PHPClassMethod($relation->getName(), [], $returns, 'public')->addLine($line);
+    }
+
     /**
      * Creates a many to many relation method template
      * 
-     * @param ManyThoughRelation $relation
+     * @param ThoughRelation $relation
      * 
      * @return CallableInterface 
      */
-    private function createManyToManyRelationTemplate(\Drewlabs\ComponentGenerators\ManyThoughRelation $relation)
+    private function createManyToManyRelationTemplate(\Drewlabs\ComponentGenerators\ThoughRelation $relation)
     {
         $returns = \Illuminate\Database\Eloquent\Relations\BelongsToMany::class;
         $left = $relation->getLeftTable();

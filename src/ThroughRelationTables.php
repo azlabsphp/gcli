@@ -17,7 +17,7 @@ use InvalidArgumentException;
 use ReflectionClass;
 use ReflectionException;
 
-class ManyThroughTablesRelation
+class ThroughRelationTables
 {
 
     /**

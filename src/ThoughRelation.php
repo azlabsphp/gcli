@@ -14,7 +14,7 @@ declare(strict_types=1);
 namespace Drewlabs\ComponentGenerators;
 
 
-class ManyThoughRelation
+class ThoughRelation
 {
     /**
      * relation method name
@@ -80,7 +80,6 @@ class ManyThoughRelation
      * @var string
      */
     private $castclasspath;
-
 
     /**
      * Creates Many through relation instance

@@ -28,7 +28,6 @@ use Drewlabs\ComponentGenerators\BasicRelation;
 use Drewlabs\ComponentGenerators\Builders\DataTransfertClassBuilder;
 use Drewlabs\ComponentGenerators\Builders\ViewModelClassBuilder;
 use Drewlabs\ComponentGenerators\Extensions\Traits\ReverseEngineerRelations;
-use Drewlabs\ComponentGenerators\ManyThoughRelation;
 use Drewlabs\ComponentGenerators\RelationTypes;
 
 use function Drewlabs\ComponentGenerators\Proxy\ComponentsScriptWriter;
@@ -97,7 +96,9 @@ class ReverseEngineerTaskRunner
         bool $hasHttpHandlers = false,
         bool $providesRelations = false,
         array $toones = [],
-        array $manytomany = []
+        array $manytomany = [],
+        array $onethroughs = [],
+        array $manythroughs = []
     ) {
         return function (
             string $routesDirectory,
@@ -121,7 +122,9 @@ class ReverseEngineerTaskRunner
             $hasHttpHandlers,
             $providesRelations,
             $manytomany,
-            $toones
+            $toones,
+            $onethroughs,
+            $manythroughs,
         ) {
             $onCompleteCallback = $onCompleteCallback ?? static function () {
                 printf("\nTask Completed successfully...\n");
@@ -192,7 +195,15 @@ class ReverseEngineerTaskRunner
              */
             $indicator = $onStartCallback($values);
             // #region Create components models relations
-            list($relations, $pivots) = $providesRelations ? self::resolveRelations($values, $tablesindexes, $foreignKeys, $manytomany, $toones) : [];
+            list($relations, $pivots) = $providesRelations ? self::resolveRelations(
+                $values,
+                $tablesindexes,
+                $foreignKeys,
+                $manytomany,
+                $toones,
+                $manythroughs,
+                $onethroughs
+            ) : [];
             // #endregion Create components models relations
             $routes = iterator_to_array((static function () use ($values, $subPackage, $indicator, $relations, $pivots, &$onExistsCallback) {
                 foreach ($values as $component) {
