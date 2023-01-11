@@ -186,7 +186,7 @@ trait ReverseEngineerRelations
         array $values,
         string $classpath,
         $relations,
-        string $schema
+        string $schema = null
     ) {
         /**
          * @var ThroughRelationTables[]
@@ -254,7 +254,7 @@ trait ReverseEngineerRelations
         string $classpath,
         array $relations,
         array &$pivots,
-        string $schema
+        string $schema = null
     ) {
         // #region Many To Many relations
         /**

@@ -143,7 +143,7 @@ class CreateMVCComponentsCommand extends Command
         // !Ends Local variables initialization
         (new ReverseEngineerTaskRunner())
             ->except($options->get('excludes', []))
-            ->only($options->get('includes'))
+            ->only($options->get('includes', []))
             ->run(
                 $commandargs->providesdboptions(function ($key, $default = null) {
                     return config($key, $default);
