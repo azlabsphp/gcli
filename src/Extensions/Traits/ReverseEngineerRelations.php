@@ -23,17 +23,23 @@ use Drewlabs\Core\Helpers\Str;
 use Illuminate\Support\Pluralizer;
 use InvalidArgumentException;
 use Drewlabs\ComponentGenerators\Contracts\ForeignKeyConstraintDefinition;
+use Drewlabs\ComponentGenerators\Traits\ProvidesTrimTableSchema;
 
 trait ReverseEngineerRelations
 {
+    use ProvidesTrimTableSchema;
+
     /**
      * Returns the list of relationship for generated components based on foreign key entries
      * 
      * @param array $values 
-     * @param array $tablesindexes
+     * @param array $tablesindexes 
      * @param ForeignKeyConstraintDefinition[] $foreignKeys 
      * @param array $manytomany 
      * @param array $toones 
+     * @param array $manythroughs 
+     * @param array $onethroughs 
+     * @param string $schema 
      * @return array 
      * @throws InvalidArgumentException 
      */
@@ -44,7 +50,8 @@ trait ReverseEngineerRelations
         array $manytomany,
         array $toones,
         array $manythroughs = [],
-        array $onethroughs = []
+        array $onethroughs = [],
+        string $schema = null
     ) {
 
         $relations = [];
@@ -100,7 +107,9 @@ trait ReverseEngineerRelations
                                 $relations,
                                 $foreignclasspath,
                                 new BasicRelation(
-                                    Str::camelize(!empty($filterResult) ? Pluralizer::singular($table) : Pluralizer::plural($table), false),
+                                    Str::camelize(!empty($filterResult) ?
+                                        Pluralizer::singular(self::trimschema($table, $schema)) :
+                                        Pluralizer::plural(self::trimschema($table, $schema)), false),
                                     $modelclasspath,
                                     $foreigncolum,
                                     $localcolumn,
@@ -110,7 +119,7 @@ trait ReverseEngineerRelations
                             ),
                             $modelclasspath,
                             new BasicRelation(
-                                Str::camelize(Pluralizer::singular($foreigntable), false),
+                                Str::camelize(Pluralizer::singular(self::trimschema($foreigntable, $schema)), false),
                                 $foreignclasspath,
                                 $foreigncolum,
                                 $localcolumn,
@@ -127,7 +136,8 @@ trait ReverseEngineerRelations
                     $values,
                     Arr::get($component, 'model.classPath'),
                     $relations,
-                    $pivots
+                    $pivots,
+                    $schema
                 );
                 //#endregion many to many relations
                 //#region append to 1 -> many right relation
@@ -137,7 +147,8 @@ trait ReverseEngineerRelations
                     $table,
                     $values,
                     Arr::get($component, 'model.classPath'),
-                    $relations
+                    $relations,
+                    $schema
                 );
                 //#endregion append to 1 -> many right relation
                 //#region append to 1 -> 1 right relation
@@ -147,7 +158,8 @@ trait ReverseEngineerRelations
                     $table,
                     $values,
                     Arr::get($component, 'model.classPath'),
-                    $relations
+                    $relations,
+                    $schema
                 );
                 //#endregion append to 1 -> 1 right relation
             }
@@ -162,7 +174,8 @@ trait ReverseEngineerRelations
      * @param string $table 
      * @param array $values 
      * @param string $classpath 
-     * @param mixed $relations 
+     * @param mixed $relations
+     * @param string $schema
      * @return mixed 
      * @throws InvalidArgumentException 
      */
@@ -172,7 +185,8 @@ trait ReverseEngineerRelations
         string $table,
         array $values,
         string $classpath,
-        $relations
+        $relations,
+        string $schema
     ) {
         /**
          * @var ThroughRelationTables[]
@@ -204,7 +218,9 @@ trait ReverseEngineerRelations
             return $relations;
         }
         return self::mergearray($relations, $classpath, new ThoughRelation(
-            $type === RelationTypes::ONE_TO_ONE_THROUGH ?  Str::camelize(Pluralizer::singular($through->rightTable()), false) : Str::camelize(Pluralizer::plural($through->rightTable()), false),
+            $type === RelationTypes::ONE_TO_ONE_THROUGH ?
+                Str::camelize(Pluralizer::singular(self::trimschema($through->rightTable(), $schema)), false) :
+                Str::camelize(Pluralizer::plural(self::trimschema($through->rightTable(), $schema)), false),
             $type,
             $rightclasspath,
             $intermediateclasspath,
@@ -226,7 +242,8 @@ trait ReverseEngineerRelations
      * @param array $values 
      * @param string $classpath 
      * @param array $relations 
-     * @param array $pivots 
+     * @param array $pivots
+     * @param string $schema
      * @return array 
      * @throws InvalidArgumentException 
      */
@@ -236,7 +253,8 @@ trait ReverseEngineerRelations
         array $values,
         string $classpath,
         array $relations,
-        array &$pivots
+        array &$pivots,
+        string $schema
     ) {
         // #region Many To Many relations
         /**
@@ -271,7 +289,7 @@ trait ReverseEngineerRelations
         }
         $pivots[] = $throughtable;
         return self::mergearray($relations, $classpath, new ThoughRelation(
-            Str::camelize(Pluralizer::plural($match->rightTable()), false),
+            Str::camelize(Pluralizer::plural(self::trimschema($match->rightTable(), $schema)), false),
             RelationTypes::MANY_TO_MANY,
             $rightclasspath,
             $throughtable,

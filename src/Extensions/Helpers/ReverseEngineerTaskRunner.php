@@ -24,7 +24,6 @@ use Drewlabs\ComponentGenerators\Extensions\Contracts\Progress;
 use Drewlabs\ComponentGenerators\Helpers\ComponentBuilderHelpers;
 use Drewlabs\ComponentGenerators\Helpers\RouteDefinitionsHelper;
 use Drewlabs\ComponentGenerators\Models\RouteController;
-use Drewlabs\ComponentGenerators\BasicRelation;
 use Drewlabs\ComponentGenerators\Builders\DataTransfertClassBuilder;
 use Drewlabs\ComponentGenerators\Builders\ViewModelClassBuilder;
 use Drewlabs\ComponentGenerators\Extensions\Traits\ReverseEngineerRelations;
@@ -121,8 +120,8 @@ class ReverseEngineerTaskRunner
             $schema,
             $hasHttpHandlers,
             $providesRelations,
-            $manytomany,
             $toones,
+            $manytomany,
             $onethroughs,
             $manythroughs,
         ) {
@@ -152,7 +151,7 @@ class ReverseEngineerTaskRunner
             $runner = DatabaseSchemaReverseEngineeringRunner(
                 $schemaManager,
                 $srcPath,
-                $namespace
+                $namespace ?? 'App'
             );
             if ($hasHttpHandlers) {
                 $runner = $runner->withHttpHandlers();
@@ -202,7 +201,8 @@ class ReverseEngineerTaskRunner
                 $manytomany,
                 $toones,
                 $manythroughs,
-                $onethroughs
+                $onethroughs,
+                $schema
             ) : [];
             // #endregion Create components models relations
             $routes = iterator_to_array((static function () use ($values, $subPackage, $indicator, $relations, $pivots, &$onExistsCallback) {

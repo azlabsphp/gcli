@@ -158,7 +158,6 @@ class DBSchemaReverseEngineeringService
     public function setSchema(?string $value = null)
     {
         $this->schema_ = $value;
-
         return $this;
     }
 

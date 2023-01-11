@@ -11,3 +11,4 @@ routes.php
 # composer.lock
 routes.php
 database.*
+input.json

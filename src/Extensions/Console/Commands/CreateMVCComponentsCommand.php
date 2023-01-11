@@ -15,14 +15,13 @@ namespace Drewlabs\ComponentGenerators\Extensions\Console\Commands;
 
 use Drewlabs\ComponentGenerators\Contracts\Writable;
 use Drewlabs\ComponentGenerators\DBDriverOptions;
+use Drewlabs\ComponentGenerators\Extensions\Helpers\CommandArguments;
 use Drewlabs\ComponentGenerators\Extensions\Helpers\ReverseEngineerTaskRunner;
 use Drewlabs\ComponentGenerators\Extensions\ProgressbarIndicator;
-use Drewlabs\ComponentGenerators\Helpers\ComponentBuilderHelpers;
 use Drewlabs\Core\Helpers\Str;
 use Drewlabs\Filesystem\Exceptions\ReadFileException;
 use Drewlabs\Filesystem\Exceptions\UnableToRetrieveMetadataException;
 use Drewlabs\Filesystem\Exceptions\FileNotFoundException;
-use Generator;
 
 use function Drewlabs\Filesystem\Proxy\Path;
 use Illuminate\Console\Command;
@@ -33,6 +32,8 @@ use RuntimeException;
 use Illuminate\Contracts\Container\BindingResolutionException;
 use Psr\Container\NotFoundExceptionInterface;
 use Psr\Container\ContainerExceptionInterface;
+use Symfony\Component\Console\Exception\InvalidArgumentException as ExceptionInvalidArgumentException;
+use Symfony\Component\Console\Exception\LogicException;
 
 class CreateMVCComponentsCommand extends Command
 {
@@ -60,6 +61,8 @@ class CreateMVCComponentsCommand extends Command
         . '{--excepts=* : List of tables not to be included in the generated output}'
         . '{--disableCache : Caching tables not supported}'
         . '{--noAuth : Indicates whether project controllers supports authentication}'
+        . '{--input= : Path to options configurations file}'
+        . '{--format=json : Inpu file extension or format. Supported input format are ex:json|yml|yaml}'
         . '{--schema= : Schema prefix to database tables}'
         . '{--http : Whether to generates controllers and routes}'
         . '{--force : Force rewrite of existing classes }'
@@ -80,29 +83,35 @@ class CreateMVCComponentsCommand extends Command
     /**
      * @var string
      */
-    private $path_;
+    private $cachePath;
 
     /**
      * @var string
      */
-    private $routesCachePath_;
+    private $routesCachePath;
 
+    /**
+     * Creates laravel command instance
+     * 
+     * @throws InvalidArgumentException 
+     * @throws ExceptionInvalidArgumentException 
+     * @throws LogicException 
+     * @throws RuntimeException 
+     */
     public function __construct()
     {
         parent::__construct();
         // Initialize the cache path
-        $cachePath = Path(
-            drewlabs_component_generator_cache_path()
-        )->canonicalize()->__toString();
-        $this->path_ = sprintf(
+        $basepath = Path(drewlabs_component_generator_cache_path())->canonicalize()->__toString();
+        $this->cachePath = sprintf(
             '%s%s%s',
-            $cachePath,
+            $basepath,
             \DIRECTORY_SEPARATOR,
             '__components__.dump'
         );
-        $this->routesCachePath_ = sprintf(
+        $this->routesCachePath = sprintf(
             '%s%s%s',
-            $cachePath,
+            $basepath,
             \DIRECTORY_SEPARATOR,
             '__routes__.dump'
         );
@@ -124,83 +133,41 @@ class CreateMVCComponentsCommand extends Command
     public function handle()
     {
         $forLumen = drewlabs_code_generator_is_running_lumen_app(Container::getInstance());
-        $srcPath = Path($this->option('srcPath') ?? 'app')->makeAbsolute($this->laravel->basePath())->__toString();
-        $routingfilename = $this->option('routingfilename') ?? 'web.php';
-        $routePrefix = $this->option('routePrefix') ?? null;
-        $middleware = $this->option('middleware') ?? null;
-        $only = $this->option('only');
-
-        $exceptions = $this->option('excepts') ?? [];
-        $disableCache = $this->option('disableCache');
-        if (!$disableCache) {
-            // Get component definitions from cache
-            $value = ComponentBuilderHelpers::getCachedComponentDefinitions((string) $this->path_);
-            if (null !== $value) {
-                $exceptions = array_merge($exceptions, $value->getTables());
-            }
-        }
-        $noAuth = $this->option('noAuth');
-        $namespace = $this->option('package') ?? 'App';
+        //#region command options
+        $noAuth = boolval($this->option('noAuth'));
         $subPackage = $this->option('subPackage');
-        $httpHandlers = $this->option('http');
+        $httpHandlers = boolval($this->option('http'));
+        $commandargs = new CommandArguments($this->options());
+        $options = $commandargs->providesoptions($this->cachePath, Path($this->option('srcPath') ?? 'app')->makeAbsolute($this->laravel->basePath())->__toString());
+        //#endregion command options
         // !Ends Local variables initialization
-        if (null !== ($url = $this->option('connectionURL'))) {
-            $options = [ 'url' => $url ];
-        } else {
-            $default_driver = config('database.default');
-            $driver = $this->option('driver') ?
-                (Str::startsWith(
-                    $this->option('driver'),
-                    'pdo'
-                ) ? $this->option('driver') :
-                    sprintf(
-                        'pdo_%s',
-                        $this->option('driver')
-                    )) : sprintf('pdo_%s', $default_driver);
-            $database = $this->option('dbname') ?? config("database.connections.$default_driver.database");
-            $port = $this->option('port') ?? config("database.connections.$default_driver.port");
-            $username = $this->option('user') ?? config("database.connections.$default_driver.username");
-            $host = $this->option('host') ?? config("database.connections.$default_driver.host");
-            $password = $this->option('password') ?? config("database.connections.$default_driver.password");
-            $charset = $this->option('charset') ?? ('pdo_mysql' === $driver ? 'utf8mb4' : ('pdo_sqlite' === $driver ? null : 'utf8'));
-            $server_version = $this->option('server_version') ?? null;
-            $options = [
-                'dbname' => $database,
-                'host' => 'pdo_sqlite' === $driver ? null : $host ?? '127.0.0.1',
-                'port' => 'pdo_sqlite' === $driver ? null : $port ?? 3306,
-                'user' => $username,
-                'password' => $password,
-                'driver' => $driver ?? 'pdo_sqlite',
-                'server_version' => $server_version,
-                'charset' => $charset,
-            ];
-        }
-        $dbOptions = new DBDriverOptions($options);
         (new ReverseEngineerTaskRunner())
-            ->except($exceptions ?? [])
-            ->only($only ?? [])
+            ->except($options->get('excludes', []))
+            ->only($options->get('includes'))
             ->run(
-                $dbOptions->prepare()->get(),
-                $srcPath,
-                $routingfilename,
-                $routePrefix,
-                $middleware,
+                $commandargs->providesdboptions(function ($key, $default = null) {
+                    return config($key, $default);
+                }),
+                $options->get('path'),
+                $options->get('routes.filename', 'web.php'),
+                $options->get('routes.prefix'),
+                $options->get('routes.middleware'),
                 $forLumen,
-                $disableCache,
+                !$options->get('cache', false),
                 $noAuth,
-                $namespace,
+                $options->get('namespace.default'),
                 $subPackage,
-                $this->option('schema') ?? null,
+                $options->get('schema'),
                 $httpHandlers,
-                boolval($this->option('relations')),
-                iterator_to_array($this->flattenComposed($this->option('toones') ?? [])),
-                iterator_to_array($this->flattenComposed($this->option('manytomany') ?? [])),
-                iterator_to_array($this->flattenComposed($this->option('onethroughs') ?? [])),
-                iterator_to_array($this->flattenComposed($this->option('manythroughs') ?? []))
+                $options->get('models.relations.provides', false),
+                $options->get('models.relations.one-to-one', []),
+                $options->get('models.relations.many-to-many', []),
+                $options->get('models.relations.one-to-one-though', []),
+                $options->get('models.relations.one-to-many-though', []),
             )(
             $this->laravel->basePath('routes'),
-            $this->path_,
-            $this->routesCachePath_,
+            $this->cachePath,
+            $this->routesCachePath,
             // Creates the progress indicator
             function ($values) {
                 $this->info("Started reverse engineering process...\n");
@@ -209,32 +176,12 @@ class CreateMVCComponentsCommand extends Command
             function () {
                 $this->info("\nReverse engineering completed successfully!\n");
             },
-            function (Writable $writable) use ($srcPath) {
+            function (Writable $writable) use ($options) {
                 if ($this->option('force')) {
                     return true;
                 }
-                return $this->confirm("Override existing class at $srcPath ?" . \DIRECTORY_SEPARATOR . $writable->getPath());
+                return $this->confirm(sprintf("Override existing class at %s? ", $options->get('path')) . \DIRECTORY_SEPARATOR . $writable->getPath());
             }
         );
-    }
-
-    /**
-     * Creates a generator of flatten array
-     * 
-     * @param array $composed 
-     * @return Generator<int, string, mixed, void> 
-     */
-    private function flattenComposed(array $composed)
-    {
-        foreach ($composed as $relation) {
-            if (false !== strpos((string)$relation, ',')) {
-                $values = explode(',', (string)$relation);
-                foreach ($values as $part) {
-                    yield $part;
-                }
-                continue;
-            }
-            yield $relation;
-        }
     }
 }

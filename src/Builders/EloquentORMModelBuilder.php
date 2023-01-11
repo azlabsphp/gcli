@@ -33,6 +33,7 @@ use Drewlabs\ComponentGenerators\RelationTypes;
 
 use function Drewlabs\ComponentGenerators\Proxy\PHPScript;
 use Drewlabs\ComponentGenerators\Traits\HasNamespaceAttribute;
+use Drewlabs\ComponentGenerators\Traits\ProvidesTrimTableSchema;
 use Drewlabs\ComponentGenerators\Traits\ViewModelBuilder;
 use Drewlabs\Core\Helpers\Str;
 use Drewlabs\Filesystem\Exceptions\UnableToRetrieveMetadataException;
@@ -45,6 +46,7 @@ class EloquentORMModelBuilder implements ContractsEloquentORMModel, ComponentBui
 {
     use HasNamespaceAttribute;
     use ViewModelBuilder;
+    use ProvidesTrimTableSchema;
 
     /**
      * The name of the model.
@@ -503,13 +505,9 @@ class EloquentORMModelBuilder implements ContractsEloquentORMModel, ComponentBui
         $name_ = $table ?? $name ?? null;
         // TODO : REMOVE SCHEMA PREFIX IF ANY
         if ($name_ && $schema) {
-            $name_ = Str::startsWith($name_, $schema . '_') ?
-                Str::replace($schema . '_', '', $name_) : (Str::startsWith($name_, $schema) ?
-                    Str::replace($schema, '', $name_) :
-                    $name_);
+            $name_ = self::trimschema($name_, $schema);
         }
-        $name = Str::camelize(Pluralizer::singular($name_));
-        if ($name) {
+        if ($name = Str::camelize(Pluralizer::singular($name_))) {
             $this->setName($name);
         }
     }
