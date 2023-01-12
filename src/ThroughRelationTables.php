@@ -67,6 +67,12 @@ class ThroughRelationTables
     private $rightlocalkey;
 
     /**
+     * 
+     * @var string
+     */
+    private $name;
+
+    /**
      * Creates the tables relation instance
      * 
      * @param string $left 
@@ -114,7 +120,8 @@ class ThroughRelationTables
         }
         $this->left = $parts[0];
         $this->intermediate = $parts[1];
-        $this->right = $parts[2];
+        $this->right = false === strpos($parts[2] ?? '', ':') ? $parts[2] : explode(':', $parts[2])[0];
+        $this->name = false === strpos($parts[2] ?? '', ':') ? null : (($name = explode(':', $parts[2])[1]) ? trim($name) : null);
     }
 
     public function setLeftForeignKey(string $value)
@@ -189,6 +196,16 @@ class ThroughRelationTables
     public function intermediateTable()
     {
         return $this->intermediate;
+    }
+
+    /**
+     * Get relation name
+     * 
+     * @return string 
+     */
+    public function getName()
+    {
+        return $this->name;
     }
 
     /**

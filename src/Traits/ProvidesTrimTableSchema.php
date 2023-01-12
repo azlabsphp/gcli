@@ -13,7 +13,6 @@ declare(strict_types=1);
 
 namespace Drewlabs\ComponentGenerators\Traits;
 
-
 trait ProvidesTrimTableSchema
 {
     /**
@@ -35,17 +34,33 @@ trait ProvidesTrimTableSchema
     }
 
     /**
-     * Checks if the table has a schema prefix
+     * Checks if a string have a given prefix
      * 
-     * @param string $table 
-     * @param string $needle 
+     * @param string $haystack 
+     * @param string $prefix 
      * @return bool 
      */
-    public static function prefixed(string $table, string $prefix)
+    public static function prefixed(string $haystack, string $prefix)
     {
         if (version_compare(PHP_VERSION, '8.0.0') >= 0) {
-            return str_starts_with($table, $prefix);
+            return str_starts_with($haystack, $prefix);
         }
-        return ('' === $prefix) || (mb_substr($table, 0, mb_strlen($prefix)) === $prefix);
+        return ('' === $prefix) || (mb_substr($haystack, 0, mb_strlen($prefix)) === $prefix);
+    }
+
+    /**
+     * Checks if a string have a given suffix
+     * 
+     * @param string $haystack 
+     * @param string $prefix
+     * 
+     * @return bool 
+     */
+    public static function suffixed(string $haystack, string $prefix)
+    {
+        if (version_compare(PHP_VERSION, '8.0.0') >= 0) {
+            return str_ends_with($haystack, $prefix);
+        }
+        return ('' === $prefix) || (mb_substr($haystack, -(int) (mb_strlen($prefix))) === $prefix);
     }
 }

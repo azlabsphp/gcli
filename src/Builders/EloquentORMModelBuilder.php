@@ -525,16 +525,21 @@ class EloquentORMModelBuilder implements ContractsEloquentORMModel, ComponentBui
             return $component;
         }
         $this->relationMethods_ = $this->relationMethods_ ?? [];
-        $haspivot = false;
+        $methods = [];
         foreach ($this->relations as $relation) {
+            if (!array_key_exists($method = $relation->getName(), $methods)) {
+                $methods[$method] = 0;
+            } else {
+                $methods[$method] = ($method[$method] ?? 0 + 1);
+            }
             $type = $relation->getType();
             if ($type === RelationTypes::ONE_TO_MANY || $type === RelationTypes::ONE_TO_ONE) {
-                $component = $component->addMethod($this->createOneOrManyMethodTemplate($relation, $type));
+                $component = $component->addMethod($this->createOneOrManyMethodTemplate($relation, $type, $methods));
                 $this->relationMethods_[] = $relation->getName();
                 continue;
             }
             if ($type === RelationTypes::MANY_TO_ONE) {
-                $component = $component->addMethod($this->createBelongsToTemplate($relation));
+                $component = $component->addMethod($this->createBelongsToTemplate($relation, $methods));
                 $this->relationMethods_[] = $relation->getName();
                 continue;
             }
@@ -542,7 +547,7 @@ class EloquentORMModelBuilder implements ContractsEloquentORMModel, ComponentBui
                 /**
                  * @var BluePrint
                  */
-                $component = $component->addMethod($this->createManyToManyRelationTemplate($relation));
+                $component = $component->addMethod($this->createManyToManyRelationTemplate($relation, $methods));
                 $this->relationMethods_[] = $relation->getName();
                 continue;
             }
@@ -553,7 +558,7 @@ class EloquentORMModelBuilder implements ContractsEloquentORMModel, ComponentBui
                 /**
                  * @var BluePrint
                  */
-                $component = $component->addMethod($this->createThroughRelationTemplate($relation));
+                $component = $component->addMethod($this->createThroughRelationTemplate($relation, $methods));
                 $this->relationMethods_[] = $relation->getName();
                 continue;
             }
@@ -569,7 +574,7 @@ class EloquentORMModelBuilder implements ContractsEloquentORMModel, ComponentBui
      * @param string $type 
      * @return CallableInterface 
      */
-    private function createOneOrManyMethodTemplate(\Drewlabs\ComponentGenerators\BasicRelation $relation, string $type)
+    private function createOneOrManyMethodTemplate(\Drewlabs\ComponentGenerators\BasicRelation $relation, string $type, array $methods)
     {
         $model = $relation->getModel();
         $local = $relation->getLocal();
@@ -578,7 +583,12 @@ class EloquentORMModelBuilder implements ContractsEloquentORMModel, ComponentBui
             \Illuminate\Database\Eloquent\Relations\HasMany::class :
             \Illuminate\Database\Eloquent\Relations\HasOne::class;
         $method = $type === RelationTypes::ONE_TO_MANY ? 'hasMany' : 'hasOne';
-        return  PHPClassMethod($relation->getName(), [], $returns, 'public')->addLine("return \$this->$method(\\$model::class, '$local', '$reference')");
+        return  PHPClassMethod(
+            $this->resolvename($relation->getName(), $methods),
+            [],
+            $returns,
+            'public'
+        )->addLine("return \$this->$method(\\$model::class, '$local', '$reference')");
     }
 
     /**
@@ -587,13 +597,18 @@ class EloquentORMModelBuilder implements ContractsEloquentORMModel, ComponentBui
      * @param BasicRelation $relation 
      * @return CallableInterface 
      */
-    private function createBelongsToTemplate(\Drewlabs\ComponentGenerators\BasicRelation $relation)
+    private function createBelongsToTemplate(\Drewlabs\ComponentGenerators\BasicRelation $relation, array $methods)
     {
         $model = $relation->getModel();
         $local = $relation->getLocal();
         $reference = $relation->getReference();
         $returns = \Illuminate\Database\Eloquent\Relations\BelongsTo::class;
-        return PHPClassMethod($relation->getName(), [], $returns, 'public')->addLine("return \$this->belongsTo(\\$model::class, '$local', '$reference')");
+        return PHPClassMethod(
+            $this->resolvename($relation->getName(), $methods),
+            [],
+            $returns,
+            'public'
+        )->addLine("return \$this->belongsTo(\\$model::class, '$local', '$reference')");
     }
 
 
@@ -603,7 +618,7 @@ class EloquentORMModelBuilder implements ContractsEloquentORMModel, ComponentBui
      * @param ThoughRelation $relation 
      * @return CallableInterface 
      */
-    private function createThroughRelationTemplate(\Drewlabs\ComponentGenerators\ThoughRelation $relation)
+    private function createThroughRelationTemplate(\Drewlabs\ComponentGenerators\ThoughRelation $relation, array $methods)
     {
         $returns = $relation->getType() === RelationTypes::ONE_TO_MANY_THROUGH ?
             \Illuminate\Database\Eloquent\Relations\HasManyThrough::class :
@@ -630,7 +645,12 @@ class EloquentORMModelBuilder implements ContractsEloquentORMModel, ComponentBui
             $line .= "'$rightlocalkey'";
         }
         $line .= ')';
-        return PHPClassMethod($relation->getName(), [], $returns, 'public')->addLine($line);
+        return PHPClassMethod(
+            $this->resolvename($relation->getName(), $methods),
+            [],
+            $returns,
+            'public'
+        )->addLine($line);
     }
 
     /**
@@ -640,7 +660,7 @@ class EloquentORMModelBuilder implements ContractsEloquentORMModel, ComponentBui
      * 
      * @return CallableInterface 
      */
-    private function createManyToManyRelationTemplate(\Drewlabs\ComponentGenerators\ThoughRelation $relation)
+    private function createManyToManyRelationTemplate(\Drewlabs\ComponentGenerators\ThoughRelation $relation, array $methods)
     {
         $returns = \Illuminate\Database\Eloquent\Relations\BelongsToMany::class;
         $left = $relation->getLeftTable();
@@ -671,6 +691,23 @@ class EloquentORMModelBuilder implements ContractsEloquentORMModel, ComponentBui
         if ($through) {
             $line .= "->using(\\$through::class)";
         }
-        return PHPClassMethod($relation->getName(), [], $returns, 'public')->addLine($line);
+        return PHPClassMethod(
+            $this->resolvename($relation->getName(), $methods),
+            [],
+            $returns,
+            'public'
+        )->addLine($line);
+    }
+
+    /**
+     * Resolve relation name
+     * 
+     * @param string $name 
+     * @param array $methods 
+     * @return string 
+     */
+    private function resolvename(string $name, array $methods)
+    {
+        return isset($methods[$name]) && $methods[$name] > 0 ? sprintf('%s_%d', $name, $methods[$name]) : $name;
     }
 }

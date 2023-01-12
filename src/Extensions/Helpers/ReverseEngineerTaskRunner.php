@@ -203,7 +203,7 @@ class ReverseEngineerTaskRunner
                 $manythroughs,
                 $onethroughs,
                 $schema
-            ) : [];
+            ) : [[], []];
             // #endregion Create components models relations
             $routes = iterator_to_array((static function () use ($values, $subPackage, $indicator, $relations, $pivots, &$onExistsCallback) {
                 foreach ($values as $component) {

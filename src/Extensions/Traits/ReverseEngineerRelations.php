@@ -76,7 +76,10 @@ trait ReverseEngineerRelations
                         continue;
                     }
                     $foreigncolum = $foreigncolums[0];
-                    $localcolumn = ($foreign->localColumns() ?? [])[0] ?? 'id';
+                    $localcolumn = ($foreign->localColumns() ?? [])[0] ?? null;
+                    if (is_null($localcolumn)) {
+                        continue;
+                    }
                     if (is_null($foreigncolum)) {
                         continue;
                     }
@@ -99,7 +102,7 @@ trait ReverseEngineerRelations
                         /**
                          * @var ToOneTablesRelation $current
                          */
-                        $filterResult = array_filter($ones, function (ToOneTablesRelation $currrent) use ($foreigntable, $table) {
+                        $oneresult = array_filter($ones, function (ToOneTablesRelation $currrent) use ($foreigntable, $table) {
                             return ($currrent->leftTable() === $foreigntable) && ($currrent->rightTable() === $table);
                         });
                         $relations = self::mergearray(
@@ -107,19 +110,21 @@ trait ReverseEngineerRelations
                                 $relations,
                                 $foreignclasspath,
                                 new BasicRelation(
-                                    Str::camelize(!empty($filterResult) ?
-                                        Pluralizer::singular(self::trimschema($table, $schema)) :
+                                    Str::camelize(!empty($oneresult) ?
+                                        // If the relation name is provided in the one to one configuration, we use it, else we
+                                        // fallback to column name or table name
+                                        ($oneresult[0]->getName() ?? Pluralizer::singular(self::trimschema($table, $schema))) :
                                         Pluralizer::plural(self::trimschema($table, $schema)), false),
                                     $modelclasspath,
                                     $foreigncolum,
                                     $localcolumn,
-                                    !empty($filterResult) ? RelationTypes::ONE_TO_ONE : RelationTypes::ONE_TO_MANY,
+                                    !empty($oneresult) ? RelationTypes::ONE_TO_ONE : RelationTypes::ONE_TO_MANY,
                                     ($_dtobuilder = Arr::get($component, 'controller.dto.class')) ? $_dtobuilder->getClassPath() : null
                                 )
                             ),
                             $modelclasspath,
                             new BasicRelation(
-                                Str::camelize(Pluralizer::singular(self::trimschema($foreigntable, $schema)), false),
+                                Str::camelize(Pluralizer::singular(self::trimidsuffix($localcolumn)), false),
                                 $foreignclasspath,
                                 $foreigncolum,
                                 $localcolumn,
@@ -219,8 +224,8 @@ trait ReverseEngineerRelations
         }
         return self::mergearray($relations, $classpath, new ThoughRelation(
             $type === RelationTypes::ONE_TO_ONE_THROUGH ?
-                Str::camelize(Pluralizer::singular(self::trimschema($through->rightTable(), $schema)), false) :
-                Str::camelize(Pluralizer::plural(self::trimschema($through->rightTable(), $schema)), false),
+                $through->getName() ?? Str::camelize(Pluralizer::singular(self::trimschema($through->rightTable(), $schema)), false) :
+                $through->getName() ?? Str::camelize(Pluralizer::plural(self::trimschema($through->rightTable(), $schema)), false),
             $type,
             $rightclasspath,
             $intermediateclasspath,
@@ -281,7 +286,6 @@ trait ReverseEngineerRelations
         }
         if (
             is_null($rightclasspath = Arr::get($right[0] ?? [], 'model.classPath')) ||
-            is_null($righttable = Arr::get($right[0] ?? [], 'table')) ||
             is_null($throughclasspath = Arr::get($intermediate[0] ?? [], 'model.classPath'))  ||
             is_null($throughtable = Arr::get($intermediate[0] ?? [], 'table'))
         ) {
@@ -289,7 +293,7 @@ trait ReverseEngineerRelations
         }
         $pivots[] = $throughtable;
         return self::mergearray($relations, $classpath, new ThoughRelation(
-            Str::camelize(Pluralizer::plural(self::trimschema($match->rightTable(), $schema)), false),
+            $match->getName() ?? Str::camelize(Pluralizer::plural(self::trimschema($match->rightTable(), $schema)), false),
             RelationTypes::MANY_TO_MANY,
             $rightclasspath,
             $throughtable,
@@ -371,5 +375,17 @@ trait ReverseEngineerRelations
     {
         $list[$key] = [...(array_key_exists($key, $list) ? $list[$key] ?? [] : []), ...$args];
         return $list;
+    }
+
+    /**
+     * Remove the _id suffix from column name
+     * 
+     * @param string $column 
+     * @return string 
+     */
+    public static function trimidsuffix(string $column)
+    {
+        return self::suffixed($column, '_id') ?
+            substr($column ?? '', 0, strlen($column ?? '') - strlen('_id')) : $column;
     }
 }

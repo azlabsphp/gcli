@@ -35,6 +35,12 @@ class ToOneTablesRelation
     private $right;
 
     /**
+     * 
+     * @var string
+     */
+    private $name;
+
+    /**
      * Creates the tables relation instance
      * 
      * @param string $left 
@@ -79,7 +85,8 @@ class ToOneTablesRelation
             throw new InvalidArgumentException('one-to-one relation incorrectly formed, (ex: left_table->right_table)');
         }
         $this->left = $parts[0];
-        $this->right = $parts[1];
+        $this->right = false === strpos($parts[1] ?? '', ':') ? $parts[1] : explode(':', $parts[1])[0];
+        $this->name = false === strpos($parts[1] ?? '', ':') ? null : (($name = explode(':', $parts[1])[1]) ? $name : null);
     }
 
     /**
@@ -101,7 +108,17 @@ class ToOneTablesRelation
     {
         return $this->right;
     }
-    
+
+    /**
+     * Get relation name
+     * 
+     * @return string 
+     */
+    public function getName()
+    {
+        return $this->name;
+    }
+
     /**
      * Returns the string representation of the relation
      * 
@@ -111,5 +128,4 @@ class ToOneTablesRelation
     {
         return sprintf("%s->%s", $this->left, $this->right);
     }
-
 }
