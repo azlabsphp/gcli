@@ -54,6 +54,41 @@ class ReverseEngineerTaskRunner
     private $tables = [];
 
     /**
+     * @var bool
+     */
+    private $camelize = false;
+
+    /**
+     * 
+     * @var string[]
+     */
+    private $oneThroughs = [];
+
+    /**
+     * 
+     * @var string[]
+     */
+    private $manyThroughs = [];
+
+    /**
+     * 
+     * @var string[]
+     */
+    private $oneToOnes = [];
+
+    /**
+     * 
+     * @var string[]
+     */
+    private $manyToMany = [];
+
+    /**
+     * 
+     * @var bool
+     */
+    private $provideRelations = false;
+
+    /**
      * Specifies the tables for which code should be generated.
      *
      * @return self
@@ -78,7 +113,104 @@ class ReverseEngineerTaskRunner
     }
 
     /**
-     * @return \Closure
+     * By default from version 2.7.x model attribute attibutes are no more
+     * converted to camel case representation. To make sure json representation
+     * of attributes are in camelcase, this method must be invoked
+     * 
+     * @param bool $value 
+     * @return self 
+     */
+    public function setCamelize(bool $value = false)
+    {
+        $this->camelize = $value;
+
+        return $this;
+    }
+
+    /**
+     * Set the one through relations used when generating lazy load model
+     * for model class definitions
+     * 
+     * @param array $values 
+     * @return self 
+     */
+    public function setOnThroughRelations(array $values = [])
+    {
+        $this->oneThroughs = $values;
+
+        return $this;
+    }
+
+    /**
+     * Set the many through relations used when generating lazy load model
+     * for model class definitions
+     * 
+     * @param array $values 
+     * @return self 
+     */
+    public function setManyThroughRelations(array $values = [])
+    {
+        $this->manyThroughs = $values;
+
+        return $this;
+    }
+
+    /**
+     * Set the one to one relations used when generating lazy load model
+     * for model class definitions
+     * 
+     * @param array $values 
+     * @return self 
+     */
+    public function setToOnesRelations(array $values = [])
+    {
+        $this->oneToOnes = $values;
+
+        return $this;
+    }
+
+    /**
+     * Set the many to many relations used when generating lazy load model
+     * for model class definitions
+     * 
+     * @param array $values 
+     * @return self 
+     */
+    public function setManyToManyRelations(array $values = [])
+    {
+        $this->manyToMany = $values;
+
+        return $this;
+    }
+
+    /**
+     * Set a property that insure model relations are generated
+     * 
+     * @return self 
+     */
+    public function withRelations()
+    {
+        $this->provideRelations = true;
+
+        return $this;
+    }
+
+    /**
+     * Creates a code generator factory function based on provided options
+     * 
+     * @param array $options 
+     * @param string $srcPath 
+     * @param string $routingfilename 
+     * @param string|null $routePrefix 
+     * @param string|null $middleware 
+     * @param bool $forLumen 
+     * @param bool $disableCache 
+     * @param bool $noAuth 
+     * @param string|null $namespace 
+     * @param string|null $subPackage 
+     * @param string|null $schema 
+     * @param bool $hasHttpHandlers 
+     * @return Closure(string $routesDirectory, string $cachePath, string $routesCachePath, Closure $onStartCallback, null|Closure $onCompleteCallback = null, null|Closure $onExistsCallback = null): void 
      */
     public function run(
         array $options,
@@ -92,12 +224,7 @@ class ReverseEngineerTaskRunner
         string $namespace = null,
         string $subPackage = null,
         string $schema = null,
-        bool $hasHttpHandlers = false,
-        bool $providesRelations = false,
-        array $toones = [],
-        array $manytomany = [],
-        array $onethroughs = [],
-        array $manythroughs = []
+        bool $hasHttpHandlers = false
     ) {
         return function (
             string $routesDirectory,
@@ -119,12 +246,14 @@ class ReverseEngineerTaskRunner
             $subPackage,
             $schema,
             $hasHttpHandlers,
-            $providesRelations,
-            $toones,
-            $manytomany,
-            $onethroughs,
-            $manythroughs,
         ) {
+            $providesRelations = $this->provideRelations;
+            $toones = $this->oneToOnes ?? [];
+            $manytomany = $this->manyToMany ?? [];
+            $onethroughs = $this->oneThroughs ?? [];
+            $manythroughs = $this->manyThroughs ?? [];
+            $camelize = $this->camelize;
+
             $onCompleteCallback = $onCompleteCallback ?? static function () {
                 printf("\nTask Completed successfully...\n");
             };
@@ -205,7 +334,15 @@ class ReverseEngineerTaskRunner
                 $schema
             ) : [[], []];
             // #endregion Create components models relations
-            $routes = iterator_to_array((static function () use ($values, $subPackage, $indicator, $relations, $pivots, &$onExistsCallback) {
+            $routes = iterator_to_array((static function () use (
+                $camelize,
+                $values,
+                $subPackage,
+                $indicator,
+                $relations,
+                $pivots,
+                &$onExistsCallback
+            ) {
                 foreach ($values as $component) {
                     $modelbuilder = Arr::get($component, 'model.class');
                     if (($modelbuilder instanceof ProvidesRelations) && is_array($componentrelations = $relations[Arr::get($component, 'model.classPath')] ?? [])) {
@@ -244,7 +381,7 @@ class ReverseEngineerTaskRunner
                                     'collectionOf:\\' . ltrim($_current->getCastClassPath(), '\\') :
                                     'value:\\' . ltrim($_current->getCastClassPath(), '\\');
                             }
-                            $dtobuiler->setCasts($currentDtoCasts);
+                            $dtobuiler->setCamelizeProperties($camelize)->setCasts($currentDtoCasts);
                         }
                         $dtosourcecode = self::resolveWritable($dtobuiler);
                         static::writeComponentSourceCode(Arr::get($controller, 'dto.path'), $dtosourcecode,  $onExistsCallback);

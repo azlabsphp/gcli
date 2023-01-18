@@ -13,6 +13,7 @@ declare(strict_types=1);
 
 namespace Drewlabs\ComponentGenerators\Extensions\Console\Commands;
 
+use Drewlabs\CodeGenerator\Exceptions\PHPVariableException;
 use Drewlabs\ComponentGenerators\Builders\DtoAttributesFactory;
 use Drewlabs\ComponentGenerators\Builders\ViewModelRulesFactory;
 use Drewlabs\ComponentGenerators\Contracts\ORMModelDefinition;
@@ -59,15 +60,10 @@ class MakeModelCommand extends Command
         }
         // Parameters initialization
         $primaryKey = $this->option('primaryKey') ?? 'id';
-
         $increments = $this->option('increments') ?? false;
-
         $namespace = $this->option('namespace') ?? '\\App\\Models';
-
         $columns = $this->option('columns') ?? [];
-
         $vm = $this->option('asViewModel') ?? false;
-
         $basePath = $this->app->basePath($this->option('path') ?? 'app');
         // # End of parameters initialization
         $builder = ComponentBuilderHelpers::createModelBuilder(
@@ -90,6 +86,14 @@ class MakeModelCommand extends Command
         $this->info("Model successfully generated for table : $table\n");
     }
 
+    /**
+     * 
+     * @param mixed $basePath 
+     * @param SourceFileInterface $component 
+     * @param null|ORMModelDefinition $definition 
+     * @return void 
+     * @throws PHPVariableException 
+     */
     public static function createComponents($basePath, SourceFileInterface $component, ?ORMModelDefinition $definition = null)
     {
         $modelClassPath = sprintf('\\%s\\%s', $component->getNamespace(), $component->getName());

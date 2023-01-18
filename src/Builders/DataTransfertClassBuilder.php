@@ -54,26 +54,26 @@ class DataTransfertClassBuilder implements ComponentBuilder
     /**
      * List of attributes that can be json serializable.
      *
-     * @var array
+     * @var array|\Closure
      */
-    private $json_attributes_ = [];
+    private $properties = [];
 
     /**
      * List of cast attributes
      * 
      * @var array
      */
-    private $cast_attributes_ = [];
+    private $casts = [];
 
     /**
      * List of the data transfert object hidden properties.
      *
      * @var array
      */
-    private $hidden_ = [];
+    private $excepts = [];
 
     /**
-     * @var array
+     * @var array|\Closure
      */
     private $propertyDocComments = [];
 
@@ -81,6 +81,12 @@ class DataTransfertClassBuilder implements ComponentBuilder
      * @var string
      */
     private $modelClassPath;
+
+    /**
+     * 
+     * @var bool
+     */
+    private $camelize = false;
 
     /**
      * Creates a data transfert class instance
@@ -109,10 +115,21 @@ class DataTransfertClassBuilder implements ComponentBuilder
         // Set the component namespace
         $this->setNamespace($namespace ?? self::DEFAULT_NAMESPACE);
         // Set json_attributes
-        $this->setAttributes($this->buildAsAssociativeArray(array_keys($json_attributes ?? [])));
-        $this->propertyDocComments = $this->buildPropertiesTypeComments($json_attributes ?? []);
+        $this->setAttributes(function ($camelize) use ($json_attributes) {
+            return $this->resolveClassProperties(array_keys($json_attributes ?? []), $camelize);
+        });
+        $this->propertyDocComments = function ($camelize) use ($json_attributes) {
+            return $this->buildPropertiesTypeComments($json_attributes ?? [], $camelize);
+        };
     }
 
+    /**
+     * Attach a model class metadata to the data transfer class builder
+     * 
+     * @param mixed $model 
+     * @return self 
+     * @throws InvalidArgumentException 
+     */
     public function bindModel($model)
     {
         if (null === $model) {
@@ -132,11 +149,12 @@ class DataTransfertClassBuilder implements ComponentBuilder
             $model = new $model();
         }
         // Get or load the fillable properties
-        return $this->setAttributes(
-            $this->buildAsAssociativeArray(
-                method_exists($model, 'getFillables') ? $model->getFillables() : []
-            )
-        );
+        if (!empty($fillables = (method_exists($model, 'getFillables') ? $model->getFillables() : []))) {
+            $this->setAttributes(function ($camelize) use ($fillables) {
+                return $this->resolveClassProperties($fillables, $camelize);
+            });
+        }
+        return $this;
     }
 
     /**
@@ -146,17 +164,23 @@ class DataTransfertClassBuilder implements ComponentBuilder
      */
     public function setHidden(array $properties = [])
     {
-        $this->hidden_ = $properties ?? [];
+        $this->excepts = $properties ?? [];
 
         return $this;
     }
 
-    public function setAttributes(array $attributes = [])
+    /**
+     * Set the attribute or attribute creator function that is invoked when buiding properties
+     * 
+     * @param array|\Closure $attributes 
+     * @return $this 
+     */
+    public function setAttributes($attributes = [])
     {
-        if (!empty($attributes)) {
-            $this->json_attributes_ = $attributes;
+        if (is_array($attributes) && empty($attributes)) {
+            return $this;
         }
-
+        $this->properties = $attributes ?? [];
         return $this;
     }
 
@@ -169,9 +193,21 @@ class DataTransfertClassBuilder implements ComponentBuilder
     public function setCasts(array $casts = [])
     {
         if (!empty($casts)) {
-            $this->cast_attributes_ = $casts;
+            $this->casts = $casts;
         }
 
+        return $this;
+    }
+
+    /**
+     * Configure support of camel case transformation for the current instance
+     * 
+     * @param bool $value 
+     * @return self 
+     */
+    public function setCamelizeProperties(bool $value)
+    {
+        $this->camelize = $value;
         return $this;
     }
 
@@ -184,7 +220,8 @@ class DataTransfertClassBuilder implements ComponentBuilder
             ->addImplementation(\Drewlabs\PHPValue\Contracts\ValueInterface::class)
             ->addComment(
                 array_merge(
-                    $this->propertyDocComments ?? [],
+                    is_array($this->propertyDocComments) ?
+                        $this->propertyDocComments ?? [] : (null !== $this->propertyDocComments ? ($this->propertyDocComments)($this->camelize) : []),
                     [
                         ' ',
                         '@package ' . $this->namespace_ ?? self::DEFAULT_NAMESPACE,
@@ -218,7 +255,8 @@ class DataTransfertClassBuilder implements ComponentBuilder
                 '__PROPERTIES__',
                 'array',
                 PHPTypesModifiers::PROTECTED,
-                $this->json_attributes_ ?? []
+                is_array($this->properties) ?
+                    $this->properties ?? [] : (null !== $this->properties ? ($this->properties)($this->camelize) : [])
             )
         );
 
@@ -227,7 +265,7 @@ class DataTransfertClassBuilder implements ComponentBuilder
                 '__HIDDEN__',
                 'array',
                 PHPTypesModifiers::PROTECTED,
-                $this->hidden_ ?? []
+                $this->excepts ?? []
             )
         );
         $component = $component->addProperty(
@@ -235,7 +273,7 @@ class DataTransfertClassBuilder implements ComponentBuilder
                 '__CASTS__',
                 'array',
                 PHPTypesModifiers::PROTECTED,
-                $this->cast_attributes_ ?? []
+                $this->casts ?? []
             )
         );
         // Returns the builded component
@@ -259,18 +297,20 @@ class DataTransfertClassBuilder implements ComponentBuilder
         return sprintf('%s%s%s', self::DEFAULT_NAMESPACE, '\\', $classname);
     }
 
-    private function buildAsAssociativeArray(array $values = [])
+    private function resolveClassProperties(array $values = [], bool $camelize = false)
     {
         $attributes = [];
-        // Convert values to camel case for associatve values
-        foreach (array_filter($values ?? []) as $key => $value) {
-            if (!is_numeric($key)) {
-                $attributes[Str::camelize(ltrim(rtrim($key, '_'), '_'), false)] = $value;
-                continue;
+        if ($camelize) {
+            foreach (array_filter($values ?? []) as $key => $value) {
+                $name = !is_numeric($key) ?
+                    Str::camelize(ltrim(rtrim($key, '_'), '_'), false) : Str::camelize(ltrim(rtrim($value, '_'), '_'), false);
+                $attributes[$name] = $value;
             }
-            $attributes[Str::camelize(ltrim(rtrim($value, '_'), '_'), false)] = $value;
+        } else {
+            foreach (array_filter($values ?? []) as $key => $value) {
+                $attributes[] = !is_numeric($key) ? $key : $value;
+            }
         }
-
         return $attributes;
     }
 
@@ -291,18 +331,13 @@ class DataTransfertClassBuilder implements ComponentBuilder
         }
     }
 
-    private function buildPropertiesTypeComments(array $properties = [])
+    private function buildPropertiesTypeComments(array $properties = [], bool $camelize = false)
     {
         $comments = [];
         foreach ($properties as $key => $value) {
-            if (false !== strpos($value, ':')) {
-                $name = Str::before(':', $value);
-            } else {
-                $name = $value;
-            }
-            $comments[] = '@property ' . $this->getPHPType($name) . ' ' . Str::camelize(trim($key), false);
+            $name = false !== strpos($value, ':') ? Str::before(':', $value) : $value;
+            $comments[] = '@property ' . $this->getPHPType($name) . ' ' . ($camelize ? Str::camelize(trim($key), false) : $key);
         }
-
         return $comments;
     }
 

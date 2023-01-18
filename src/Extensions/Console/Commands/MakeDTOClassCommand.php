@@ -53,7 +53,7 @@ class MakeDTOClassCommand extends Command
         $hidden = $this->option('hidden') ?? [];
         // # End of parameters initialization
         ComponentsScriptWriter($basePath)->write(
-            ComponentBuilderHelpers::buildDtoObjectDefinition(
+            ComponentBuilderHelpers::createDtoBuilder(
                 iterator_to_array((static function () use ($attributes) {
                     foreach ($attributes as $value) {
                         yield $value => 'mixed';
@@ -63,7 +63,7 @@ class MakeDTOClassCommand extends Command
                 $name,
                 $namespace,
                 $model
-            )
+            )->build()
         );
         $this->info("Data Transfert class successfully generated\n");
     }

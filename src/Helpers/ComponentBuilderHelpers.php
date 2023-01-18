@@ -59,7 +59,8 @@ class ComponentBuilderHelpers
      * @param bool $isViewModel 
      * @param array $hidden 
      * @param array $appends 
-     * @param (null|string)|null $comments 
+     * @param (null|string)|null $comments
+     * 
      * @return ORMModelBuilder 
      */
     public static function createModelBuilder(

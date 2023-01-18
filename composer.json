@@ -12,18 +12,19 @@
     "license": "MIT",
     "autoload": {
         "psr-4": {
-            "Drewlabs\\ComponentGenerators\\": "src/",
-            "App\\": "./examples/src/app"
+            "Drewlabs\\ComponentGenerators\\": "src/"
         },
         "files": [
             "./src/proxies.php",
             "./helpers.php"
         ]
     },
-    "authors": [{
-        "name": "azandrew-sidoine",
-        "email": "asmyns.platonnas29@gmail.com"
-    }],
+    "authors": [
+        {
+            "name": "azandrew-sidoine",
+            "email": "asmyns.platonnas29@gmail.com"
+        }
+    ],
     "autoload-dev": {
         "classmap": [
             "tests/"
@@ -43,7 +44,8 @@
         "drewlabs/psr7-stream": "^1.0",
         "drewlabs/php-value": "^0.1.5"
     },
-    "repositories": [{
+    "repositories": [
+        {
             "type": "vcs",
             "url": "git@github.com:liksoft/drewlabs-php-core-helpers.git"
         },

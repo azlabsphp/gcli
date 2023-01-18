@@ -14,11 +14,9 @@ declare(strict_types=1);
 namespace Drewlabs\ComponentGenerators\Extensions\Console\Commands;
 
 use Drewlabs\ComponentGenerators\Contracts\Writable;
-use Drewlabs\ComponentGenerators\DBDriverOptions;
 use Drewlabs\ComponentGenerators\Extensions\Helpers\CommandArguments;
 use Drewlabs\ComponentGenerators\Extensions\Helpers\ReverseEngineerTaskRunner;
 use Drewlabs\ComponentGenerators\Extensions\ProgressbarIndicator;
-use Drewlabs\Core\Helpers\Str;
 use Drewlabs\Filesystem\Exceptions\ReadFileException;
 use Drewlabs\Filesystem\Exceptions\UnableToRetrieveMetadataException;
 use Drewlabs\Filesystem\Exceptions\FileNotFoundException;
@@ -37,6 +35,11 @@ use Symfony\Component\Console\Exception\LogicException;
 
 class CreateMVCComponentsCommand extends Command
 {
+
+    const CAMEL_CASE_CHOICES = [
+        'Direct (ex: Post { label, post_type_id } -> PostDto {label, post_type_id } )',
+        'Camelize (ex: Post { label, post_type_id } -> PostDto {label, postTypeId } )'
+    ];
     /**
      * The name and signature of the console command.
      *
@@ -137,13 +140,24 @@ class CreateMVCComponentsCommand extends Command
         $noAuth = boolval($this->option('noAuth'));
         $subPackage = $this->option('subPackage');
         $httpHandlers = boolval($this->option('http'));
-        $commandargs = new CommandArguments($this->options());
+        $commandoptions = $this->mergeCamelizeOption(
+            $this->choice('How should data transfert properties map to model attributes ?', self::CAMEL_CASE_CHOICES, 0),
+            $this->options() ?? []
+        );
+        $commandoptions = array_merge($commandoptions, []);
+        $commandargs = new CommandArguments($commandoptions);
         $options = $commandargs->providesoptions($this->cachePath, Path($this->option('srcPath') ?? 'app')->makeAbsolute($this->laravel->basePath())->__toString());
         //#endregion command options
         // !Ends Local variables initialization
         (new ReverseEngineerTaskRunner())
             ->except($options->get('excludes', []))
             ->only($options->get('includes', []))
+            ->setCamelize(boolval($options->get('models.attributes.camelize', false)))
+            ->withRelations($options->get('models.relations.provides', false) ?? false)
+            ->setToOnesRelations($options->get('models.relations.one-to-one', []))
+            ->setManyToManyRelations($options->get('models.relations.many-to-many', []))
+            ->setOnThroughRelations($options->get('models.relations.one-to-one-though', []))
+            ->setManyThroughRelations($options->get('models.relations.one-to-many-though', []))
             ->run(
                 $commandargs->providesdboptions(function ($key, $default = null) {
                     return config($key, $default);
@@ -158,12 +172,7 @@ class CreateMVCComponentsCommand extends Command
                 $options->get('namespace.default'),
                 $subPackage,
                 $options->get('schema'),
-                $httpHandlers,
-                $options->get('models.relations.provides', false),
-                $options->get('models.relations.one-to-one', []),
-                $options->get('models.relations.many-to-many', []),
-                $options->get('models.relations.one-to-one-though', []),
-                $options->get('models.relations.one-to-many-though', []),
+                $httpHandlers
             )(
             $this->laravel->basePath('routes'),
             $this->cachePath,
@@ -183,5 +192,23 @@ class CreateMVCComponentsCommand extends Command
                 return $this->confirm(sprintf("Override existing class at %s? ", $options->get('path')) . \DIRECTORY_SEPARATOR . $writable->getPath());
             }
         );
+    }
+
+    /**
+     * update $options parameters with based on user choice value
+     * 
+     * @param mixed $choice 
+     * @param array $options 
+     * @return array 
+     */
+    private function mergeCamelizeOption($choice, array $options)
+    {
+        if ($choice === self::CAMEL_CASE_CHOICES[0]) {
+            return array_merge($options, ['camelize-attributes' => false]);
+        }
+        if ($choice === self::CAMEL_CASE_CHOICES[1]) {
+            return array_merge($options, ['camelize-attributes' => true]);
+        }
+        return $options;
     }
 }

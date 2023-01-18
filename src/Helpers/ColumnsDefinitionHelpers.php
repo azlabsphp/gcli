@@ -119,12 +119,7 @@ class ColumnsDefinitionHelpers
                         'table' => $definition->getTable(),
                         'columns' => [$definition->name()],
                     ]) : null);
-                    $definitions = array_merge(
-                        $definitions,
-                        [
-                            $key => $definition,
-                        ]
-                    );
+                    $definitions = array_merge($definitions, [$key => $definition]);
                 }
             }
 
