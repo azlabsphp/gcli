@@ -100,8 +100,8 @@ class CommandArguments
             $options = $options->merge(['schema' => $schema]);
         }
 
-        if ($camelize = boolval($this->options->get('camelize-attributes'))) {
-            $options = $options->merge(['models.attributes.camelize', $camelize]);
+        if (null !== ($camelize = boolval($this->options->get('camelize-attributes')))) {
+            $options = $options->merge(['models.attributes.camelize' => $camelize]);
         }
 
         if (boolval($this->options->get('relations'))) {

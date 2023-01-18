@@ -44,19 +44,25 @@ class Options
         if (!\function_exists('yaml_parse')) {
             throw new NotLoadedExtensionException('yaml');
         }
-        if (@is_dir($path = realpath($path)) && @is_file("$path" . \DIRECTORY_SEPARATOR . 'dbconfig.yml')) {
-            $path = "$path" . \DIRECTORY_SEPARATOR . 'dbconfig.yml';
-        } elseif (@is_dir($path) && @is_file("$path" . \DIRECTORY_SEPARATOR . 'dbconfig.yaml')) {
-            $path = "$path" . \DIRECTORY_SEPARATOR . 'dbconfig.yaml';
-        }
-        if (!is_file($path)) {
+        $realpath = realpath($path);
+
+        if (false === $realpath) {
             throw IOException::missing($path);
         }
 
-        if (!is_readable($path)) {
-            throw IOException::readable($path);
+        if (@is_dir($realpath) && @is_file("$realpath" . \DIRECTORY_SEPARATOR . 'input.yml')) {
+            $realpath = "$realpath" . \DIRECTORY_SEPARATOR . 'input.yml';
+        } elseif (@is_dir($realpath) && @is_file("$realpath" . \DIRECTORY_SEPARATOR . 'input.yaml')) {
+            $realpath = "$realpath" . \DIRECTORY_SEPARATOR . 'input.yaml';
         }
-        return new static((array) (yaml_parse(file_get_contents($path)) ?? []));
+        if (!is_file($realpath)) {
+            throw IOException::missing($realpath);
+        }
+
+        if (!is_readable($realpath)) {
+            throw IOException::readable($realpath);
+        }
+        return new static((array) (yaml_parse(file_get_contents($realpath)) ?? []));
     }
 
     /**
@@ -68,18 +74,23 @@ class Options
      */
     public static function json(string $path)
     {
-        $path = realpath($path);
-        if (@is_dir($path) && @is_file("$path" . \DIRECTORY_SEPARATOR . 'libman.json')) {
-            $path = "$path" . \DIRECTORY_SEPARATOR . 'libman.json';
-        }
-        if (!is_file($path)) {
+        $realpath = realpath($path);
+
+        if (false === $realpath) {
             throw IOException::missing($path);
         }
 
-        if (!is_readable($path)) {
-            throw IOException::readable($path);
+        if (@is_dir($realpath) && @is_file("$realpath" . \DIRECTORY_SEPARATOR . 'libman.json')) {
+            $realpath = "$realpath" . \DIRECTORY_SEPARATOR . 'libman.json';
         }
-        return new static(json_decode(file_get_contents($path), true) ?? []);
+        if (!is_file($realpath)) {
+            throw IOException::missing($realpath);
+        }
+
+        if (!is_readable($realpath)) {
+            throw IOException::readable($realpath);
+        }
+        return new static(json_decode(file_get_contents($realpath), true) ?? []);
     }
 
 
