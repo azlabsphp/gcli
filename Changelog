@@ -50,3 +50,7 @@
 
 - Added support for controlling camelcase output
 - fixed bug for generated unique rule
+
+## [2.8.0] [2023-03-26]
+
+- modify drewlabs/code-generator private package dependency to packagist dependency
