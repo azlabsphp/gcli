@@ -186,7 +186,7 @@ class RouteDefinitionsHelper
                         null !== $middleware ? ['middleware' => $middleware] : []
                     )
                 )
-            ),
+            )
         );
         return $output ? Str::replace('\\/', '/', $output) : '';
     }

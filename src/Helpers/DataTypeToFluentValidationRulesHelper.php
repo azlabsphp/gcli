@@ -104,7 +104,7 @@ class DataTypeToFluentValidationRulesHelper
         ) . "'" : "expr:'" . sprintf(
             "unique:%s,%s,' . ",
             $metadata->getTable(),
-            \is_array($columns) ? ($columns[0] ?? 'id') : ($columns ?? 'id'),
+            \is_array($columns) ? ($columns[0] ?? 'id') : ($columns ?? 'id')
         ) . "\$this->{$primaryKey} ";
     }
 

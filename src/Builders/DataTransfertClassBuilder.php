@@ -216,7 +216,7 @@ class DataTransfertClassBuilder implements ComponentBuilder
         /**
          * @var BluePrint
          */
-        $component = (PHPClass($this->name()))
+        $component = PHPClass($this->name())
             ->addImplementation(\Drewlabs\PHPValue\Contracts\ValueInterface::class)
             ->addComment(
                 array_merge(
@@ -238,13 +238,13 @@ class DataTransfertClassBuilder implements ComponentBuilder
 
         if ($this->modelClassPath) {
             $component = $component->addMethod(
-                (PHPClassMethod(
+                PHPClassMethod(
                     'resolveModel',
                     [],
                     "$this->modelClassPath",
                     PHPTypesModifiers::PUBLIC,
                     'Creates an instance of the attached model'
-                ))->addContents(
+                )->addContents(
                     'return self::createResolver(' . $this->getClassNameFromPath($this->modelClassPath) . '::class)()'
                 )
             );
@@ -283,7 +283,7 @@ class DataTransfertClassBuilder implements ComponentBuilder
             ComponentBuilderHelpers::rebuildComponentPath(
                 $this->namespace_ ?? self::DEFAULT_NAMESPACE,
                 $this->path_ ?? self::DEFAULT_PATH
-            ),
+            )
         )->setNamespace($component->getNamespace());
     }
 

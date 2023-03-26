@@ -6,7 +6,6 @@
         "illuminate/support": "^7.0|^8.0|^9.0",
         "illuminate/console": "^7.0|^8.0|^9.0",
         "illuminate/database": "^7.0|^8.0|^9.0",
-        "drewlabs/code-generator": "^2.3",
         "doctrine/dbal": "^3.3"
     },
     "license": "MIT",
@@ -38,20 +37,17 @@
     },
     "minimum-stability": "stable",
     "require": {
-        "php": "^7.3|^7.4|^8.0|^8.1",
+        "php": ">=7.2",
         "drewlabs/core-helpers": "^2.0",
         "drewlabs/filesystem": "^1.0",
         "drewlabs/psr7-stream": "^1.0",
-        "drewlabs/php-value": "^0.1.5"
+        "drewlabs/php-value": "^0.1.5",
+        "drewlabs/code-generator": "^0.2.4"
     },
     "repositories": [
         {
             "type": "vcs",
             "url": "git@github.com:liksoft/drewlabs-php-core-helpers.git"
-        },
-        {
-            "type": "vcs",
-            "url": "git@github.com:liksoft/drewlabs-php-code-generator.git"
         },
         {
             "type": "vcs",

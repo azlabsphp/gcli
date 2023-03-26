@@ -455,7 +455,7 @@ class EloquentORMModelBuilder implements ContractsEloquentORMModel, ComponentBui
             ComponentBuilderHelpers::rebuildComponentPath(
                 $this->namespace_ ?? self::DEFAULT_NAMESPACE,
                 $this->path_ ?? self::DEFAULT_PATH
-            ),
+            )
         )->setNamespace($component->getNamespace());
     }
 

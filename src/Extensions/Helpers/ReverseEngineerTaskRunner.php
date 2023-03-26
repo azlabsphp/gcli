@@ -245,7 +245,7 @@ class ReverseEngineerTaskRunner
             $namespace,
             $subPackage,
             $schema,
-            $hasHttpHandlers,
+            $hasHttpHandlers
         ) {
             $providesRelations = $this->provideRelations;
             $toones = $this->oneToOnes ?? [];
