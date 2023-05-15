@@ -74,7 +74,8 @@ class CreateMVCComponentsCommand extends Command
         . '{--toones=* :  List of one to one relations. (ex - lefttable->righttable) }'
         . '{--manythroughs=* :  List of many through relations. (ex - lefttable->middletable->righttable) }'
         . '{--onethroughs=* :  List of one through relations. (ex - lefttable->middletable->righttable) }'
-        . '{--only=* : Restrict the generator to generate code only for the specified table structures }';
+        . '{--only=* : Restrict the generator to generate code only for the specified table structures }'
+        . '{--policies : Generates policies for the model }';
 
     /**
      * The console command description.
@@ -158,6 +159,7 @@ class CreateMVCComponentsCommand extends Command
             ->setManyToManyRelations($options->get('models.relations.many-to-many', []))
             ->setOnThroughRelations($options->get('models.relations.one-to-one-though', []))
             ->setManyThroughRelations($options->get('models.relations.one-to-many-though', []))
+            ->withPolicies($options->get('policies') ?? false)
             ->run(
                 $commandargs->providesdboptions(function ($key, $default = null) {
                     return config($key, $default);

@@ -25,6 +25,7 @@ use Drewlabs\ComponentGenerators\Contracts\SourceFileInterface;
 use Drewlabs\ComponentGenerators\Helpers\ColumnsDefinitionHelpers;
 use Drewlabs\ComponentGenerators\Helpers\ComponentBuilderHelpers;
 use function Drewlabs\ComponentGenerators\Proxy\EloquentORMModelBuilder;
+use function Drewlabs\ComponentGenerators\Proxy\MVCPolicyBuilder;
 use function Drewlabs\ComponentGenerators\Proxy\ORMModelDefinition;
 use Drewlabs\Core\Helpers\Arr;
 
@@ -35,13 +36,16 @@ use Exception as GlobalException;
 use InvalidArgumentException;
 use Drewlabs\Filesystem\Exceptions\UnableToRetrieveMetadataException;
 
-class DBSchemaReverseEngineeringService
+class ReverseEngineeringService
 {
     /**
      * @var array
      */
     private const DEFAULT_TIMESTAMP_COLUMNS = ['created_at', 'updated_at'];
 
+    /**
+     * @var string
+     */
     private const DEFAULT_BLOC_COMPONENT_NAMESPACE = 'App';
 
     /**
@@ -52,51 +56,57 @@ class DBSchemaReverseEngineeringService
     /**
      * @var string
      */
-    private $blocComponentPath_;
+    private $blocComponentPath;
 
     /**
      * @var string
      */
-    private $blocComponentNamespace_;
+    private $blocComponentNamespace;
 
     /**
      * List of table that must be ignore.
      *
      * @var string[]
      */
-    private $excepts_ = [];
+    private $excepts = [];
 
     /**
      * @var \Closure
      */
-    private $tablesFilterFunc_;
+    private $tablesFilterFunc;
 
     /**
      * @var mixed
      */
-    private $auth_ = true;
+    private $auth = true;
 
     /**
      * Components namespace.
      *
      * @var string
      */
-    private $subNamespace_;
+    private $subNamespace;
 
     /**
      * @var string
      */
-    private $schema_;
+    private $schema;
 
     /**
      * @var bool
      */
-    private $generateHttpHandlers_ = false;
+    private $http = false;
+
+    /**
+     * 
+     * @var bool
+     */
+    private $policies = false;
 
     /**
      * @var string[]
      */
-    private $tables_ = [];
+    private $tables = [];
 
     /**
      * Creates a database reverse engineering service instance
@@ -111,8 +121,8 @@ class DBSchemaReverseEngineeringService
         string $blocComponentNamespace = 'App'
     ) {
         $this->manager = $manager;
-        $this->blocComponentPath_ = $blocComponentPath ?? 'app';
-        $this->blocComponentNamespace_ = $blocComponentNamespace ?? self::DEFAULT_BLOC_COMPONENT_NAMESPACE;
+        $this->blocComponentPath = $blocComponentPath ?? 'app';
+        $this->blocComponentNamespace = $blocComponentNamespace ?? self::DEFAULT_BLOC_COMPONENT_NAMESPACE;
     }
 
     /**
@@ -122,42 +132,42 @@ class DBSchemaReverseEngineeringService
      */
     public function only(array $tables)
     {
-        $this->tables_ = $tables;
+        $this->tables = $tables;
 
         return $this;
     }
 
     public function except(array $tables)
     {
-        $this->excepts_ = $tables ?? [];
+        $this->excepts = $tables ?? [];
 
         return $this;
     }
 
     public function bindExceptMethod(\Closure $filterFn)
     {
-        $this->tablesFilterFunc_ = $filterFn;
+        $this->tablesFilterFunc = $filterFn;
 
         return $this;
     }
 
     public function withoutAuth()
     {
-        $this->auth_ = false;
+        $this->auth = false;
 
         return $this;
     }
 
     public function setSubNamespace(?string $namespace = null)
     {
-        $this->subNamespace_ = !empty($namespace) ? $namespace : $this->subNamespace_;
+        $this->subNamespace = !empty($namespace) ? $namespace : $this->subNamespace;
 
         return $this;
     }
 
     public function setSchema(?string $value = null)
     {
-        $this->schema_ = $value;
+        $this->schema = $value;
         return $this;
     }
 
@@ -166,8 +176,14 @@ class DBSchemaReverseEngineeringService
      */
     public function withHttpHandlers()
     {
-        $this->generateHttpHandlers_ = true;
+        $this->http = true;
 
+        return $this;
+    }
+
+    public function withPolicies()
+    {
+        $this->policies = true;
         return $this;
     }
 
@@ -185,7 +201,7 @@ class DBSchemaReverseEngineeringService
      * @throws PHPVariableException 
      * @throws UnableToRetrieveMetadataException 
      */
-    public function run(array &$foreignKeys, array &$tablesindexes, ?\Closure $callback = null)
+    public function handle(array &$foreignKeys, array &$tablesindexes, ?\Closure $callback = null)
     {
         // We apply filters to only generate code for tables that
         // passes the filters
@@ -208,10 +224,10 @@ class DBSchemaReverseEngineeringService
             $hasTimeStamps = Arr::containsAll(array_map(static function ($column) {
                 return $column->name();
             }, $value->columns() ?? []), self::DEFAULT_TIMESTAMP_COLUMNS);
-            $builder = EloquentORMModelBuilder($value, $this->schema_)->hasTimestamps($hasTimeStamps);
+            $builder = EloquentORMModelBuilder($value, $this->schema)->hasTimestamps($hasTimeStamps);
             $modelclasspath = $builder->getClassPath();
             $components['model'] = [
-                'path' => $this->blocComponentPath_,
+                'path' => $this->blocComponentPath,
                 'class' => $builder,
                 'definitions' => $value,
                 'classPath' => $modelclasspath
@@ -223,46 +239,46 @@ class DBSchemaReverseEngineeringService
                 null,
                 sprintf(
                     '%s\\%s',
-                    $this->blocComponentNamespace_ ?? self::DEFAULT_BLOC_COMPONENT_NAMESPACE,
-                    sprintf('%s%s', $this->generateHttpHandlers_ ? 'Http\\ViewModels' : 'ViewModels', $this->subNamespace_ ? "\\$this->subNamespace_" : '')
+                    $this->blocComponentNamespace ?? self::DEFAULT_BLOC_COMPONENT_NAMESPACE,
+                    sprintf('%s%s', $this->http ? 'Http\\ViewModels' : 'ViewModels', $this->subNamespace ? "\\$this->subNamespace" : '')
                 ),
                 sprintf(
                     '%s%s',
-                    $this->generateHttpHandlers_ ? 'Http/ViewModels' : 'ViewModels',
-                    $this->subNamespace_ ? "/$this->subNamespace_" : ''
+                    $this->http ? 'Http/ViewModels' : 'ViewModels',
+                    $this->subNamespace ? "/$this->subNamespace" : ''
                 ),
                 $modelclasspath,
-                $this->generateHttpHandlers_ ?: false
+                $this->http ?: false
             );
             $service = ComponentBuilderHelpers::createServiceBuilder(
                 true,
                 null,
                 sprintf(
                     '%s\\%s',
-                    $this->blocComponentNamespace_ ?? self::DEFAULT_BLOC_COMPONENT_NAMESPACE,
-                    sprintf('%s%s', 'Services', $this->subNamespace_ ? "\\$this->subNamespace_" : '')
+                    $this->blocComponentNamespace ?? self::DEFAULT_BLOC_COMPONENT_NAMESPACE,
+                    sprintf('%s%s', 'Services', $this->subNamespace ? "\\$this->subNamespace" : '')
                 ),
                 $modelclasspath
             );
-            if ($this->generateHttpHandlers_) {
+            if ($this->http) {
                 $dto = ComponentBuilderHelpers::createDtoBuilder(
                     $value->createDtoAttributes(),
                     [],
                     null,
                     sprintf(
                         '%s\\%s',
-                        $this->blocComponentNamespace_ ?? self::DEFAULT_BLOC_COMPONENT_NAMESPACE,
+                        $this->blocComponentNamespace ?? self::DEFAULT_BLOC_COMPONENT_NAMESPACE,
                         sprintf(
                             '%s%s',
                             'Dto',
-                            $this->subNamespace_ ? "\\$this->subNamespace_" : ''
+                            $this->subNamespace ? "\\$this->subNamespace" : ''
                         )
                     ),
                     $modelclasspath
                 );
                 $components['controller'] = [
-                    'path' => $this->blocComponentPath_,
-                    'class' => $this->createControllerFactoryMethod($modelclasspath),
+                    'path' => $this->blocComponentPath,
+                    'class' => $this->createControllerFactoryMethod($modelclasspath, boolval($this->policies)),
                     'route' => [
                         'nameBuilder' => function ($controller) {
                             return $controller instanceof ControllerBuilder ?
@@ -273,11 +289,22 @@ class DBSchemaReverseEngineeringService
                             return sprintf('%s\\%s', $controller->getNamespace(), Str::camelize($controller->getName()));
                         }
                     ],
-                    'dto' => ['path' => $this->blocComponentPath_, 'class' => $dto],
+                    'dto' => ['path' => $this->blocComponentPath, 'class' => $dto, 'classPath' => $dto->getClassPath()],
                 ];
             }
-            $components['viewModel'] = ['path' => $this->blocComponentPath_, 'class' => $viewmodel];
-            $components['service'] = ['path' => $this->blocComponentPath_, 'class' => $service];
+
+            // Add the policy component
+            if ($this->policies) {
+                $policyBuilder = MVCPolicyBuilder()->withModel($modelclasspath)->withViewModel($viewmodel->getClassPath());
+                $components['policy'] = ['path' => $this->blocComponentPath, 'class' =>  $policyBuilder, 'classPath' => $policyBuilder->getClassPath()];
+            }
+            // Add the view model component
+            $components['viewModel'] = ['path' => $this->blocComponentPath, 'class' => $viewmodel, 'classPath' => $viewmodel->getClassPath()];
+
+            // Add the service component
+            $components['service'] = ['path' => $this->blocComponentPath, 'class' => $service, 'classPath' => $service->getClassPath()];
+
+            // Yield the components container
             yield $components;
         }
 
@@ -291,16 +318,17 @@ class DBSchemaReverseEngineeringService
     /**
      * Creates a factory method that create the controller script
      * 
-     * @param (null|string)|null $model 
+     * @param string|null $model
+     * @param null|bool $authorizable
      * @return Closure((null|SourceFileInterface)|null $service = null, (null|SourceFileInterface)|null $viewModel = null, (null|SourceFileInterface)|null $dtoObject = null): SourceFileInterface 
      */
-    private function createControllerFactoryMethod(?string $model = null)
+    private function createControllerFactoryMethod(?string $model = null, bool $authorizable = false)
     {
         return function (
             ?SourceFileInterface $service = null,
             ?SourceFileInterface $viewModel = null,
             ?SourceFileInterface $dtoObject = null
-        ) use ($model) {
+        ) use ($model, $authorizable) {
             return ComponentBuilderHelpers::buildController(
                 $model,
                 $service ? sprintf(
@@ -319,28 +347,35 @@ class DBSchemaReverseEngineeringService
                     Str::camelize($dtoObject->getName())
                 ) : null,
                 null,
-                sprintf('%s\\%s', $this->blocComponentNamespace_ ?? self::DEFAULT_BLOC_COMPONENT_NAMESPACE, sprintf('%s%s', 'Http\\Controllers', $this->subNamespace_ ? "\\$this->subNamespace_" : '')),
-                $this->auth_
+                sprintf('%s\\%s', $this->blocComponentNamespace ?? self::DEFAULT_BLOC_COMPONENT_NAMESPACE, sprintf('%s%s', 'Http\\Controllers', $this->subNamespace ? "\\$this->subNamespace" : '')),
+                $this->auth,
+                $authorizable
             );
         };
     }
 
+    /**
+     * Filter tables and ignore not required tables
+     * 
+     * @param array $tables 
+     * @return array 
+     */
     private function applyFilters(array $tables)
     {
-        if (!empty($this->excepts_)) {
+        if (!empty($this->excepts)) {
             $tables = array_filter($tables, function ($table) {
-                return !\in_array($table->getName(), $this->excepts_, true);
+                return !\in_array($table->getName(), $this->excepts, true);
             });
         }
         // We apply a filter that returns only tables having the name
         // matching the names specified in the {@see $this->tables_} properties
-        if (!empty($this->tables_)) {
+        if (!empty($this->tables)) {
             $tables = array_filter($tables, function ($table) {
-                return \in_array($table->getName(), $this->tables_, true);
+                return \in_array($table->getName(), $this->tables, true);
             });
         }
-        if (null !== $this->tablesFilterFunc_) {
-            $tables = array_filter($tables, $this->tablesFilterFunc_);
+        if (null !== $this->tablesFilterFunc) {
+            $tables = array_filter($tables, $this->tablesFilterFunc);
         }
 
         return $tables;
@@ -387,7 +422,7 @@ class DBSchemaReverseEngineeringService
                 'table' => $name_,
                 'columns' => $columns,
                 'increments' => !empty($key) ? $table->getColumn($key)->getAutoincrement() : false,
-                'namespace' => sprintf('%s\\%s', $this->blocComponentNamespace_ ?? self::DEFAULT_BLOC_COMPONENT_NAMESPACE, sprintf('%s%s', 'Models', $this->subNamespace_ ? "\\$this->subNamespace_" : '')),
+                'namespace' => sprintf('%s\\%s', $this->blocComponentNamespace ?? self::DEFAULT_BLOC_COMPONENT_NAMESPACE, sprintf('%s%s', 'Models', $this->subNamespace ? "\\$this->subNamespace" : '')),
                 'comment' => $comment,
             ]);
         }

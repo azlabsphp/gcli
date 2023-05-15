@@ -128,16 +128,7 @@ class ComponentBuilderHelpers
         ?string $namespace = null,
         ?string $model = null
     ) {
-        $component = MVCServiceBuilder($name, $namespace);
-        if (\is_string($model)) {
-            $component = $component->bindModel(
-                $model
-            );
-        }
-        if ($asCRUD) {
-            $component = $component->asCRUDService();
-        }
-        return $component;
+        return ($component = \is_string($model) ? MVCServiceBuilder($name, $namespace)->bindModel($model) : MVCServiceBuilder($name, $namespace)) && $asCRUD ? $component->asCRUDService() : $component;
     }
 
     /**
@@ -231,15 +222,16 @@ class ComponentBuilderHelpers
     }
 
     /**
-     * Creates a controller class builder
+     * Creates controller builder
      * 
      * @param mixed $model 
      * @param mixed $service 
      * @param mixed $viewModel 
      * @param mixed $dto 
-     * @param (null|string)|null $name 
-     * @param (null|string)|null $namespace 
+     * @param null|string $name 
+     * @param null|string $namespace 
      * @param bool $auth 
+     * @param bool $authorize 
      * @return ControllerBuilder 
      */
     public static function createControllerBuilder(
@@ -249,11 +241,16 @@ class ComponentBuilderHelpers
         $dto = null,
         ?string $name = null,
         ?string $namespace = null,
-        bool $auth = true
+        bool $auth = true,
+        bool $authorize = false
     ) {
         $component = MVCControllerBuilder($name, $namespace);
         if (!$auth) {
             $component = $component->withoutAuthenticatable();
+        }
+        // Make the component authorizable
+        if ($authorize) {
+            $component = $component->authorizable();
         }
         // Check null state of the service parameter
         if (null !== $service) {
@@ -401,15 +398,20 @@ class ComponentBuilderHelpers
         )->build();
     }
 
+
     /**
      * Build controller class script
      * 
-     * @param mixed $model
-     * @param mixed $service
-     * @param mixed $viewModel
-     * @param mixed $dto
-     *
-     * @return SourceFileInterface
+     * @param mixed $model 
+     * @param mixed $service 
+     * @param mixed $viewModel 
+     * @param mixed $dto 
+     * @param null|string $name 
+     * @param null|string $namespace 
+     * @param bool $auth 
+     * @param bool $authorize 
+     * 
+     * @return SourceFileInterface 
      */
     public static function buildController(
         $model = null,
@@ -418,7 +420,8 @@ class ComponentBuilderHelpers
         $dto = null,
         ?string $name = null,
         ?string $namespace = null,
-        bool $auth = true
+        bool $auth = true,
+        bool $authorize = false
     ) {
         return self::createControllerBuilder(
             $model,
@@ -427,7 +430,8 @@ class ComponentBuilderHelpers
             $dto,
             $name,
             $namespace,
-            $auth
+            $auth,
+            $authorize
         )->build();
     }
 

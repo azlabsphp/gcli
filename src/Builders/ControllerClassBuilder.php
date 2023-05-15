@@ -39,6 +39,9 @@ class ControllerClassBuilder implements ContractsControllerBuilder
      */
     public const DEFAULT_NAMESPACE = 'App\\Http\\Controllers';
 
+    /**
+     * @var string[]
+     */
     private const DATABASE_ACTIONS_PATH = [
         'Drewlabs\\Packages\\Database\\Proxy\\CreateQueryAction',
         'Drewlabs\\Packages\\Database\\Proxy\\SelectQueryAction',
@@ -116,6 +119,12 @@ class ControllerClassBuilder implements ContractsControllerBuilder
      * @var bool
      */
     private $hasAuthenticatable_ = true;
+
+    /**
+     * 
+     * @var bool
+     */
+    private $policies = false;
 
     /**
      * Create an instance of the controller builder.
@@ -210,6 +219,17 @@ class ControllerClassBuilder implements ContractsControllerBuilder
     {
         $this->hasAuthenticatable_ = false;
 
+        return $this;
+    }
+
+    /**
+     * Makes the controller authorizable
+     * 
+     * @return self 
+     */
+    public function authorizable()
+    {
+        $this->policies = true;
         return $this;
     }
 
@@ -373,9 +393,11 @@ class ControllerClassBuilder implements ContractsControllerBuilder
                 ],
                 'returns' => 'mixed',
                 'contents' => array_merge(
-                    [
-                        $this->hasAuthenticatable_ ? '// TODO : Provides policy handlers' : null,
-                    ],
+                    $this->hasAuthenticatable_ && $this->policies ? [
+                        '// Add Policy guard to the controller action',
+                        "\\Illuminate\\Support\\Facades\\Gate::authorize('viewAny', is_string(\$model = \$$vmParamName" . "->getModel()) ? \$model : get_class(\$model), \$$vmParamName)",
+                        ''
+                    ] : [],
                     $this->mustGenerateActionContents() ? array_merge(
                         [
                             '',
@@ -414,8 +436,12 @@ class ControllerClassBuilder implements ContractsControllerBuilder
                 ],
                 'returns' => 'mixed',
                 'contents' => $this->mustGenerateActionContents() ? array_merge(
+                    $this->hasAuthenticatable_ && $this->policies ? [
+                        '// Add Policy guard to the controller action',
+                        "\\Illuminate\\Support\\Facades\\Gate::authorize('view', \$$vmParamName" . ("->find(\$id), \$$vmParamName)"),
+                        ''
+                    ] : [],
                     [
-                        $this->hasAuthenticatable_ ? '// TODO: Provide Policy handlers if required' : null,
                         '$result = $this->service->handle(',
                         "\tSelectQueryAction(",
                         "\t\t\$id,",
@@ -446,9 +472,12 @@ class ControllerClassBuilder implements ContractsControllerBuilder
                 ],
                 'returns' => 'mixed',
                 'contents' => $this->mustGenerateActionContents() ? array_merge(
-                    [
-                        '// validate request inputs',
-                    ],
+                    $this->hasAuthenticatable_ && $this->policies ? [
+                        // TODO: Add model name loader
+                        '// Add Policy guard to the controller action',
+                        "\\Illuminate\\Support\\Facades\\Gate::authorize('create', is_string(\$model = \$$vmParamName" . "->getModel()) ? \$model : get_class(\$model), \$$vmParamName)",
+                        ''
+                    ] : [],
                     null === $this->viewModelClass_ ? [
                         '$result = $this->validator->validate([], $request->all(), function () use ($request) {',
                         '// After validation logic goes here...',
@@ -456,15 +485,16 @@ class ControllerClassBuilder implements ContractsControllerBuilder
                         '$result = $this->validator->validate($viewModel, function () use ($viewModel) {',
                     ],
                     [
-                        (null === $this->viewModelClass_) ? "\t\$query = \$request->get('_query') ?? []" : "\t\$query = \$viewModel->get('_query') ?? []",
                         (null === $this->viewModelClass_) ? "\treturn \$this->service->handle(CreateQueryAction(\$request, [" : "\treturn \$this->service->handle(CreateQueryAction(\$viewModel, [",
                     ],
                     (null === $this->viewModelClass_) ? [
-                        "\t\t'relations' => \$query['relations'] ?? [],",
+                        "\t\t// TODO: Uncomment the code below to support relations insertion",
+                        "\t\t//'relations' => \$viewModel->get('_query.relations') ?? []",
                         "\t\t'upsert_conditions' => \$query['upsert_conditions'] ?? (\$request->has('id') ?",
                         "\t\t\t['id' => \$request->get('id'),] : []),",
                     ] : [
-                        "\t\t'relations' => \$query['relations'] ?? [],",
+                        "\t\t// TODO: Uncomment the code below to support relations insertion",
+                        "\t\t//'relations' => \$viewModel->get('_query.relations') ?? []",
                         "\t\t'upsert_conditions' => \$query['upsert_conditions'] ?? (\$viewModel->has(\$viewModel->getPrimaryKey()) ?",
                         "\t\t\t[\$viewModel->getPrimaryKey() => \$viewModel->get(\$viewModel->getPrimaryKey()),] : []),",
                     ],
@@ -497,7 +527,13 @@ class ControllerClassBuilder implements ContractsControllerBuilder
                 'contents' => $this->mustGenerateActionContents() ? array_merge(
                     [
                         (null !== $this->viewModelClass_) ? '$viewModel = $viewModel->merge(["id" => $id])' : '$request = $request->merge(["id" => $id])',
+                        ""
                     ],
+                    $this->hasAuthenticatable_ && $this->policies ? [
+                        '// Add Policy guard to the controller action',
+                        "\\Illuminate\\Support\\Facades\\Gate::authorize('update', \$$vmParamName" . ("->find(\$id), \$$vmParamName)"),
+                        '',
+                    ] : [],
                     null === $this->viewModelClass_ ? [
                         '$result = $this->validator->updating()->validate([], $request->all(), function () use ($id, $request) {',
                         '// After validation logic goes here...',
@@ -505,10 +541,12 @@ class ControllerClassBuilder implements ContractsControllerBuilder
                         '$result = $this->validator->updating()->validate($viewModel, function () use ($id, $viewModel) {',
                     ],
                     [
-                        null === $this->viewModelClass_ ? "\t\$query = \$request->get('_query') ?? []" : "\t\$query = \$viewModel->get('_query') ?? []",
                         (null === $this->viewModelClass_) ? "\treturn \$this->service->handle(UpdateQueryAction(\$id, \$request, [" : "\treturn \$this->service->handle(UpdateQueryAction(\$id, \$viewModel, [",
                     ],
-                    ["\t\t'relations' => \$query['relations'] ?? [],"],
+                    [
+                        "\t\t// TODO: Uncomment the code below to support relations insertion",
+                        "\t\t//'relations' => \$viewModel->get('_query.relations') ?? [],"
+                    ],
                     [
                         null === $this->dtoClass_ ? "\t\t])," : "\t]), function (\$value) {",
                     ],
@@ -535,7 +573,9 @@ class ControllerClassBuilder implements ContractsControllerBuilder
                 ],
                 'returns' => 'mixed',
                 'contents' => $this->mustGenerateActionContents() ? [
-                    $this->hasAuthenticatable_ ? '// TODO: Provide Policy handlers if required' : null,
+                    $this->hasAuthenticatable_ && $this->policies ? '// Add Policy guard to the controller action' : null,
+                    $this->hasAuthenticatable_ && $this->policies ? "\\Illuminate\\Support\\Facades\\Gate::authorize('delete', \$$vmParamName" . ("->find(\$id), \$$vmParamName)") : null,
+                    '',
                     '$result = $this->service->handle(DeleteQueryAction($id))',
                     'return $this->response->ok($result)',
                 ] : [],

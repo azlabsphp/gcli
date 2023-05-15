@@ -41,6 +41,9 @@ class ServiceClassBuilder implements ComponentBuilder
      */
     public const DEFAULT_NAMESPACE = 'App\\Services';
 
+    /**
+     * @var string[]
+     */
     private const CLASS_FUNCTION_PATHS = [
         'Drewlabs\\Packages\\Database\\Proxy\\useDMLQueryActionCommand',
         'Drewlabs\\Packages\\Database\\Proxy\\DMLManager',
@@ -131,9 +134,6 @@ class ServiceClassBuilder implements ComponentBuilder
 
     public function build()
     {
-        $handlMethodLines = [
-            $this->asCRUD_ ? 'return useDMLQueryActionCommand($this->dbManager)($action, $callback)' : '#code...',
-        ];
         $component = (PHPClass($this->name()));
         foreach (static::CLASS_FUNCTION_PATHS as $functionPath) {
             /**
@@ -177,7 +177,7 @@ class ServiceClassBuilder implements ComponentBuilder
             )
             // Add Handler method
             ->addMethod(
-                array_reduce(array_filter($handlMethodLines, static function ($line) {
+                array_reduce(array_filter([$this->asCRUD_ ? 'return useDMLQueryActionCommand($this->dbManager)($action, $callback)' : '#code...'], static function ($line) {
                     return null !== $line;
                 }), static function (CallableInterface $carry, $curr) {
                     return $carry->addLine($curr);

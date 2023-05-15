@@ -184,8 +184,7 @@ class ViewModelClassBuilder implements ComponentBuilder
             /**
              * @var Blueprint
              */
-            $component = $component
-                ->addImplementation(\Drewlabs\Contracts\Validator\CoreValidatable::class);
+            $component = $component->addImplementation(\Drewlabs\Contracts\Validator\CoreValidatable::class);
         }
         // Add inputs traits
         if ($this->hasInputsTraits_) {

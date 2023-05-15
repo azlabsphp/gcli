@@ -33,14 +33,15 @@ use Illuminate\Support\Pluralizer;
 class MakeControllerCommand extends Command
 {
     protected $signature = 'drewlabs:mvc:make:controller '
-        .'{name=TestController : Controller name}'
-        .'{--namespace= : Controller namespace}'
-        .'{--path= : Project source code path}'
-        .'{--model= : Model attached to the controller generated code}'
-        .'{--invokable : Creates an invokable controller }'
-        .'{--service= : Service class to bind to the controller definition}'
-        .'{--viewModel= : View model class to bind to the controller definition}'
-        .'{--dtoClass= : Data transfert object to bind to the controller definition}';
+        . '{name=TestController : Controller name}'
+        . '{--namespace= : Controller namespace}'
+        . '{--path= : Project source code path}'
+        . '{--model= : Model attached to the controller generated code}'
+        . '{--invokable : Creates an invokable controller }'
+        . '{--service= : Service class to bind to the controller definition}'
+        . '{--viewModel= : View model class to bind to the controller definition}'
+        . '{--dtoClass= : Data transfert object to bind to the controller definition}'
+        . '{--authorizable : Add policy handlers to the controller class}';
 
     protected $description = 'Creates a Drewlabs package MVC controller';
     /**
@@ -65,14 +66,11 @@ class MakeControllerCommand extends Command
         $dto = $this->option('dtoClass') ?? null;
         // # End of parameters initialization
         if ($this->option('invokable')) {
-            ComponentsScriptWriter($basePath)->write(
-                MVCControllerBuilder($name, $namespace)
-                    ->asInvokableController()->build()
-            );
+            ComponentsScriptWriter($basePath)->write(MVCControllerBuilder($name, $namespace)->asInvokableController()->build());
         } else {
             static::createComponents($namespace, $name, $basePath, static function (string $value) {
                 return Pluralizer::plural($value);
-            }, $model, $service, $dto, $viewModel);
+            }, $model, $service, $dto, $viewModel, $this->option('authorizable'));
         }
         $this->info("Controller successfully generated \n");
     }
@@ -85,14 +83,24 @@ class MakeControllerCommand extends Command
      * @param mixed $service
      * @param mixed $dto
      * @param mixed $viewModel
+     * @param bool $authorizable
      *
      * @throws UnableToRetrieveMetadataException
      * @throws PHPVariableException
      *
      * @return void
      */
-    public static function createComponents($namespace, $name, $basePath, \Closure $pluralizer, $model = null, $service = null, $dto = null, $viewModel = null)
-    {
+    public static function createComponents(
+        $namespace,
+        $name,
+        $basePath,
+        \Closure $pluralizer,
+        $model = null,
+        $service = null,
+        $dto = null,
+        $viewModel = null,
+        bool $authorizable = false
+    ) {
         $modelClassPath = $model;
         $modelComponent = null;
         $modelName = Str::contains($modelClassPath, '\\') ? Str::afterLast('\\', $modelClassPath) : $modelClassPath;
@@ -127,6 +135,8 @@ class MakeControllerCommand extends Command
                 $dtoClass,
                 $name,
                 $namespace,
+                true,
+                $authorizable,
             )
         );
     }

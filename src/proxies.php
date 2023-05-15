@@ -18,13 +18,14 @@ use Drewlabs\CodeGenerator\Contracts\Stringable;
 use Drewlabs\ComponentGenerators\Builders\ControllerClassBuilder;
 use Drewlabs\ComponentGenerators\Builders\DataTransfertClassBuilder;
 use Drewlabs\ComponentGenerators\Builders\EloquentORMModelBuilder;
+use Drewlabs\ComponentGenerators\Builders\PolicyClassBuilder;
 use Drewlabs\ComponentGenerators\Builders\ServiceClassBuilder;
 use Drewlabs\ComponentGenerators\Builders\ViewModelClassBuilder;
 use Drewlabs\ComponentGenerators\ComponentsScriptWriter;
 use Drewlabs\ComponentGenerators\Contracts\ORMColumnDefinition as ContractsORMColumnDefinition;
 use Drewlabs\ComponentGenerators\Contracts\ORMModelDefinition;
 use Drewlabs\ComponentGenerators\Contracts\ScriptWriter;
-use Drewlabs\ComponentGenerators\DBSchemaReverseEngineeringService;
+use Drewlabs\ComponentGenerators\ReverseEngineeringService;
 use Drewlabs\ComponentGenerators\ORMColumnDefinition;
 use Drewlabs\ComponentGenerators\ORMModelDefinition as ComponentGeneratorsORMModelDefinition;
 use Drewlabs\ComponentGenerators\PHP\PHPScriptFile;
@@ -160,16 +161,29 @@ function PHPScript(
  *
  * @param string $blocComponentNamespace
  *
- * @return DBSchemaReverseEngineeringService
+ * @return ReverseEngineeringService
  */
 function DatabaseSchemaReverseEngineeringRunner(
     AbstractSchemaManager $manager,
     string $blocComponentPath,
     ?string $blocComponentNamespace = 'App'
 ) {
-    return new DBSchemaReverseEngineeringService(
+    return new ReverseEngineeringService(
         $manager,
         $blocComponentPath,
         $blocComponentNamespace
     );
+}
+
+/**
+ * Creates policy builder class
+ * 
+ * @param string|null $name 
+ * @param string|null $namespace 
+ * @param string|null $path 
+ * @return PolicyClassBuilder 
+ */
+function MVCPolicyBuilder(string $name = null, string $namespace = null, string $path = null)
+{
+    return new PolicyClassBuilder($name, $namespace, $path);
 }

@@ -89,6 +89,13 @@ class ReverseEngineerTaskRunner
     private $provideRelations = false;
 
     /**
+     * Defines if policy classes must be generated
+     * 
+     * @var bool
+     */
+    private $policies = false;
+
+    /**
      * Specifies the tables for which code should be generated.
      *
      * @return self
@@ -196,6 +203,17 @@ class ReverseEngineerTaskRunner
     }
 
     /**
+     * Makes the task runner generate policy classes
+     * 
+     * @return self
+     */
+    public function withPolicies()
+    {
+        $this->policies = true;
+        return $this;
+    }
+
+    /**
      * Creates a code generator factory function based on provided options
      * 
      * @param array $options 
@@ -253,14 +271,14 @@ class ReverseEngineerTaskRunner
             $onethroughs = $this->oneThroughs ?? [];
             $manythroughs = $this->manyThroughs ?? [];
             $camelize = $this->camelize;
+            $policies = [];
 
             $onCompleteCallback = $onCompleteCallback ?? static function () {
                 printf("\nTask Completed successfully...\n");
             };
             $connection = DriverManager::getConnection($options);
             $schemaManager = $connection->createSchemaManager();
-            // For Mariadb server
-            $schemaManager->getDatabasePlatform()->registerDoctrineTypeMapping('enum', 'string');
+            $connection->getDatabasePlatform()->registerDoctrineTypeMapping('enum', 'string');
             // the generated tables
             $tablesFilterFunc = static function ($table) {
                 return !(Str::contains($table->getName(), 'auth_') ||
@@ -286,6 +304,10 @@ class ReverseEngineerTaskRunner
                 $runner = $runner->withHttpHandlers();
             }
 
+            if ($this->policies) {
+                $runner = $runner->withPolicies();
+            }
+
             if ($noAuth) {
                 $runner = $runner->withoutAuth();
             }
@@ -303,7 +325,7 @@ class ReverseEngineerTaskRunner
                 ->only($this->tables ?? [])
                 ->except($this->exceptions ?? [])
                 ->setSchema($schema)
-                ->run(
+                ->handle(
                     $foreignKeys,
                     $tablesindexes,
                     static function ($tables) use ($namespace, $subPackage, $disableCache, $cachePath) {
@@ -341,7 +363,8 @@ class ReverseEngineerTaskRunner
                 $indicator,
                 $relations,
                 $pivots,
-                &$onExistsCallback
+                &$onExistsCallback,
+                &$policies
             ) {
                 foreach ($values as $component) {
                     $modelbuilder = Arr::get($component, 'model.class');
@@ -392,6 +415,13 @@ class ReverseEngineerTaskRunner
                         static::writeComponentSourceCode(Arr::get($controller, 'path'), $controllersource, $onExistsCallback);
                         $routeController = new RouteController(['namespace' => $subPackage, 'name' => $classPath]);
                         yield $name => $routeController;
+                    }
+                    if (null !== ($policy = Arr::get($component, 'policy'))) {
+                        $policyBuilder = Arr::get($policy, 'class');
+                        if ($policyBuilder) {
+                            static::writeComponentSourceCode(Arr::get($policy, 'path'), self::resolveWritable($policyBuilder), $onExistsCallback);
+                            $policies[Arr::get($component, 'model.classPath')] = Arr::get($component, 'policy.classPath');
+                        }
                     }
                     $indicator->advance();
                 }
@@ -518,10 +548,10 @@ class ReverseEngineerTaskRunner
     /**
      * Resolve writable instance
      * 
-     * @param mixed $component 
+     * @param Writable|ComponentBuilder|\Closure(...$args):Writable $component 
      * @param mixed $args 
-     * @return mixed 
-     * @throws RuntimeException 
+     * @return Writable 
+     * @throws RuntimeExWritableception 
      */
     private static function resolveWritable($component, ...$args)
     {
