@@ -19,6 +19,7 @@ use Drewlabs\ComponentGenerators\Builders\ControllerClassBuilder;
 use Drewlabs\ComponentGenerators\Builders\DataTransfertClassBuilder;
 use Drewlabs\ComponentGenerators\Builders\EloquentORMModelBuilder;
 use Drewlabs\ComponentGenerators\Builders\PolicyClassBuilder;
+use Drewlabs\ComponentGenerators\Builders\PolicyServiceProviderBuilder;
 use Drewlabs\ComponentGenerators\Builders\ServiceClassBuilder;
 use Drewlabs\ComponentGenerators\Builders\ViewModelClassBuilder;
 use Drewlabs\ComponentGenerators\ComponentsScriptWriter;
@@ -186,4 +187,18 @@ function DatabaseSchemaReverseEngineeringRunner(
 function MVCPolicyBuilder(string $name = null, string $namespace = null, string $path = null)
 {
     return new PolicyClassBuilder($name, $namespace, $path);
+}
+
+/**
+ * Creates new policy service providers instance
+ * 
+ * @param array $policies 
+ * @param string|null $namespace 
+ * @param string|null $path 
+ * @param string|null $name 
+ * @return PolicyServiceProviderBuilder 
+ */
+function MVCPolicyServiceProviderBuilder(array $policies = [],  string $namespace = null, string $path = null, string $name = null)
+{
+    return new PolicyServiceProviderBuilder($policies);
 }

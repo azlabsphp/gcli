@@ -93,6 +93,7 @@ ComponentsScriptWriter(__DIR__ . '/examples/src/')->write(
         ->build()
 )
 ```
+
 #### Service class builder
 
 A service is like a delegate that handle controller action and has access to the database model.
@@ -170,7 +171,7 @@ ComponentsScriptWriter(__DIR__ . '/examples/src/'))->write(
 
 #### Model class builder
 
-A database model is like en entity manager class that interact with database on your behalf. They packahe provides an implementation of the Eloquent ORM model. 
+A database model is like en entity manager class that interact with database on your behalf. They packahe provides an implementation of the Eloquent ORM model.
 
 This implementation use the drewlabs/database package for the builder and it suppose that package is install as dependency. You are free to provide an implementation of your on builder.
 
@@ -224,17 +225,22 @@ ComponentsScriptWriter(__DIR__ . '/examples/src')->write((EloquentORMModelBuilde
 
 ## Laravel Commands interfaces
 
-The package offers some laravel framework commands for easily creating component from your terminal application.
-Those commands are:
+The package offers some laravel framework commands for easily creating component from your terminal application. Those commands are:
 
-* php artisan drewlabs:mvc:create -> Generate full MVC classes (a.k.a Model, Service, Controller, ViewModel, Data Transfert Object from a database configuration)
-* php artisan drewlabs:mvc:make:class -> To generate a PHP class
-* php artisan drewlabs:mvc:make:controller -> To generate a controller class
-* php artisan drewlabs:mvc:make:dto -> To generate a Data transfert object class
-* php artisan drewlabs:mvc:make:model -> To generate a database model
-* php artisan drewlabs:mvc:make:service -> To generate an MVC Service class
-* php artisan drewlabs:mvc:make:viewmodel -> To generate a validation view model
-
+* `php artisan drewlabs:mvc:create`
+  Generate web service components (Model, Service, Controller, ViewModel, Data Transfert Object) from a database configuration.
+* `php artisan drewlabs:mvc:make:class`
+  Generates a new PHP class definition.
+* `php artisan drewlabs:mvc:make:controller`
+  Generates a controller class with a predefined structure.
+* `php artisan drewlabs:mvc:make:dto`
+  Generate a Data transfert object class definition.
+* `php artisan drewlabs:mvc:make:model`
+  Generates a database model class definition.
+* `php artisan drewlabs:mvc:make:service`
+  Generates a Service component class definition.
+* `php artisan drewlabs:mvc:make:viewmodel`
+  Generate a validation view model class defininition.
 
 ### Examples
 
@@ -260,4 +266,3 @@ php artisan drewlabs:mvc:make:viewmodel --name=Post --single --path=src
 # Create a MVC controller
 php artisan drewlabs:mvc:make:controller --name=Posts --path=src --model="\\Application\\Models\\Comment"
 ```
-

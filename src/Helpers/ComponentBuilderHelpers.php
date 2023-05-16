@@ -526,9 +526,7 @@ class ComponentBuilderHelpers
      */
     public static function getCachedComponentDefinitions(string $path)
     {
-        // LOAD Contents from the path
         $value = (new CacheableSerializer($path))->load(CacheableTables::class);
-
         return $value;
     }
 }

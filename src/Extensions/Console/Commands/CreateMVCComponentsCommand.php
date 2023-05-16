@@ -15,7 +15,7 @@ namespace Drewlabs\ComponentGenerators\Extensions\Console\Commands;
 
 use Drewlabs\ComponentGenerators\Contracts\Writable;
 use Drewlabs\ComponentGenerators\Extensions\Helpers\CommandArguments;
-use Drewlabs\ComponentGenerators\Extensions\Helpers\ReverseEngineerTaskRunner;
+use Drewlabs\ComponentGenerators\Extensions\Helpers\ReverseEngineerTask;
 use Drewlabs\ComponentGenerators\Extensions\ProgressbarIndicator;
 use Drewlabs\Filesystem\Exceptions\ReadFileException;
 use Drewlabs\Filesystem\Exceptions\UnableToRetrieveMetadataException;
@@ -148,9 +148,10 @@ class CreateMVCComponentsCommand extends Command
         $commandoptions = array_merge($commandoptions, []);
         $commandargs = new CommandArguments($commandoptions);
         $options = $commandargs->providesoptions($this->cachePath, Path($this->option('srcPath') ?? 'app')->makeAbsolute($this->laravel->basePath())->__toString());
+        $policies = $options->get('policies') ?? false;
         //#endregion command options
         // !Ends Local variables initialization
-        (new ReverseEngineerTaskRunner())
+        (new ReverseEngineerTask())
             ->except($options->get('excludes', []))
             ->only($options->get('includes', []))
             ->setCamelize(boolval($options->get('models.attributes.camelize', false)))
@@ -159,7 +160,7 @@ class CreateMVCComponentsCommand extends Command
             ->setManyToManyRelations($options->get('models.relations.many-to-many', []))
             ->setOnThroughRelations($options->get('models.relations.one-to-one-though', []))
             ->setManyThroughRelations($options->get('models.relations.one-to-many-though', []))
-            ->withPolicies($options->get('policies') ?? false)
+            ->withPolicies($policies)
             ->run(
                 $commandargs->providesdboptions(function ($key, $default = null) {
                     return config($key, $default);
@@ -184,8 +185,9 @@ class CreateMVCComponentsCommand extends Command
                 $this->info("Started reverse engineering process...\n");
                 return new ProgressbarIndicator($this->output->createProgressBar(\count($values)));
             },
-            function () {
+            function (string $message = null) {
                 $this->info("\nReverse engineering completed successfully!\n");
+                $this->warn($message ?? '');
             },
             function (Writable $writable) use ($options) {
                 if ($this->option('force')) {

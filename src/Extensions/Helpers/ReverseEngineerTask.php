@@ -31,6 +31,7 @@ use Drewlabs\ComponentGenerators\RelationTypes;
 
 use function Drewlabs\ComponentGenerators\Proxy\ComponentsScriptWriter;
 use function Drewlabs\ComponentGenerators\Proxy\DatabaseSchemaReverseEngineeringRunner;
+use function Drewlabs\ComponentGenerators\Proxy\MVCPolicyServiceProviderBuilder;
 
 use Drewlabs\Core\Helpers\Arr;
 use Drewlabs\Core\Helpers\Str;
@@ -39,7 +40,7 @@ use League\Flysystem\UnableToCheckExistence;
 use League\Flysystem\UnableToWriteFile;
 use RuntimeException;
 
-class ReverseEngineerTaskRunner
+class ReverseEngineerTask
 {
     use ReverseEngineerRelations;
 
@@ -217,7 +218,7 @@ class ReverseEngineerTaskRunner
      * Creates a code generator factory function based on provided options
      * 
      * @param array $options 
-     * @param string $srcPath 
+     * @param string $src 
      * @param string $routingfilename 
      * @param string|null $routePrefix 
      * @param string|null $middleware 
@@ -228,11 +229,11 @@ class ReverseEngineerTaskRunner
      * @param string|null $subPackage 
      * @param string|null $schema 
      * @param bool $hasHttpHandlers 
-     * @return Closure(string $routesDirectory, string $cachePath, string $routesCachePath, Closure $onStartCallback, null|Closure $onCompleteCallback = null, null|Closure $onExistsCallback = null): void 
+     * @return Closure(string $routesDirectory, string $cachePath, string $routesCachePath, Closure $onStartCallback, null|\Closure($policies) $onCompleteCallback = null, null|Closure $onExistsCallback = null): void 
      */
     public function run(
         array $options,
-        string $srcPath,
+        string $src,
         string $routingfilename,
         string $routePrefix = null,
         string $middleware = null,
@@ -250,10 +251,10 @@ class ReverseEngineerTaskRunner
             string $routesCachePath,
             \Closure $onStartCallback,
             ?\Closure $onCompleteCallback = null,
-            ?\Closure $onExistsCallback = null
+            ?\Closure $onExistsCallback = null,
         ) use (
             $options,
-            $srcPath,
+            $src,
             $routingfilename,
             $routePrefix,
             $middleware,
@@ -272,6 +273,7 @@ class ReverseEngineerTaskRunner
             $manythroughs = $this->manyThroughs ?? [];
             $camelize = $this->camelize;
             $policies = [];
+            $message = [];
 
             $onCompleteCallback = $onCompleteCallback ?? static function () {
                 printf("\nTask Completed successfully...\n");
@@ -297,7 +299,7 @@ class ReverseEngineerTaskRunner
             // # Create the migrations runner
             $runner = DatabaseSchemaReverseEngineeringRunner(
                 $schemaManager,
-                $srcPath,
+                $src,
                 $namespace ?? 'App'
             );
             if ($hasHttpHandlers) {
@@ -420,7 +422,7 @@ class ReverseEngineerTaskRunner
                         $policyBuilder = Arr::get($policy, 'class');
                         if ($policyBuilder) {
                             static::writeComponentSourceCode(Arr::get($policy, 'path'), self::resolveWritable($policyBuilder), $onExistsCallback);
-                            $policies[Arr::get($component, 'model.classPath')] = Arr::get($component, 'policy.classPath');
+                            $policies[sprintf("\%s", Arr::get($component, 'model.classPath'))] = sprintf("\%s", Arr::get($component, 'policy.classPath'));
                         }
                     }
                     $indicator->advance();
@@ -442,11 +444,18 @@ class ReverseEngineerTaskRunner
                 )($routes, !empty($this->tables));
                 $indicator->advance();
             }
+
+            // Case policies where generated, we creates a policy service provider class in the project
+            if (is_array($policies) && !empty($policies)) {
+                $policiesServiceProviderBuilder = MVCPolicyServiceProviderBuilder($policies);
+                static::writeComponentSourceCode($src, self::resolveWritable($policiesServiceProviderBuilder),  $onExistsCallback);
+                $message = [sprintf("Please add [\%s::class] to the list of application service providers to apply policies.\n", $policiesServiceProviderBuilder->getClassPath())];
+            }
             if ((null !== $indicator) && ($indicator instanceof Progress)) {
                 $indicator->complete();
             }
             if (null !== $onCompleteCallback && ($onCompleteCallback instanceof \Closure)) {
-                $onCompleteCallback();
+                $onCompleteCallback(implode(PHP_EOL, $message));
             }
         };
     }
