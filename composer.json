@@ -39,8 +39,6 @@
     "require": {
         "php": ">=7.2",
         "drewlabs/core-helpers": "^2.0",
-        "drewlabs/filesystem": "^1.0",
-        "drewlabs/psr7-stream": "^1.0",
         "drewlabs/php-value": "^0.1.5",
         "drewlabs/code-generator": "^0.2.4"
     },
@@ -48,14 +46,6 @@
         {
             "type": "vcs",
             "url": "git@github.com:liksoft/drewlabs-php-core-helpers.git"
-        },
-        {
-            "type": "vcs",
-            "url": "git@github.com:liksoft/drewlabs-php-filesystem.git"
-        },
-        {
-            "type": "vcs",
-            "url": "git@github.com:liksoft/drewlabs-psr7-stream.git"
         },
         {
             "type": "vcs",
