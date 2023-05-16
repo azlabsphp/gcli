@@ -58,3 +58,7 @@
 ## 2.9.0 [2023-05-16]
 
 - Added support for policies class definition generator
+
+## 2.10.0 [2023-05-16]
+
+- Removed drewlabs/filesystem and drewlabs/psr7-stream dependencies
