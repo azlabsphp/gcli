@@ -115,7 +115,7 @@ class CreateMVCComponentsCommand extends Command
         );
         $commandoptions = array_merge($commandoptions, []);
         $commandargs = new CommandArguments($commandoptions);
-        $options = $commandargs->providesoptions($this->cachePath, Path($this->option('srcPath') ?? 'app')->makeAbsolute($this->laravel->basePath())->__toString());
+        $options = $commandargs->providesoptions($this->cachePath, $this->laravel->basePath($this->option('srcPath') ?? 'app'));
         $policies = $options->get('policies') ?? false;
         //#endregion command options
         // !Ends Local variables initialization
