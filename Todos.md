@@ -27,9 +27,13 @@
 
 - Add support for hidden attributes in request object [x]
 
-## 20200119210
+## 20210119210
 
-- Generate static::creating entry for non incrementable models []
-- Generate relation method to foreign keys definitions []
+- Generate static::creating entry for non incrementable models [ x ]
+- Generate relation method to foreign keys definitions [ x ]
 - Create command generator command []
-- Add override prompt for recreating mvc components using command []
+- Add override prompt for recreating mvc components using command [ x ]
+
+## 20230516
+
+- Remove dependency to `drewlabs/filesystem` library [  ]
