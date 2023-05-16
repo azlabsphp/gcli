@@ -11,15 +11,14 @@ The generator project is not an official php package and must be used as github 
         // other project dependencies
         "drewlabs/filesystem": "^1.0",
         "drewlabs/psr7-stream": "^1.0",
-        "drewlabs/core-helpers": "^2.0",
-        "drewlabs/php-value": "^0.1.5"
+        "drewlabs/core-helpers": "^2.0"
     },
     "require-dev": {
         // Other project dev dependencies
         // We only install the generator in dev mode because we don't want to ship it
         // when running in production
-        "drewlabs/code-generator": "^2.0",
-        "drewlabs/component-generators": "^2.1.25"
+        "drewlabs/code-generator": "^0.2|^2.0",
+        "drewlabs/component-generators": "^2.8"
     },
     "repositories": [
         {
@@ -41,6 +40,44 @@ The generator project is not an official php package and must be used as github 
         {
             "type": "vcs",
             "url": "git@github.com:liksoft/drewlabs-php-code-generator.git"
+        }
+    ]
+```
+
+**Note**
+The generated code for controllers, database and Services handlers depends on some package that are internal to drewlabs namespaces and therefore must be added as well to your composer.json file. Please add the following package to your project and to install the required dependencies:
+
+```json
+    //...
+    "require": {
+        //...
+        "drewlabs/contracts": "^2.0",
+        "drewlabs/core": "^2.0",
+        "drewlabs/database": "^2.0",
+        "drewlabs/http": "^2.0",
+        "drewlabs/support": "^2.0",
+        "drewlabs/php-value": "^0.1.5"
+    },
+    "repositories": [
+        {
+            "type": "vcs",
+            "url": "git@github.com:liksoft/drewlabs-php-contracts.git"
+        },
+        {
+            "type": "vcs",
+            "url": "git@github.com:liksoft/drewlabs-php-core.git"
+        },
+        {
+            "type": "vcs",
+            "url": "git@github.com:liksoft/drewlabs-php-packages-database.git"
+        },
+        {
+            "type": "vcs",
+            "url": "git@github.com:liksoft/drewlabs-laravel-http.git"
+        },
+        {
+            "type": "vcs",
+            "url": "git@github.com:liksoft/drewlabs-php-support.git"
         },
         {
             "type": "vcs",
@@ -48,13 +85,6 @@ The generator project is not an official php package and must be used as github 
         }
     ]
 ```
-
-**Note**
-The generated code for controllers, database and Services handlers depends on some package that are internal to drewlabs namespaces and therefore must be added as well to your composer.json file. Please consult the github repository below to see the configuration for each of these packages:
-
-* https://github.com/liksoft/drewlabs-php-packages-database -> Provide classes that enhance the default Laravel Eloquent ORM
-* https://github.com/liksoft/drewlabs-laravel-http/tree/v2-dev-branch -> Add classes and interfaces for working with HTTP Requests
-* https://github.com/liksoft/drewlabs-php-support/tree/v2-dev-branch -> Provides utility classes required by the generated code
 
 ## Usage
 
@@ -93,7 +123,6 @@ ComponentsScriptWriter(__DIR__ . '/examples/src/')->write(
         ->build()
 )
 ```
-
 #### Service class builder
 
 A service is like a delegate that handle controller action and has access to the database model.
@@ -171,7 +200,7 @@ ComponentsScriptWriter(__DIR__ . '/examples/src/'))->write(
 
 #### Model class builder
 
-A database model is like en entity manager class that interact with database on your behalf. They packahe provides an implementation of the Eloquent ORM model.
+A database model is like en entity manager class that interact with database on your behalf. They packahe provides an implementation of the Eloquent ORM model. 
 
 This implementation use the drewlabs/database package for the builder and it suppose that package is install as dependency. You are free to provide an implementation of your on builder.
 
@@ -225,44 +254,150 @@ ComponentsScriptWriter(__DIR__ . '/examples/src')->write((EloquentORMModelBuilde
 
 ## Laravel Commands interfaces
 
-The package offers some laravel framework commands for easily creating component from your terminal application. Those commands are:
+The package offers some laravel framework commands for easily creating component from your terminal application.
+Those commands are:
 
-* `php artisan drewlabs:mvc:create`
-  Generate web service components (Model, Service, Controller, ViewModel, Data Transfert Object) from a database configuration.
-* `php artisan drewlabs:mvc:make:class`
-  Generates a new PHP class definition.
-* `php artisan drewlabs:mvc:make:controller`
-  Generates a controller class with a predefined structure.
-* `php artisan drewlabs:mvc:make:dto`
-  Generate a Data transfert object class definition.
-* `php artisan drewlabs:mvc:make:model`
-  Generates a database model class definition.
-* `php artisan drewlabs:mvc:make:service`
-  Generates a Service component class definition.
-* `php artisan drewlabs:mvc:make:viewmodel`
-  Generate a validation view model class defininition.
+### drewlabs:mvc:create command
 
-### Examples
+This command allow devolpper to generate an entire api stack from database tables, with a pre-defined structure. The generated output is configurable using artisan command interface input:
+
+- Creating mvc component along with controllers and routes
+
+```sh
+php artisan drewlabs:mvc:create --http 
+```
+
+#### Disabling caching
+
+By default the command use caching to optimize the task when generating more than once required components. using the command below, the command will ignore the cache and re-generate previously generated files:
+
+```sh
+php artisan drewlabs:mvc:create --http --force
+```
+
+#### Removing schema prefix
+
+In some application, databases are prefixed using schema name. Generated code will mostly add the schema prefix to classes and interfaces. To prevent such output, developper can use `--schema` option to allow the tell the command to trim the schema part from generated classes:
+
+```sh
+php artisan drewlabs:mvc:create --http --schema=test
+```
+
+#### Adding middleware
+
+Sometimes developpers might want to group generated routes in a given middleware. The command interface provide an option to specify the middleware to use when grouping generated route using:
+
+```sh
+php artisan drewlabs:mvc:create --http --middleware=auth
+```
+
+#### Table filters
+
+The command interface also support an `--only` option wich allow developpers to specify the list of table to include when generating code:
+
+```sh
+php artisan drewlabs:mvc:create --http --only=users
+```
+
+**Warning** The `--only` option is in an experimental status, and as it can rewrite your routing file removing previously generated routes.
+
+#### Setting route file name
+
+By default the routing file name used by the command is `web.php` located in the /routes directory of the laravel project. To override the default:
+
+```sh
+php artisan drewlabs:mvc:create --http --routingfilename=api.php
+```
+
+The command above use or create a file in the project /routes directory for routing.
+
+#### Model relations
+
+`drewlabs:mvc:create` provides a flag for generating relation method definition while generating model class definition. Using `--relations` flag, developpers can generate model with corresponding `relations`.
+
+```sh
+php artisan drewlabs:mvc:create --http --relations
+```
+
+**FAQ** How can model relation methods can be customized ?
+
+The command support argument for model relation customization. using `--manytomany`, `--toones`, `--manythroughs`, `--onethroughs`, developpers are able to specify relation that are `many to many`, `one to one`, `many through` and `one through` relation respectively.
+
+The syntax for various customization are:
+
+- `manytomany`
+    `source_table->pivot_table->destination_table:method`
+
+```sh
+php artisan drewlabs:mvc:create --http --relations --manytomany=posts->post_comments->comments --manytomany=posts->post_tags->tags
+```
+
+**Note** `[method]` part of the syntax can be omitted and will be generated by the command.
+
+- `toones`
+    `source_table->destination_table:method`
+
+```sh
+php artisan drewlabs:mvc:create --http --relations --toones=employees->employee_managers
+```
+
+**Note** `[method]` part of the syntax can be omitted and will be generated by the command.
+
+- `onethroughs` & `manythroughs`
+    `source_table->pivot_table->destination_table:method`
+
+**Note** `[method]` part of the syntax can be omitted and will be generated by the command.
+
+```sh
+php artisan drewlabs:mvc:create --http --relations --manythroughs=post_types->posts->comments:comments
+```
+
+**Note**
+To preview the list of available options, please use the `php artisan drewlabs:mvc:create --help`
+
+### Create a database model
 
 ```sh
 # Create a database model
 php artisan drewlabs:mvc:make:model --table=comments --columns="label|string" --columns="description|text" --columns="likes|number" --hidden=likes --path=src --namespace="\\Application\\Models" --appends=posts
+```
 
-# Create a php class
+### Create a php class
+
+**Note** Use `php artisan drewlabs:mvc:make:class --help` command view the list of option available
+
+```ssh
 php artisan drewlabs:mvc:make:class --path='src' --name=Post
+```
 
-# Create a data transfert class
+### Create a data transfert object
+
+**Note** Use `php artisan drewlabs:mvc:make:dto --help` command view the list of option available
+
+```sh
 php artisan drewlabs:mvc:make:dto --path=src --namespace=\\Application\\Dto
+```
 
-# Create a MVC service
+### Create a MVC service
+
+**Note** Use `php artisan drewlabs:mvc:make:service --help` command view the list of option available
+
+```sh
 php artisan drewlabs:mvc:make:service --model=\\Application\\Models\\Comment --asCRUD --path=src
+````
 
-# Create a MVC view model
+### Create a MVC view model
+
+**Note** Use `php artisan drewlabs:mvc:make:viewmodel --help` command view the list of option available
+
+```sh
 php artisan drewlabs:mvc:make:viewmodel --model=\\Application\\Models\\Comment --single --path=src
+```
 
-# Create a MVC view model
-php artisan drewlabs:mvc:make:viewmodel --name=Post --single --path=src
+### Create a MVC controller
 
-# Create a MVC controller
+**Note** Use `php artisan drewlabs:mvc:make:controller --help` command view the list of option available
+
+```sh
 php artisan drewlabs:mvc:make:controller --name=Posts --path=src --model="\\Application\\Models\\Comment"
 ```
