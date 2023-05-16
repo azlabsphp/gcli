@@ -17,12 +17,14 @@ use Drewlabs\CodeGenerator\Exceptions\PHPVariableException;
 use Drewlabs\ComponentGenerators\Builders\DataTransfertClassBuilder;
 use Drewlabs\ComponentGenerators\Builders\ServiceClassBuilder;
 use Drewlabs\ComponentGenerators\Builders\ViewModelClassBuilder;
-use Drewlabs\ComponentGenerators\Cache\CacheableSerializer;
+use Drewlabs\ComponentGenerators\Cache\Cache;
 use Drewlabs\ComponentGenerators\Cache\CacheableTables;
 use Drewlabs\ComponentGenerators\Contracts\Cacheable;
 use Drewlabs\ComponentGenerators\Contracts\ControllerBuilder;
 use Drewlabs\ComponentGenerators\Contracts\ORMModelBuilder;
 use Drewlabs\ComponentGenerators\Contracts\SourceFileInterface;
+use Drewlabs\ComponentGenerators\IO\Path;
+
 use function Drewlabs\ComponentGenerators\Proxy\DataTransfertClassBuilder;
 
 use function Drewlabs\ComponentGenerators\Proxy\EloquentORMModelBuilder;
@@ -34,17 +36,9 @@ use function Drewlabs\ComponentGenerators\Proxy\ORMModelDefinition;
 use function Drewlabs\ComponentGenerators\Proxy\ViewModelBuilder;
 use Drewlabs\Core\Helpers\Arr;
 use Drewlabs\Core\Helpers\Str;
-use Drewlabs\Filesystem\Exceptions\CreateDirectoryException;
-use Drewlabs\Filesystem\Exceptions\FileNotFoundException;
-use Drewlabs\Filesystem\Exceptions\ReadFileException;
-use Drewlabs\Filesystem\Exceptions\UnableToRetrieveMetadataException;
-use Drewlabs\Filesystem\Exceptions\WriteOperationFailedException;
-use Drewlabs\Psr7Stream\Exceptions\StreamException;
-use Drewlabs\Psr7Stream\Exceptions\IOException;
 use InvalidArgumentException;
 use RuntimeException;
-
-use function Drewlabs\Filesystem\Proxy\Path;
+use Drewlabs\ComponentGenerators\Exceptions\IOException;
 
 class ComponentBuilderHelpers
 {
@@ -286,7 +280,7 @@ class ComponentBuilderHelpers
      * @return SourceFileInterface 
      * @throws RuntimeException 
      * @throws PHPVariableException 
-     * @throws UnableToRetrieveMetadataException 
+     * @throws IOException 
      */
     public static function buildModelDefinitionSourceFile(
         string $table,
@@ -321,7 +315,7 @@ class ComponentBuilderHelpers
      * @param (null|string)|null $model 
      * @return SourceFileInterface 
      * @throws InvalidArgumentException 
-     * @throws UnableToRetrieveMetadataException 
+     * @throws IOException 
      */
     public static function buildServiceDefinition(
         bool $asCRUD = false,
@@ -346,7 +340,7 @@ class ComponentBuilderHelpers
      * @return SourceFileInterface 
      * @throws InvalidArgumentException 
      * @throws PHPVariableException 
-     * @throws UnableToRetrieveMetadataException 
+     * @throws IOException 
      */
     public static function buildViewModelDefinition(
         bool $single = false,
@@ -380,7 +374,7 @@ class ComponentBuilderHelpers
      * @param (null|string)|null $model 
      * @return SourceFileInterface 
      * @throws InvalidArgumentException 
-     * @throws UnableToRetrieveMetadataException 
+     * @throws IOException 
      */
     public static function buildDtoObjectDefinition(
         array $attributes = [],
@@ -441,14 +435,13 @@ class ComponentBuilderHelpers
      * @param string $namespace 
      * @param string $path 
      * @return string 
-     * @throws UnableToRetrieveMetadataException 
+     * @throws IOException 
      */
     public static function rebuildComponentPath(string $namespace, string $path)
     {
         $namespace = $namespace ?? '';
         $namespace_dir = Str::contains($namespace ?? '', '\\') ? Str::afterLast('\\', $namespace) : $namespace;
-        $basename = Path($path)->basename();
-        if (Str::lower($namespace_dir) !== Str::lower($basename)) {
+        if (Str::lower($namespace_dir) !== Str::lower(Path::new($path)->basename())) {
             // If the last part of both namespace and path are not the same
             $parts = array_reverse(explode('\\', $namespace));
             foreach ($parts as $value) {
@@ -495,24 +488,17 @@ class ComponentBuilderHelpers
      * @param (null|string)|null $namespace 
      * @param (null|string)|null $subPackage 
      * @return void 
-     * @throws UnableToRetrieveMetadataException 
-     * @throws CreateDirectoryException 
+     * 
      * @throws InvalidArgumentException 
-     * @throws StreamException 
      * @throws IOException 
-     * @throws WriteOperationFailedException 
      */
     public static function cacheComponentDefinitions(string $path, array $tables, ?string $namespace = null, ?string $subPackage = null)
     {
-        (new CacheableSerializer($path))->dump(
-            new CacheableTables(
-                [
-                    'tables' => $tables,
-                    'namespace' => $namespace,
-                    'subNamespace' => $subPackage,
-                ]
-            )
-        );
+        Cache::new($path)->dump(new CacheableTables([
+            'tables' => $tables,
+            'namespace' => $namespace,
+            'subNamespace' => $subPackage,
+        ]));
     }
 
     /**
@@ -520,13 +506,10 @@ class ComponentBuilderHelpers
      * 
      * @param string $path 
      * @return Cacheable 
-     * @throws ReadFileException 
-     * @throws UnableToRetrieveMetadataException 
-     * @throws FileNotFoundException 
+     * @throws IOException
      */
     public static function getCachedComponentDefinitions(string $path)
     {
-        $value = (new CacheableSerializer($path))->load(CacheableTables::class);
-        return $value;
+        return Cache::new($path)->load(CacheableTables::class);
     }
 }

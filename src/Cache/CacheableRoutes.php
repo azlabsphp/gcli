@@ -18,15 +18,11 @@ use Drewlabs\PHPValue\Value;
 
 class CacheableRoutes extends Value implements Cacheable
 {
-    protected $__PROPERTIES__ = [
-        'routes',
-    ];
+    protected $__PROPERTIES__ = ['routes'];
 
     public function toArray()
     {
-        return [
-            'routes' => $this->getRoutes(),
-        ];
+        return ['routes' => $this->getRoutes()];
     }
 
     /**

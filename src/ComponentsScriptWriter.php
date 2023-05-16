@@ -15,53 +15,45 @@ namespace Drewlabs\ComponentGenerators;
 
 use Drewlabs\ComponentGenerators\Contracts\ScriptWriter;
 use Drewlabs\ComponentGenerators\Contracts\Writable;
-use function Drewlabs\Filesystem\Proxy\LocalFileSystem;
-
-use League\Flysystem\Config;
-use League\Flysystem\FilesystemAdapter;
-use League\Flysystem\FilesystemException;
-use League\Flysystem\UnableToCheckExistence;
+use Drewlabs\ComponentGenerators\IO\Disk;
+use InvalidArgumentException;
 
 class ComponentsScriptWriter implements ScriptWriter
 {
     /**
      * The base location of the generated scripts.
      *
-     * @var FilesystemAdapter
+     * @var Disk
      */
-    private $fileSystemAdapter_;
+    private $disk;
 
-    public function __construct(string $srcPath)
+    /**
+     * Creates new class instance
+     * 
+     * @param string $src 
+     * @return void 
+     * @throws InvalidArgumentException 
+     */
+    public function __construct(string $src)
     {
-        if (!\is_string($srcPath)) {
+        if (!\is_string($src)) {
             throw new \InvalidArgumentException('$srcPath must be a valid PHP string');
         }
-        $this->fileSystemAdapter_ = LocalFileSystem($srcPath);
+        $this->disk = Disk::new($src);
     }
 
     public function write(Writable $writable)
     {
-        return $this->fileSystemAdapter_->write(
-            $writable->getPath(),
-            $writable->__toString(),
-            new Config()
-        );
+        return $this->disk->write($writable->getPath(), $writable->__toString());
     }
 
     /**
      * Check if source script already exists.
      *
-     * @throws FilesystemException
-     * @throws UnableToCheckExistence
-     *
      * @return bool
      */
     public function fileExists(Writable $writable)
     {
-        try {
-            return $this->fileSystemAdapter_->fileExists($writable->getPath());
-        } catch (UnableToCheckExistence $th) {
-            return false;
-        }
+        return $this->disk->exists($writable->getPath());
     }
 }

@@ -15,14 +15,11 @@ namespace Drewlabs\ComponentGenerators\Helpers;
 
 use Closure;
 use Drewlabs\ComponentGenerators\Cache\CacheableRoutes;
-use Drewlabs\ComponentGenerators\Cache\CacheableSerializer;
+use Drewlabs\ComponentGenerators\Cache\Cache;
+use Drewlabs\ComponentGenerators\IO\Disk;
 use Drewlabs\ComponentGenerators\Models\RouteController;
 use Drewlabs\Core\Helpers\Arr;
 use Drewlabs\Core\Helpers\Str;
-
-use function Drewlabs\Filesystem\Proxy\LocalFileSystem;
-
-use League\Flysystem\Config;
 
 class RouteDefinitionsHelper
 {
@@ -104,7 +101,7 @@ class RouteDefinitionsHelper
             ?string $middleware = null,
             ?\Closure $callback = null
         ) use ($definitions, $filename, $basePath, $partial) {
-            $adapter = LocalFileSystem($basePath);
+            $adapter = Disk::new($basePath);
             $output = '';
             list($before, $between, $after) = static::getRouteParts($adapter, $filename, $partial);
             // Write the content before to the output
@@ -145,7 +142,7 @@ class RouteDefinitionsHelper
             }
             $output .= \PHP_EOL . self::ROUTE_DEFINITION_END;
             $output .= $after;
-            $adapter->write($filename, $output, new Config());
+            $adapter->write($filename, $output);
             // Call the callback
             if ($callback) {
                 $callback($definitions);
@@ -189,14 +186,14 @@ class RouteDefinitionsHelper
     /**
      * Create the routing file parts
      * 
-     * @param mixed $adapter 
+     * @param Disk $adapter 
      * @param string $filename 
      * @param bool $partial 
      * @return array 
      */
     private static function getRouteParts($adapter, string $filename, bool $partial = false)
     {
-        if (!$adapter->fileExists($filename)) {
+        if (!$adapter->exists($filename)) {
             return ['<?php' . \PHP_EOL, '', ''];
         }
         // Read content and locate where to write the new data
@@ -226,7 +223,7 @@ class RouteDefinitionsHelper
      */
     public static function cacheRouteDefinitions(string $path, array $routes, ?string $namespace = null)
     {
-        (new CacheableSerializer($path))->dump(new CacheableRoutes([
+        Cache::new($path)->dump(new CacheableRoutes([
             'routes' => $routes,
             'namespace' => $namespace,
         ]));
@@ -239,8 +236,6 @@ class RouteDefinitionsHelper
      */
     public static function getCachedRouteDefinitions(string $path)
     {
-        $value = (new CacheableSerializer($path))->load(CacheableRoutes::class);
-
-        return $value;
+       return Cache::new($path)->load(CacheableRoutes::class);
     }
 }

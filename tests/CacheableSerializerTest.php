@@ -13,7 +13,7 @@ declare(strict_types=1);
 
 namespace Drewlabs\ComponentGenerators\Tests;
 
-use Drewlabs\ComponentGenerators\Cache\CacheableSerializer;
+use Drewlabs\ComponentGenerators\Cache\Cache;
 use Drewlabs\ComponentGenerators\Cache\CacheableTables;
 
 use function Drewlabs\Filesystem\Proxy\Path;
@@ -34,7 +34,7 @@ class CacheableSerializerTest extends TestCase
 
     public function testDumpMethod()
     {
-        $serializer = new CacheableSerializer($this->getPath());
+        $serializer = new Cache($this->getPath());
         $serializer->dump(new CacheableTables([
             'tables' => [
                 'auth_users',
@@ -49,7 +49,7 @@ class CacheableSerializerTest extends TestCase
 
     public function testLoadMethod()
     {
-        $serializer = new CacheableSerializer($this->getPath());
+        $serializer = new Cache($this->getPath());
         /**
          * @var CacheableTables
          */

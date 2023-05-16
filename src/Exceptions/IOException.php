@@ -18,6 +18,12 @@ use Exception;
 class IOException extends Exception
 {
     /**
+     * 
+     * @var string
+     */
+    private $path;
+
+    /**
      * Create a not readable I/O exception instance
      * 
      * @param string $path 
@@ -26,7 +32,9 @@ class IOException extends Exception
     public static function readable(string $path)
     {
         $message = sprintf('Resource at path %s is not readable', $path);
-        return new static($message);
+        $object =  new static($message);
+        $object->setPath($path);
+        return $object;
     }
 
     /**
@@ -41,4 +49,42 @@ class IOException extends Exception
         return new static($message);
     }
 
+
+    /**
+     * IOException instance for metadata attribute
+     * 
+     * @param string $path 
+     * @param string $error 
+     * @param string $attribute 
+     * @return static 
+     */
+    public static function metadata(string $path, string $error, string $attribute)
+    {
+        $message = sprintf('Cannot retrieve %s informations at "%s". %s', $attribute, $path, $error);
+        $object =  new static($message);
+        $object->setPath($path);
+        return $object;
+    }
+
+    /**
+     * Set the path attribute for the exception
+     * 
+     * @param string $path 
+     * @return self 
+     */
+    public function setPath(string $path)
+    {
+        $this->path = $path;
+        return $this;
+    }
+
+    /**
+     * Returns the path instance
+     * 
+     * @return string 
+     */
+    public function getPath()
+    {
+        return $this->path;
+    }
 }

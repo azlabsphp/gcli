@@ -17,10 +17,9 @@ use Closure;
 use Drewlabs\ComponentGenerators\DBDriverOptions;
 use Drewlabs\ComponentGenerators\Exceptions\IOException;
 use Drewlabs\ComponentGenerators\Helpers\ComponentBuilderHelpers;
+use Drewlabs\ComponentGenerators\IO\Path;
 use Drewlabs\ComponentGenerators\Options;
 use RuntimeException;
-
-use function Drewlabs\Filesystem\Proxy\Path;
 
 class CommandArguments
 {
@@ -63,7 +62,7 @@ class CommandArguments
             new Options([]);
         // TODO : Override default option with parameters
         $options = $options->merge([
-            'path' => Path($basePath)->__toString(),
+            'path' => Path::new($basePath)->__toString(),
             'cache' => false === boolval($this->options->get('disableCache'))
         ]);
         if ($routeingfilename  = $this->options->get('routingfilename')) {

@@ -11,7 +11,6 @@ declare(strict_types=1);
  * file that was distributed with this source code.
  */
 
-use Illuminate\Container\Container;
 
 /**
  * Returns the path to the cache path of the current package.
@@ -46,10 +45,9 @@ if (!function_exists('app')) {
     function app($abstract = null, array $parameters = [])
     {
         if (null === $abstract) {
-            return Container::getInstance();
+            return \Illuminate\Container\Container::getInstance();
         }
-
-        return Container::getInstance()->make($abstract, $parameters);
+        return \Illuminate\Container\Container::getInstance()->make($abstract, $parameters);
     }
 }
 

@@ -13,9 +13,8 @@ declare(strict_types=1);
 
 namespace Drewlabs\ComponentGenerators\Traits;
 
+use Drewlabs\ComponentGenerators\IO\Path;
 use Drewlabs\Core\Helpers\Str;
-
-use function Drewlabs\Filesystem\Proxy\Path;
 
 trait HasNamespaceAttribute
 {
@@ -42,8 +41,8 @@ trait HasNamespaceAttribute
                 return $this->createPathFromNamespace($namespace);
             }
             // Extract file and dirname from the current directory
-            $filename = (new \ReflectionClass(new $first()))->getFileName();
-            $dirname = $filename ? Path($filename)->dirname() : null;
+            $name = (new \ReflectionClass(new $first()))->getFileName();
+            $dirname = $name ? Path::new($name)->dirname() : null;
             if ($dirname) {
                 $this->setWritePath($dirname);
             }

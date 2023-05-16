@@ -17,18 +17,9 @@ use Drewlabs\ComponentGenerators\Contracts\Writable;
 use Drewlabs\ComponentGenerators\Extensions\Helpers\CommandArguments;
 use Drewlabs\ComponentGenerators\Extensions\Helpers\ReverseEngineerTask;
 use Drewlabs\ComponentGenerators\Extensions\ProgressbarIndicator;
-
-use function Drewlabs\Filesystem\Proxy\Path;
+use Drewlabs\ComponentGenerators\IO\Path;
 use Illuminate\Console\Command;
-
 use Illuminate\Container\Container;
-use InvalidArgumentException;
-use RuntimeException;
-use Illuminate\Contracts\Container\BindingResolutionException;
-use Psr\Container\NotFoundExceptionInterface;
-use Psr\Container\ContainerExceptionInterface;
-use Symfony\Component\Console\Exception\InvalidArgumentException as ExceptionInvalidArgumentException;
-use Symfony\Component\Console\Exception\LogicException;
 
 class CreateMVCComponentsCommand extends Command
 {
@@ -94,40 +85,22 @@ class CreateMVCComponentsCommand extends Command
     /**
      * Creates laravel command instance
      * 
-     * @throws InvalidArgumentException 
-     * @throws ExceptionInvalidArgumentException 
-     * @throws LogicException 
-     * @throws RuntimeException 
+     * @throws \Exception 
      */
     public function __construct()
     {
         parent::__construct();
         // Initialize the cache path
-        $basepath = Path(drewlabs_component_generator_cache_path())->canonicalize()->__toString();
-        $this->cachePath = sprintf(
-            '%s%s%s',
-            $basepath,
-            \DIRECTORY_SEPARATOR,
-            '__components__.dump'
-        );
-        $this->routesCachePath = sprintf(
-            '%s%s%s',
-            $basepath,
-            \DIRECTORY_SEPARATOR,
-            '__routes__.dump'
-        );
+        $basepath = rtrim(Path::new(drewlabs_component_generator_cache_path())->normalize()->__toString(), DIRECTORY_SEPARATOR);
+        $this->cachePath = sprintf('%s%s%s', $basepath, \DIRECTORY_SEPARATOR, '__components__.dump');
+        $this->routesCachePath = sprintf('%s%s%s', $basepath, \DIRECTORY_SEPARATOR, '__routes__.dump');
     }
 
     /**
      * Handle drewlabs:mvc:create command execution
      * 
      * @return void 
-     * @throws InvalidArgumentException 
-     * @throws RuntimeException 
-     * @throws \Exception 
-     * @throws BindingResolutionException 
-     * @throws NotFoundExceptionInterface 
-     * @throws ContainerExceptionInterface 
+     * @throws \Exception
      */
     public function handle()
     {
