@@ -17,7 +17,6 @@ use Drewlabs\CodeGenerator\Types\PHPTypesModifiers;
 use Drewlabs\ComponentGenerators\Contracts\ComponentBuilder;
 use Drewlabs\ComponentGenerators\Helpers\ComponentBuilderHelpers;
 use Drewlabs\ComponentGenerators\Traits\HasNamespaceAttribute;
-use Drewlabs\Filesystem\Exceptions\UnableToRetrieveMetadataException;
 
 use function Drewlabs\CodeGenerator\Proxy\PHPClass;
 use function Drewlabs\CodeGenerator\Proxy\PHPClassMethod;
@@ -69,7 +68,7 @@ class PolicyServiceProviderBuilder implements ComponentBuilder
      * @param string|null $namespace 
      * @return void 
      * @throws RuntimeException 
-     * @throws UnableToRetrieveMetadataException 
+     * @throws \Exception 
      */
     public function __construct(array $policies = [], string $path = null, string $namespace = null)
     {

@@ -34,7 +34,6 @@ use Drewlabs\Core\Helpers\Str;
 use Generator;
 use Exception as GlobalException;
 use InvalidArgumentException;
-use Drewlabs\Filesystem\Exceptions\UnableToRetrieveMetadataException;
 
 class ReverseEngineeringService
 {
@@ -199,7 +198,6 @@ class ReverseEngineeringService
      * @throws GlobalException 
      * @throws InvalidArgumentException 
      * @throws PHPVariableException 
-     * @throws UnableToRetrieveMetadataException 
      */
     public function handle(array &$foreignKeys, array &$tablesindexes, ?\Closure $callback = null)
     {

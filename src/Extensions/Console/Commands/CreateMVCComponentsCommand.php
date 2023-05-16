@@ -17,9 +17,6 @@ use Drewlabs\ComponentGenerators\Contracts\Writable;
 use Drewlabs\ComponentGenerators\Extensions\Helpers\CommandArguments;
 use Drewlabs\ComponentGenerators\Extensions\Helpers\ReverseEngineerTask;
 use Drewlabs\ComponentGenerators\Extensions\ProgressbarIndicator;
-use Drewlabs\Filesystem\Exceptions\ReadFileException;
-use Drewlabs\Filesystem\Exceptions\UnableToRetrieveMetadataException;
-use Drewlabs\Filesystem\Exceptions\FileNotFoundException;
 
 use function Drewlabs\Filesystem\Proxy\Path;
 use Illuminate\Console\Command;
@@ -127,9 +124,7 @@ class CreateMVCComponentsCommand extends Command
      * @return void 
      * @throws InvalidArgumentException 
      * @throws RuntimeException 
-     * @throws ReadFileException 
-     * @throws UnableToRetrieveMetadataException 
-     * @throws FileNotFoundException 
+     * @throws \Exception 
      * @throws BindingResolutionException 
      * @throws NotFoundExceptionInterface 
      * @throws ContainerExceptionInterface 

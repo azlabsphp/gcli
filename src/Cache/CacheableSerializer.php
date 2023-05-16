@@ -14,9 +14,6 @@ declare(strict_types=1);
 namespace Drewlabs\ComponentGenerators\Cache;
 
 use Drewlabs\ComponentGenerators\Contracts\Cacheable;
-use Drewlabs\Filesystem\Exceptions\FileNotFoundException;
-use Drewlabs\Filesystem\Exceptions\ReadFileException;
-use Drewlabs\Filesystem\Exceptions\UnableToRetrieveMetadataException;
 use Drewlabs\Filesystem\File as FileContract;
 
 use function Drewlabs\Filesystem\Proxy\Directory;
@@ -52,16 +49,13 @@ class CacheableSerializer
     public function dump(Cacheable $value)
     {
         (Directory(Path((string) $this->path_)->dirname())->createIfNotExists());
-
         return $this->path_->write($value->serialize());
     }
 
     /**
      * @param string|Cacheable $type
      *
-     * @throws ReadFileException
-     * @throws UnableToRetrieveMetadataException
-     * @throws FileNotFoundException
+     * @throws \Exception
      *
      * @return Cacheable
      */

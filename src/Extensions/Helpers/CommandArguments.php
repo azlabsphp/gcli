@@ -19,9 +19,6 @@ use Drewlabs\ComponentGenerators\Exceptions\IOException;
 use Drewlabs\ComponentGenerators\Helpers\ComponentBuilderHelpers;
 use Drewlabs\ComponentGenerators\Options;
 use RuntimeException;
-use Drewlabs\Filesystem\Exceptions\ReadFileException;
-use Drewlabs\Filesystem\Exceptions\UnableToRetrieveMetadataException;
-use Drewlabs\Filesystem\Exceptions\FileNotFoundException;
 
 use function Drewlabs\Filesystem\Proxy\Path;
 
@@ -54,10 +51,8 @@ class CommandArguments
      * @param string $basePath 
      * @return Options 
      * @throws IOException 
-     * @throws RuntimeException 
-     * @throws ReadFileException 
-     * @throws UnableToRetrieveMetadataException 
-     * @throws FileNotFoundException 
+     * @throws RuntimeException  
+     * @throws \Exception 
      */
     public function providesoptions(string $cachePath, string $basePath)
     {

@@ -36,7 +36,6 @@ use Drewlabs\ComponentGenerators\Traits\HasNamespaceAttribute;
 use Drewlabs\ComponentGenerators\Traits\ProvidesTrimTableSchema;
 use Drewlabs\ComponentGenerators\Traits\ViewModelBuilder;
 use Drewlabs\Core\Helpers\Str;
-use Drewlabs\Filesystem\Exceptions\UnableToRetrieveMetadataException;
 use Illuminate\Database\Eloquent\Model as EloquentModel;
 use Illuminate\Support\Pluralizer;
 use InvalidArgumentException;
@@ -159,7 +158,7 @@ class EloquentORMModelBuilder implements ContractsEloquentORMModel, ComponentBui
      * @return void 
      * @throws InvalidArgumentException 
      * @throws RuntimeException 
-     * @throws UnableToRetrieveMetadataException 
+     * @throws \Exception 
      */
     public function __construct(
         ORMModelDefinition $defintion,

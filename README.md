@@ -352,6 +352,16 @@ php artisan drewlabs:mvc:create --http --relations --toones=employees->employee_
 php artisan drewlabs:mvc:create --http --relations --manythroughs=post_types->posts->comments:comments
 ```
 
+#### Policy & Guard
+
+From version `2.9`, `drewlabs:mvc:create` command suport flag for adding policy guard definition to your project with default to allowing every controller action using `authorize` method. To generate policy classes use the `--policies` flag when running command.
+
+**Note** A service provider class `[\App\Providers\PoliciesServiceProvider::class]` class is generated at the end of the command output. Please add it to let laravel know how to guard your model classes using generated policies.
+
+```sh
+php artisan drewlabs:mvc:create --http --policies
+```
+
 **Note**
 To preview the list of available options, please use the `php artisan drewlabs:mvc:create --help`
 

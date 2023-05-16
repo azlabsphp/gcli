@@ -19,11 +19,6 @@ use Drewlabs\ComponentGenerators\Cache\CacheableSerializer;
 use Drewlabs\ComponentGenerators\Models\RouteController;
 use Drewlabs\Core\Helpers\Arr;
 use Drewlabs\Core\Helpers\Str;
-use Drewlabs\Filesystem\Exceptions\CreateDirectoryException;
-use Drewlabs\Filesystem\Exceptions\FileNotFoundException;
-use Drewlabs\Filesystem\Exceptions\ReadFileException;
-use Drewlabs\Filesystem\Exceptions\UnableToRetrieveMetadataException;
-use Drewlabs\Filesystem\Exceptions\WriteOperationFailedException;
 
 use function Drewlabs\Filesystem\Proxy\LocalFileSystem;
 
@@ -69,15 +64,15 @@ class RouteDefinitionsHelper
                     $classPath;
 
                 return [
-                    "\$router->get('/${name}', ['uses' => '$classPath@index']);",
-                    "\$router->get('/${name}/{id}', ['uses' => '$classPath@show']);",
-                    "\$router->post('/${name}', ['uses' => '$classPath@store']);",
-                    "\$router->put('/${name}/{id}', ['uses' => '$classPath@update']);",
-                    "\$router->delete('/${name}/{id}', ['uses' => '$classPath@destroy']);",
+                    "\$router->get('/$name', ['uses' => '$classPath@index']);",
+                    "\$router->get('/$name/{id}', ['uses' => '$classPath@show']);",
+                    "\$router->post('/$name', ['uses' => '$classPath@store']);",
+                    "\$router->put('/$name/{id}', ['uses' => '$classPath@update']);",
+                    "\$router->delete('/$name/{id}', ['uses' => '$classPath@destroy']);",
                 ];
             }
             $lines = [];
-            $definitions = ['index' => "'/${name}'", 'show' => "'/${name}/{id}'", 'store' => "'/${name}'", 'update' => "'/${name}/{id}'", 'destroy' => "'/${name}/{id}'"];
+            $definitions = ['index' => "'/$name'", 'show' => "'/$name/{id}'", 'store' => "'/$name'", 'update' => "'/$name/{id}'", 'destroy' => "'/$name/{id}'"];
             foreach ($definitions as $method => $route) {
                 if (Str::contains($classPath, '\\') && class_exists($classPath)) {
                     $lines[] = sprintf("Route::%s($route, [\\$classPath::class, '$method']);", self::HTTP_VERB_MAP[$method]);
@@ -224,10 +219,8 @@ class RouteDefinitionsHelper
     }
 
     /**
-     * @throws UnableToRetrieveMetadataException
-     * @throws CreateDirectoryException
      * @throws \InvalidArgumentException
-     * @throws WriteOperationFailedException
+     * @throws \Exception
      *
      * @return void
      */
@@ -240,9 +233,7 @@ class RouteDefinitionsHelper
     }
 
     /**
-     * @throws ReadFileException
-     * @throws UnableToRetrieveMetadataException
-     * @throws FileNotFoundException
+     * @throws \Exception
      *
      * @return CacheableRoutes
      */

@@ -28,7 +28,6 @@ use function Drewlabs\ComponentGenerators\Proxy\PHPScript;
 use Drewlabs\ComponentGenerators\Traits\HasNamespaceAttribute;
 use Drewlabs\ComponentGenerators\Traits\ViewModelBuilder;
 use Drewlabs\Core\Helpers\Str;
-use Drewlabs\Filesystem\Exceptions\UnableToRetrieveMetadataException;
 use Illuminate\Support\Pluralizer;
 use InvalidArgumentException;
 use RuntimeException;
@@ -86,7 +85,7 @@ class ViewModelClassBuilder implements ComponentBuilder
      * @return void 
      * @throws InvalidArgumentException 
      * @throws RuntimeException 
-     * @throws UnableToRetrieveMetadataException 
+     * @throws \Exception 
      */
     public function __construct(
         ?string $name = null,

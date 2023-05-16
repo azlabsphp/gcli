@@ -23,7 +23,6 @@ use function Drewlabs\ComponentGenerators\Proxy\ComponentsScriptWriter;
 use function Drewlabs\ComponentGenerators\Proxy\MVCControllerBuilder;
 
 use Drewlabs\Core\Helpers\Str;
-use Drewlabs\Filesystem\Exceptions\UnableToRetrieveMetadataException;
 use Illuminate\Console\Command;
 use Illuminate\Container\Container;
 
@@ -85,7 +84,7 @@ class MakeControllerCommand extends Command
      * @param mixed $viewModel
      * @param bool $authorizable
      *
-     * @throws UnableToRetrieveMetadataException
+     * @throws \Exception
      * @throws PHPVariableException
      *
      * @return void

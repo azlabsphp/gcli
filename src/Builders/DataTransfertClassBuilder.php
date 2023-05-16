@@ -25,10 +25,7 @@ use function Drewlabs\ComponentGenerators\Proxy\PHPScript;
 
 use Drewlabs\ComponentGenerators\Traits\HasNamespaceAttribute;
 use Drewlabs\Core\Helpers\Str;
-use Drewlabs\Filesystem\Exceptions\UnableToRetrieveMetadataException;
 use Illuminate\Support\Pluralizer;
-use InvalidArgumentException;
-use RuntimeException;
 
 class DataTransfertClassBuilder implements ComponentBuilder
 {
@@ -96,9 +93,9 @@ class DataTransfertClassBuilder implements ComponentBuilder
      * @param (null|string)|null $namespace 
      * @param (null|string)|null $path 
      * @return void 
-     * @throws InvalidArgumentException 
-     * @throws RuntimeException 
-     * @throws UnableToRetrieveMetadataException 
+     * @throws \InvalidArgumentException 
+     * @throws \RuntimeException 
+     * @throws \Exception 
      */
     public function __construct(
         array $json_attributes = [],
@@ -128,7 +125,7 @@ class DataTransfertClassBuilder implements ComponentBuilder
      * 
      * @param mixed $model 
      * @return self 
-     * @throws InvalidArgumentException 
+     * @throws \InvalidArgumentException 
      */
     public function bindModel($model)
     {
