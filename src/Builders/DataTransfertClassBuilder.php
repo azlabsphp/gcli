@@ -264,7 +264,7 @@ class DataTransfertClassBuilder implements ComponentBuilder
             /**
              * @var Blueprint
              */
-            $component = $component->addImplementation(\Illuminate\Contracts\Routing\UrlRoutable::class)->addTrait(\Drewlabs\LaravelQuery\Traits\URLRoutableAware::class);
+            $component = $component->addImplementation(\Illuminate\Contracts\Routing\UrlRoutable::class)->addTrait(\Drewlabs\Laravel\Query\Traits\URLRoutableAware::class);
         }
 
         /**

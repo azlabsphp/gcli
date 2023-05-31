@@ -31,7 +31,7 @@ use Illuminate\Support\Pluralizer;
 
 class MakeControllerCommand extends Command
 {
-    protected $signature = 'drewlabs:mvc:make:controller '
+    protected $signature = 'gcli:make:controller '
         . '{name=TestController : Controller name}'
         . '{--namespace= : Controller namespace}'
         . '{--path= : Project source code path}'

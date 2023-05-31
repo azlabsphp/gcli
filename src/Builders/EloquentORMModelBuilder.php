@@ -73,7 +73,7 @@ class EloquentORMModelBuilder implements ContractsEloquentORMModel, ComponentBui
         'Drewlabs\\PHPValue\\Contracts\\Adaptable',
         'Drewlabs\\Query\\Contracts\\Queryable as AbstractQueryable',
         'Illuminate\\Database\\Eloquent\\Model',
-        'Drewlabs\\LaravelQuery\\Traits\\Queryable'
+        'Drewlabs\\Laravel\\Query\\Traits\\Queryable'
     ];
 
     /**
@@ -431,7 +431,7 @@ class EloquentORMModelBuilder implements ContractsEloquentORMModel, ComponentBui
         }
 
         if ((null !== $this->autoIncrements_) && !$this->autoIncrements_) {
-            $component = $component->addTrait(trait_exists(\Illuminate\Database\Eloquent\Concerns\HasUuids::class) ? \Illuminate\Database\Eloquent\Concerns\HasUuids::class : \Drewlabs\Packages\Database\Traits\HasUuids::class);
+            $component = $component->addTrait(trait_exists(\Illuminate\Database\Eloquent\Concerns\HasUuids::class) ? \Illuminate\Database\Eloquent\Concerns\HasUuids::class : \Drewlabs\Laravel\Query\Traits\HasUuids::class);
         }
 
         // Checks if the model is a pivot table model

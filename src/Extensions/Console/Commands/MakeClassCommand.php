@@ -24,7 +24,7 @@ use Illuminate\Contracts\Foundation\Application;
 
 class MakeClassCommand extends Command
 {
-    protected $signature = 'drewlabs:mvc:make:class '
+    protected $signature = 'gcli:make:class '
         .'{--name= : Class name }'
         .'{--namespace= : View model namespace }'
         .'{--path= : Project source code path }'

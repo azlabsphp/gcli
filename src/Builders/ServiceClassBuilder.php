@@ -43,7 +43,7 @@ class ServiceClassBuilder implements ComponentBuilder
      * @var string[]
      */
     private const CLASS_FUNCTION_PATHS = [
-        'Drewlabs\LaravelQuery\Proxy\\useActionQueryCommand'
+        'Drewlabs\Laravel\Query\Proxy\\useActionQueryCommand'
     ];
 
     /**

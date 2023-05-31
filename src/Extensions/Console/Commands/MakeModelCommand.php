@@ -28,7 +28,7 @@ use Illuminate\Contracts\Foundation\Application;
 
 class MakeModelCommand extends Command
 {
-    protected $signature = 'drewlabs:mvc:make:model '
+    protected $signature = 'gcli:make:model '
         .'{--increments : Makes the model primary key incrementable}'
         .'{--asViewModel : Generate the model as a view model class}'
         .'{--comment= Comment to be added to the model }'

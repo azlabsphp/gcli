@@ -23,7 +23,7 @@ use Illuminate\Contracts\Foundation\Application;
 
 class MakeDTOClassCommand extends Command
 {
-    protected $signature = 'drewlabs:mvc:make:dto '
+    protected $signature = 'gcli:make:dto '
         .'{name=TestDto : Generated view model name }'
         .'{--namespace= : View model namespace }'
         .'{--path= : Project source code path }'

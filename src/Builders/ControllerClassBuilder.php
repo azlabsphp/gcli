@@ -43,10 +43,10 @@ class ControllerClassBuilder implements ContractsControllerBuilder
      * @var string[]
      */
     private const DATABASE_ACTIONS_PATH = [
-        'Drewlabs\\LaravelQuery\\Proxy\\CreateQueryAction',
-        'Drewlabs\\LaravelQuery\\Proxy\\SelectQueryAction',
-        'Drewlabs\\LaravelQuery\\Proxy\\UpdateQueryAction',
-        'Drewlabs\\LaravelQuery\\Proxy\\DeleteQueryAction',
+        'Drewlabs\\Laravel\\Query\\Proxy\\CreateQueryAction',
+        'Drewlabs\\Laravel\\Query\\Proxy\\SelectQueryAction',
+        'Drewlabs\\Laravel\\Query\\Proxy\\UpdateQueryAction',
+        'Drewlabs\\Laravel\\Query\\Proxy\\DeleteQueryAction',
     ];
 
     const CLASS_PATHS = [
@@ -56,7 +56,7 @@ class ControllerClassBuilder implements ContractsControllerBuilder
     /**
      * @var string
      */
-    private const USE_QUERY_RESULT_PROXY = 'Drewlabs\\LaravelQuery\\Proxy\\useMapQueryResult';
+    private const USE_QUERY_RESULT_PROXY = 'Drewlabs\\Laravel\\Query\\Proxy\\useMapQueryResult';
 
     /**
      * @var string

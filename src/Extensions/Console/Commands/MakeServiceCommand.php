@@ -23,7 +23,7 @@ use Illuminate\Contracts\Foundation\Application;
 
 class MakeServiceCommand extends Command
 {
-    protected $signature = 'drewlabs:mvc:make:service '
+    protected $signature = 'gcli:make:service '
         .'{name=TestService : Service name }'
         .'{--namespace= : Controller namespace}'
         .'{--path= : Project source code path}'

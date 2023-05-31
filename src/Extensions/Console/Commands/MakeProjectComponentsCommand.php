@@ -21,7 +21,7 @@ use Drewlabs\GCli\IO\Path;
 use Illuminate\Console\Command;
 use Illuminate\Container\Container;
 
-class CreateMVCComponentsCommand extends Command
+class MakeProjectComponentsCommand extends Command
 {
 
     const CAMEL_CASE_CHOICES = [
@@ -33,7 +33,7 @@ class CreateMVCComponentsCommand extends Command
      *
      * @var string
      */
-    protected $signature = 'drewlabs:mvc:create {--srcPath= : Path to the business logic component folder}'
+    protected $signature = 'gcli:make:project {--srcPath= : Path to the business logic component folder}'
         . '{--package= : Package namespace for components}'
         . '{--subPackage= : Subpackage will group each component part in a subfolder}'
         . '{--connectionURL= : Database connection URL}'

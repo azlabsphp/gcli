@@ -23,7 +23,7 @@ use Illuminate\Contracts\Foundation\Application;
 
 class MakeViewModelCommand extends Command
 {
-    protected $signature = 'drewlabs:mvc:make:viewmodel '
+    protected $signature = 'gcli:make:viewmodel '
         .'{name=TestViewModel : View model class name }'
         .'{--namespace= : View model namespace}'
         .'{--path= : Project source code path}'

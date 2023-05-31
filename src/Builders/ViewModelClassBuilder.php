@@ -60,13 +60,13 @@ class ViewModelClassBuilder implements ComponentBuilder
      */
     const HTTP_CLASS_PATHS = [
         'Drewlabs\\Contracts\\Validator\\ViewModel as AbstractViewModel',
-        'Drewlabs\\Packages\\Http\\Traits\\HttpViewModel as ViewModel',
-        'Drewlabs\\Packages\\Http\\Traits\\InteractsWithServerRequest',
-        'Drewlabs\\Packages\\Http\\Traits\\AuthorizeRequest',
+        'Drewlabs\\Laravel\\Http\\Traits\\HttpViewModel as ViewModel',
+        'Drewlabs\\Laravel\\Http\\Traits\\InteractsWithServerRequest',
+        'Drewlabs\\Laravel\\Http\\Traits\\AuthorizeRequest',
         'Drewlabs\\Validation\\Traits\\ModelAware',
         'Drewlabs\\Validation\\Traits\\ProvidesRulesFactory',
         'Drewlabs\\Validation\\Traits\\Validatable',
-        'Drewlabs\LaravelQuery\Traits\CreatesFilters',
+        'Drewlabs\Laravel\\Query\Traits\CreatesFilters',
         'Illuminate\\Http\\Request'
     ];
 
@@ -92,7 +92,7 @@ class ViewModelClassBuilder implements ComponentBuilder
         'Drewlabs\\Validation\\Traits\\ModelAware',
         'Drewlabs\\Validation\\Traits\\ProvidesRulesFactory',
         'Drewlabs\\Validation\\Traits\\Validatable',
-        'Drewlabs\LaravelQuery\Traits\CreatesFilters',
+        'Drewlabs\Laravel\\Query\Traits\CreatesFilters',
         'Drewlabs\\Validation\\Traits\\ViewModel'
     ];
 
