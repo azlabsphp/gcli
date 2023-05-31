@@ -11,13 +11,13 @@ declare(strict_types=1);
  * file that was distributed with this source code.
  */
 
-namespace Drewlabs\ComponentGenerators\Helpers;
+namespace Drewlabs\GCli\Helpers;
 
 use Closure;
-use Drewlabs\ComponentGenerators\Cache\CacheableRoutes;
-use Drewlabs\ComponentGenerators\Cache\Cache;
-use Drewlabs\ComponentGenerators\IO\Disk;
-use Drewlabs\ComponentGenerators\Models\RouteController;
+use Drewlabs\GCli\Cache\CacheableRoutes;
+use Drewlabs\GCli\Cache\Cache;
+use Drewlabs\GCli\IO\Disk;
+use Drewlabs\GCli\Models\RouteController;
 use Drewlabs\Core\Helpers\Arr;
 use Drewlabs\Core\Helpers\Str;
 

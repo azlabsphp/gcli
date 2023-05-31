@@ -11,19 +11,18 @@ declare(strict_types=1);
  * file that was distributed with this source code.
  */
 
-namespace Drewlabs\ComponentGenerators\Builders;
+namespace Drewlabs\GCli\Builders;
 
 use Drewlabs\CodeGenerator\Contracts\Blueprint;
 use Drewlabs\CodeGenerator\Contracts\CallableInterface;
 use function Drewlabs\CodeGenerator\Proxy\PHPClass;
 use function Drewlabs\CodeGenerator\Proxy\PHPClassMethod;
-use function Drewlabs\CodeGenerator\Proxy\PHPClassProperty;
 use function Drewlabs\CodeGenerator\Proxy\PHPFunctionParameter;
 use Drewlabs\CodeGenerator\Types\PHPTypesModifiers;
-use Drewlabs\ComponentGenerators\Contracts\ComponentBuilder;
-use Drewlabs\ComponentGenerators\Helpers\ComponentBuilderHelpers;
-use function Drewlabs\ComponentGenerators\Proxy\PHPScript;
-use Drewlabs\ComponentGenerators\Traits\HasNamespaceAttribute;
+use Drewlabs\GCli\Contracts\ComponentBuilder;
+use Drewlabs\GCli\Helpers\ComponentBuilderHelpers;
+use function Drewlabs\GCli\Proxy\PHPScript;
+use Drewlabs\GCli\Traits\HasNamespaceAttribute;
 use Drewlabs\Core\Helpers\Str;
 use Illuminate\Support\Pluralizer;
 use InvalidArgumentException;
@@ -44,8 +43,7 @@ class ServiceClassBuilder implements ComponentBuilder
      * @var string[]
      */
     private const CLASS_FUNCTION_PATHS = [
-        'Drewlabs\\Packages\\Database\\Proxy\\useDMLQueryActionCommand',
-        'Drewlabs\\Packages\\Database\\Proxy\\DMLManager',
+        'Drewlabs\LaravelQuery\Proxy\\useActionQueryCommand'
     ];
 
     /**
@@ -147,36 +145,9 @@ class ServiceClassBuilder implements ComponentBuilder
 
         $component->addImplementation(\Drewlabs\Contracts\Support\Actions\ActionHandler::class)
             ->asFinal()
-            ->addProperty(
-                PHPClassProperty(
-                    'dbManager',
-                    \Drewlabs\Contracts\Data\DML\DMLProvider::class,
-                    PHPTypesModifiers::PRIVATE,
-                    null,
-                    'Database query manager'
-                )
-            )
-            // Add the class constructor
-            ->addMethod(
-                (PHPClassMethod(
-                    '__construct',
-                    [
-                        (PHPFunctionParameter(
-                            'manager',
-                            \Drewlabs\Contracts\Data\DML\DMLProvider::class,
-                            null
-                        ))->asOptional(),
-                    ],
-                    'self',
-                    PHPTypesModifiers::PUBLIC,
-                    'Creates an instance of the Service'
-                ))->addLine(
-                    "\$this->dbManager = \$manager ?? DMLManager($this->modelName_::class)"
-                )
-            )
             // Add Handler method
             ->addMethod(
-                array_reduce(array_filter([$this->asCRUD_ ? 'return useDMLQueryActionCommand($this->dbManager)($action, $callback)' : '#code...'], static function ($line) {
+                array_reduce(array_filter([$this->asCRUD_ ? "return useActionQueryCommand($this->modelName_::class)(\$action, \$callback)" : '#code...'], static function ($line) {
                     return null !== $line;
                 }), static function (CallableInterface $carry, $curr) {
                     return $carry->addLine($curr);
@@ -203,10 +174,7 @@ class ServiceClassBuilder implements ComponentBuilder
         return PHPScript(
             $component->getName(),
             $component,
-            ComponentBuilderHelpers::rebuildComponentPath(
-                $this->namespace_ ?? self::DEFAULT_NAMESPACE,
-                $this->path_ ?? self::DEFAULT_PATH
-            )
+            ComponentBuilderHelpers::rebuildComponentPath($this->namespace_ ?? self::DEFAULT_NAMESPACE, $this->path_ ?? self::DEFAULT_PATH)
         )->setNamespace($component->getNamespace());
     }
 

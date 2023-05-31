@@ -11,22 +11,23 @@ declare(strict_types=1);
  * file that was distributed with this source code.
  */
 
-namespace Drewlabs\ComponentGenerators\Builders;
+namespace Drewlabs\GCli\Builders;
 
 use Drewlabs\CodeGenerator\Contracts\Blueprint;
 use function Drewlabs\CodeGenerator\Proxy\PHPClass;
 
 use function Drewlabs\CodeGenerator\Proxy\PHPClassMethod;
 use function Drewlabs\CodeGenerator\Proxy\PHPClassProperty;
+use function Drewlabs\CodeGenerator\Proxy\PHPFunctionParameter;
 use function Drewlabs\CodeGenerator\Proxy\PHPVariable;
 use Drewlabs\CodeGenerator\Types\PHPTypes;
 use Drewlabs\CodeGenerator\Types\PHPTypesModifiers;
 
-use Drewlabs\ComponentGenerators\Contracts\ComponentBuilder;
-use Drewlabs\ComponentGenerators\Helpers\ComponentBuilderHelpers;
-use function Drewlabs\ComponentGenerators\Proxy\PHPScript;
-use Drewlabs\ComponentGenerators\Traits\HasNamespaceAttribute;
-use Drewlabs\ComponentGenerators\Traits\ViewModelBuilder;
+use Drewlabs\GCli\Contracts\ComponentBuilder;
+use Drewlabs\GCli\Helpers\ComponentBuilderHelpers;
+use function Drewlabs\GCli\Proxy\PHPScript;
+use Drewlabs\GCli\Traits\HasNamespaceAttribute;
+use Drewlabs\GCli\Traits\ViewModelBuilder;
 use Drewlabs\Core\Helpers\Str;
 use Illuminate\Support\Pluralizer;
 use InvalidArgumentException;
@@ -53,6 +54,59 @@ class ViewModelClassBuilder implements ComponentBuilder
      * @var string
      */
     private const DEFAULT_PATH = 'Http/ViewModels';
+
+    /**
+     * @var string[]
+     */
+    const HTTP_CLASS_PATHS = [
+        'Drewlabs\\Contracts\\Validator\\ViewModel as AbstractViewModel',
+        'Drewlabs\\Packages\\Http\\Traits\\HttpViewModel as ViewModel',
+        'Drewlabs\\Packages\\Http\\Traits\\InteractsWithServerRequest',
+        'Drewlabs\\Packages\\Http\\Traits\\AuthorizeRequest',
+        'Drewlabs\\Validation\\Traits\\ModelAware',
+        'Drewlabs\\Validation\\Traits\\ProvidesRulesFactory',
+        'Drewlabs\\Validation\\Traits\\Validatable',
+        'Drewlabs\LaravelQuery\Traits\CreatesFilters',
+        'Illuminate\\Http\\Request'
+    ];
+
+    /**
+     * @var string[]
+     */
+    const HTTP_CLASS_TRAITS = [
+        'ViewModel',
+        'InteractsWithServerRequest',
+        'AuthorizeRequest',
+        'ModelAware',
+        'ProvidesRulesFactory',
+        'Validatable',
+        'CreatesFilters'
+    ];
+
+    /**
+     * @var string[]
+     */
+    const DEFAULT_CLASS_PATHS = [
+        'Drewlabs\\Contracts\\Validator\\ViewModel as AbstractViewModel',
+        'Drewlabs\\Validation\\Traits\\FilesAttributesAware',
+        'Drewlabs\\Validation\\Traits\\ModelAware',
+        'Drewlabs\\Validation\\Traits\\ProvidesRulesFactory',
+        'Drewlabs\\Validation\\Traits\\Validatable',
+        'Drewlabs\LaravelQuery\Traits\CreatesFilters',
+        'Drewlabs\\Validation\\Traits\\ViewModel'
+    ];
+
+    /**
+     * @var string[]
+     */
+    const DEFAULT_CLASS_TRAITS = [
+        'ViewModel',
+        'ModelAware',
+        'ProvidesRulesFactory',
+        'Validatable',
+        'CreatesFilters',
+        'FilesAttributesAware'
+    ];
 
     /**
      * @var bool
@@ -142,48 +196,35 @@ class ViewModelClassBuilder implements ComponentBuilder
          * @var BluePrint|PHPClass
          */
         $component = (PHPClass($this->name()))
+            ->asFinal()
             ->addToNamespace($this->namespace() ?? self::DEFAULT_NAMESPACE)
-            ->addMethod(
-                PHPClassMethod(
-                    'rules',
-                    [],
-                    'array<string,string|string[]>',
-                    PHPTypesModifiers::PUBLIC,
-                    'Returns a fluent validation rules'
-                )->addContents(
-                    'return ' . PHPVariable('rules', null, $this->rules_ ?? [])->asRValue()->__toString()
-                )
-            )->addMethod(
-                PHPClassMethod(
-                    'messages',
-                    [],
-                    'array<string,string|string[]>',
-                    PHPTypesModifiers::PUBLIC,
-                    'Returns a list of validation error messages'
-                )->addContents(
-                    'return []'
-                )
-            );
+            ->addImplementation('AbstractViewModel')
+            ->addMethod(PHPClassMethod(
+                'rules',
+                [],
+                'array<string,string|string[]>',
+                PHPTypesModifiers::PUBLIC,
+                'Returns a fluent validation rules'
+            )->addContents('return ' . PHPVariable('rules', null, $this->rules_ ?? [])->asRValue()->__toString()))
+            ->addMethod(PHPClassMethod(
+                'messages',
+                [],
+                'array<string,string|string[]>',
+                PHPTypesModifiers::PUBLIC,
+                'Returns a list of validation error messages'
+            )->addContents('return []'));
+
         if (!$this->isSingleActionValidator_) {
             /**
              * @var BluePrint|PHPClass
              */
-            $component = $component
-                ->addImplementation(\Drewlabs\Contracts\Validator\ViewModel::class)
-                ->addMethod(
-                    PHPClassMethod(
-                        'updateRules',
-                        [],
-                        'array<string,string|string[]>',
-                        PHPTypesModifiers::PUBLIC,
-                        'Returns a fluent validation rules applied during update actions'
-                    )->addContents('return ' . PHPVariable('rules', null, $this->updateRules_ ?? [])->asRValue()->__toString())
-                );
-        } else {
-            /**
-             * @var Blueprint
-             */
-            $component = $component->addImplementation(\Drewlabs\Contracts\Validator\CoreValidatable::class);
+            $component = $component->addMethod(PHPClassMethod(
+                'updateRules',
+                [],
+                'array<string,string|string[]>',
+                PHPTypesModifiers::PUBLIC,
+                'Returns a fluent validation rules applied during update actions'
+            )->addContents('return ' . PHPVariable('rules', null, $this->updateRules_ ?? [])->asRValue()->__toString()));
         }
         // Add inputs traits
         if ($this->hasInputsTraits_) {
@@ -217,27 +258,63 @@ class ViewModelClassBuilder implements ComponentBuilder
                     )
                 );
                 $component = $component->addClassPath($this->dtoclasspath);
-
             }
-            /**
-             * @var Blueprint
-             */
-            $component = $this->hasHttpHandlers_ ? $component->addTrait(\Drewlabs\Packages\Http\Traits\HttpViewModel::class) : $component->addTrait(\Drewlabs\Core\Validator\Traits\ViewModel::class);
+        }
+        if ($this->hasHttpHandlers_) {
 
-            // Here we add the CreatesFilters trait to the view model
-            /**
-             * @var Blueprint
-             */
-            $component = $component->addTrait(\Drewlabs\Packages\Database\Traits\CreatesFilters::class);
+            // #region Add class paths
+            foreach (static::HTTP_CLASS_PATHS as $classPath) {
+                $component = $component->addClassPath($classPath);
+                # code...
+            }
+            // #endregion Add class paths
+
+            // #region Add class traits
+            foreach (static::HTTP_CLASS_TRAITS as $trait) {
+                /**
+                 * @var Blueprint
+                 */
+                $component = $component->addTrait($trait);
+                # code...
+            }
+            // #endregion Add class traits
+
+            $component = $component->addConstructor(
+                [PHPFunctionParameter('request', 'Request', null)->asOptional()],
+                ['$this->bootInstance($request)']
+            )->addMethod(
+                PHPClassMethod('getModel', [], 'string', 'public', 'returns the model class')
+                    ->addLine('return $this->model_')
+            )
+                ->addMethod(
+                    PHPClassMethod('getColumns', [], 'array', 'public', 'returns the list of queried columns from current instance')
+                        ->addLine("return \$this->has('_columns') ? (is_array(\$columns_ = \$this->get('_columns')) ? \$columns_ : (@json_decode(\$columns_, true) ?? ['*'])): ['*']")
+                );
+        } else {
+
+            // #region Add class paths
+            foreach (static::DEFAULT_CLASS_PATHS as $classPath) {
+                $component = $component->addClassPath($classPath);
+                # code...
+            }
+            // #endregion Add class paths
+
+            // #region Add class traits
+            foreach (static::DEFAULT_CLASS_TRAITS as $trait) {
+                $component = $component->addTrait($trait);
+                # code...
+            }
+            // #endregion Add class traits
+            $component = $component->addConstructor(
+                [PHPFunctionParameter('inputs', 'array', [])->asOptional(), PHPFunctionParameter('files', 'array', [])->asOptional()],
+                ['$this->set($inputs)', '$this->files($files)']
+            )->addMethod(PHPClassMethod('getModel', [], 'string', 'public', 'returns the model class')->addLine('return $this->model_'));
         }
         // Returns the builded component
         return PHPScript(
             $component->getName(),
             $component,
-            ComponentBuilderHelpers::rebuildComponentPath(
-                $this->namespace_ ?? self::DEFAULT_NAMESPACE,
-                $this->path_ ?? self::DEFAULT_PATH
-            )
+            ComponentBuilderHelpers::rebuildComponentPath($this->namespace_ ?? self::DEFAULT_NAMESPACE, $this->path_ ?? self::DEFAULT_PATH)
         )->setNamespace($component->getNamespace());
     }
 

@@ -11,23 +11,34 @@ declare(strict_types=1);
  * file that was distributed with this source code.
  */
 
-namespace Drewlabs\ComponentGenerators\Cache;
+namespace Drewlabs\GCli\Cache;
 
-use Drewlabs\ComponentGenerators\Contracts\Cacheable;
-use Drewlabs\PHPValue\Value;
+use Drewlabs\GCli\Contracts\Cacheable;
+use InvalidArgumentException;
 
-class CacheableRoutes extends Value implements Cacheable
+class CacheableRoutes implements Cacheable
 {
-    protected $__PROPERTIES__ = ['routes'];
+    /**
+     * @var array
+     */
+    private $routes;
+
+    /**
+     * Creates class instance
+     * 
+     * @param array $routes 
+     */
+    public function __construct(array $routes)
+    {
+        $this->routes = $routes;
+    }
 
     public function toArray()
     {
         return ['routes' => $this->getRoutes()];
     }
 
-    /**
-     * @return array
-     */
+
     public function getRoutes()
     {
         return $this->routes ?? [];
@@ -35,7 +46,11 @@ class CacheableRoutes extends Value implements Cacheable
 
     public function unserialize(string $value)
     {
-        return new self(unserialize($value));
+        $result = unserialize($value);
+        if (!is_array($result)) {
+            throw new InvalidArgumentException("Serialized string is malformed");
+        }
+        return new self($result['routes']);
     }
 
     public function serialize()

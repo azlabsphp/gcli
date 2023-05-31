@@ -11,16 +11,16 @@ declare(strict_types=1);
  * file that was distributed with this source code.
  */
 
-namespace Drewlabs\ComponentGenerators\Extensions\Console\Commands;
+namespace Drewlabs\GCli\Extensions\Console\Commands;
 
 use Drewlabs\CodeGenerator\Exceptions\PHPVariableException;
-use Drewlabs\ComponentGenerators\Builders\DtoAttributesFactory;
-use Drewlabs\ComponentGenerators\Builders\EloquentORMModelBuilder;
-use Drewlabs\ComponentGenerators\Builders\ViewModelRulesFactory;
-use Drewlabs\ComponentGenerators\Extensions\Console\ComponentCommandsHelpers;
-use Drewlabs\ComponentGenerators\Helpers\ComponentBuilderHelpers;
-use function Drewlabs\ComponentGenerators\Proxy\ComponentsScriptWriter;
-use function Drewlabs\ComponentGenerators\Proxy\MVCControllerBuilder;
+use Drewlabs\GCli\Builders\DtoAttributesFactory;
+use Drewlabs\GCli\Builders\EloquentORMModelBuilder;
+use Drewlabs\GCli\Builders\ViewModelRulesFactory;
+use Drewlabs\GCli\Extensions\Console\ComponentCommandsHelpers;
+use Drewlabs\GCli\Helpers\ComponentBuilderHelpers;
+use function Drewlabs\GCli\Proxy\ComponentsScriptWriter;
+use function Drewlabs\GCli\Proxy\MVCControllerBuilder;
 
 use Drewlabs\Core\Helpers\Str;
 use Illuminate\Console\Command;

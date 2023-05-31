@@ -11,19 +11,21 @@ declare(strict_types=1);
  * file that was distributed with this source code.
  */
 
-namespace Drewlabs\ComponentGenerators\Builders;
+namespace Drewlabs\GCli\Builders;
 
 use Drewlabs\CodeGenerator\Contracts\Blueprint;
 
 use function Drewlabs\CodeGenerator\Proxy\PHPClass;
 use function Drewlabs\CodeGenerator\Proxy\PHPClassMethod;
 use function Drewlabs\CodeGenerator\Proxy\PHPClassProperty;
-use Drewlabs\CodeGenerator\Types\PHPTypesModifiers;
-use Drewlabs\ComponentGenerators\Contracts\ComponentBuilder;
-use Drewlabs\ComponentGenerators\Helpers\ComponentBuilderHelpers;
-use function Drewlabs\ComponentGenerators\Proxy\PHPScript;
+use function Drewlabs\CodeGenerator\Proxy\PHPFunctionParameter;
 
-use Drewlabs\ComponentGenerators\Traits\HasNamespaceAttribute;
+use Drewlabs\CodeGenerator\Types\PHPTypesModifiers;
+use Drewlabs\GCli\Contracts\ComponentBuilder;
+use Drewlabs\GCli\Helpers\ComponentBuilderHelpers;
+use function Drewlabs\GCli\Proxy\PHPScript;
+
+use Drewlabs\GCli\Traits\HasNamespaceAttribute;
 use Drewlabs\Core\Helpers\Str;
 use Illuminate\Support\Pluralizer;
 
@@ -47,6 +49,26 @@ class DataTransfertClassBuilder implements ComponentBuilder
      * @var string
      */
     private const DEFAULT_PATH = 'Dto/';
+
+
+    /**
+     * @var string[]
+     */
+    const CLASS_PATHS = [
+        'Drewlabs\\PHPValue\\Contracts\\ValueInterface',
+        'Drewlabs\\PHPValue\\Traits\\Castable',
+        'Drewlabs\\PHPValue\\Traits\\ObjectAdapter',
+        'Drewlabs\\PHPValue\\Contracts\\Adaptable'
+    ];
+
+    /**
+     * @var string[]
+     */
+    const CLASS_TRAITS = [
+        'Castable',
+        'ObjectAdapter'
+    ];
+
 
     /**
      * List of attributes that can be json serializable.
@@ -218,45 +240,48 @@ class DataTransfertClassBuilder implements ComponentBuilder
                 array_merge(
                     is_array($this->propertyDocComments) ?
                         $this->propertyDocComments ?? [] : (null !== $this->propertyDocComments ? ($this->propertyDocComments)($this->camelize) : []),
-                    [
-                        ' ',
-                        '@package ' . $this->namespace_ ?? self::DEFAULT_NAMESPACE,
-                    ]
+                    [' ', '@package ' . $this->namespace_ ?? self::DEFAULT_NAMESPACE]
                 )
             )
-            ->addImplementation(\Drewlabs\PHPValue\Contracts\ValueInterface::class)
-            ->addTrait(\Drewlabs\PHPValue\Traits\ModelAwareValue::class)
-            ->addToNamespace($this->namespace_ ?? self::DEFAULT_NAMESPACE);
+            ->asFinal()
+            ->addImplementation('ValueInterface')
+            ->addToNamespace($this->namespace_ ?? self::DEFAULT_NAMESPACE)
+            ->addMethod(
+                PHPClassMethod(
+                    '__construct',
+                    [PHPFunctionParameter('adaptable', null, null)->asOptional()],
+                    null,
+                    'public',
+                    [
+                        'Creates class instance',
+                        "\t",
+                        '@param array|Adaptable|Accessible $adaptable'
+                    ]
+                )->addLine('$this->bootInstance(static::__PROPERTIES__, $adaptable)')
+            );
 
         if (interface_exists(\Illuminate\Contracts\Routing\UrlRoutable::class)) {
-            $component = $component->addImplementation(\Illuminate\Contracts\Routing\UrlRoutable::class)
-                ->addTrait(\Drewlabs\Packages\Database\Traits\URLRoutableModelAware::class);
+            /**
+             * @var Blueprint
+             */
+            $component = $component->addImplementation(\Illuminate\Contracts\Routing\UrlRoutable::class)->addTrait(\Drewlabs\LaravelQuery\Traits\URLRoutableAware::class);
         }
 
-        if ($this->modelClassPath) {
-            $component = $component->addMethod(
-                PHPClassMethod(
-                    'resolveModel',
-                    [],
-                    "$this->modelClassPath",
-                    PHPTypesModifiers::PUBLIC,
-                    'Creates an instance of the attached model'
-                )->addContents(
-                    'return self::createResolver(' . $this->getClassNameFromPath($this->modelClassPath) . '::class)()'
-                )
-            );
-        }
-
+        /**
+         * @var Blueprint
+         */
         $component = $component->addProperty(
             PHPClassProperty(
                 '__PROPERTIES__',
                 'array',
-                PHPTypesModifiers::PROTECTED,
-                is_array($this->properties) ?
-                    $this->properties ?? [] : (null !== $this->properties ? ($this->properties)($this->camelize) : [])
-            )
+                PHPTypesModifiers::PRIVATE,
+                is_array($this->properties) ? $this->properties ?? [] : (null !== $this->properties ? ($this->properties)($this->camelize) : [])
+            )->asConstant()
         );
 
+        /**
+         * @var Blueprint
+         */
         $component = $component->addProperty(
             PHPClassProperty(
                 '__HIDDEN__',
@@ -265,6 +290,9 @@ class DataTransfertClassBuilder implements ComponentBuilder
                 $this->excepts ?? []
             )
         );
+        /**
+         * @var Blueprint
+         */
         $component = $component->addProperty(
             PHPClassProperty(
                 '__CASTS__',
@@ -273,6 +301,29 @@ class DataTransfertClassBuilder implements ComponentBuilder
                 $this->casts ?? []
             )
         );
+
+        // #region Add class paths
+        foreach (static::CLASS_PATHS as $classPath) {
+            $component = $component->addClassPath($classPath);
+            # code...
+        }
+        // #endregion Add class paths
+
+        // #region Add class traits
+        foreach (static::CLASS_TRAITS as $trait) {
+            /**
+             * @var Blueprint
+             */
+            $component = $component->addTrait($trait);
+            # code...
+        }
+
+        // Add getter methods
+        $component = $component->addMethod(PHPClassMethod('getCasts', [], 'array', 'public', 'returns properties cast definitions')->addLine('return $this->__CASTS__ ?? []'))
+            ->addMethod(PHPClassMethod('setCasts', [PHPFunctionParameter('values', 'array')], 'string[]', 'public', 'set properties cast definitions')->addLine('$this->__CASTS__ = $values ?? $this->__CASTS__ ?? []')->addLine('return $this'))
+            ->addMethod(PHPClassMethod('getHidden', [], 'string[]', 'public', 'returns the list of hidden properties')->addLine('return $this->__HIDDEN__ ?? []'))
+            ->addMethod(PHPClassMethod('setHidden', [PHPFunctionParameter('values', 'array')], 'string[]', 'public', 'set properties hidden properties')->addLine('$this->__HIDDEN__ = $values')->addLine('return $this'));
+
         // Returns the builded component
         return PHPScript(
             $component->getName(),

@@ -11,7 +11,7 @@ declare(strict_types=1);
  * file that was distributed with this source code.
  */
 
-namespace Drewlabs\ComponentGenerators\Tests;
+namespace Drewlabs\GCli\Tests;
 
 use PHPUnit\Framework\TestCase as FrameworkTestCase;
 

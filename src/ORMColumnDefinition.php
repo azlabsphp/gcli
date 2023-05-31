@@ -11,88 +11,122 @@ declare(strict_types=1);
  * file that was distributed with this source code.
  */
 
-namespace Drewlabs\ComponentGenerators;
+namespace Drewlabs\GCli;
 
-use Drewlabs\ComponentGenerators\Contracts\ForeignKeyConstraintDefinition;
-use Drewlabs\ComponentGenerators\Contracts\ORMColumnDefinition as ContractsORMColumnDefinition;
-use Drewlabs\ComponentGenerators\Contracts\UniqueKeyConstraintDefinition;
-use Drewlabs\PHPValue\Value;
+use Drewlabs\GCli\Contracts\ForeignKeyConstraintDefinition;
+use Drewlabs\GCli\Contracts\ORMColumnDefinition as ContractsORMColumnDefinition;
+use Drewlabs\GCli\Contracts\UniqueKeyConstraintDefinition;
 
-class ORMColumnDefinition extends Value implements ContractsORMColumnDefinition
+class ORMColumnDefinition implements ContractsORMColumnDefinition
 {
-    protected $__PROPERTIES__ = [
-        'table_' => 'table',
-        'name_' => 'name',
-        'type_' => 'type',
-        'default_' => 'default',
-        'foreignKeyConstraint_' => 'foreignKeyConstraint',
-        'uniqueKeyConstraint_' => 'uniqueKeyConstraint',
-        'required_' => 'required',
-        'unsigned_' => 'unsigned',
-    ];
+    private $table;
+    private $name;
+    private $type;
+    private $default;
+    private $foreignKeyConstraint;
+    private $uniqueKeyConstraint;
+    private $required;
+    private $unsigned;
+
+    /**
+     * Creates class instance
+     * 
+     * @param string $name 
+     * @param string $type 
+     * @param string|null $table 
+     * @param bool $required 
+     * @param string|int|float $default 
+     * @param bool $unsigned 
+     * @param ForeignKeyConstraintDefinition $foreignKeyConstraint 
+     * @param UniqueKeyConstraintDefinition $uniqueKeyConstraint 
+     */
+    public function __construct(
+        string $name,
+        string $type,
+        string $table = null,
+        $required = false,
+        $default = null,
+        $unsigned = false,
+        $foreignKeyConstraint = null,
+        $uniqueKeyConstraint = null
+    ) {
+        $this->table = $table;
+        $this->name = $name;
+        $this->type = $type;
+        $this->default = $default;
+        $this->foreignKeyConstraint = $foreignKeyConstraint;
+        $this->uniqueKeyConstraint = $uniqueKeyConstraint;
+        $this->required = $required;
+        $this->unsigned = $unsigned;
+    }
 
     public function name()
     {
-        return $this->name_ ?? 'column';
+        return $this->name ?? 'column';
     }
 
     public function type()
     {
-        return $this->type_ ?? 'string';
+        return $this->type ?? 'string';
     }
 
     public function setForeignKey(ForeignKeyConstraintDefinition $value)
     {
-        return $this->copyWith(['foreignKeyConstraint' => $value]);
+        $self = clone $this;
+        $self->foreignKeyConstraint = $value;
+        return $self;
     }
 
     public function setUnique(UniqueKeyConstraintDefinition $value)
     {
-        $self = $this->copyWith(['uniqueKeyConstraint' => $value]);
-
+        $self = clone $this;
+        $self->uniqueKeyConstraint = $value;
         return $self;
     }
 
     public function unique()
     {
-        return $this->uniqueKeyConstraint_;
+        return $this->uniqueKeyConstraint;
     }
 
     public function required()
     {
-        return boolval($this->required_) || false;
+        return boolval($this->required) ?? false;
     }
 
     public function unsigned()
     {
-        return boolval($this->unsigned_) || false;
+        return boolval($this->unsigned) ?? false;
     }
 
-    /**
-     * Returns the foreign constraint rules on the column.
-     *
-     * @return ForeignKeyConstraintDefinition|null
-     */
     public function foreignConstraint()
     {
-        return $this->foreignKeyConstraint_;
+        return $this->foreignKeyConstraint;
     }
 
     public function getTable()
     {
-        return $this->table_;
+        return $this->table;
     }
 
     public function hasDefault()
     {
-        return null !== $this->default_;
+        return null !== $this->default;
     }
 
     public function jsonSerialize()
     {
-        $list = parent::jsonSerialize();
-
-        return array_filter($list, static function ($value) {
+        $result  = [
+            'table' => $this->table,
+            'name' => $this->name,
+            'type' => $this->type,
+            'default' => $this->default,
+            'foreignKeyConstraint' => $this->foreignKeyConstraint,
+            'uniqueKeyConstraint' => $this->uniqueKeyConstraint,
+            'required' => $this->required,
+            'unsigned' => $this->unsigned,
+        ];
+        return array_filter($result, static function ($value) {
             return null !== $value;
         });
     }

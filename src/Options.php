@@ -11,10 +11,10 @@ declare(strict_types=1);
  * file that was distributed with this source code.
  */
 
-namespace Drewlabs\ComponentGenerators;
+namespace Drewlabs\GCli;
 
-use Drewlabs\ComponentGenerators\Exceptions\IOException;
-use Drewlabs\ComponentGenerators\Exceptions\NotLoadedExtensionException;
+use Drewlabs\GCli\Exceptions\IOException;
+use Drewlabs\GCli\Exceptions\NotLoadedExtensionException;
 use Drewlabs\Core\Helpers\Arr;
 use RuntimeException;
 

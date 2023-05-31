@@ -11,10 +11,10 @@ declare(strict_types=1);
  * file that was distributed with this source code.
  */
 
-namespace Drewlabs\ComponentGenerators\PHP;
+namespace Drewlabs\GCli\PHP;
 
 use Drewlabs\CodeGenerator\Contracts\Stringable;
-use Drewlabs\ComponentGenerators\Contracts\SourceFileInterface;
+use Drewlabs\GCli\Contracts\SourceFileInterface;
 use Drewlabs\Core\Helpers\Str;
 
 class PHPScriptFile implements SourceFileInterface

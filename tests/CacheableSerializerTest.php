@@ -11,10 +11,10 @@ declare(strict_types=1);
  * file that was distributed with this source code.
  */
 
-namespace Drewlabs\ComponentGenerators\Tests;
+namespace Drewlabs\GCli\Tests;
 
-use Drewlabs\ComponentGenerators\Cache\Cache;
-use Drewlabs\ComponentGenerators\Cache\CacheableTables;
+use Drewlabs\GCli\Cache\Cache;
+use Drewlabs\GCli\Cache\CacheableTables;
 
 use function Drewlabs\Filesystem\Proxy\Path;
 

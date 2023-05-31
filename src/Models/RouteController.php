@@ -11,15 +11,32 @@ declare(strict_types=1);
  * file that was distributed with this source code.
  */
 
-namespace Drewlabs\ComponentGenerators\Models;
+namespace Drewlabs\GCli\Models;
 
-use Drewlabs\PHPValue\Value;
 
-class RouteController extends Value
+class RouteController
 {
-    protected $__PROPERTIES__ = [
-        'namespace', 'name',
-    ];
+    /**
+     * @var string
+     */
+    private $namespace;
+
+    /**
+     * @var string
+     */
+    private $name;
+
+    /**
+     * Creates class instance
+     * 
+     * @param string $namespace 
+     * @param string $name 
+     */
+    public function __construct(string $namespace = null, string $name = null)
+    {
+        $this->namespace = $namespace;
+        $this->name = $name;
+    }
 
     public function __serialize(): array
     {

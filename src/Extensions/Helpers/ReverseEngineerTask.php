@@ -11,27 +11,27 @@ declare(strict_types=1);
  * file that was distributed with this source code.
  */
 
-namespace Drewlabs\ComponentGenerators\Extensions\Helpers;
+namespace Drewlabs\GCli\Extensions\Helpers;
 
 use Closure;
 use Doctrine\DBAL\DriverManager;
-use Drewlabs\ComponentGenerators\ComponentsScriptWriter as ComponentsScriptWriterClass;
-use Drewlabs\ComponentGenerators\Contracts\ComponentBuilder;
-use Drewlabs\ComponentGenerators\Contracts\ForeignKeyConstraintDefinition;
-use Drewlabs\ComponentGenerators\Contracts\ProvidesRelations;
-use Drewlabs\ComponentGenerators\Contracts\Writable;
-use Drewlabs\ComponentGenerators\Extensions\Contracts\Progress;
-use Drewlabs\ComponentGenerators\Helpers\ComponentBuilderHelpers;
-use Drewlabs\ComponentGenerators\Helpers\RouteDefinitionsHelper;
-use Drewlabs\ComponentGenerators\Models\RouteController;
-use Drewlabs\ComponentGenerators\Builders\DataTransfertClassBuilder;
-use Drewlabs\ComponentGenerators\Builders\ViewModelClassBuilder;
-use Drewlabs\ComponentGenerators\Extensions\Traits\ReverseEngineerRelations;
-use Drewlabs\ComponentGenerators\RelationTypes;
+use Drewlabs\GCli\ComponentsScriptWriter as ComponentsScriptWriterClass;
+use Drewlabs\GCli\Contracts\ComponentBuilder;
+use Drewlabs\GCli\Contracts\ForeignKeyConstraintDefinition;
+use Drewlabs\GCli\Contracts\ProvidesRelations;
+use Drewlabs\GCli\Contracts\Writable;
+use Drewlabs\GCli\Extensions\Contracts\Progress;
+use Drewlabs\GCli\Helpers\ComponentBuilderHelpers;
+use Drewlabs\GCli\Helpers\RouteDefinitionsHelper;
+use Drewlabs\GCli\Models\RouteController;
+use Drewlabs\GCli\Builders\DataTransfertClassBuilder;
+use Drewlabs\GCli\Builders\ViewModelClassBuilder;
+use Drewlabs\GCli\Extensions\Traits\ReverseEngineerRelations;
+use Drewlabs\GCli\RelationTypes;
 
-use function Drewlabs\ComponentGenerators\Proxy\ComponentsScriptWriter;
-use function Drewlabs\ComponentGenerators\Proxy\DatabaseSchemaReverseEngineeringRunner;
-use function Drewlabs\ComponentGenerators\Proxy\MVCPolicyServiceProviderBuilder;
+use function Drewlabs\GCli\Proxy\ComponentsScriptWriter;
+use function Drewlabs\GCli\Proxy\DatabaseSchemaReverseEngineeringRunner;
+use function Drewlabs\GCli\Proxy\MVCPolicyServiceProviderBuilder;
 
 use Drewlabs\Core\Helpers\Arr;
 use Drewlabs\Core\Helpers\Str;
@@ -412,7 +412,7 @@ class ReverseEngineerTask
                         $name =  is_callable($nameBuilder = Arr::get($controller, 'route.nameBuilder')) ? $nameBuilder($controllersource) : Arr::get($controller, 'route.name'); //
                         $classPath = is_callable($classPathBuilder = Arr::get($controller, 'route.classPathBuilder')) ? $classPathBuilder($controllersource) : Arr::get($controller, 'route.classPath');
                         static::writeComponentSourceCode(Arr::get($controller, 'path'), $controllersource, $onExistsCallback);
-                        $routeController = new RouteController(['namespace' => $subPackage, 'name' => $classPath]);
+                        $routeController = new RouteController($subPackage, $classPath);
                         yield $name => $routeController;
                     }
                     if (null !== ($policy = Arr::get($component, 'policy'))) {

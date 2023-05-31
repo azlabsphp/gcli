@@ -11,13 +11,13 @@ declare(strict_types=1);
  * file that was distributed with this source code.
  */
 
-namespace Drewlabs\ComponentGenerators\Extensions\Console\Commands;
+namespace Drewlabs\GCli\Extensions\Console\Commands;
 
-use Drewlabs\ComponentGenerators\Contracts\Writable;
-use Drewlabs\ComponentGenerators\Extensions\Helpers\CommandArguments;
-use Drewlabs\ComponentGenerators\Extensions\Helpers\ReverseEngineerTask;
-use Drewlabs\ComponentGenerators\Extensions\ProgressbarIndicator;
-use Drewlabs\ComponentGenerators\IO\Path;
+use Drewlabs\GCli\Contracts\Writable;
+use Drewlabs\GCli\Extensions\Helpers\CommandArguments;
+use Drewlabs\GCli\Extensions\Helpers\ReverseEngineerTask;
+use Drewlabs\GCli\Extensions\ProgressbarIndicator;
+use Drewlabs\GCli\IO\Path;
 use Illuminate\Console\Command;
 use Illuminate\Container\Container;
 

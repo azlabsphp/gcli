@@ -11,9 +11,9 @@ declare(strict_types=1);
  * file that was distributed with this source code.
  */
 
-namespace Drewlabs\ComponentGenerators\Traits;
+namespace Drewlabs\GCli\Traits;
 
-use Drewlabs\ComponentGenerators\IO\Path;
+use Drewlabs\GCli\IO\Path;
 use Drewlabs\Core\Helpers\Str;
 
 trait HasNamespaceAttribute

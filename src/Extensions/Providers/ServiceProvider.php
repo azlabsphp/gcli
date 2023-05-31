@@ -11,15 +11,15 @@ declare(strict_types=1);
  * file that was distributed with this source code.
  */
 
-namespace Drewlabs\ComponentGenerators\Extensions\Providers;
+namespace Drewlabs\GCli\Extensions\Providers;
 
-use Drewlabs\ComponentGenerators\Extensions\Console\Commands\CreateMVCComponentsCommand;
-use Drewlabs\ComponentGenerators\Extensions\Console\Commands\MakeClassCommand;
-use Drewlabs\ComponentGenerators\Extensions\Console\Commands\MakeControllerCommand;
-use Drewlabs\ComponentGenerators\Extensions\Console\Commands\MakeDTOClassCommand;
-use Drewlabs\ComponentGenerators\Extensions\Console\Commands\MakeModelCommand;
-use Drewlabs\ComponentGenerators\Extensions\Console\Commands\MakeServiceCommand;
-use Drewlabs\ComponentGenerators\Extensions\Console\Commands\MakeViewModelCommand;
+use Drewlabs\GCli\Extensions\Console\Commands\CreateMVCComponentsCommand;
+use Drewlabs\GCli\Extensions\Console\Commands\MakeClassCommand;
+use Drewlabs\GCli\Extensions\Console\Commands\MakeControllerCommand;
+use Drewlabs\GCli\Extensions\Console\Commands\MakeDTOClassCommand;
+use Drewlabs\GCli\Extensions\Console\Commands\MakeModelCommand;
+use Drewlabs\GCli\Extensions\Console\Commands\MakeServiceCommand;
+use Drewlabs\GCli\Extensions\Console\Commands\MakeViewModelCommand;
 use Illuminate\Support\ServiceProvider as SupportServiceProvider;
 
 class ServiceProvider extends SupportServiceProvider

@@ -11,17 +11,17 @@ declare(strict_types=1);
  * file that was distributed with this source code.
  */
 
-namespace Drewlabs\ComponentGenerators\Builders;
+namespace Drewlabs\GCli\Builders;
 
 use Drewlabs\CodeGenerator\Types\PHPTypesModifiers;
-use Drewlabs\ComponentGenerators\Contracts\ComponentBuilder;
-use Drewlabs\ComponentGenerators\Helpers\ComponentBuilderHelpers;
-use Drewlabs\ComponentGenerators\Traits\HasNamespaceAttribute;
+use Drewlabs\GCli\Contracts\ComponentBuilder;
+use Drewlabs\GCli\Helpers\ComponentBuilderHelpers;
+use Drewlabs\GCli\Traits\HasNamespaceAttribute;
 
 use function Drewlabs\CodeGenerator\Proxy\PHPClass;
 use function Drewlabs\CodeGenerator\Proxy\PHPClassMethod;
 use function Drewlabs\CodeGenerator\Proxy\PHPClassProperty;
-use function Drewlabs\ComponentGenerators\Proxy\PHPScript;
+use function Drewlabs\GCli\Proxy\PHPScript;
 
 class PolicyServiceProviderBuilder implements ComponentBuilder
 {

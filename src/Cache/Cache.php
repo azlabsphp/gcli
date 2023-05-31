@@ -11,13 +11,13 @@ declare(strict_types=1);
  * file that was distributed with this source code.
  */
 
-namespace Drewlabs\ComponentGenerators\Cache;
+namespace Drewlabs\GCli\Cache;
 
-use Drewlabs\ComponentGenerators\Contracts\Cacheable;
-use Drewlabs\ComponentGenerators\IO\Directory;
-use Drewlabs\ComponentGenerators\IO\Path;
-use Drewlabs\ComponentGenerators\IO\Reader;
-use Drewlabs\ComponentGenerators\IO\Writer;
+use Drewlabs\GCli\Contracts\Cacheable;
+use Drewlabs\GCli\IO\Directory;
+use Drewlabs\GCli\IO\Path;
+use Drewlabs\GCli\IO\Reader;
+use Drewlabs\GCli\IO\Writer;
 
 class Cache
 {

@@ -11,12 +11,12 @@ declare(strict_types=1);
  * file that was distributed with this source code.
  */
 
-namespace Drewlabs\ComponentGenerators\Extensions\Console;
+namespace Drewlabs\GCli\Extensions\Console;
 
 use Drewlabs\CodeGenerator\Exceptions\PHPVariableException;
-use Drewlabs\ComponentGenerators\Builders\EloquentORMModelBuilder;
-use Drewlabs\ComponentGenerators\Helpers\ComponentBuilderHelpers;
-use function Drewlabs\ComponentGenerators\Proxy\ComponentsScriptWriter;
+use Drewlabs\GCli\Builders\EloquentORMModelBuilder;
+use Drewlabs\GCli\Helpers\ComponentBuilderHelpers;
+use function Drewlabs\GCli\Proxy\ComponentsScriptWriter;
 
 use Drewlabs\Core\Helpers\Str;
 

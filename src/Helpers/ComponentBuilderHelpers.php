@@ -11,34 +11,35 @@ declare(strict_types=1);
  * file that was distributed with this source code.
  */
 
-namespace Drewlabs\ComponentGenerators\Helpers;
+namespace Drewlabs\GCli\Helpers;
 
 use Drewlabs\CodeGenerator\Exceptions\PHPVariableException;
-use Drewlabs\ComponentGenerators\Builders\DataTransfertClassBuilder;
-use Drewlabs\ComponentGenerators\Builders\ServiceClassBuilder;
-use Drewlabs\ComponentGenerators\Builders\ViewModelClassBuilder;
-use Drewlabs\ComponentGenerators\Cache\Cache;
-use Drewlabs\ComponentGenerators\Cache\CacheableTables;
-use Drewlabs\ComponentGenerators\Contracts\Cacheable;
-use Drewlabs\ComponentGenerators\Contracts\ControllerBuilder;
-use Drewlabs\ComponentGenerators\Contracts\ORMModelBuilder;
-use Drewlabs\ComponentGenerators\Contracts\SourceFileInterface;
-use Drewlabs\ComponentGenerators\IO\Path;
+use Drewlabs\GCli\Builders\DataTransfertClassBuilder;
+use Drewlabs\GCli\Builders\ServiceClassBuilder;
+use Drewlabs\GCli\Builders\ViewModelClassBuilder;
+use Drewlabs\GCli\Cache\Cache;
+use Drewlabs\GCli\Cache\CacheableTables;
+use Drewlabs\GCli\Contracts\Cacheable;
+use Drewlabs\GCli\Contracts\ControllerBuilder;
+use Drewlabs\GCli\Contracts\ORMModelBuilder;
+use Drewlabs\GCli\Contracts\SourceFileInterface;
+use Drewlabs\GCli\IO\Path;
 
-use function Drewlabs\ComponentGenerators\Proxy\DataTransfertClassBuilder;
+use function Drewlabs\GCli\Proxy\DataTransfertClassBuilder;
 
-use function Drewlabs\ComponentGenerators\Proxy\EloquentORMModelBuilder;
-use function Drewlabs\ComponentGenerators\Proxy\MVCControllerBuilder;
-use function Drewlabs\ComponentGenerators\Proxy\MVCServiceBuilder;
+use function Drewlabs\GCli\Proxy\EloquentORMModelBuilder;
+use function Drewlabs\GCli\Proxy\MVCControllerBuilder;
+use function Drewlabs\GCli\Proxy\MVCServiceBuilder;
 
-use function Drewlabs\ComponentGenerators\Proxy\ORMColumnDefinition;
-use function Drewlabs\ComponentGenerators\Proxy\ORMModelDefinition;
-use function Drewlabs\ComponentGenerators\Proxy\ViewModelBuilder;
+use function Drewlabs\GCli\Proxy\ORMColumnDefinition;
+use function Drewlabs\GCli\Proxy\ViewModelBuilder;
 use Drewlabs\Core\Helpers\Arr;
 use Drewlabs\Core\Helpers\Str;
 use InvalidArgumentException;
 use RuntimeException;
-use Drewlabs\ComponentGenerators\Exceptions\IOException;
+use Drewlabs\GCli\Exceptions\IOException;
+use Drewlabs\GCli\ORMColumnDefinition;
+use Drewlabs\GCli\ORMModelDefinition;
 
 class ComponentBuilderHelpers
 {
@@ -69,20 +70,16 @@ class ComponentBuilderHelpers
         ?string $comments = null
     ) {
         $component = EloquentORMModelBuilder(
-            ORMModelDefinition([
-                'primaryKey' => $primaryKey,
-                'name' => null,
-                'table' => $table,
-                'columns' => array_map(
+            new ORMModelDefinition(
+                $primaryKey,
+                null,
+                $table,
+                array_map(
                     static function ($definition) {
                         $name = Str::before('|', $definition);
                         $least = explode(',', Str::after('|', $definition) ?? '');
                         $type = Arr::first($least) ?? null;
-                        // TODO : Load the remaining parts
-                        return ORMColumnDefinition([
-                            'name' => $name,
-                            'type' => empty($type) ? null : $type,
-                        ]);
+                        return new ORMColumnDefinition($name, empty($type) ? null : $type);
                     },
                     array_filter(array_map(static function ($column) {
                         if (\is_string($column) && !Str::contains($column, '|')) {
@@ -93,10 +90,10 @@ class ComponentBuilderHelpers
                         return null !== $definition && Str::contains($definition, '|');
                     })
                 ),
-                'increments' => $increments,
-                'namespace' => $namespace,
-                'comment' => $comments,
-            ])
+                $increments,
+                $namespace,
+                $comments,
+            )
         )->setHiddenColumns($hidden ?? [])
             ->setAppends($appends ?? []);
         if ($isViewModel) {
@@ -494,11 +491,7 @@ class ComponentBuilderHelpers
      */
     public static function cacheComponentDefinitions(string $path, array $tables, ?string $namespace = null, ?string $subPackage = null)
     {
-        Cache::new($path)->dump(new CacheableTables([
-            'tables' => $tables,
-            'namespace' => $namespace,
-            'subNamespace' => $subPackage,
-        ]));
+        Cache::new($path)->dump(new CacheableTables($tables, $namespace, $subPackage));
     }
 
     /**

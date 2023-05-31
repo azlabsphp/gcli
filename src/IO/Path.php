@@ -11,9 +11,9 @@ declare(strict_types=1);
  * file that was distributed with this source code.
  */
 
-namespace Drewlabs\ComponentGenerators\IO;
+namespace Drewlabs\GCli\IO;
 
-use Drewlabs\ComponentGenerators\Exceptions\IOException;
+use Drewlabs\GCli\Exceptions\IOException;
 
 class Path
 {

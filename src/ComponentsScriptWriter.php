@@ -11,11 +11,11 @@ declare(strict_types=1);
  * file that was distributed with this source code.
  */
 
-namespace Drewlabs\ComponentGenerators;
+namespace Drewlabs\GCli;
 
-use Drewlabs\ComponentGenerators\Contracts\ScriptWriter;
-use Drewlabs\ComponentGenerators\Contracts\Writable;
-use Drewlabs\ComponentGenerators\IO\Disk;
+use Drewlabs\GCli\Contracts\ScriptWriter;
+use Drewlabs\GCli\Contracts\Writable;
+use Drewlabs\GCli\IO\Disk;
 use InvalidArgumentException;
 
 class ComponentsScriptWriter implements ScriptWriter

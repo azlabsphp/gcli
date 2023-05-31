@@ -11,25 +11,35 @@ declare(strict_types=1);
  * file that was distributed with this source code.
  */
 
-namespace Drewlabs\ComponentGenerators;
+namespace Drewlabs\GCli;
 
-use Drewlabs\ComponentGenerators\Contracts\UniqueKeyConstraintDefinition;
-use Drewlabs\PHPValue\Value;
+use Drewlabs\GCli\Contracts\UniqueKeyConstraintDefinition;
 
-class ORMColumnUniqueKeyDefinition extends Value implements UniqueKeyConstraintDefinition
+class ORMColumnUniqueKeyDefinition implements UniqueKeyConstraintDefinition
 {
-    protected $__PROPERTIES__ = [
-        'table_' => 'table',
-        'columns_' => 'columns',
-    ];
+    private $table;
+
+    private $columns;
+
+    /**
+     * Creates class instance
+     * 
+     * @param string $table 
+     * @param string|string[] $columns 
+     */
+    public function __construct(string $table, $columns)
+    {
+        $this->table = $table;
+        $this->columns = $columns;
+    }
 
     public function getTable()
     {
-        return $this->table_ ?? '';
+        return $this->table ?? '';
     }
 
     public function getColumns()
     {
-        return $this->columns_ ?? 'id';
+        return $this->columns ?? 'id';
     }
 }

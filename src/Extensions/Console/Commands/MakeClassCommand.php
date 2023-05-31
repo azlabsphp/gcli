@@ -11,12 +11,12 @@ declare(strict_types=1);
  * file that was distributed with this source code.
  */
 
-namespace Drewlabs\ComponentGenerators\Extensions\Console\Commands;
+namespace Drewlabs\GCli\Extensions\Console\Commands;
 
 use function Drewlabs\CodeGenerator\Proxy\PHPClass;
-use Drewlabs\ComponentGenerators\Helpers\ComponentBuilderHelpers;
-use function Drewlabs\ComponentGenerators\Proxy\ComponentsScriptWriter;
-use function Drewlabs\ComponentGenerators\Proxy\PHPScript;
+use Drewlabs\GCli\Helpers\ComponentBuilderHelpers;
+use function Drewlabs\GCli\Proxy\ComponentsScriptWriter;
+use function Drewlabs\GCli\Proxy\PHPScript;
 
 use Illuminate\Console\Command;
 use Illuminate\Container\Container;

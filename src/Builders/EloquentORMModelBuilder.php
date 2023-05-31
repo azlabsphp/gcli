@@ -11,7 +11,7 @@ declare(strict_types=1);
  * file that was distributed with this source code.
  */
 
-namespace Drewlabs\ComponentGenerators\Builders;
+namespace Drewlabs\GCli\Builders;
 
 use Drewlabs\CodeGenerator\Contracts\Blueprint;
 use Drewlabs\CodeGenerator\Contracts\CallableInterface;
@@ -21,20 +21,20 @@ use function Drewlabs\CodeGenerator\Proxy\PHPClassMethod;
 use function Drewlabs\CodeGenerator\Proxy\PHPClassProperty;
 use function Drewlabs\CodeGenerator\Proxy\PHPVariable;
 use Drewlabs\CodeGenerator\Types\PHPTypesModifiers;
-use Drewlabs\ComponentGenerators\BasicRelation;
-use Drewlabs\ComponentGenerators\Contracts\ComponentBuilder;
-use Drewlabs\ComponentGenerators\Contracts\EloquentORMModelBuilder as ContractsEloquentORMModel;
-use Drewlabs\ComponentGenerators\Contracts\ORMColumnDefinition;
-use Drewlabs\ComponentGenerators\Contracts\ORMModelDefinition;
-use Drewlabs\ComponentGenerators\Contracts\ProvidesRelations;
-use Drewlabs\ComponentGenerators\Helpers\ComponentBuilderHelpers;
-use Drewlabs\ComponentGenerators\ThoughRelation;
-use Drewlabs\ComponentGenerators\RelationTypes;
+use Drewlabs\GCli\BasicRelation;
+use Drewlabs\GCli\Contracts\ComponentBuilder;
+use Drewlabs\GCli\Contracts\EloquentORMModelBuilder as ContractsEloquentORMModel;
+use Drewlabs\GCli\Contracts\ORMColumnDefinition;
+use Drewlabs\GCli\Contracts\ORMModelDefinition;
+use Drewlabs\GCli\Contracts\ProvidesRelations;
+use Drewlabs\GCli\Helpers\ComponentBuilderHelpers;
+use Drewlabs\GCli\ThoughRelation;
+use Drewlabs\GCli\RelationTypes;
 
-use function Drewlabs\ComponentGenerators\Proxy\PHPScript;
-use Drewlabs\ComponentGenerators\Traits\HasNamespaceAttribute;
-use Drewlabs\ComponentGenerators\Traits\ProvidesTrimTableSchema;
-use Drewlabs\ComponentGenerators\Traits\ViewModelBuilder;
+use function Drewlabs\GCli\Proxy\PHPScript;
+use Drewlabs\GCli\Traits\HasNamespaceAttribute;
+use Drewlabs\GCli\Traits\ProvidesTrimTableSchema;
+use Drewlabs\GCli\Traits\ViewModelBuilder;
 use Drewlabs\Core\Helpers\Str;
 use Illuminate\Database\Eloquent\Model as EloquentModel;
 use Illuminate\Support\Pluralizer;
@@ -65,6 +65,28 @@ class EloquentORMModelBuilder implements ContractsEloquentORMModel, ComponentBui
      * @var string
      */
     const DEFAULT_PATH = 'Models';
+
+        /**
+     * @var string[]
+     */
+    const CLASS_PATHS = [
+        'Drewlabs\\PHPValue\\Contracts\\Adaptable',
+        'Drewlabs\\Query\\Contracts\\Queryable as AbstractQueryable',
+        'Illuminate\\Database\\Eloquent\\Model',
+        'Drewlabs\\LaravelQuery\\Traits\\Queryable'
+    ];
+
+    /**
+     * @var string[]
+     */
+    const CLASS_TRAITS = [
+        'Queryable'
+    ];
+
+    const CLASS_IMPLEMENTATIONS = [
+        'AbstractQueryable',
+        'Adaptable'
+    ];
 
     /**
      * List of appendable model properties.
@@ -137,7 +159,7 @@ class EloquentORMModelBuilder implements ContractsEloquentORMModel, ComponentBui
     /**
      * List of model relations to provide
      * 
-     * @var (\Drewlabs\ComponentGenerators\BasicRelation|\Drewlabs\ComponentGenerators\ThroughRelationTables)[]
+     * @var (\Drewlabs\GCli\BasicRelation|\Drewlabs\GCli\ThroughRelationTables)[]
      */
     private $relations;
 
@@ -332,7 +354,6 @@ class EloquentORMModelBuilder implements ContractsEloquentORMModel, ComponentBui
 
         $component->setBaseClass(EloquentModel::class)
             ->asFinal()
-            ->addTrait(\Drewlabs\Packages\Database\Traits\Model::class)
             // Model associated table
             ->addProperty(
                 PHPClassProperty(
@@ -410,11 +431,7 @@ class EloquentORMModelBuilder implements ContractsEloquentORMModel, ComponentBui
         }
 
         if ((null !== $this->autoIncrements_) && !$this->autoIncrements_) {
-            $component = $component->addTrait(
-                trait_exists(\Illuminate\Database\Eloquent\Concerns\HasUuids::class) ?
-                    \Illuminate\Database\Eloquent\Concerns\HasUuids::class :
-                    \Drewlabs\Packages\Database\Traits\HasUuids::class
-            );
+            $component = $component->addTrait(trait_exists(\Illuminate\Database\Eloquent\Concerns\HasUuids::class) ? \Illuminate\Database\Eloquent\Concerns\HasUuids::class : \Drewlabs\Packages\Database\Traits\HasUuids::class);
         }
 
         // Checks if the model is a pivot table model
@@ -439,11 +456,26 @@ class EloquentORMModelBuilder implements ContractsEloquentORMModel, ComponentBui
         /**
          * @var BluePrint
          */
-        $component = array_reduce([
-            \Drewlabs\Packages\Database\Contracts\ORMModel::class,
-        ], static function (Blueprint $carry, $curr) {
+        $component = array_reduce(static::CLASS_IMPLEMENTATIONS, static function (Blueprint $carry, $curr) {
             $carry = $carry->addImplementation($curr);
+            return $carry;
+        }, $component);
 
+        // Add Traits
+        /**
+         * @var BluePrint
+         */
+        $component = array_reduce(static::CLASS_TRAITS, static function (Blueprint $carry, $curr) {
+            $carry = $carry->addTrait($curr);
+            return $carry;
+        }, $component);
+
+        // Add class path
+        /**
+         * @var BluePrint
+         */
+        $component = array_reduce(static::CLASS_PATHS, static function (Blueprint $carry, $curr) {
+            $carry = $carry->addClassPath($curr);
             return $carry;
         }, $component);
 
@@ -542,7 +574,7 @@ class EloquentORMModelBuilder implements ContractsEloquentORMModel, ComponentBui
                 $this->relationMethods_[] = $relation->getName();
                 continue;
             }
-            if ($type === RelationTypes::MANY_TO_MANY && $relation instanceof \Drewlabs\ComponentGenerators\ThoughRelation) {
+            if ($type === RelationTypes::MANY_TO_MANY && $relation instanceof \Drewlabs\GCli\ThoughRelation) {
                 /**
                  * @var BluePrint
                  */
@@ -552,7 +584,7 @@ class EloquentORMModelBuilder implements ContractsEloquentORMModel, ComponentBui
             }
             if (
                 in_array($type, [RelationTypes::ONE_TO_MANY_THROUGH, RelationTypes::ONE_TO_ONE_THROUGH]) &&
-                $relation instanceof \Drewlabs\ComponentGenerators\ThoughRelation
+                $relation instanceof \Drewlabs\GCli\ThoughRelation
             ) {
                 /**
                  * @var BluePrint
@@ -573,7 +605,7 @@ class EloquentORMModelBuilder implements ContractsEloquentORMModel, ComponentBui
      * @param string $type 
      * @return CallableInterface 
      */
-    private function createOneOrManyMethodTemplate(\Drewlabs\ComponentGenerators\BasicRelation $relation, string $type, array $methods)
+    private function createOneOrManyMethodTemplate(\Drewlabs\GCli\BasicRelation $relation, string $type, array $methods)
     {
         $model = $relation->getModel();
         $local = $relation->getLocal();
@@ -596,7 +628,7 @@ class EloquentORMModelBuilder implements ContractsEloquentORMModel, ComponentBui
      * @param BasicRelation $relation 
      * @return CallableInterface 
      */
-    private function createBelongsToTemplate(\Drewlabs\ComponentGenerators\BasicRelation $relation, array $methods)
+    private function createBelongsToTemplate(\Drewlabs\GCli\BasicRelation $relation, array $methods)
     {
         $model = $relation->getModel();
         $local = $relation->getLocal();
@@ -617,7 +649,7 @@ class EloquentORMModelBuilder implements ContractsEloquentORMModel, ComponentBui
      * @param ThoughRelation $relation 
      * @return CallableInterface 
      */
-    private function createThroughRelationTemplate(\Drewlabs\ComponentGenerators\ThoughRelation $relation, array $methods)
+    private function createThroughRelationTemplate(\Drewlabs\GCli\ThoughRelation $relation, array $methods)
     {
         $returns = $relation->getType() === RelationTypes::ONE_TO_MANY_THROUGH ?
             \Illuminate\Database\Eloquent\Relations\HasManyThrough::class :
@@ -659,7 +691,7 @@ class EloquentORMModelBuilder implements ContractsEloquentORMModel, ComponentBui
      * 
      * @return CallableInterface 
      */
-    private function createManyToManyRelationTemplate(\Drewlabs\ComponentGenerators\ThoughRelation $relation, array $methods)
+    private function createManyToManyRelationTemplate(\Drewlabs\GCli\ThoughRelation $relation, array $methods)
     {
         $returns = \Illuminate\Database\Eloquent\Relations\BelongsToMany::class;
         $left = $relation->getLeftTable();

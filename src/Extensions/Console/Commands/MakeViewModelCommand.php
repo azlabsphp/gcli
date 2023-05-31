@@ -11,11 +11,11 @@ declare(strict_types=1);
  * file that was distributed with this source code.
  */
 
-namespace Drewlabs\ComponentGenerators\Extensions\Console\Commands;
+namespace Drewlabs\GCli\Extensions\Console\Commands;
 
-use Drewlabs\ComponentGenerators\Builders\EloquentORMModelBuilder;
-use Drewlabs\ComponentGenerators\Helpers\ComponentBuilderHelpers;
-use function Drewlabs\ComponentGenerators\Proxy\ComponentsScriptWriter;
+use Drewlabs\GCli\Builders\EloquentORMModelBuilder;
+use Drewlabs\GCli\Helpers\ComponentBuilderHelpers;
+use function Drewlabs\GCli\Proxy\ComponentsScriptWriter;
 use Illuminate\Console\Command;
 use Illuminate\Container\Container;
 

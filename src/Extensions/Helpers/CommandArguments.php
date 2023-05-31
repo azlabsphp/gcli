@@ -11,14 +11,14 @@ declare(strict_types=1);
  * file that was distributed with this source code.
  */
 
-namespace Drewlabs\ComponentGenerators\Extensions\Helpers;
+namespace Drewlabs\GCli\Extensions\Helpers;
 
 use Closure;
-use Drewlabs\ComponentGenerators\DBDriverOptions;
-use Drewlabs\ComponentGenerators\Exceptions\IOException;
-use Drewlabs\ComponentGenerators\Helpers\ComponentBuilderHelpers;
-use Drewlabs\ComponentGenerators\IO\Path;
-use Drewlabs\ComponentGenerators\Options;
+use Drewlabs\GCli\DBDriverOptions;
+use Drewlabs\GCli\Exceptions\IOException;
+use Drewlabs\GCli\Helpers\ComponentBuilderHelpers;
+use Drewlabs\GCli\IO\Path;
+use Drewlabs\GCli\Options;
 use RuntimeException;
 
 class CommandArguments

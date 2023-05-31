@@ -84,8 +84,8 @@ This package provide you with a controller class builder that can be used to bui
 ```php
 
 // ...
-use function Drewlabs\ComponentGenerators\Proxy\ComponentsScriptWriter;
-use function Drewlabs\ComponentGenerators\Proxy\MVCControllerBuilder;
+use function Drewlabs\GCli\Proxy\ComponentsScriptWriter;
+use function Drewlabs\GCli\Proxy\MVCControllerBuilder;
 // ...
 
 // This code creates an invokable controller
@@ -118,8 +118,8 @@ You can create a service that provides empty implementation or is pre-filled wit
 ```php
 
 // ...
-use function Drewlabs\ComponentGenerators\Proxy\ComponentsScriptWriter;
-use function Drewlabs\ComponentGenerators\Proxy\MVCServiceBuilder;
+use function Drewlabs\GCli\Proxy\ComponentsScriptWriter;
+use function Drewlabs\GCli\Proxy\MVCServiceBuilder;
 // ...
 
 // Creating a prefilled service with name derived from a model class name
@@ -149,8 +149,8 @@ A view model is a class that wrap arround user provided values, validation rules
 ```php
 
 // ...
-use function Drewlabs\ComponentGenerators\Proxy\ComponentsScriptWriter;
-use function Drewlabs\ComponentGenerators\Proxy\ViewModelBuilder;
+use function Drewlabs\GCli\Proxy\ComponentsScriptWriter;
+use function Drewlabs\GCli\Proxy\ViewModelBuilder;
 // ...
 
 // Creating a fully complete view model
@@ -192,10 +192,10 @@ This implementation use the drewlabs/database package for the builder and it sup
 
 ```php
 // ....
-use function Drewlabs\ComponentGenerators\Proxy\ComponentsScriptWriter;
-use function Drewlabs\ComponentGenerators\Proxy\EloquentORMModelBuilder;
-use function Drewlabs\ComponentGenerators\Proxy\ORMColumnDefinition;
-use function Drewlabs\ComponentGenerators\Proxy\ORMModelDefinition;
+use function Drewlabs\GCli\Proxy\ComponentsScriptWriter;
+use function Drewlabs\GCli\Proxy\EloquentORMModelBuilder;
+use function Drewlabs\GCli\Proxy\ORMColumnDefinition;
+use function Drewlabs\GCli\Proxy\ORMModelDefinition;
 //...
 
 // Building a model

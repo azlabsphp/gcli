@@ -11,7 +11,7 @@ declare(strict_types=1);
  * file that was distributed with this source code.
  */
 
-namespace Drewlabs\ComponentGenerators;
+namespace Drewlabs\GCli;
 
 use Closure;
 use Doctrine\DBAL\Exception;
@@ -19,14 +19,13 @@ use Doctrine\DBAL\Schema\AbstractSchemaManager;
 use Doctrine\DBAL\Schema\SchemaException;
 use Doctrine\DBAL\Schema\Table;
 use Drewlabs\CodeGenerator\Exceptions\PHPVariableException;
-use Drewlabs\ComponentGenerators\Contracts\ControllerBuilder;
-use Drewlabs\ComponentGenerators\Contracts\ORMColumnDefinition;
-use Drewlabs\ComponentGenerators\Contracts\SourceFileInterface;
-use Drewlabs\ComponentGenerators\Helpers\ColumnsDefinitionHelpers;
-use Drewlabs\ComponentGenerators\Helpers\ComponentBuilderHelpers;
-use function Drewlabs\ComponentGenerators\Proxy\EloquentORMModelBuilder;
-use function Drewlabs\ComponentGenerators\Proxy\MVCPolicyBuilder;
-use function Drewlabs\ComponentGenerators\Proxy\ORMModelDefinition;
+use Drewlabs\GCli\Contracts\ControllerBuilder;
+use Drewlabs\GCli\Contracts\ORMColumnDefinition;
+use Drewlabs\GCli\Contracts\SourceFileInterface;
+use Drewlabs\GCli\Helpers\ColumnsDefinitionHelpers;
+use Drewlabs\GCli\Helpers\ComponentBuilderHelpers;
+use function Drewlabs\GCli\Proxy\EloquentORMModelBuilder;
+use function Drewlabs\GCli\Proxy\MVCPolicyBuilder;
 use Drewlabs\Core\Helpers\Arr;
 
 use Drewlabs\Core\Helpers\Functional;
@@ -414,15 +413,15 @@ class ReverseEngineeringService
             // # Get unique primary key value - Cause Eloquent does not support composite keys
             $key = \is_array($primaryKey) ? ($primaryKey[0] ?? null) : $primaryKey;
             // # Get unique primary key value
-            yield ORMModelDefinition([
-                'primaryKey' => $key ?? null,
-                'name' => null,
-                'table' => $name_,
-                'columns' => $columns,
-                'increments' => !empty($key) ? $table->getColumn($key)->getAutoincrement() : false,
-                'namespace' => sprintf('%s\\%s', $this->blocComponentNamespace ?? self::DEFAULT_BLOC_COMPONENT_NAMESPACE, sprintf('%s%s', 'Models', $this->subNamespace ? "\\$this->subNamespace" : '')),
-                'comment' => $comment,
-            ]);
+            yield new ORMModelDefinition(
+                $key ?? null,
+                null,
+                $name_,
+                $columns,
+                !empty($key) ? $table->getColumn($key)->getAutoincrement() : false,
+                sprintf('%s\\%s', $this->blocComponentNamespace ?? self::DEFAULT_BLOC_COMPONENT_NAMESPACE, sprintf('%s%s', 'Models', $this->subNamespace ? "\\$this->subNamespace" : '')),
+                $comment,
+            );
         }
     }
 }

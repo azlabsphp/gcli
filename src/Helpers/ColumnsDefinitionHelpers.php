@@ -11,16 +11,17 @@ declare(strict_types=1);
  * file that was distributed with this source code.
  */
 
-namespace Drewlabs\ComponentGenerators\Helpers;
+namespace Drewlabs\GCli\Helpers;
 
 use Doctrine\DBAL\Schema\Column;
-use Drewlabs\ComponentGenerators\ORMColumnDefinition as ColumnDefinition;
-use Drewlabs\ComponentGenerators\ORMColumnForeignKeyConstraintDefinition;
-use Drewlabs\ComponentGenerators\ORMColumnUniqueKeyDefinition;
+use Drewlabs\GCli\ORMColumnDefinition as ColumnDefinition;
+use Drewlabs\GCli\ORMColumnDefinition;
+use Drewlabs\GCli\ORMColumnForeignKeyConstraintDefinition;
+use Drewlabs\GCli\ORMColumnUniqueKeyDefinition;
 use Drewlabs\Core\Helpers\Iter;
 use Generator;
 
-use function Drewlabs\ComponentGenerators\Proxy\ORMColumnDefinition;
+use function Drewlabs\GCli\Proxy\ORMColumnDefinition;
 
 class ColumnsDefinitionHelpers
 {
@@ -41,14 +42,14 @@ class ColumnsDefinitionHelpers
                 $regex = (null === $length && 'bigint' === $column->getType()->getName()) ? \PHP_INT_MAX : $length;
             }
             // Evaluate other types in the future
-            yield $column->getName() => ORMColumnDefinition([
-                'name' => $column->getName(),
-                'table' => $table,
-                'default' => $column->getDefault(),
-                'required' => $column->getNotnull(),
-                'unsigned' => $column->getUnsigned(),
-                'type' => $regex ? sprintf('%s:%s', $column->getType()->getName(), $regex) : sprintf('%s', $column->getType()->getName()),
-            ]);
+            yield $column->getName() => new ORMColumnDefinition(
+                $column->getName(),
+                $regex ? sprintf('%s:%s', $column->getType()->getName(), $regex) : sprintf('%s', $column->getType()->getName()),
+                $table,
+                $column->getNotnull(),
+                $column->getDefault(),
+                $column->getUnsigned(),
+            );
         }
     }
 
@@ -58,13 +59,13 @@ class ColumnsDefinitionHelpers
         if (!empty($foreignKeys)) {
             $foreignKeys = (iterator_to_array((static function ($keys) {
                 foreach ($keys as $key) {
-                    yield $key->getLocalColumns()[0] => new ORMColumnForeignKeyConstraintDefinition([
-                        'local_table' => $key->getLocalTableName(),
-                        'columns' => $key->getLocalColumns(),
-                        'foreign_table' => $key->getForeignTableName(),
-                        'foreign_columns' => $key->getForeignColumns(),
-                        'key' => $key->getName(),
-                    ]);
+                    yield $key->getLocalColumns()[0] => new ORMColumnForeignKeyConstraintDefinition(
+                        $key->getLocalTableName(),
+                        $key->getLocalColumns(),
+                        $key->getForeignTableName(),
+                        $key->getForeignColumns(),
+                        $key->getName()
+                    );
                 }
             })($foreignKeys)));
         }
@@ -115,10 +116,7 @@ class ColumnsDefinitionHelpers
             // Set the unique constraint on the definition
             foreach ($uniqueIndexes as $key => $value) {
                 if (($definition = $definitions[$key] ?? null)) {
-                    $definition = $definition->setUnique(true === $value ? new ORMColumnUniqueKeyDefinition([
-                        'table' => $definition->getTable(),
-                        'columns' => [$definition->name()],
-                    ]) : null);
+                    $definition = $definition->setUnique(true === $value ? new ORMColumnUniqueKeyDefinition($definition->getTable(), [$definition->name()]) : null);
                     $definitions = array_merge($definitions, [$key => $definition]);
                 }
             }

@@ -11,9 +11,9 @@ declare(strict_types=1);
  * file that was distributed with this source code.
  */
 
-namespace Drewlabs\ComponentGenerators\Extensions;
+namespace Drewlabs\GCli\Extensions;
 
-use Drewlabs\ComponentGenerators\Extensions\Contracts\Progress;
+use Drewlabs\GCli\Extensions\Contracts\Progress;
 use Symfony\Component\Console\Helper\ProgressBar;
 
 final class ProgressbarIndicator implements Progress

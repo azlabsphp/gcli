@@ -11,72 +11,87 @@ declare(strict_types=1);
  * file that was distributed with this source code.
  */
 
-namespace Drewlabs\ComponentGenerators;
+namespace Drewlabs\GCli;
 
-use Drewlabs\ComponentGenerators\Builders\DtoAttributesFactory;
-use Drewlabs\ComponentGenerators\Builders\ViewModelRulesFactory;
-use Drewlabs\ComponentGenerators\Contracts\ORMColumnDefinition;
-use Drewlabs\ComponentGenerators\Contracts\ORMModelDefinition as ContractsORMModelDefinition;
-use Drewlabs\ComponentGenerators\Helpers\DataTypeToFluentValidationRulesHelper;
-use Drewlabs\PHPValue\Value;
+use Drewlabs\GCli\Builders\DtoAttributesFactory;
+use Drewlabs\GCli\Builders\ViewModelRulesFactory;
+use Drewlabs\GCli\Contracts\ORMColumnDefinition;
+use Drewlabs\GCli\Contracts\ORMModelDefinition as ContractsORMModelDefinition;
+use Drewlabs\GCli\Helpers\DataTypeToFluentValidationRulesHelper;
 use Exception;
 
-class ORMModelDefinition extends Value implements ContractsORMModelDefinition, DtoAttributesFactory, ViewModelRulesFactory
+class ORMModelDefinition implements ContractsORMModelDefinition, DtoAttributesFactory, ViewModelRulesFactory
 {
-    protected $__PROPERTIES__ = [
-        'primaryKey_' => 'primaryKey',
-        'name_' => 'name',
-        'table_' => 'table',
-        'columns_' => 'columns',
-        'increments_' => 'increments',
-        'namespace_' => 'namespace',
-        'comment_' => 'comment',
-    ];
+    private $primaryKey;
+    private $name;
+    private $table;
+    private $columns;
+    private $increments;
+    private $namespace;
+    private $comment;
 
-    public function setColumns_Attribute(?array $value)
-    {
-        foreach ($value as $value) {
-            if (!($value instanceof ORMColumnDefinition)) {
-                throw new \InvalidArgumentException('$columns parameter must be a list of ' . ORMColumnDefinition::class . ' items');
-            }
-        }
-
-        return $value;
+    /**
+     * Creates class instance
+     * 
+     * @param string $primaryKey 
+     * @param string $name 
+     * @param string $table 
+     * @param ORMColumnDefinition[] $columns 
+     * @param bool $increments 
+     * @param string $namespace 
+     * @param string $comment 
+     */
+    public function __construct(
+        $primaryKey,
+        $name,
+        $table,
+        $columns,
+        $increments,
+        $namespace,
+        $comment
+    ) {
+        $this->primaryKey = $primaryKey;
+        $this->name = $name;
+        $this->table = $table;
+        $this->columns = $columns;
+        $this->increments = $increments;
+        $this->namespace = $namespace;
+        $this->comment = $comment;
     }
 
     public function primaryKey(): ?string
     {
-        return $this->primaryKey_ ?? 'id';
+        return $this->primaryKey ?? 'id';
     }
 
     public function name(): ?string
     {
-        return $this->name_;
+        return $this->name;
     }
 
     public function comment(): ?string
     {
-        return $this->comment_;
+        return $this->comment;
     }
 
     public function table(): ?string
     {
-        return $this->table_;
+        return $this->table;
     }
 
     public function columns(): array
     {
-        return $this->columns_ ?? [];
+        return $this->columns ?? [];
     }
 
     public function shouldAutoIncrements(): bool
     {
-        return $this->increments_ ?? true;
+        return $this->increments ?? true;
     }
 
     public function namespace(): ?string
     {
-        return $this->namespace_ ?? '\\App\\Models';
+        return $this->namespace ?? '\\App\\Models';
     }
 
     public function createDtoAttributes()
@@ -110,10 +125,9 @@ class ORMModelDefinition extends Value implements ContractsORMModelDefinition, D
      */
     private function getColumRules(ORMColumnDefinition $column, ?string $primaryKey = null, $updates = false)
     {
-        $rules[] = !$column->required() ? DataTypeToFluentValidationRulesHelper::NULLABLE :
-            ($column->required() && $column->hasDefault() ?
-            DataTypeToFluentValidationRulesHelper::NULLABLE : ($updates ? DataTypeToFluentValidationRulesHelper::SOMETIMES :
-                $this->createColumnRule($column, $primaryKey)));
+        $rules[] = !$column->required() ? DataTypeToFluentValidationRulesHelper::NULLABLE : ($column->required() && $column->hasDefault() ?
+                DataTypeToFluentValidationRulesHelper::NULLABLE : ($updates ? DataTypeToFluentValidationRulesHelper::SOMETIMES :
+                    $this->createColumnRule($column, $primaryKey)));
 
         if ($column->name() === $primaryKey) {
             $rules[] = DataTypeToFluentValidationRulesHelper::getExistsRule($this->table(), $primaryKey);

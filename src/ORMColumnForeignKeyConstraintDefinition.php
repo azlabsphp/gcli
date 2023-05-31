@@ -11,20 +11,35 @@ declare(strict_types=1);
  * file that was distributed with this source code.
  */
 
-namespace Drewlabs\ComponentGenerators;
+namespace Drewlabs\GCli;
 
-use Drewlabs\ComponentGenerators\Contracts\ForeignKeyConstraintDefinition;
-use Drewlabs\PHPValue\Value;
+use Drewlabs\GCli\Contracts\ForeignKeyConstraintDefinition;
 
-class ORMColumnForeignKeyConstraintDefinition extends Value implements ForeignKeyConstraintDefinition
+class ORMColumnForeignKeyConstraintDefinition implements ForeignKeyConstraintDefinition
 {
-    protected $__PROPERTIES__ = [
-        'local_table',
-        'columns',
-        'foreign_table',
-        'foreign_columns',
-        'key',
-    ];
+    private $local_table;
+    private $columns;
+    private $foreign_table;
+    private $foreign_columns;
+    private $key;
+
+    /**
+     * Creates class instance
+     * 
+     * @param string $local_table 
+     * @param string[] $columns 
+     * @param string $foreign_table 
+     * @param string[] $foreign_columns 
+     * @param string $key 
+     */
+    public function __construct($local_table, $columns, $foreign_table, $foreign_columns, $key)
+    {
+        $this->local_table = $local_table;
+        $this->columns = $columns;
+        $this->foreign_table = $foreign_table;
+        $this->foreign_columns = $foreign_columns;
+        $this->key = $key;
+    }
 
     public function getKey()
     {

@@ -11,19 +11,19 @@ declare(strict_types=1);
  * file that was distributed with this source code.
  */
 
-namespace Drewlabs\ComponentGenerators\Extensions\Traits;
+namespace Drewlabs\GCli\Extensions\Traits;
 
-use Drewlabs\ComponentGenerators\BasicRelation;
-use Drewlabs\ComponentGenerators\ThoughRelation;
-use Drewlabs\ComponentGenerators\ThroughRelationTables;
-use Drewlabs\ComponentGenerators\RelationTypes;
-use Drewlabs\ComponentGenerators\ToOneTablesRelation;
+use Drewlabs\GCli\BasicRelation;
+use Drewlabs\GCli\ThoughRelation;
+use Drewlabs\GCli\ThroughRelationTables;
+use Drewlabs\GCli\RelationTypes;
+use Drewlabs\GCli\ToOneTablesRelation;
 use Drewlabs\Core\Helpers\Arr;
 use Drewlabs\Core\Helpers\Str;
 use Illuminate\Support\Pluralizer;
 use InvalidArgumentException;
-use Drewlabs\ComponentGenerators\Contracts\ForeignKeyConstraintDefinition;
-use Drewlabs\ComponentGenerators\Traits\ProvidesTrimTableSchema;
+use Drewlabs\GCli\Contracts\ForeignKeyConstraintDefinition;
+use Drewlabs\GCli\Traits\ProvidesTrimTableSchema;
 
 trait ReverseEngineerRelations
 {
@@ -312,7 +312,7 @@ trait ReverseEngineerRelations
      * 
      * @param mixed $foreignKeys 
      * @param array $throughs 
-     * @return array<array-key, \Drewlabs\ComponentGenerators\ThroughRelationTables> 
+     * @return array<array-key, \Drewlabs\GCli\ThroughRelationTables> 
      */
     private static function projectTrhough($foreignKeys, array $throughs)
     {
@@ -339,7 +339,7 @@ trait ReverseEngineerRelations
      * 
      * @param array $foreignKeys 
      * @param array $array 
-     * @return array<array-key, \Drewlabs\ComponentGenerators\ThroughRelationTables> 
+     * @return array<array-key, \Drewlabs\GCli\ThroughRelationTables> 
      */
     private static function projectToMany(array $foreignKeys, array $array)
     {

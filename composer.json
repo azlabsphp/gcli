@@ -1,17 +1,21 @@
 {
-    "name": "drewlabs/component-generators",
+    "name": "drewlabs/g-cli",
+    "description": "Generates classes, services, models and controller's components or entire project source code from databse structure",
     "type": "library",
     "require-dev": {
         "phpunit/phpunit": "^9.5",
-        "illuminate/support": "^7.0|^8.0|^9.0",
-        "illuminate/console": "^7.0|^8.0|^9.0",
         "illuminate/database": "^7.0|^8.0|^9.0",
-        "doctrine/dbal": "^3.3"
+        "doctrine/dbal": "^2.0|^3.3",
+        "drewlabs/php-value": "^0.2.5",
+        "drewlabs/laravel-query": "^0.2.2",
+        "drewlabs/laravel-http": "^0.2.2",
+        "drewlabs/contracts": "^0.2.5",
+        "drewlabs/validation": "^0.2.6"
     },
     "license": "MIT",
     "autoload": {
         "psr-4": {
-            "Drewlabs\\ComponentGenerators\\": "src/"
+            "Drewlabs\\GCli\\": "src/"
         },
         "files": [
             "./src/proxies.php",
@@ -30,42 +34,32 @@
         ],
         "autoload": {
             "psr-4": {
-                "Drewlabs\\ComponentGenerators\\Tests\\": "./tests"
-            },
-            "files": []
+                "Drewlabs\\GCli\\Tests\\": "./tests"
+            }
         }
     },
-    "minimum-stability": "stable",
+    "minimum-stability": "dev",
+    "prefer-stable": true,
     "require": {
         "php": ">=7.2",
-        "drewlabs/core-helpers": "^2.0",
-        "drewlabs/php-value": "^0.1.5",
-        "drewlabs/code-generator": "^0.2.4"
+        "drewlabs/code-generator": "^0.2.4",
+        "drewlabs/core-helpers": "^0.2.2"
     },
-    "repositories": [
-        {
-            "type": "vcs",
-            "url": "git@github.com:liksoft/drewlabs-php-core-helpers.git"
-        },
-        {
-            "type": "vcs",
-            "url": "git@github.com:liksoft/drewlabs-php-value.git"
-        }
-    ],
     "extra": {
         "laravel": {
             "providers": [
-                "Drewlabs\\ComponentGenerators\\Extensions\\Providers\\ServiceProvider"
+                "Drewlabs\\GCli\\Extensions\\Providers\\ServiceProvider"
             ]
-        },
-        "branch-alias": {
-            "dev-master": "v2-dev-branch"
         }
     },
     "suggest": {
-        "drewlabs/contracts": "Required by generated model, service and view models (^2.5).",
-        "drewlabs/support": "Required by generated controllers and services (^2.3).",
-        "drewlabs/database": "Required by generated model, service and view models (^2.5.1).",
-        "drewlabs/http": "Required by generated model, service and view models (^2.3)."
+        "drewlabs/php-value": "required by data transfert objects classes ^0.2.10",
+        "drewlabs/laravel-query": "required for eloquent query builder implementation ^0.2.6",
+        "drewlabs/laravel-http": "required for laravel http bindings ^0.2.2",
+        "drewlabs/validation": "required for validation requirements ^0.2.6"
+    },
+    "config": {
+        "optimize-autoloader": true,
+        "sort-packages": true
     }
 }

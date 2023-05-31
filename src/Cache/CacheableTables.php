@@ -11,18 +11,30 @@ declare(strict_types=1);
  * file that was distributed with this source code.
  */
 
-namespace Drewlabs\ComponentGenerators\Cache;
+namespace Drewlabs\GCli\Cache;
 
-use Drewlabs\ComponentGenerators\Contracts\Cacheable as ContractsCacheable;
-use Drewlabs\PHPValue\Value;
+use Drewlabs\GCli\Contracts\Cacheable as ContractsCacheable;
+use InvalidArgumentException;
 
-class CacheableTables extends Value implements ContractsCacheable
+class CacheableTables implements ContractsCacheable
 {
-    protected $__PROPERTIES__ = [
-        'tables',
-        'namespace',
-        'subNamespace',
-    ];
+    private $tables;
+    private $namespace;
+    private $subNamespace;
+
+    /**
+     * Creates class instance
+     * 
+     * @param iterable $tables 
+     * @param string $namespace 
+     * @param string|null $subNamespace 
+     */
+    public function __construct(array $tables, string $namespace = null, string $subNamespace = null)
+    {
+        $this->tables = $tables;
+        $this->namespace = $namespace;
+        $this->subNamespace = $subNamespace;
+    }
 
     public function getTables()
     {
@@ -50,7 +62,11 @@ class CacheableTables extends Value implements ContractsCacheable
 
     public function unserialize(string $value)
     {
-        return new self(unserialize($value));
+        $result = unserialize($value);
+        if (!is_array($result)) {
+            throw new InvalidArgumentException("Serialized string is malformed");
+        }
+        return new self($result['tables'] ?? [], $result['namespace'] ?? null, $result['subNamespace']);
     }
 
     public function serialize()

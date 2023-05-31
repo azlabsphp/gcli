@@ -11,7 +11,7 @@ declare(strict_types=1);
  * file that was distributed with this source code.
  */
 
-namespace Drewlabs\ComponentGenerators\Extensions\Contracts;
+namespace Drewlabs\GCli\Extensions\Contracts;
 
 interface Progress
 {

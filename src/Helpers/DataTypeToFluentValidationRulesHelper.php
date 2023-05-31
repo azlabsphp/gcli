@@ -11,11 +11,11 @@ declare(strict_types=1);
  * file that was distributed with this source code.
  */
 
-namespace Drewlabs\ComponentGenerators\Helpers;
+namespace Drewlabs\GCli\Helpers;
 
 use Closure;
-use Drewlabs\ComponentGenerators\Contracts\ForeignKeyConstraintDefinition;
-use Drewlabs\ComponentGenerators\Contracts\UniqueKeyConstraintDefinition;
+use Drewlabs\GCli\Contracts\ForeignKeyConstraintDefinition;
+use Drewlabs\GCli\Contracts\UniqueKeyConstraintDefinition;
 use Drewlabs\Core\Helpers\Str;
 
 class DataTypeToFluentValidationRulesHelper
