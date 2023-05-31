@@ -14,6 +14,8 @@ declare(strict_types=1);
 namespace Drewlabs\GCli\Helpers;
 
 use Drewlabs\CodeGenerator\Exceptions\PHPVariableException;
+use Drewlabs\Core\Helpers\Arr;
+use Drewlabs\Core\Helpers\Str;
 use Drewlabs\GCli\Builders\DataTransfertClassBuilder;
 use Drewlabs\GCli\Builders\ServiceClassBuilder;
 use Drewlabs\GCli\Builders\ViewModelClassBuilder;
@@ -22,41 +24,30 @@ use Drewlabs\GCli\Cache\CacheableTables;
 use Drewlabs\GCli\Contracts\Cacheable;
 use Drewlabs\GCli\Contracts\ControllerBuilder;
 use Drewlabs\GCli\Contracts\ORMModelBuilder;
+
 use Drewlabs\GCli\Contracts\SourceFileInterface;
+
+use Drewlabs\GCli\Exceptions\IOException;
 use Drewlabs\GCli\IO\Path;
+use Drewlabs\GCli\ORMColumnDefinition;
+
+use Drewlabs\GCli\ORMModelDefinition;
 
 use function Drewlabs\GCli\Proxy\DataTransfertClassBuilder;
-
 use function Drewlabs\GCli\Proxy\EloquentORMModelBuilder;
 use function Drewlabs\GCli\Proxy\MVCControllerBuilder;
 use function Drewlabs\GCli\Proxy\MVCServiceBuilder;
-
-use function Drewlabs\GCli\Proxy\ORMColumnDefinition;
 use function Drewlabs\GCli\Proxy\ViewModelBuilder;
-use Drewlabs\Core\Helpers\Arr;
-use Drewlabs\Core\Helpers\Str;
-use InvalidArgumentException;
-use RuntimeException;
-use Drewlabs\GCli\Exceptions\IOException;
-use Drewlabs\GCli\ORMColumnDefinition;
-use Drewlabs\GCli\ORMModelDefinition;
 
 class ComponentBuilderHelpers
 {
     /**
-     * Creates a model builder class
-     * 
-     * @param string $table 
-     * @param array $columns 
-     * @param string $namespace 
-     * @param string $primaryKey 
-     * @param bool $increments 
-     * @param bool $isViewModel 
-     * @param array $hidden 
-     * @param array $appends 
-     * @param (null|string)|null $comments
-     * 
-     * @return ORMModelBuilder 
+     * Creates a model builder class.
+     *
+     * @param bool               $isViewModel
+     * @param (string|null)|null $comments
+     *
+     * @return ORMModelBuilder
      */
     public static function createModelBuilder(
         string $table,
@@ -79,12 +70,14 @@ class ComponentBuilderHelpers
                         $name = Str::before('|', $definition);
                         $least = explode(',', Str::after('|', $definition) ?? '');
                         $type = Arr::first($least) ?? null;
+
                         return new ORMColumnDefinition($name, empty($type) ? null : $type);
                     },
                     array_filter(array_map(static function ($column) {
                         if (\is_string($column) && !Str::contains($column, '|')) {
                             $column = sprintf('%s|', $column);
                         }
+
                         return $column;
                     }, $columns), static function ($definition) {
                         return null !== $definition && Str::contains($definition, '|');
@@ -104,14 +97,15 @@ class ComponentBuilderHelpers
     }
 
     /**
-     * Creates a service builder class
-     * 
-     * @param bool $asCRUD 
-     * @param (null|string)|null $name 
-     * @param (null|string)|null $namespace 
-     * @param (null|string)|null $model 
-     * @return ServiceClassBuilder 
-     * @throws InvalidArgumentException 
+     * Creates a service builder class.
+     *
+     * @param (string|null)|null $name
+     * @param (string|null)|null $namespace
+     * @param (string|null)|null $model
+     *
+     * @throws \InvalidArgumentException
+     *
+     * @return ServiceClassBuilder
      */
     public static function createServiceBuilder(
         bool $asCRUD = false,
@@ -123,18 +117,16 @@ class ComponentBuilderHelpers
     }
 
     /**
-     * Create a view model builder class
-     * 
-     * @param bool $single 
-     * @param array $rules 
-     * @param array $updateRules 
-     * @param (null|string)|null $name 
-     * @param (null|string)|null $namespace 
-     * @param (null|string)|null $path 
-     * @param (null|string)|null $model 
-     * @param null|bool $hasHttpHandlers 
-     * @return ViewModelClassBuilder 
-     * @throws InvalidArgumentException 
+     * Create a view model builder class.
+     *
+     * @param (string|null)|null $name
+     * @param (string|null)|null $namespace
+     * @param (string|null)|null $path
+     * @param (string|null)|null $model
+     *
+     * @throws \InvalidArgumentException
+     *
+     * @return ViewModelClassBuilder
      */
     public static function createViewModelBuilder(
         bool $single = false,
@@ -188,15 +180,15 @@ class ComponentBuilderHelpers
     }
 
     /**
-     * Create a Data Transfer builder class
-     * 
-     * @param array $attributes 
-     * @param array $hidden 
-     * @param (null|string)|null $name 
-     * @param (null|string)|null $namespace 
-     * @param (null|string)|null $model 
-     * @return DataTransfertClassBuilder 
-     * @throws InvalidArgumentException 
+     * Create a Data Transfer builder class.
+     *
+     * @param (string|null)|null $name
+     * @param (string|null)|null $namespace
+     * @param (string|null)|null $model
+     *
+     * @throws \InvalidArgumentException
+     *
+     * @return DataTransfertClassBuilder
      */
     public static function createDtoBuilder(
         array $attributes = [],
@@ -205,25 +197,23 @@ class ComponentBuilderHelpers
         ?string $namespace = null,
         ?string $model = null
     ) {
-        $component = (DataTransfertClassBuilder($attributes, $name, $namespace));
+        $component = DataTransfertClassBuilder($attributes, $name, $namespace);
         if (\is_string($model)) {
             $component = $component->bindModel($model);
         }
+
         return $component->setHidden($hidden ?? []);
     }
 
     /**
-     * Creates controller builder
-     * 
-     * @param mixed $model 
-     * @param mixed $service 
-     * @param mixed $viewModel 
-     * @param mixed $dto 
-     * @param null|string $name 
-     * @param null|string $namespace 
-     * @param bool $auth 
-     * @param bool $authorize 
-     * @return ControllerBuilder 
+     * Creates controller builder.
+     *
+     * @param mixed $model
+     * @param mixed $service
+     * @param mixed $viewModel
+     * @param mixed $dto
+     *
+     * @return ControllerBuilder
      */
     public static function createControllerBuilder(
         $model = null,
@@ -245,39 +235,35 @@ class ComponentBuilderHelpers
         }
         // Check null state of the service parameter
         if (null !== $service) {
-            $component = $component->bindService(\is_string($service) ? $service : \get_class($service));
+            $component = $component->bindService(\is_string($service) ? $service : $service::class);
         }
         // Check null state of the model parameter
         if (null !== $model) {
-            $component = $component->bindModel(\is_string($model) ? $model : \get_class($model));
+            $component = $component->bindModel(\is_string($model) ? $model : $model::class);
         }
         // Check null state of the viewModel parameter
         if (null !== $viewModel) {
-            $component = $component->bindViewModel(\is_string($viewModel) ? $viewModel : \get_class($viewModel));
+            $component = $component->bindViewModel(\is_string($viewModel) ? $viewModel : $viewModel::class);
         }
         // Check null state of the dtoObject parameter
         if (null !== $dto) {
-            $component = $component->bindDTOObject(\is_string($dto) ? $dto : \get_class($dto));
+            $component = $component->bindDTOObject(\is_string($dto) ? $dto : $dto::class);
         }
+
         return $component;
     }
 
     /**
-     * Build a model class script
-     * 
-     * @param string $table 
-     * @param array $columns 
-     * @param string $namespace 
-     * @param string $primaryKey 
-     * @param bool $increments 
-     * @param bool $vm 
-     * @param array $hidden 
-     * @param array $appends 
-     * @param (null|string)|null $comments 
-     * @return SourceFileInterface 
-     * @throws RuntimeException 
-     * @throws PHPVariableException 
-     * @throws IOException 
+     * Build a model class script.
+     *
+     * @param bool               $vm
+     * @param (string|null)|null $comments
+     *
+     * @throws \RuntimeException
+     * @throws PHPVariableException
+     * @throws IOException
+     *
+     * @return SourceFileInterface
      */
     public static function buildModelDefinitionSourceFile(
         string $table,
@@ -304,15 +290,16 @@ class ComponentBuilderHelpers
     }
 
     /**
-     * Build a service class script
-     * 
-     * @param bool $asCRUD 
-     * @param (null|string)|null $name 
-     * @param (null|string)|null $namespace 
-     * @param (null|string)|null $model 
-     * @return SourceFileInterface 
-     * @throws InvalidArgumentException 
-     * @throws IOException 
+     * Build a service class script.
+     *
+     * @param (string|null)|null $name
+     * @param (string|null)|null $namespace
+     * @param (string|null)|null $model
+     *
+     * @throws \InvalidArgumentException
+     * @throws IOException
+     *
+     * @return SourceFileInterface
      */
     public static function buildServiceDefinition(
         bool $asCRUD = false,
@@ -324,20 +311,18 @@ class ComponentBuilderHelpers
     }
 
     /**
-     * Build view model class script
-     * 
-     * @param bool $single 
-     * @param array $rules 
-     * @param array $updateRules 
-     * @param (null|string)|null $name 
-     * @param (null|string)|null $namespace 
-     * @param (null|string)|null $path 
-     * @param (null|string)|null $model 
-     * @param null|bool $hasHttpHandlers 
-     * @return SourceFileInterface 
-     * @throws InvalidArgumentException 
-     * @throws PHPVariableException 
-     * @throws IOException 
+     * Build view model class script.
+     *
+     * @param (string|null)|null $name
+     * @param (string|null)|null $namespace
+     * @param (string|null)|null $path
+     * @param (string|null)|null $model
+     *
+     * @throws \InvalidArgumentException
+     * @throws PHPVariableException
+     * @throws IOException
+     *
+     * @return SourceFileInterface
      */
     public static function buildViewModelDefinition(
         bool $single = false,
@@ -362,16 +347,16 @@ class ComponentBuilderHelpers
     }
 
     /**
-     * Build Data transfer class script
-     * 
-     * @param array $attributes 
-     * @param array $hidden 
-     * @param (null|string)|null $name 
-     * @param (null|string)|null $namespace 
-     * @param (null|string)|null $model 
-     * @return SourceFileInterface 
-     * @throws InvalidArgumentException 
-     * @throws IOException 
+     * Build Data transfer class script.
+     *
+     * @param (string|null)|null $name
+     * @param (string|null)|null $namespace
+     * @param (string|null)|null $model
+     *
+     * @throws \InvalidArgumentException
+     * @throws IOException
+     *
+     * @return SourceFileInterface
      */
     public static function buildDtoObjectDefinition(
         array $attributes = [],
@@ -389,20 +374,15 @@ class ComponentBuilderHelpers
         )->build();
     }
 
-
     /**
-     * Build controller class script
-     * 
-     * @param mixed $model 
-     * @param mixed $service 
-     * @param mixed $viewModel 
-     * @param mixed $dto 
-     * @param null|string $name 
-     * @param null|string $namespace 
-     * @param bool $auth 
-     * @param bool $authorize 
-     * 
-     * @return SourceFileInterface 
+     * Build controller class script.
+     *
+     * @param mixed $model
+     * @param mixed $service
+     * @param mixed $viewModel
+     * @param mixed $dto
+     *
+     * @return SourceFileInterface
      */
     public static function buildController(
         $model = null,
@@ -427,12 +407,11 @@ class ComponentBuilderHelpers
     }
 
     /**
-     * Rewrite a script component path
-     * 
-     * @param string $namespace 
-     * @param string $path 
-     * @return string 
-     * @throws IOException 
+     * Rewrite a script component path.
+     *
+     * @throws IOException
+     *
+     * @return string
      */
     public static function rebuildComponentPath(string $namespace, string $path)
     {
@@ -463,10 +442,9 @@ class ComponentBuilderHelpers
     }
 
     /**
-     * Create route name
-     * 
-     * @param string $classname 
-     * @return string 
+     * Create route name.
+     *
+     * @return string
      */
     public static function buildRouteName(string $classname)
     {
@@ -478,16 +456,15 @@ class ComponentBuilderHelpers
     }
 
     /**
-     * Cache component definitions
-     * 
-     * @param string $path 
-     * @param array $tables 
-     * @param (null|string)|null $namespace 
-     * @param (null|string)|null $subPackage 
-     * @return void 
-     * 
-     * @throws InvalidArgumentException 
-     * @throws IOException 
+     * Cache component definitions.
+     *
+     * @param (string|null)|null $namespace
+     * @param (string|null)|null $subPackage
+     *
+     * @throws \InvalidArgumentException
+     * @throws IOException
+     *
+     * @return void
      */
     public static function cacheComponentDefinitions(string $path, array $tables, ?string $namespace = null, ?string $subPackage = null)
     {
@@ -495,11 +472,11 @@ class ComponentBuilderHelpers
     }
 
     /**
-     * Get cached component defitions
-     * 
-     * @param string $path 
-     * @return Cacheable 
+     * Get cached component defitions.
+     *
      * @throws IOException
+     *
+     * @return Cacheable
      */
     public static function getCachedComponentDefinitions(string $path)
     {

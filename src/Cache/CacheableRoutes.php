@@ -14,7 +14,6 @@ declare(strict_types=1);
 namespace Drewlabs\GCli\Cache;
 
 use Drewlabs\GCli\Contracts\Cacheable;
-use InvalidArgumentException;
 
 class CacheableRoutes implements Cacheable
 {
@@ -24,9 +23,7 @@ class CacheableRoutes implements Cacheable
     private $routes;
 
     /**
-     * Creates class instance
-     * 
-     * @param array $routes 
+     * Creates class instance.
      */
     public function __construct(array $routes)
     {
@@ -38,7 +35,6 @@ class CacheableRoutes implements Cacheable
         return ['routes' => $this->getRoutes()];
     }
 
-
     public function getRoutes()
     {
         return $this->routes ?? [];
@@ -47,9 +43,10 @@ class CacheableRoutes implements Cacheable
     public function unserialize(string $value)
     {
         $result = unserialize($value);
-        if (!is_array($result)) {
-            throw new InvalidArgumentException("Serialized string is malformed");
+        if (!\is_array($result)) {
+            throw new \InvalidArgumentException('Serialized string is malformed');
         }
+
         return new self($result['routes']);
     }
 

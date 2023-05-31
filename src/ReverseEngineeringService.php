@@ -19,20 +19,19 @@ use Doctrine\DBAL\Schema\AbstractSchemaManager;
 use Doctrine\DBAL\Schema\SchemaException;
 use Doctrine\DBAL\Schema\Table;
 use Drewlabs\CodeGenerator\Exceptions\PHPVariableException;
+use Drewlabs\Core\Helpers\Arr;
+use Drewlabs\Core\Helpers\Functional;
+use Drewlabs\Core\Helpers\Str;
 use Drewlabs\GCli\Contracts\ControllerBuilder;
 use Drewlabs\GCli\Contracts\ORMColumnDefinition;
 use Drewlabs\GCli\Contracts\SourceFileInterface;
 use Drewlabs\GCli\Helpers\ColumnsDefinitionHelpers;
 use Drewlabs\GCli\Helpers\ComponentBuilderHelpers;
+
 use function Drewlabs\GCli\Proxy\EloquentORMModelBuilder;
 use function Drewlabs\GCli\Proxy\MVCPolicyBuilder;
-use Drewlabs\Core\Helpers\Arr;
 
-use Drewlabs\Core\Helpers\Functional;
-use Drewlabs\Core\Helpers\Str;
-use Generator;
 use Exception as GlobalException;
-use InvalidArgumentException;
 
 class ReverseEngineeringService
 {
@@ -96,7 +95,6 @@ class ReverseEngineeringService
     private $http = false;
 
     /**
-     * 
      * @var bool
      */
     private $policies = false;
@@ -107,11 +105,7 @@ class ReverseEngineeringService
     private $tables = [];
 
     /**
-     * Creates a database reverse engineering service instance
-     * 
-     * @param AbstractSchemaManager $manager 
-     * @param string $blocComponentPath 
-     * @param string $blocComponentNamespace 
+     * Creates a database reverse engineering service instance.
      */
     public function __construct(
         AbstractSchemaManager $manager,
@@ -166,6 +160,7 @@ class ReverseEngineeringService
     public function setSchema(?string $value = null)
     {
         $this->schema = $value;
+
         return $this;
     }
 
@@ -182,21 +177,22 @@ class ReverseEngineeringService
     public function withPolicies()
     {
         $this->policies = true;
+
         return $this;
     }
 
     /**
-     * Execute a reverse engeneering flow on database tables
-     * 
-     * @param array $foreignKeys
-     * @param array $tablesindexes
-     * @param (null|Closure)|null $callback
-     * @return Generator<int, array, mixed, void> 
-     * @throws Exception 
-     * @throws SchemaException 
-     * @throws GlobalException 
-     * @throws InvalidArgumentException 
-     * @throws PHPVariableException 
+     * Execute a reverse engeneering flow on database tables.
+     *
+     * @param (\Closure|null)|null $callback
+     *
+     * @throws Exception
+     * @throws SchemaException
+     * @throws GlobalException
+     * @throws \InvalidArgumentException
+     * @throws PHPVariableException
+     *
+     * @return \Generator<int, array, mixed, void>
      */
     public function handle(array &$foreignKeys, array &$tablesindexes, ?\Closure $callback = null)
     {
@@ -206,7 +202,7 @@ class ReverseEngineeringService
         $models = $this->tablesToORMModelDefinitionGenerator($tables);
         $index = 0;
         foreach ($models as $value) {
-            $index += 1;
+            ++$index;
             $tablesindexes[$value->table()] = $index - 1;
             // for column foreign constraint push the constraint to the foreign key array
             /**
@@ -227,7 +223,7 @@ class ReverseEngineeringService
                 'path' => $this->blocComponentPath,
                 'class' => $builder,
                 'definitions' => $value,
-                'classPath' => $modelclasspath
+                'classPath' => $modelclasspath,
             ];
             $viewmodel = ComponentBuilderHelpers::createViewModelBuilder(
                 false,
@@ -275,16 +271,16 @@ class ReverseEngineeringService
                 );
                 $components['controller'] = [
                     'path' => $this->blocComponentPath,
-                    'class' => $this->createControllerFactoryMethod($modelclasspath, boolval($this->policies)),
+                    'class' => $this->createControllerFactoryMethod($modelclasspath, (bool) $this->policies),
                     'route' => [
-                        'nameBuilder' => function ($controller) {
+                        'nameBuilder' => static function ($controller) {
                             return $controller instanceof ControllerBuilder ?
                                 $controller->routeName() :
                                 ComponentBuilderHelpers::buildRouteName($controller->getName());
                         },
-                        'classPathBuilder' => function (SourceFileInterface $controller) {
+                        'classPathBuilder' => static function (SourceFileInterface $controller) {
                             return sprintf('%s\\%s', $controller->getNamespace(), Str::camelize($controller->getName()));
-                        }
+                        },
                     ],
                     'dto' => ['path' => $this->blocComponentPath, 'class' => $dto, 'classPath' => $dto->getClassPath()],
                 ];
@@ -293,7 +289,7 @@ class ReverseEngineeringService
             // Add the policy component
             if ($this->policies) {
                 $policyBuilder = MVCPolicyBuilder()->withModel($modelclasspath)->withViewModel($viewmodel->getClassPath());
-                $components['policy'] = ['path' => $this->blocComponentPath, 'class' =>  $policyBuilder, 'classPath' => $policyBuilder->getClassPath()];
+                $components['policy'] = ['path' => $this->blocComponentPath, 'class' => $policyBuilder, 'classPath' => $policyBuilder->getClassPath()];
             }
             // Add the view model component
             $components['viewModel'] = ['path' => $this->blocComponentPath, 'class' => $viewmodel, 'classPath' => $viewmodel->getClassPath()];
@@ -313,11 +309,11 @@ class ReverseEngineeringService
     }
 
     /**
-     * Creates a factory method that create the controller script
-     * 
-     * @param string|null $model
-     * @param null|bool $authorizable
-     * @return Closure((null|SourceFileInterface)|null $service = null, (null|SourceFileInterface)|null $viewModel = null, (null|SourceFileInterface)|null $dtoObject = null): SourceFileInterface 
+     * Creates a factory method that create the controller script.
+     *
+     * @param bool|null $authorizable
+     *
+     * @return Closure((null|SourceFileInterface)|null $service = null, (null|SourceFileInterface)|null $viewModel = null, (null|SourceFileInterface)|null $dtoObject = null): SourceFileInterface
      */
     private function createControllerFactoryMethod(?string $model = null, bool $authorizable = false)
     {
@@ -352,10 +348,9 @@ class ReverseEngineeringService
     }
 
     /**
-     * Filter tables and ignore not required tables
-     * 
-     * @param array $tables 
-     * @return array 
+     * Filter tables and ignore not required tables.
+     *
+     * @return array
      */
     private function applyFilters(array $tables)
     {

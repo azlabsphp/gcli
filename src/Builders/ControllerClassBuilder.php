@@ -14,16 +14,20 @@ declare(strict_types=1);
 namespace Drewlabs\GCli\Builders;
 
 use Drewlabs\CodeGenerator\Contracts\Blueprint;
+
 use function Drewlabs\CodeGenerator\Proxy\PHPClass;
 use function Drewlabs\CodeGenerator\Proxy\PHPClassMethod;
 use function Drewlabs\CodeGenerator\Proxy\PHPClassProperty;
 use function Drewlabs\CodeGenerator\Proxy\PHPFunctionParameter;
+
 use Drewlabs\CodeGenerator\Types\PHPTypesModifiers;
+use Drewlabs\Core\Helpers\Str;
 use Drewlabs\GCli\Contracts\ControllerBuilder as ContractsControllerBuilder;
 use Drewlabs\GCli\Helpers\ComponentBuilderHelpers;
+
 use function Drewlabs\GCli\Proxy\PHPScript;
+
 use Drewlabs\GCli\Traits\HasNamespaceAttribute;
-use Drewlabs\Core\Helpers\Str;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Pluralizer;
@@ -37,7 +41,11 @@ class ControllerClassBuilder implements ContractsControllerBuilder
      *
      * @var string
      */
-    const DEFAULT_NAMESPACE = 'App\\Http\\Controllers';
+    public const DEFAULT_NAMESPACE = 'App\\Http\\Controllers';
+
+    public const CLASS_PATHS = [
+        'Drewlabs\\Http\\Factory\\OkResponseFactoryInterface',
+    ];
 
     /**
      * @var string[]
@@ -47,10 +55,6 @@ class ControllerClassBuilder implements ContractsControllerBuilder
         'Drewlabs\\Laravel\\Query\\Proxy\\SelectQueryAction',
         'Drewlabs\\Laravel\\Query\\Proxy\\UpdateQueryAction',
         'Drewlabs\\Laravel\\Query\\Proxy\\DeleteQueryAction',
-    ];
-
-    const CLASS_PATHS = [
-        'Drewlabs\\Http\\Factory\\OkResponseFactoryInterface'
     ];
 
     /**
@@ -125,7 +129,6 @@ class ControllerClassBuilder implements ContractsControllerBuilder
     private $hasAuthenticatable_ = true;
 
     /**
-     * 
      * @var bool
      */
     private $policies = false;
@@ -176,6 +179,7 @@ class ControllerClassBuilder implements ContractsControllerBuilder
         if ($isClassPath && $asvm) {
             $this->bindViewModel($value);
         }
+
         return $this;
     }
 
@@ -227,13 +231,14 @@ class ControllerClassBuilder implements ContractsControllerBuilder
     }
 
     /**
-     * Makes the controller authorizable
-     * 
-     * @return self 
+     * Makes the controller authorizable.
+     *
+     * @return self
      */
     public function authorizable()
     {
         $this->policies = true;
+
         return $this;
     }
 
@@ -256,7 +261,7 @@ class ControllerClassBuilder implements ContractsControllerBuilder
                     (null !== $this->serviceClass_) || $this->hasActionHandlerInterface_ ? ($this->hasActionHandlerInterface_ ? [
                         PHPFunctionParameter('service', \Drewlabs\Contracts\Support\Actions\ActionHandler::class)->asOptional(),
                     ] : [
-                        PHPFunctionParameter('service', $this->serviceClass_,),
+                        PHPFunctionParameter('service', $this->serviceClass_),
                     ]) : [],
                 ),
                 array_merge(['$this->validator = $validator', '$this->response = $response'], (null !== $this->serviceClass_) || $this->hasActionHandlerInterface_ ?
@@ -267,7 +272,7 @@ class ControllerClassBuilder implements ContractsControllerBuilder
         // #region Add class paths
         foreach (static::CLASS_PATHS as $classPath) {
             $component = $component->addClassPath($classPath);
-            # code...
+            // code...
         }
         // #endregion Add class paths
 
@@ -389,15 +394,15 @@ class ControllerClassBuilder implements ContractsControllerBuilder
                 'returns' => 'mixed',
                 'contents' => array_merge(
                     $this->hasAuthenticatable_ && $this->policies && (null !== $this->viewModelClass_) ? [
-                        "\$$vmParamName" . "->authorize('viewAny', [\$$vmParamName" . "->getModel(), \$$vmParamName])",
-                        ''
+                        "\$$vmParamName" . "->authorize('viewAny', [" . "\$$vmParamName" . "->getModel(), \$$vmParamName])",
+                        '',
                     ] : [],
                     $this->mustGenerateActionContents() ? array_merge(
                         [
-                            "//#region Hidden & Columns attributes",
+                            '//#region Hidden & Columns attributes',
                             "\$columns = \${$vmParamName}->getColumns()",
                             "\$excepts = \${$vmParamName}->get('_hidden') ?? []",
-                            "//#endregion Hidden & Columns attributes",
+                            '//#endregion Hidden & Columns attributes',
                             '',
                             '$result = $this->service->handle(', // \t
                             "\t\${$vmParamName}->has('per_page') ? SelectQueryAction(",
@@ -436,13 +441,13 @@ class ControllerClassBuilder implements ContractsControllerBuilder
                 'contents' => $this->mustGenerateActionContents() ? array_merge(
                     $this->hasAuthenticatable_ && $this->policies && (null !== $this->viewModelClass_) ? [
                         "\$$vmParamName" . "->authorize('view', [\$$vmParamName" . ("->find(\$id), \$$vmParamName])"),
-                        ''
+                        '',
                     ] : [],
                     [
-                        "//#region Hidden & Columns attributes",
+                        '//#region Hidden & Columns attributes',
                         "\$columns = \${$vmParamName}->getColumns()",
                         "\$excepts = \${$vmParamName}->get('_hidden') ?? []",
-                        "//#endregion Hidden & Columns attributes",
+                        '//#endregion Hidden & Columns attributes',
                         '',
                     ],
                     null !== $this->dtoClass_ ? [
@@ -471,8 +476,8 @@ class ControllerClassBuilder implements ContractsControllerBuilder
                 'returns' => 'mixed',
                 'contents' => $this->mustGenerateActionContents() ? array_merge(
                     $this->hasAuthenticatable_ && $this->policies && (null !== $this->viewModelClass_) ? [
-                        "\$$vmParamName" . "->authorize('create', [\$$vmParamName" . "->getModel(), \$$vmParamName])",
-                        ''
+                        "\$$vmParamName" . "->authorize('create', [" . "\$$vmParamName" . "->getModel(), \$$vmParamName])",
+                        '',
                     ] : [],
                     null === $this->viewModelClass_ ? [
                         '$result = $this->validator->validate([], $request->all(), function () use ($request) {',
@@ -523,7 +528,7 @@ class ControllerClassBuilder implements ContractsControllerBuilder
                 'contents' => $this->mustGenerateActionContents() ? array_merge(
                     [
                         (null !== $this->viewModelClass_) ? null : '$request = $request->merge(["id" => $id])',
-                        ""
+                        '',
                     ],
                     $this->hasAuthenticatable_ && $this->policies && (null !== $this->viewModelClass_) ? [
                         "\$$vmParamName" . "->authorize('update', [\$$vmParamName" . ("->find(\$id), \$$vmParamName])"),
@@ -540,7 +545,7 @@ class ControllerClassBuilder implements ContractsControllerBuilder
                     ],
                     [
                         "\t\t// TODO: Uncomment the code below to support relations insertion",
-                        "\t\t//'relations' => \$viewModel->get('_query.relations') ?? [],"
+                        "\t\t//'relations' => \$viewModel->get('_query.relations') ?? [],",
                     ],
                     [
                         null === $this->dtoClass_ ? "\t\t])," : "\t]), function (\$value) {",
@@ -560,7 +565,7 @@ class ControllerClassBuilder implements ContractsControllerBuilder
                 'name' => 'destroy',
                 'params' => [
                     null === $this->viewModelClass_ ? PHPFunctionParameter($vmParamName, Request::class) : PHPFunctionParameter($vmParamName, $this->viewModelClass_),
-                    (PHPFunctionParameter('id', null)),
+                    PHPFunctionParameter('id', null),
                 ],
                 'descriptors' => [
                     'Remove the specified resource from storage.',

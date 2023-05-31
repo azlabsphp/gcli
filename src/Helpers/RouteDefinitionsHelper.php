@@ -14,12 +14,12 @@ declare(strict_types=1);
 namespace Drewlabs\GCli\Helpers;
 
 use Closure;
-use Drewlabs\GCli\Cache\CacheableRoutes;
-use Drewlabs\GCli\Cache\Cache;
-use Drewlabs\GCli\IO\Disk;
-use Drewlabs\GCli\Models\RouteController;
 use Drewlabs\Core\Helpers\Arr;
 use Drewlabs\Core\Helpers\Str;
+use Drewlabs\GCli\Cache\Cache;
+use Drewlabs\GCli\Cache\CacheableRoutes;
+use Drewlabs\GCli\IO\Disk;
+use Drewlabs\GCli\Models\RouteController;
 
 class RouteDefinitionsHelper
 {
@@ -103,11 +103,11 @@ class RouteDefinitionsHelper
         ) use ($definitions, $filename, $basePath, $partial) {
             $adapter = Disk::new($basePath);
             $output = '';
-            list($before, $between, $after) = static::getRouteParts($adapter, $filename, $partial);
+            [$before, $between, $after] = static::getRouteParts($adapter, $filename, $partial);
             // Write the content before to the output
             $output .= $before;
             // Write route definition start
-            $output .= self::ROUTE_DEFINITION_START . \PHP_EOL;
+            $output .= self::ROUTE_DEFINITION_START.\PHP_EOL;
             // Write the existing route defintions
             $output .= $between;
             // Prepare the new routes script
@@ -133,14 +133,14 @@ class RouteDefinitionsHelper
                 }
             );
             foreach ($definitions as $key => $value) {
-                $output .= \PHP_EOL . ($groupRoutes ? "\t" : '') . "// Route definitions for $key" . \PHP_EOL;
+                $output .= \PHP_EOL.($groupRoutes ? "\t" : '')."// Route definitions for $key".\PHP_EOL;
                 $output .= implode(\PHP_EOL, $value);
-                $output .= \PHP_EOL . ($groupRoutes ? "\t" : '') . "// !End Route definitions for $key" . \PHP_EOL;
+                $output .= \PHP_EOL.($groupRoutes ? "\t" : '')."// !End Route definitions for $key".\PHP_EOL;
             }
             if ((null !== $prefix) || (null !== $middleware)) {
                 $output .= '});';
             }
-            $output .= \PHP_EOL . self::ROUTE_DEFINITION_END;
+            $output .= \PHP_EOL.self::ROUTE_DEFINITION_END;
             $output .= $after;
             $adapter->write($filename, $output);
             // Call the callback
@@ -148,71 +148,6 @@ class RouteDefinitionsHelper
                 $callback($definitions);
             }
         };
-    }
-
-    /**
-     * Creates route group script part
-     * 
-     * @param string $prefix 
-     * @param string[]|string $middleware 
-     * @return string 
-     */
-    private static function createGroupPart($prefix, $middleware)
-    {
-        $list_to_list_string = static function ($values) {
-            $strfn = static function ($v) {
-                return \is_string($v) ? "'$v'" : "$v";
-            };
-            foreach ($values as $key => $value) {
-                yield is_numeric($key) ?
-                    $strfn($value) :
-                    "'$key' => " . $strfn($value);
-            }
-        };
-        $output = @json_encode(
-            iterator_to_array(
-                $list_to_list_string(
-                    array_merge(
-                        [],
-                        null !== $prefix ? ['prefix' => $prefix] : [],
-                        null !== $middleware ? ['middleware' => $middleware] : []
-                    )
-                )
-            )
-        );
-        return $output ? Str::replace('\\/', '/', $output) : '';
-    }
-
-    /**
-     * Create the routing file parts
-     * 
-     * @param Disk $adapter 
-     * @param string $filename 
-     * @param bool $partial 
-     * @return array 
-     */
-    private static function getRouteParts($adapter, string $filename, bool $partial = false)
-    {
-        if (!$adapter->exists($filename)) {
-            return ['<?php' . \PHP_EOL, '', ''];
-        }
-        // Read content and locate where to write the new data
-        $content = $adapter->read($filename);
-        if (empty(trim($content))) {
-            return ['<?php' . \PHP_EOL, '', ''];
-        }
-        // Read the generated script start and end values
-        if (
-            Str::contains($content, self::ROUTE_DEFINITION_START) ||
-            (Str::contains($content, self::ROUTE_DEFINITION_END))
-        ) {
-            return [
-                Str::before(self::ROUTE_DEFINITION_START, $content),
-                $partial ? Str::before(self::ROUTE_DEFINITION_END, Str::after(self::ROUTE_DEFINITION_START, $content)) : '',
-                Str::after(self::ROUTE_DEFINITION_END, $content)
-            ];
-        }
-        return [$content, '', ''];
     }
 
     /**
@@ -236,6 +171,73 @@ class RouteDefinitionsHelper
      */
     public static function getCachedRouteDefinitions(string $path)
     {
-       return Cache::new($path)->load(CacheableRoutes::class);
+        return Cache::new($path)->load(CacheableRoutes::class);
+    }
+
+    /**
+     * Creates route group script part.
+     *
+     * @param string          $prefix
+     * @param string[]|string $middleware
+     *
+     * @return string
+     */
+    private static function createGroupPart($prefix, $middleware)
+    {
+        $list_to_list_string = static function ($values) {
+            $strfn = static function ($v) {
+                return \is_string($v) ? "'$v'" : "$v";
+            };
+            foreach ($values as $key => $value) {
+                yield is_numeric($key) ?
+                    $strfn($value) :
+                    "'$key' => ".$strfn($value);
+            }
+        };
+        $output = @json_encode(
+            iterator_to_array(
+                $list_to_list_string(
+                    array_merge(
+                        [],
+                        null !== $prefix ? ['prefix' => $prefix] : [],
+                        null !== $middleware ? ['middleware' => $middleware] : []
+                    )
+                )
+            )
+        );
+
+        return $output ? Str::replace('\\/', '/', $output) : '';
+    }
+
+    /**
+     * Create the routing file parts.
+     *
+     * @param Disk $adapter
+     *
+     * @return array
+     */
+    private static function getRouteParts($adapter, string $filename, bool $partial = false)
+    {
+        if (!$adapter->exists($filename)) {
+            return ['<?php'.\PHP_EOL, '', ''];
+        }
+        // Read content and locate where to write the new data
+        $content = $adapter->read($filename);
+        if (empty(trim($content))) {
+            return ['<?php'.\PHP_EOL, '', ''];
+        }
+        // Read the generated script start and end values
+        if (
+            Str::contains($content, self::ROUTE_DEFINITION_START)
+            || Str::contains($content, self::ROUTE_DEFINITION_END)
+        ) {
+            return [
+                Str::before(self::ROUTE_DEFINITION_START, $content),
+                $partial ? Str::before(self::ROUTE_DEFINITION_END, Str::after(self::ROUTE_DEFINITION_START, $content)) : '',
+                Str::after(self::ROUTE_DEFINITION_END, $content),
+            ];
+        }
+
+        return [$content, '', ''];
     }
 }

@@ -21,12 +21,13 @@ use function Drewlabs\CodeGenerator\Proxy\PHPClassProperty;
 use function Drewlabs\CodeGenerator\Proxy\PHPFunctionParameter;
 
 use Drewlabs\CodeGenerator\Types\PHPTypesModifiers;
+use Drewlabs\Core\Helpers\Str;
 use Drewlabs\GCli\Contracts\ComponentBuilder;
 use Drewlabs\GCli\Helpers\ComponentBuilderHelpers;
+
 use function Drewlabs\GCli\Proxy\PHPScript;
 
 use Drewlabs\GCli\Traits\HasNamespaceAttribute;
-use Drewlabs\Core\Helpers\Str;
 use Illuminate\Support\Pluralizer;
 
 class DataTransfertClassBuilder implements ComponentBuilder
@@ -41,6 +42,24 @@ class DataTransfertClassBuilder implements ComponentBuilder
     public const DEFAULT_NAMESPACE = 'App\\Dto';
 
     /**
+     * @var string[]
+     */
+    public const CLASS_PATHS = [
+        'Drewlabs\\PHPValue\\Contracts\\ValueInterface',
+        'Drewlabs\\PHPValue\\Traits\\Castable',
+        'Drewlabs\\PHPValue\\Traits\\ObjectAdapter',
+        'Drewlabs\\PHPValue\\Contracts\\Adaptable',
+    ];
+
+    /**
+     * @var string[]
+     */
+    public const CLASS_TRAITS = [
+        'Castable',
+        'ObjectAdapter',
+    ];
+
+    /**
      * @var string
      */
     private const DEFAULT_NAME = 'TestDto';
@@ -50,26 +69,6 @@ class DataTransfertClassBuilder implements ComponentBuilder
      */
     private const DEFAULT_PATH = 'Dto/';
 
-
-    /**
-     * @var string[]
-     */
-    const CLASS_PATHS = [
-        'Drewlabs\\PHPValue\\Contracts\\ValueInterface',
-        'Drewlabs\\PHPValue\\Traits\\Castable',
-        'Drewlabs\\PHPValue\\Traits\\ObjectAdapter',
-        'Drewlabs\\PHPValue\\Contracts\\Adaptable'
-    ];
-
-    /**
-     * @var string[]
-     */
-    const CLASS_TRAITS = [
-        'Castable',
-        'ObjectAdapter'
-    ];
-
-
     /**
      * List of attributes that can be json serializable.
      *
@@ -78,8 +77,8 @@ class DataTransfertClassBuilder implements ComponentBuilder
     private $properties = [];
 
     /**
-     * List of cast attributes
-     * 
+     * List of cast attributes.
+     *
      * @var array
      */
     private $casts = [];
@@ -102,22 +101,22 @@ class DataTransfertClassBuilder implements ComponentBuilder
     private $modelClassPath;
 
     /**
-     * 
      * @var bool
      */
     private $camelize = false;
 
     /**
-     * Creates a data transfert class instance
-     * 
-     * @param array $json_attributes 
-     * @param (null|string)|null $name 
-     * @param (null|string)|null $namespace 
-     * @param (null|string)|null $path 
-     * @return void 
-     * @throws \InvalidArgumentException 
-     * @throws \RuntimeException 
-     * @throws \Exception 
+     * Creates a data transfert class instance.
+     *
+     * @param (string|null)|null $name
+     * @param (string|null)|null $namespace
+     * @param (string|null)|null $path
+     *
+     * @throws \InvalidArgumentException
+     * @throws \RuntimeException
+     * @throws \Exception
+     *
+     * @return void
      */
     public function __construct(
         array $json_attributes = [],
@@ -126,7 +125,7 @@ class DataTransfertClassBuilder implements ComponentBuilder
         ?string $path = null
     ) {
         $this->setName($name ? (!Str::endsWith($name, 'Dto') ?
-            Str::camelize(Pluralizer::singular($name)) . 'Dto' :
+            Str::camelize(Pluralizer::singular($name)).'Dto' :
             Str::camelize(Pluralizer::singular($name))) : self::DEFAULT_NAME);
         // Set the component write path
         $this->setWritePath($path ?? self::DEFAULT_PATH);
@@ -143,25 +142,27 @@ class DataTransfertClassBuilder implements ComponentBuilder
     }
 
     /**
-     * Attach a model class metadata to the data transfer class builder
-     * 
-     * @param mixed $model 
-     * @return self 
-     * @throws \InvalidArgumentException 
+     * Attach a model class metadata to the data transfer class builder.
+     *
+     * @param mixed $model
+     *
+     * @throws \InvalidArgumentException
+     *
+     * @return self
      */
     public function bindModel($model)
     {
         if (null === $model) {
             return $this;
         }
-        $classname = \is_object($model) ? \get_class($model) : $model;
+        $classname = \is_object($model) ? $model::class : $model;
         $isClassPath = Str::contains($classname, '\\');
         if ($isClassPath) {
             $this->modelClassPath = $classname;
         }
         $modelname = 'Test';
         $modelname = $isClassPath ? $this->getClassNameFromPath($classname) : $classname;
-        $this->setName(Str::camelize(Pluralizer::singular($modelname)) . 'Dto');
+        $this->setName(Str::camelize(Pluralizer::singular($modelname)).'Dto');
 
         // creates an object to if the model is a PHP string
         if (\is_string($model) && class_exists($model)) {
@@ -173,6 +174,7 @@ class DataTransfertClassBuilder implements ComponentBuilder
                 return $this->resolveClassProperties($fillables, $camelize);
             });
         }
+
         return $this;
     }
 
@@ -189,25 +191,26 @@ class DataTransfertClassBuilder implements ComponentBuilder
     }
 
     /**
-     * Set the attribute or attribute creator function that is invoked when buiding properties
-     * 
-     * @param array|\Closure $attributes 
-     * @return $this 
+     * Set the attribute or attribute creator function that is invoked when buiding properties.
+     *
+     * @param array|\Closure $attributes
+     *
+     * @return $this
      */
     public function setAttributes($attributes = [])
     {
-        if (is_array($attributes) && empty($attributes)) {
+        if (\is_array($attributes) && empty($attributes)) {
             return $this;
         }
         $this->properties = $attributes ?? [];
+
         return $this;
     }
 
     /**
-     * Set the cast attributes
-     * 
-     * @param array $casts 
-     * @return self 
+     * Set the cast attributes.
+     *
+     * @return self
      */
     public function setCasts(array $casts = [])
     {
@@ -219,14 +222,14 @@ class DataTransfertClassBuilder implements ComponentBuilder
     }
 
     /**
-     * Configure support of camel case transformation for the current instance
-     * 
-     * @param bool $value 
-     * @return self 
+     * Configure support of camel case transformation for the current instance.
+     *
+     * @return self
      */
     public function setCamelizeProperties(bool $value)
     {
         $this->camelize = $value;
+
         return $this;
     }
 
@@ -238,9 +241,9 @@ class DataTransfertClassBuilder implements ComponentBuilder
         $component = PHPClass($this->name())
             ->addComment(
                 array_merge(
-                    is_array($this->propertyDocComments) ?
+                    \is_array($this->propertyDocComments) ?
                         $this->propertyDocComments ?? [] : (null !== $this->propertyDocComments ? ($this->propertyDocComments)($this->camelize) : []),
-                    [' ', '@package ' . $this->namespace_ ?? self::DEFAULT_NAMESPACE]
+                    [' ', '@package '.$this->namespace_ ?? self::DEFAULT_NAMESPACE]
                 )
             )
             ->asFinal()
@@ -255,7 +258,7 @@ class DataTransfertClassBuilder implements ComponentBuilder
                     [
                         'Creates class instance',
                         "\t",
-                        '@param array|Adaptable|Accessible $adaptable'
+                        '@param array|Adaptable|Accessible $adaptable',
                     ]
                 )->addLine('$this->bootInstance(static::__PROPERTIES__, $adaptable)')
             );
@@ -275,7 +278,7 @@ class DataTransfertClassBuilder implements ComponentBuilder
                 '__PROPERTIES__',
                 'array',
                 PHPTypesModifiers::PRIVATE,
-                is_array($this->properties) ? $this->properties ?? [] : (null !== $this->properties ? ($this->properties)($this->camelize) : [])
+                \is_array($this->properties) ? $this->properties ?? [] : (null !== $this->properties ? ($this->properties)($this->camelize) : [])
             )->asConstant()
         );
 
@@ -305,7 +308,7 @@ class DataTransfertClassBuilder implements ComponentBuilder
         // #region Add class paths
         foreach (static::CLASS_PATHS as $classPath) {
             $component = $component->addClassPath($classPath);
-            # code...
+            // code...
         }
         // #endregion Add class paths
 
@@ -315,7 +318,7 @@ class DataTransfertClassBuilder implements ComponentBuilder
              * @var Blueprint
              */
             $component = $component->addTrait($trait);
-            # code...
+            // code...
         }
 
         // Add getter methods
@@ -359,6 +362,7 @@ class DataTransfertClassBuilder implements ComponentBuilder
                 $attributes[] = !is_numeric($key) ? $key : $value;
             }
         }
+
         return $attributes;
     }
 
@@ -383,9 +387,10 @@ class DataTransfertClassBuilder implements ComponentBuilder
     {
         $comments = [];
         foreach ($properties as $key => $value) {
-            $name = false !== strpos($value, ':') ? Str::before(':', $value) : $value;
-            $comments[] = '@property ' . $this->getPHPType($name) . ' ' . ($camelize ? Str::camelize(trim($key), false) : $key);
+            $name = str_contains($value, ':') ? Str::before(':', $value) : $value;
+            $comments[] = '@property '.$this->getPHPType($name).' '.($camelize ? Str::camelize(trim($key), false) : $key);
         }
+
         return $comments;
     }
 

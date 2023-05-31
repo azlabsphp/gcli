@@ -46,6 +46,7 @@ class Writer
         if (false === $fd) {
             throw new IOException(sprintf('Error opening stream at path: %s. %s', $path, error_get_last()['message'] ?? ''));
         }
+
         return new static($fd);
     }
 
@@ -55,16 +56,15 @@ class Writer
      * **Note** Method returns false if was unable to write to
      * file resource because the resource was close or a write error
      * occurs
-     * 
-     * @param string $data 
-     * @param null|int $length 
-     * @param int $operation 
-     * @return int|false 
+     *
+     * @param int $operation
+     *
+     * @return int|false
      */
     public function write(string $data, ?int $length = null, $operation = \LOCK_EX | \LOCK_NB)
     {
         // Case the read writer is not a resource, we simply return false
-        if (!is_resource($this->handle)) {
+        if (!\is_resource($this->handle)) {
             return false;
         }
         $bytes = false;
@@ -72,6 +72,7 @@ class Writer
             $bytes = @fwrite($this->handle, $data, $length);
             @flock($this->handle, \LOCK_UN);
         }
+
         return $bytes;
     }
 
@@ -82,10 +83,9 @@ class Writer
      */
     public function close()
     {
-        if (null !== $this->handle && is_resource($this->handle)) {
+        if (null !== $this->handle && \is_resource($this->handle)) {
             fclose($this->handle);
             $this->handle = null;
         }
     }
-
 }

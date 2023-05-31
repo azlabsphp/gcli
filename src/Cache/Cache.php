@@ -27,9 +27,7 @@ class Cache
     private $path;
 
     /**
-     * Creates class instance
-     * 
-     * @param null|string $path 
+     * Creates class instance.
      */
     public function __construct(?string $path = null)
     {
@@ -37,10 +35,9 @@ class Cache
     }
 
     /**
-     * Creates new class instance
-     * 
-     * @param null|string $path 
-     * @return Cache 
+     * Creates new class instance.
+     *
+     * @return Cache
      */
     public static function new(?string $path = null)
     {
@@ -55,6 +52,7 @@ class Cache
     public function dump(Cacheable $value)
     {
         Directory::new($this->path->dirname())->create();
+
         return Writer::open($this->path->__toString())->write($value->serialize());
     }
 
@@ -70,6 +68,7 @@ class Cache
         if (!$this->path->exists()) {
             return null;
         }
+
         return \call_user_func([\is_string($type) ? new $type() : $type, 'unserialize'], Reader::open($this->path->__toString())->read());
     }
 }

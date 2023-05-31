@@ -11,7 +11,6 @@ declare(strict_types=1);
  * file that was distributed with this source code.
  */
 
-
 /**
  * Returns the path to the cache path of the current package.
  *
@@ -30,7 +29,7 @@ if (!function_exists('drewlabs_code_generator_is_running_lumen_app')) {
      */
     function drewlabs_code_generator_is_running_lumen_app($callback)
     {
-        return ("Laravel\Lumen\Application" === get_class($callback)) && preg_match('/(5\.[5-8]\..*)|(6\..*)|(7\..*)|(8\..*)|(9\..*)/', $callback->version());
+        return ("Laravel\Lumen\Application" === $callback::class) && preg_match('/(5\.[5-8]\..*)|(6\..*)|(7\..*)|(8\..*)|(9\..*)/', $callback->version());
     }
 }
 
@@ -47,6 +46,7 @@ if (!function_exists('app')) {
         if (null === $abstract) {
             return \Illuminate\Container\Container::getInstance();
         }
+
         return \Illuminate\Container\Container::getInstance()->make($abstract, $parameters);
     }
 }

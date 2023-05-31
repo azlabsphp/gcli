@@ -13,11 +13,11 @@ declare(strict_types=1);
 
 namespace Drewlabs\GCli\Extensions\Providers;
 
-use Drewlabs\GCli\Extensions\Console\Commands\MakeProjectComponentsCommand;
 use Drewlabs\GCli\Extensions\Console\Commands\MakeClassCommand;
 use Drewlabs\GCli\Extensions\Console\Commands\MakeControllerCommand;
 use Drewlabs\GCli\Extensions\Console\Commands\MakeDTOClassCommand;
 use Drewlabs\GCli\Extensions\Console\Commands\MakeModelCommand;
+use Drewlabs\GCli\Extensions\Console\Commands\MakeProjectComponentsCommand;
 use Drewlabs\GCli\Extensions\Console\Commands\MakeServiceCommand;
 use Drewlabs\GCli\Extensions\Console\Commands\MakeViewModelCommand;
 use Illuminate\Support\ServiceProvider as SupportServiceProvider;

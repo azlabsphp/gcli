@@ -14,8 +14,8 @@ declare(strict_types=1);
 namespace Drewlabs\GCli\PHP;
 
 use Drewlabs\CodeGenerator\Contracts\Stringable;
-use Drewlabs\GCli\Contracts\SourceFileInterface;
 use Drewlabs\Core\Helpers\Str;
+use Drewlabs\GCli\Contracts\SourceFileInterface;
 
 class PHPScriptFile implements SourceFileInterface
 {

@@ -13,8 +13,8 @@ declare(strict_types=1);
 
 namespace Drewlabs\GCli\Traits;
 
-use Drewlabs\GCli\IO\Path;
 use Drewlabs\Core\Helpers\Str;
+use Drewlabs\GCli\IO\Path;
 
 trait HasNamespaceAttribute
 {
@@ -55,10 +55,10 @@ trait HasNamespaceAttribute
     {
         return $this->namespace_;
     }
-    
+
     public function getClassPath()
     {
-        return sprintf('%s\\%s', $this->namespace(),$this->name());
+        return sprintf('%s\\%s', $this->namespace(), $this->name());
     }
 
     private function createPathFromNamespace(string $namespace)

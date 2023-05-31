@@ -14,15 +14,17 @@ declare(strict_types=1);
 namespace Drewlabs\GCli\Extensions\Console\Commands;
 
 use Drewlabs\CodeGenerator\Exceptions\PHPVariableException;
+use Drewlabs\Core\Helpers\Str;
 use Drewlabs\GCli\Builders\DtoAttributesFactory;
 use Drewlabs\GCli\Builders\EloquentORMModelBuilder;
 use Drewlabs\GCli\Builders\ViewModelRulesFactory;
 use Drewlabs\GCli\Extensions\Console\ComponentCommandsHelpers;
 use Drewlabs\GCli\Helpers\ComponentBuilderHelpers;
+
 use function Drewlabs\GCli\Proxy\ComponentsScriptWriter;
+
 use function Drewlabs\GCli\Proxy\MVCControllerBuilder;
 
-use Drewlabs\Core\Helpers\Str;
 use Illuminate\Console\Command;
 use Illuminate\Container\Container;
 
@@ -32,15 +34,15 @@ use Illuminate\Support\Pluralizer;
 class MakeControllerCommand extends Command
 {
     protected $signature = 'gcli:make:controller '
-        . '{name=TestController : Controller name}'
-        . '{--namespace= : Controller namespace}'
-        . '{--path= : Project source code path}'
-        . '{--model= : Model attached to the controller generated code}'
-        . '{--invokable : Creates an invokable controller }'
-        . '{--service= : Service class to bind to the controller definition}'
-        . '{--viewModel= : View model class to bind to the controller definition}'
-        . '{--dtoClass= : Data transfert object to bind to the controller definition}'
-        . '{--authorizable : Add policy handlers to the controller class}';
+        .'{name=TestController : Controller name}'
+        .'{--namespace= : Controller namespace}'
+        .'{--path= : Project source code path}'
+        .'{--model= : Model attached to the controller generated code}'
+        .'{--invokable : Creates an invokable controller }'
+        .'{--service= : Service class to bind to the controller definition}'
+        .'{--viewModel= : View model class to bind to the controller definition}'
+        .'{--dtoClass= : Data transfert object to bind to the controller definition}'
+        .'{--authorizable : Add policy handlers to the controller class}';
 
     protected $description = 'Creates a Drewlabs package MVC controller';
     /**
@@ -82,7 +84,6 @@ class MakeControllerCommand extends Command
      * @param mixed $service
      * @param mixed $dto
      * @param mixed $viewModel
-     * @param bool $authorizable
      *
      * @throws \Exception
      * @throws PHPVariableException
@@ -122,9 +123,9 @@ class MakeControllerCommand extends Command
             $dtoClass = ComponentCommandsHelpers::createDto($namespace, $basePath, $modelClassPath, $dto, $definition instanceof DtoAttributesFactory ? $definition->createDtoAttributes() : []);
             $viewModelClass = ComponentCommandsHelpers::createViewModel($namespace, $basePath, $modelClassPath, $viewModel, $definition instanceof ViewModelRulesFactory ? $definition->createRules() : [], $definition instanceof ViewModelRulesFactory ? $definition->createRules(true) : []);
         } else {
-            $serviceClass = sprintf('%s\\%s', sprintf('\\%s\\Services', ComponentCommandsHelpers::getBaseNamespace($namespace) ?? 'App'), "${modelName}Service");
-            $dtoClass = sprintf('%s\\%s', sprintf('\\%s\\Dto', ComponentCommandsHelpers::getBaseNamespace($namespace) ?? 'App'), "${modelName}Dto");
-            $viewModelClass = sprintf('%s\\%s', sprintf('\\%s\\Http\\ViewModels', ComponentCommandsHelpers::getBaseNamespace($namespace) ?? 'App'), "${modelName}ViewModel");
+            $serviceClass = sprintf('%s\\%s', sprintf('\\%s\\Services', ComponentCommandsHelpers::getBaseNamespace($namespace) ?? 'App'), "{$modelName}Service");
+            $dtoClass = sprintf('%s\\%s', sprintf('\\%s\\Dto', ComponentCommandsHelpers::getBaseNamespace($namespace) ?? 'App'), "{$modelName}Dto");
+            $viewModelClass = sprintf('%s\\%s', sprintf('\\%s\\Http\\ViewModels', ComponentCommandsHelpers::getBaseNamespace($namespace) ?? 'App'), "{$modelName}ViewModel");
         }
         ComponentsScriptWriter($basePath)->write(
             ComponentBuilderHelpers::buildController(

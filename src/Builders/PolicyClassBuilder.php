@@ -13,19 +13,21 @@ declare(strict_types=1);
 
 namespace Drewlabs\GCli\Builders;
 
-use Drewlabs\GCli\Contracts\ComponentBuilder;
-use Drewlabs\GCli\Helpers\ComponentBuilderHelpers;
-use Drewlabs\GCli\Traits\HasNamespaceAttribute;
-use Drewlabs\Core\Helpers\Str;
-
 use function Drewlabs\CodeGenerator\Proxy\PHPClass;
 use function Drewlabs\CodeGenerator\Proxy\PHPClassMethod;
 use function Drewlabs\CodeGenerator\Proxy\PHPFunctionParameter;
+
+use Drewlabs\Core\Helpers\Str;
+
+use Drewlabs\GCli\Contracts\ComponentBuilder;
+use Drewlabs\GCli\Helpers\ComponentBuilderHelpers;
+
 use function Drewlabs\GCli\Proxy\PHPScript;
+
+use Drewlabs\GCli\Traits\HasNamespaceAttribute;
 
 class PolicyClassBuilder implements ComponentBuilder
 {
-
     use HasNamespaceAttribute;
 
     /**
@@ -52,40 +54,42 @@ class PolicyClassBuilder implements ComponentBuilder
      */
     private $classPaths = [
         'Illuminate\\Contracts\\Auth\\Authenticatable',
-        'Illuminate\\Auth\\Access\\HandlesAuthorization'
+        'Illuminate\\Auth\\Access\\HandlesAuthorization',
     ];
 
     /**
-     * The name of the model bound to the policy
+     * The name of the model bound to the policy.
      *
      * @var string
      */
     private $model = 'Test';
 
     /**
-     * The name of the view model bound to the policy
+     * The name of the view model bound to the policy.
      *
      * @var string
      */
     private $viewModel;
 
     /**
-     * Creates class instances
-     * 
-     * @param (null|string)|null $name 
-     * @param (null|string)|null $namespace 
-     * @param (null|string)|null $path 
-     * @return void 
-     * @throws InvalidArgumentException 
-     * @throws RuntimeException 
-     * @throws UnableToRetrieveMetadataException 
+     * Creates class instances.
+     *
+     * @param (string|null)|null $name
+     * @param (string|null)|null $namespace
+     * @param (string|null)|null $path
+     *
+     * @throws InvalidArgumentException
+     * @throws RuntimeException
+     * @throws UnableToRetrieveMetadataException
+     *
+     * @return void
      */
     public function __construct(
         ?string $name = null,
         ?string $namespace = null,
         ?string $path = null
     ) {
-        $this->setName($name ? (!Str::endsWith($name, 'Policy') ? Str::camelize($name) . 'Policy' : Str::camelize($name)) : self::__NAME__);
+        $this->setName($name ? (!Str::endsWith($name, 'Policy') ? Str::camelize($name).'Policy' : Str::camelize($name)) : self::__NAME__);
         // Set the component write path
         $this->setWritePath($path ?? self::__PATH__);
 
@@ -99,21 +103,21 @@ class PolicyClassBuilder implements ComponentBuilder
         if (empty($classPath)) {
             return $self;
         }
-        if (false !== strpos($classPath, '\\')) {
+        if (str_contains($classPath, '\\')) {
             $self->model = array_reverse(explode('\\', $classPath))[0];
             $self->classPaths[$classPath] = $classPath;
         } else {
             $self->model = $classPath;
         }
-        $self->setName(Str::camelize($self->model) . 'Policy');
+        $self->setName(Str::camelize($self->model).'Policy');
+
         return $self;
     }
 
     /**
-     * Copy the current instance and modify the view model name
-     * 
-     * @param string $classPath 
-     * @return self 
+     * Copy the current instance and modify the view model name.
+     *
+     * @return self
      */
     public function withViewModel(string $classPath)
     {
@@ -121,14 +125,16 @@ class PolicyClassBuilder implements ComponentBuilder
         if (empty($classPath)) {
             return $self;
         }
-        if (false !== strpos($classPath, '\\')) {
+        if (str_contains($classPath, '\\')) {
             $self->viewModel = array_reverse(explode('\\', $classPath))[0];
             $self->classPaths[$classPath] = $classPath;
+
             return $self;
         }
 
         // Defaults
         $self->viewModel = $classPath;
+
         return $self;
     }
 
@@ -153,7 +159,7 @@ class PolicyClassBuilder implements ComponentBuilder
                     'bool|mixed',
                     'public',
                     '`index` action policy gate'
-                )->addLine("return true")
+                )->addLine('return true')
             )
             // Add `view` method
             ->addMethod(
@@ -169,8 +175,8 @@ class PolicyClassBuilder implements ComponentBuilder
                     '`show` action policy gate handler'
                 )->addLine('if (null === $model) {')
                     ->addLine("\t\$this->deny()")
-                    ->addLine("}")
-                    ->addLine("return true")
+                    ->addLine('}')
+                    ->addLine('return true')
             )
             // Add `create` method
             ->addMethod(
@@ -184,7 +190,7 @@ class PolicyClassBuilder implements ComponentBuilder
                     'public',
                     '`store/create` action policy gate policy'
                 )
-                    ->addLine("return true")
+                    ->addLine('return true')
             )
             // Add `update` method
             ->addMethod(
@@ -201,8 +207,8 @@ class PolicyClassBuilder implements ComponentBuilder
                 )
                     ->addLine('if (null === $model) {')
                     ->addLine("\t\$this->deny()")
-                    ->addLine("}")
-                    ->addLine("return true")
+                    ->addLine('}')
+                    ->addLine('return true')
             )
             // Add `update` method
             ->addMethod(
@@ -219,8 +225,8 @@ class PolicyClassBuilder implements ComponentBuilder
                 )
                     ->addLine('if (null === $model) {')
                     ->addLine("\t\$this->deny()")
-                    ->addLine("}")
-                    ->addLine("return true")
+                    ->addLine('}')
+                    ->addLine('return true')
             )
             ->addToNamespace($this->namespace_ ?? self::__NAMESPACE__);
 

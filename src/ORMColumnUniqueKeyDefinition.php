@@ -22,10 +22,9 @@ class ORMColumnUniqueKeyDefinition implements UniqueKeyConstraintDefinition
     private $columns;
 
     /**
-     * Creates class instance
-     * 
-     * @param string $table 
-     * @param string|string[] $columns 
+     * Creates class instance.
+     *
+     * @param string|string[] $columns
      */
     public function __construct(string $table, $columns)
     {

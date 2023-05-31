@@ -18,7 +18,6 @@ use Drewlabs\GCli\Builders\ViewModelRulesFactory;
 use Drewlabs\GCli\Contracts\ORMColumnDefinition;
 use Drewlabs\GCli\Contracts\ORMModelDefinition as ContractsORMModelDefinition;
 use Drewlabs\GCli\Helpers\DataTypeToFluentValidationRulesHelper;
-use Exception;
 
 class ORMModelDefinition implements ContractsORMModelDefinition, DtoAttributesFactory, ViewModelRulesFactory
 {
@@ -31,15 +30,15 @@ class ORMModelDefinition implements ContractsORMModelDefinition, DtoAttributesFa
     private $comment;
 
     /**
-     * Creates class instance
-     * 
-     * @param string $primaryKey 
-     * @param string $name 
-     * @param string $table 
-     * @param ORMColumnDefinition[] $columns 
-     * @param bool $increments 
-     * @param string $namespace 
-     * @param string $comment 
+     * Creates class instance.
+     *
+     * @param string                $primaryKey
+     * @param string                $name
+     * @param string                $table
+     * @param ORMColumnDefinition[] $columns
+     * @param bool                  $increments
+     * @param string                $namespace
+     * @param string                $comment
      */
     public function __construct(
         $primaryKey,
@@ -116,12 +115,12 @@ class ORMModelDefinition implements ContractsORMModelDefinition, DtoAttributesFa
     }
 
     /**
-     * 
-     * @param ORMColumnDefinition $column 
-     * @param (null|string)|null $primaryKey 
-     * @param bool $updates 
-     * @return array 
-     * @throws Exception 
+     * @param (string|null)|null $primaryKey
+     * @param bool               $updates
+     *
+     * @throws \Exception
+     *
+     * @return array
      */
     private function getColumRules(ORMColumnDefinition $column, ?string $primaryKey = null, $updates = false)
     {
@@ -135,7 +134,7 @@ class ORMModelDefinition implements ContractsORMModelDefinition, DtoAttributesFa
         $columnRules = DataTypeToFluentValidationRulesHelper::getRule($column->type());
         $rules = [...$rules, ...$columnRules];
         if ($constraints = $column->foreignConstraint()) {
-            $rules = [...$rules, ...(DataTypeToFluentValidationRulesHelper::getRule($constraints))];
+            $rules = [...$rules, ...DataTypeToFluentValidationRulesHelper::getRule($constraints)];
         }
         if (($constraints = $column->unique()) && ($column->name() !== $primaryKey)) {
             $rules = [...$rules, DataTypeToFluentValidationRulesHelper::getUniqueRule($constraints, $primaryKey, $updates)];
@@ -144,11 +143,12 @@ class ORMModelDefinition implements ContractsORMModelDefinition, DtoAttributesFa
         return array_merge($rules);
     }
 
-    private function createColumnRule(ORMColumnDefinition $column, string $key = null)
+    private function createColumnRule(ORMColumnDefinition $column, ?string $key = null)
     {
         if ($column->name() === $key) {
             return DataTypeToFluentValidationRulesHelper::SOMETIMES;
         }
+
         return null !== $key ?
             sprintf(
                 '%s:%s',

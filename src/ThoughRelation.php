@@ -13,85 +13,76 @@ declare(strict_types=1);
 
 namespace Drewlabs\GCli;
 
-
 class ThoughRelation
 {
     /**
-     * relation method name
-     * 
+     * relation method name.
+     *
      * @var string
      */
     private $name;
 
     /**
-     * relationship type
-     * 
+     * relationship type.
+     *
      * @var string
      */
     private $type;
 
     /**
-     * Left table in the relation
-     * 
+     * Left table in the relation.
+     *
      * @var string
      */
     private $left;
     /**
-     * Right table in the relation
-     * 
+     * Right table in the relation.
+     *
      * @var string
      */
     private $right;
     /**
-     * Though table in the relation
-     * 
+     * Though table in the relation.
+     *
      * @var string
      */
     private $through;
     /**
-     * Left table foreign key column name
-     * 
+     * Left table foreign key column name.
+     *
      * @var string
      */
     private $leftforeignkey;
     /**
-     * Right table foreign key column name
-     * 
+     * Right table foreign key column name.
+     *
      * @var string
      */
     private $rightforeignkey;
     /**
-     * Left table local key column name
-     * 
+     * Left table local key column name.
+     *
      * @var string
      */
     private $leftlocalkey;
 
     /**
-     * Right table local key column name
-     * 
+     * Right table local key column name.
+     *
      * @var string
      */
     private $rightlocalkey;
 
     /**
-     * relation casting class path
-     * 
+     * relation casting class path.
+     *
      * @var string
      */
     private $castclasspath;
 
     /**
-     * Creates Many through relation instance
-     * 
-     * @param string $name 
-     * @param string $type 
-     * @param string $left 
-     * @param string $right 
-     * @param string|null $through 
-     * @param string|null $leftforeignkey 
-     * @param string|null $rightforeignkey 
-     * @param string|null $leftlocalkey 
+     * Creates Many through relation instance.
+     *
      * @param string $rightlocalkey
      * @param string $castclasspath
      */
@@ -100,12 +91,12 @@ class ThoughRelation
         string $type,
         string $left,
         string $right,
-        string $through = null,
-        string $leftforeignkey = null,
-        string $rightforeignkey = null,
-        string $leftlocalkey = null,
-        string $rightlocalkey  = null,
-        string $castclasspath = null
+        ?string $through = null,
+        ?string $leftforeignkey = null,
+        ?string $rightforeignkey = null,
+        ?string $leftlocalkey = null,
+        ?string $rightlocalkey = null,
+        ?string $castclasspath = null
     ) {
         $this->name = $name;
         $this->type = $type;
@@ -119,11 +110,10 @@ class ThoughRelation
         $this->castclasspath = $castclasspath;
     }
 
-
     /**
-     * name property getter method
-     * 
-     * @return string 
+     * name property getter method.
+     *
+     * @return string
      */
     public function getName()
     {
@@ -131,9 +121,9 @@ class ThoughRelation
     }
 
     /**
-     * type property getter method
-     * 
-     * @return string 
+     * type property getter method.
+     *
+     * @return string
      */
     public function getType()
     {
@@ -141,9 +131,9 @@ class ThoughRelation
     }
 
     /**
-     * Left table property getter
-     * 
-     * @return string 
+     * Left table property getter.
+     *
+     * @return string
      */
     public function getLeftTable()
     {
@@ -151,9 +141,9 @@ class ThoughRelation
     }
 
     /**
-     * Right table property getter
-     * 
-     * @return string 
+     * Right table property getter.
+     *
+     * @return string
      */
     public function getRightTable()
     {
@@ -161,9 +151,9 @@ class ThoughRelation
     }
 
     /**
-     * Through table property getter
-     * 
-     * @return string 
+     * Through table property getter.
+     *
+     * @return string
      */
     public function getThroughTable()
     {
@@ -171,9 +161,9 @@ class ThoughRelation
     }
 
     /**
-     * Left table foreign key name property getter
-     * 
-     * @return string 
+     * Left table foreign key name property getter.
+     *
+     * @return string
      */
     public function getLeftForeignKey()
     {
@@ -181,9 +171,9 @@ class ThoughRelation
     }
 
     /**
-     * Right table foreign key name property getter
-     * 
-     * @return string 
+     * Right table foreign key name property getter.
+     *
+     * @return string
      */
     public function getRightForeignKey()
     {
@@ -191,9 +181,9 @@ class ThoughRelation
     }
 
     /**
-     * Left table local key name property getter
-     * 
-     * @return string 
+     * Left table local key name property getter.
+     *
+     * @return string
      */
     public function getLeftLocalKey()
     {
@@ -201,9 +191,9 @@ class ThoughRelation
     }
 
     /**
-     * Right table local key name property getter
-     * 
-     * @return string 
+     * Right table local key name property getter.
+     *
+     * @return string
      */
     public function getRightLocalKey()
     {
@@ -211,9 +201,9 @@ class ThoughRelation
     }
 
     /**
-     * Returns the cast class path of the relation
-     * 
-     * @return string 
+     * Returns the cast class path of the relation.
+     *
+     * @return string
      */
     public function getCastClassPath()
     {

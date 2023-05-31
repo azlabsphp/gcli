@@ -16,7 +16,6 @@ namespace Drewlabs\GCli;
 use Drewlabs\GCli\Contracts\ScriptWriter;
 use Drewlabs\GCli\Contracts\Writable;
 use Drewlabs\GCli\IO\Disk;
-use InvalidArgumentException;
 
 class ComponentsScriptWriter implements ScriptWriter
 {
@@ -28,11 +27,11 @@ class ComponentsScriptWriter implements ScriptWriter
     private $disk;
 
     /**
-     * Creates new class instance
-     * 
-     * @param string $src 
-     * @return void 
-     * @throws InvalidArgumentException 
+     * Creates new class instance.
+     *
+     * @throws \InvalidArgumentException
+     *
+     * @return void
      */
     public function __construct(string $src)
     {

@@ -17,38 +17,34 @@ use Drewlabs\GCli\Exceptions\IOException;
 
 class Path
 {
-
     /**
      * @var string
      */
     private $value;
 
     /**
-     * Creates class instance
-     * 
-     * @param string $path 
-     * @return void 
+     * Creates class instance.
+     *
+     * @return void
      */
     public function __construct(string $path)
     {
         $this->value = './' === substr($path, 0, 2) ? substr($path, 2) : $path;
     }
 
+    public function __toString()
+    {
+        return $this->value;
+    }
+
     /**
-     * Creates new path instance
-     * 
-     * @param string $path
-     * 
-     * @return Path 
+     * Creates new path instance.
+     *
+     * @return Path
      */
     public static function new(string $path = './')
     {
         return new self($path);
-    }
-
-    public function __toString()
-    {
-        return $this->value;
     }
 
     /**
@@ -94,6 +90,7 @@ class Path
         if (null === $this->value) {
             return false;
         }
+
         return is_dir($this->value);
     }
 
@@ -104,19 +101,22 @@ class Path
      */
     public function exists()
     {
-        return $this->isDirectory() || ($this->isFile());
+        return $this->isDirectory() || $this->isFile();
     }
 
     /**
-     * Returns the path base name
-     * @return string|array 
-     * @throws IOException 
+     * Returns the path base name.
+     *
+     * @throws IOException
+     *
+     * @return string|array
      */
     public function basename()
     {
         if (($result = @pathinfo($this->value, \PATHINFO_BASENAME)) === false) {
             throw IOException::metadata($this->value, error_get_last()['message'] ?? '', 'basename');
         }
+
         return $result;
     }
 
@@ -130,6 +130,7 @@ class Path
         if (($result = @pathinfo($this->value, \PATHINFO_DIRNAME)) === false) {
             throw IOException::metadata($this->value, error_get_last()['message'] ?? '', 'dirname');
         }
+
         return $result;
     }
 
@@ -220,7 +221,7 @@ class Path
 
         $mode = $this->isDirectory() ? 'J' : 'H';
 
-        exec("mklink /{$mode} " . escapeshellarg($link) . ' ' . escapeshellarg($this->value));
+        exec("mklink /{$mode} ".escapeshellarg($link).' '.escapeshellarg($this->value));
     }
 
     /**

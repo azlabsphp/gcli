@@ -13,15 +13,13 @@ declare(strict_types=1);
 
 namespace Drewlabs\GCli;
 
+use Drewlabs\Core\Helpers\Arr;
 use Drewlabs\GCli\Exceptions\IOException;
 use Drewlabs\GCli\Exceptions\NotLoadedExtensionException;
-use Drewlabs\Core\Helpers\Arr;
-use RuntimeException;
 
 class Options
 {
     /**
-     * 
      * @var array
      */
     private $options = [];
@@ -32,12 +30,11 @@ class Options
     }
 
     /**
-     * Load the option from yaml configuration
-     * 
-     * @param string $path 
+     * Load the option from yaml configuration.
+     *
+     * @throws \RuntimeException
+     *
      * @return self
-     *  
-     * @throws RuntimeException 
      */
     public static function yaml(string $path)
     {
@@ -50,10 +47,10 @@ class Options
             throw IOException::missing($path);
         }
 
-        if (@is_dir($realpath) && @is_file("$realpath" . \DIRECTORY_SEPARATOR . 'input.yml')) {
-            $realpath = "$realpath" . \DIRECTORY_SEPARATOR . 'input.yml';
-        } elseif (@is_dir($realpath) && @is_file("$realpath" . \DIRECTORY_SEPARATOR . 'input.yaml')) {
-            $realpath = "$realpath" . \DIRECTORY_SEPARATOR . 'input.yaml';
+        if (@is_dir($realpath) && @is_file("$realpath".\DIRECTORY_SEPARATOR.'input.yml')) {
+            $realpath = "$realpath".\DIRECTORY_SEPARATOR.'input.yml';
+        } elseif (@is_dir($realpath) && @is_file("$realpath".\DIRECTORY_SEPARATOR.'input.yaml')) {
+            $realpath = "$realpath".\DIRECTORY_SEPARATOR.'input.yaml';
         }
         if (!is_file($realpath)) {
             throw IOException::missing($realpath);
@@ -62,15 +59,16 @@ class Options
         if (!is_readable($realpath)) {
             throw IOException::readable($realpath);
         }
+
         return new static((array) (yaml_parse(file_get_contents($realpath)) ?? []));
     }
 
     /**
-     * Load options from a json configuration disk resource
-     * 
-     * @param string $path 
-     * @return static 
-     * @throws IOException 
+     * Load options from a json configuration disk resource.
+     *
+     * @throws IOException
+     *
+     * @return static
      */
     public static function json(string $path)
     {
@@ -80,8 +78,8 @@ class Options
             throw IOException::missing($path);
         }
 
-        if (@is_dir($realpath) && @is_file("$realpath" . \DIRECTORY_SEPARATOR . 'libman.json')) {
-            $realpath = "$realpath" . \DIRECTORY_SEPARATOR . 'libman.json';
+        if (@is_dir($realpath) && @is_file("$realpath".\DIRECTORY_SEPARATOR.'libman.json')) {
+            $realpath = "$realpath".\DIRECTORY_SEPARATOR.'libman.json';
         }
         if (!is_file($realpath)) {
             throw IOException::missing($realpath);
@@ -90,17 +88,16 @@ class Options
         if (!is_readable($realpath)) {
             throw IOException::readable($realpath);
         }
+
         return new static(json_decode(file_get_contents($realpath), true) ?? []);
     }
 
-
-
     /**
-     * Get an options value
-     * 
-     * @param string $key
+     * Get an options value.
+     *
      * @param mixed $default
-     * @return mixed 
+     *
+     * @return mixed
      */
     public function get(string $key, $default = null)
     {
@@ -108,39 +105,44 @@ class Options
     }
 
     /**
-     * Merge values into the existing options
-     * 
-     * @param mixed $value 
-     * @param string|null $key 
-     * @return self 
+     * Merge values into the existing options.
+     *
+     * @param mixed $value
+     *
+     * @return self
      */
-    public function merge($value, string $key = null)
+    public function merge($value, ?string $key = null)
     {
         if (null === $key) {
             foreach ($value as $k => $v) {
                 $this->mergeAt($k, $v);
             }
+
             return $this;
         }
+
         return $this->mergeAt($key, $value);
     }
 
     /**
-     * Update the value at a given index of the options property
-     * 
-     * @param mixed $key 
-     * @param mixed $value 
-     * @return self 
+     * Update the value at a given index of the options property.
+     *
+     * @param mixed $key
+     * @param mixed $value
+     *
+     * @return self
      */
     private function mergeAt($key, $value)
     {
         if (null === ($result = $this->get($key))) {
             Arr::set($this->options, $key, $value);
+
             return $this;
         }
-        Arr::set($this->options, $key, is_array($result) ?
-            array_merge($result, is_array($value) ? $value : [$value]) :
+        Arr::set($this->options, $key, \is_array($result) ?
+            array_merge($result, \is_array($value) ? $value : [$value]) :
             $value);
+
         return $this;
     }
 }

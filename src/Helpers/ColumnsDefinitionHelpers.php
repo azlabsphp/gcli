@@ -14,14 +14,12 @@ declare(strict_types=1);
 namespace Drewlabs\GCli\Helpers;
 
 use Doctrine\DBAL\Schema\Column;
-use Drewlabs\GCli\ORMColumnDefinition as ColumnDefinition;
+use Drewlabs\Core\Helpers\Iter;
 use Drewlabs\GCli\ORMColumnDefinition;
+use Drewlabs\GCli\ORMColumnDefinition as ColumnDefinition;
 use Drewlabs\GCli\ORMColumnForeignKeyConstraintDefinition;
 use Drewlabs\GCli\ORMColumnUniqueKeyDefinition;
-use Drewlabs\Core\Helpers\Iter;
 use Generator;
-
-use function Drewlabs\GCli\Proxy\ORMColumnDefinition;
 
 class ColumnsDefinitionHelpers
 {
@@ -57,7 +55,7 @@ class ColumnsDefinitionHelpers
     {
         $foreignKeys = empty($foreignKeys) ? [] : $foreignKeys;
         if (!empty($foreignKeys)) {
-            $foreignKeys = (iterator_to_array((static function ($keys) {
+            $foreignKeys = iterator_to_array((static function ($keys) {
                 foreach ($keys as $key) {
                     yield $key->getLocalColumns()[0] => new ORMColumnForeignKeyConstraintDefinition(
                         $key->getLocalTableName(),
@@ -67,7 +65,7 @@ class ColumnsDefinitionHelpers
                         $key->getName()
                     );
                 }
-            })($foreignKeys)));
+            })($foreignKeys));
         }
 
         return static function ($definitions) use ($foreignKeys) {
@@ -76,7 +74,7 @@ class ColumnsDefinitionHelpers
              */
             $definitions = \is_array($definitions) ? $definitions : iterator_to_array($definitions);
             foreach ($foreignKeys as $key => $value) {
-                if (($definition = $definitions[$key] ?? null)) {
+                if ($definition = $definitions[$key] ?? null) {
                     $definitions = array_merge($definitions, [$key => $definition->setForeignKey($value)]);
                 }
             }
@@ -95,7 +93,7 @@ class ColumnsDefinitionHelpers
         $indexes = empty($indexes) ? [] : $indexes;
         $uniqueIndexes = [];
         if (!empty($indexes)) {
-            $uniqueIndexes = (iterator_to_array(Iter::filter((static function ($keys) {
+            $uniqueIndexes = iterator_to_array(Iter::filter((static function ($keys) {
                 foreach ($keys as $key) {
                     /**
                      * @var Index
@@ -105,7 +103,7 @@ class ColumnsDefinitionHelpers
                 }
             })($indexes), static function ($item) {
                 return true === $item;
-            })));
+            }));
         }
 
         return static function ($definitions) use ($uniqueIndexes) {
@@ -115,7 +113,7 @@ class ColumnsDefinitionHelpers
             $definitions = \is_array($definitions) ? $definitions : iterator_to_array($definitions);
             // Set the unique constraint on the definition
             foreach ($uniqueIndexes as $key => $value) {
-                if (($definition = $definitions[$key] ?? null)) {
+                if ($definition = $definitions[$key] ?? null) {
                     $definition = $definition->setUnique(true === $value ? new ORMColumnUniqueKeyDefinition($definition->getTable(), [$definition->name()]) : null);
                     $definitions = array_merge($definitions, [$key => $definition]);
                 }

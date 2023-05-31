@@ -24,13 +24,13 @@ class ORMColumnForeignKeyConstraintDefinition implements ForeignKeyConstraintDef
     private $key;
 
     /**
-     * Creates class instance
-     * 
-     * @param string $local_table 
-     * @param string[] $columns 
-     * @param string $foreign_table 
-     * @param string[] $foreign_columns 
-     * @param string $key 
+     * Creates class instance.
+     *
+     * @param string   $local_table
+     * @param string[] $columns
+     * @param string   $foreign_table
+     * @param string[] $foreign_columns
+     * @param string   $key
      */
     public function __construct($local_table, $columns, $foreign_table, $foreign_columns, $key)
     {

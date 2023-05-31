@@ -14,24 +14,26 @@ declare(strict_types=1);
 namespace Drewlabs\GCli\Builders;
 
 use Drewlabs\CodeGenerator\Contracts\Blueprint;
+
 use function Drewlabs\CodeGenerator\Proxy\PHPClass;
 
 use function Drewlabs\CodeGenerator\Proxy\PHPClassMethod;
 use function Drewlabs\CodeGenerator\Proxy\PHPClassProperty;
 use function Drewlabs\CodeGenerator\Proxy\PHPFunctionParameter;
 use function Drewlabs\CodeGenerator\Proxy\PHPVariable;
+
 use Drewlabs\CodeGenerator\Types\PHPTypes;
 use Drewlabs\CodeGenerator\Types\PHPTypesModifiers;
 
+use Drewlabs\Core\Helpers\Str;
 use Drewlabs\GCli\Contracts\ComponentBuilder;
 use Drewlabs\GCli\Helpers\ComponentBuilderHelpers;
+
 use function Drewlabs\GCli\Proxy\PHPScript;
+
 use Drewlabs\GCli\Traits\HasNamespaceAttribute;
 use Drewlabs\GCli\Traits\ViewModelBuilder;
-use Drewlabs\Core\Helpers\Str;
 use Illuminate\Support\Pluralizer;
-use InvalidArgumentException;
-use RuntimeException;
 
 class ViewModelClassBuilder implements ComponentBuilder
 {
@@ -46,19 +48,9 @@ class ViewModelClassBuilder implements ComponentBuilder
     public const DEFAULT_NAMESPACE = 'App\\Http\\ViewModels';
 
     /**
-     * @var string
-     */
-    private const DEFAULT_NAME = 'TestViewModel';
-
-    /**
-     * @var string
-     */
-    private const DEFAULT_PATH = 'Http/ViewModels';
-
-    /**
      * @var string[]
      */
-    const HTTP_CLASS_PATHS = [
+    public const HTTP_CLASS_PATHS = [
         'Drewlabs\\Contracts\\Validator\\ViewModel as AbstractViewModel',
         'Drewlabs\\Laravel\\Http\\Traits\\HttpViewModel as ViewModel',
         'Drewlabs\\Laravel\\Http\\Traits\\InteractsWithServerRequest',
@@ -67,46 +59,56 @@ class ViewModelClassBuilder implements ComponentBuilder
         'Drewlabs\\Validation\\Traits\\ProvidesRulesFactory',
         'Drewlabs\\Validation\\Traits\\Validatable',
         'Drewlabs\Laravel\\Query\Traits\CreatesFilters',
-        'Illuminate\\Http\\Request'
+        'Illuminate\\Http\\Request',
     ];
 
     /**
      * @var string[]
      */
-    const HTTP_CLASS_TRAITS = [
+    public const HTTP_CLASS_TRAITS = [
         'ViewModel',
         'InteractsWithServerRequest',
         'AuthorizeRequest',
         'ModelAware',
         'ProvidesRulesFactory',
         'Validatable',
-        'CreatesFilters'
+        'CreatesFilters',
     ];
 
     /**
      * @var string[]
      */
-    const DEFAULT_CLASS_PATHS = [
+    public const DEFAULT_CLASS_PATHS = [
         'Drewlabs\\Contracts\\Validator\\ViewModel as AbstractViewModel',
         'Drewlabs\\Validation\\Traits\\FilesAttributesAware',
         'Drewlabs\\Validation\\Traits\\ModelAware',
         'Drewlabs\\Validation\\Traits\\ProvidesRulesFactory',
         'Drewlabs\\Validation\\Traits\\Validatable',
         'Drewlabs\Laravel\\Query\Traits\CreatesFilters',
-        'Drewlabs\\Validation\\Traits\\ViewModel'
+        'Drewlabs\\Validation\\Traits\\ViewModel',
     ];
 
     /**
      * @var string[]
      */
-    const DEFAULT_CLASS_TRAITS = [
+    public const DEFAULT_CLASS_TRAITS = [
         'ViewModel',
         'ModelAware',
         'ProvidesRulesFactory',
         'Validatable',
         'CreatesFilters',
-        'FilesAttributesAware'
+        'FilesAttributesAware',
     ];
+
+    /**
+     * @var string
+     */
+    private const DEFAULT_NAME = 'TestViewModel';
+
+    /**
+     * @var string
+     */
+    private const DEFAULT_PATH = 'Http/ViewModels';
 
     /**
      * @var bool
@@ -123,23 +125,23 @@ class ViewModelClassBuilder implements ComponentBuilder
      */
     private $modelName_;
 
-
     /**
-     * 
      * @var string
      */
     private $dtoclasspath;
 
     /**
-     * Creates an instance of view model class
-     * 
-     * @param (null|string)|null $name 
-     * @param (null|string)|null $namespace 
-     * @param (null|string)|null $path 
-     * @return void 
-     * @throws InvalidArgumentException 
-     * @throws RuntimeException 
-     * @throws \Exception 
+     * Creates an instance of view model class.
+     *
+     * @param (string|null)|null $name
+     * @param (string|null)|null $namespace
+     * @param (string|null)|null $path
+     *
+     * @throws \InvalidArgumentException
+     * @throws \RuntimeException
+     * @throws \Exception
+     *
+     * @return void
      */
     public function __construct(
         ?string $name = null,
@@ -148,7 +150,7 @@ class ViewModelClassBuilder implements ComponentBuilder
     ) {
         $this->setName($name ?
             (!Str::endsWith($name, 'ViewModel') ?
-                Str::camelize(Pluralizer::singular($name)) . 'ViewModel' :
+                Str::camelize(Pluralizer::singular($name)).'ViewModel' :
                 Str::camelize(Pluralizer::singular($name))) :
             self::DEFAULT_NAME);
         // Set the component write path
@@ -168,12 +170,13 @@ class ViewModelClassBuilder implements ComponentBuilder
             $this->modelClassPath_ = $model;
         }
         if (\is_object($model)) {
-            $this->modelClassPath_ = \get_class($model);
+            $this->modelClassPath_ = $model::class;
         }
         if ($isclasspath) {
             $this->modelName_ = $isclasspath ? array_reverse(explode('\\', $this->modelClassPath_))[0] : $this->modelClassPath_;
         }
-        $this->setName(Str::camelize(Pluralizer::singular($this->modelName_)) . 'ViewModel');
+        $this->setName(Str::camelize(Pluralizer::singular($this->modelName_)).'ViewModel');
+
         return $this;
     }
 
@@ -187,6 +190,7 @@ class ViewModelClassBuilder implements ComponentBuilder
     public function setDTOClassPath(string $classname)
     {
         $this->dtoclasspath = $classname;
+
         return $this;
     }
 
@@ -195,7 +199,7 @@ class ViewModelClassBuilder implements ComponentBuilder
         /**
          * @var BluePrint|PHPClass
          */
-        $component = (PHPClass($this->name()))
+        $component = PHPClass($this->name())
             ->asFinal()
             ->addToNamespace($this->namespace() ?? self::DEFAULT_NAMESPACE)
             ->addImplementation('AbstractViewModel')
@@ -205,7 +209,7 @@ class ViewModelClassBuilder implements ComponentBuilder
                 'array<string,string|string[]>',
                 PHPTypesModifiers::PUBLIC,
                 'Returns a fluent validation rules'
-            )->addContents('return ' . PHPVariable('rules', null, $this->rules_ ?? [])->asRValue()->__toString()))
+            )->addContents('return '.PHPVariable('rules', null, $this->rules_ ?? [])->asRValue()->__toString()))
             ->addMethod(PHPClassMethod(
                 'messages',
                 [],
@@ -224,7 +228,7 @@ class ViewModelClassBuilder implements ComponentBuilder
                 'array<string,string|string[]>',
                 PHPTypesModifiers::PUBLIC,
                 'Returns a fluent validation rules applied during update actions'
-            )->addContents('return ' . PHPVariable('rules', null, $this->updateRules_ ?? [])->asRValue()->__toString()));
+            )->addContents('return '.PHPVariable('rules', null, $this->updateRules_ ?? [])->asRValue()->__toString()));
         }
         // Add inputs traits
         if ($this->hasInputsTraits_) {
@@ -237,7 +241,7 @@ class ViewModelClassBuilder implements ComponentBuilder
                         'model_',
                         PHPTypes::STRING,
                         PHPTypesModifiers::PRIVATE,
-                        $this->modelName_ . '::class',
+                        $this->modelName_.'::class',
                         'Model class associated with the view model'
                     )
                 );
@@ -253,7 +257,7 @@ class ViewModelClassBuilder implements ComponentBuilder
                         'dtoclass_',
                         PHPTypes::STRING,
                         PHPTypesModifiers::PRIVATE,
-                        Str::afterLast('\\', $this->dtoclasspath) . "::class",
+                        Str::afterLast('\\', $this->dtoclasspath).'::class',
                         'Data transfer class associated with the view model'
                     )
                 );
@@ -265,7 +269,7 @@ class ViewModelClassBuilder implements ComponentBuilder
             // #region Add class paths
             foreach (static::HTTP_CLASS_PATHS as $classPath) {
                 $component = $component->addClassPath($classPath);
-                # code...
+                // code...
             }
             // #endregion Add class paths
 
@@ -275,7 +279,7 @@ class ViewModelClassBuilder implements ComponentBuilder
                  * @var Blueprint
                  */
                 $component = $component->addTrait($trait);
-                # code...
+                // code...
             }
             // #endregion Add class traits
 
@@ -295,14 +299,14 @@ class ViewModelClassBuilder implements ComponentBuilder
             // #region Add class paths
             foreach (static::DEFAULT_CLASS_PATHS as $classPath) {
                 $component = $component->addClassPath($classPath);
-                # code...
+                // code...
             }
             // #endregion Add class paths
 
             // #region Add class traits
             foreach (static::DEFAULT_CLASS_TRAITS as $trait) {
                 $component = $component->addTrait($trait);
-                # code...
+                // code...
             }
             // #endregion Add class traits
             $component = $component->addConstructor(

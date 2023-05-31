@@ -13,10 +13,11 @@ declare(strict_types=1);
 
 namespace Drewlabs\GCli\Tests;
 
-use Drewlabs\GCli\Cache\Cache;
-use Drewlabs\GCli\Cache\CacheableTables;
-
 use function Drewlabs\Filesystem\Proxy\Path;
+
+use Drewlabs\GCli\Cache\Cache;
+
+use Drewlabs\GCli\Cache\CacheableTables;
 
 class CacheableSerializerTest extends TestCase
 {

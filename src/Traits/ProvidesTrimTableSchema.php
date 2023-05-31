@@ -16,51 +16,47 @@ namespace Drewlabs\GCli\Traits;
 trait ProvidesTrimTableSchema
 {
     /**
-     * Remove the schema part from the table name
-     * 
-     * @param string $table 
-     * @param string|null $schema 
-     * @return string 
+     * Remove the schema part from the table name.
+     *
+     * @return string
      */
-    public static function trimschema(string $table, string $schema = null)
+    public static function trimschema(string $table, ?string $schema = null)
     {
-        if (is_null($schema)) {
+        if (null === $schema) {
             return $table;
         }
-        return self::prefixed($table, $schema . '_') ?
-            substr($table ?? '', strlen(sprintf('%s_', $schema))) : (self::prefixed($table, $schema) ?
-                substr($table ?? '', strlen(sprintf('%s', $schema))) :
+
+        return self::prefixed($table, $schema.'_') ?
+            substr($table ?? '', \strlen(sprintf('%s_', $schema))) : (self::prefixed($table, $schema) ?
+                substr($table ?? '', \strlen(sprintf('%s', $schema))) :
                 $table);
     }
 
     /**
-     * Checks if a string have a given prefix
-     * 
-     * @param string $haystack 
-     * @param string $prefix 
-     * @return bool 
+     * Checks if a string have a given prefix.
+     *
+     * @return bool
      */
     public static function prefixed(string $haystack, string $prefix)
     {
-        if (version_compare(PHP_VERSION, '8.0.0') >= 0) {
+        if (version_compare(\PHP_VERSION, '8.0.0') >= 0) {
             return str_starts_with($haystack, $prefix);
         }
+
         return ('' === $prefix) || (mb_substr($haystack, 0, mb_strlen($prefix)) === $prefix);
     }
 
     /**
-     * Checks if a string have a given suffix
-     * 
-     * @param string $haystack 
-     * @param string $prefix
-     * 
-     * @return bool 
+     * Checks if a string have a given suffix.
+     *
+     * @return bool
      */
     public static function suffixed(string $haystack, string $prefix)
     {
-        if (version_compare(PHP_VERSION, '8.0.0') >= 0) {
+        if (version_compare(\PHP_VERSION, '8.0.0') >= 0) {
             return str_ends_with($haystack, $prefix);
         }
-        return ('' === $prefix) || (mb_substr($haystack, -(int) (mb_strlen($prefix))) === $prefix);
+
+        return ('' === $prefix) || (mb_substr($haystack, -(int) mb_strlen($prefix)) === $prefix);
     }
 }

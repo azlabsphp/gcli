@@ -53,8 +53,8 @@ interface ORMModelBuilder extends ComponentBuilder
     public function asViewModel();
 
     /**
-     * Returns the ORM Model definition used to build the model
-     * 
+     * Returns the ORM Model definition used to build the model.
+     *
      * @return ORMModelDefinition
      */
     public function getDefinition();

@@ -15,12 +15,10 @@ namespace Drewlabs\GCli\Exceptions;
 
 use Exception;
 
-class NotLoadedExtensionException extends Exception
+class NotLoadedExtensionException extends \Exception
 {
     /**
-     * Creates an exception instance
-     * 
-     * @param string $extension 
+     * Creates an exception instance.
      */
     public function __construct(string $extension)
     {

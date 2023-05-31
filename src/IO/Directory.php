@@ -16,11 +16,9 @@ namespace Drewlabs\GCli\IO;
 class Directory
 {
     /**
-     * 
      * @var string
      */
     private $path;
-
 
     public function __construct(string $path)
     {
@@ -28,22 +26,19 @@ class Directory
     }
 
     /**
-     * Creates new directory instance
-     * 
-     * @param string $path 
-     * @return Directory 
+     * Creates new directory instance.
+     *
+     * @return Directory
      */
     public static function new(string $path)
     {
         return new self($path);
     }
 
-
     /**
-     * Creates directory for the given path. To override the 
-     * 
-     * @param bool $override 
-     * @return bool 
+     * Creates directory for the given path. To override the.
+     *
+     * @return bool
      */
     public function create(bool $override = false)
     {
@@ -57,6 +52,7 @@ class Directory
         if (!is_dir($this->path)) {
             return mkdir($this->path, 0777, true);
         }
+
         return true;
     }
 }

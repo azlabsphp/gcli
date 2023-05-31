@@ -23,14 +23,14 @@ class DBDriverOptions
     }
 
     /**
-     * Creates a database driver options instance
-     * 
-     * @param array $options 
-     * @return DBDriverOptions 
+     * Creates a database driver options instance.
+     *
+     * @return DBDriverOptions
      */
     public static function new(array $options = [])
     {
         $object = new static($options);
+
         return $object->prepare();
     }
 

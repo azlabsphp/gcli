@@ -16,56 +16,49 @@ namespace Drewlabs\GCli;
 class BasicRelation
 {
     /**
-     * relation method name
-     * 
+     * relation method name.
+     *
      * @var string
      */
     private $name;
 
     /**
-     * relationship type
-     * 
+     * relationship type.
+     *
      * @var string
      */
     private $type;
 
     /**
-     * referenced table
-     * 
+     * referenced table.
+     *
      * @var string
      */
     private $model;
 
     /**
-     * relation local column name
-     * 
+     * relation local column name.
+     *
      * @var string
      */
     private $local;
 
     /**
-     * relation referenced column
-     * 
+     * relation referenced column.
+     *
      * @var string
      */
     private $reference;
 
     /**
-     * relation casting class path
-     * 
+     * relation casting class path.
+     *
      * @var string
      */
     private $castclasspath;
 
-
     /**
-     * Creates an instance of relation class
-     * 
-     * @param string $name
-     * @param string $model 
-     * @param string $reference 
-     * @param string $local 
-     * @param string $type 
+     * Creates an instance of relation class.
      */
     public function __construct(
         string $name,
@@ -73,7 +66,7 @@ class BasicRelation
         string $reference,
         string $local,
         string $type = RelationTypes::ONE_TO_MANY,
-        string $castclasspath = null
+        ?string $castclasspath = null
     ) {
         $this->name = $name;
         $this->model = $model;
@@ -84,9 +77,9 @@ class BasicRelation
     }
 
     /**
-     * name property getter method
-     * 
-     * @return string 
+     * name property getter method.
+     *
+     * @return string
      */
     public function getName()
     {
@@ -94,9 +87,9 @@ class BasicRelation
     }
 
     /**
-     * model property getter method
-     * 
-     * @return string 
+     * model property getter method.
+     *
+     * @return string
      */
     public function getModel()
     {
@@ -104,9 +97,9 @@ class BasicRelation
     }
 
     /**
-     * referenced column property getter method
-     * 
-     * @return string 
+     * referenced column property getter method.
+     *
+     * @return string
      */
     public function getReference()
     {
@@ -114,9 +107,9 @@ class BasicRelation
     }
 
     /**
-     * local column property getter method
-     * 
-     * @return string 
+     * local column property getter method.
+     *
+     * @return string
      */
     public function getLocal()
     {
@@ -124,9 +117,9 @@ class BasicRelation
     }
 
     /**
-     * type property getter method
-     * 
-     * @return string 
+     * type property getter method.
+     *
+     * @return string
      */
     public function getType()
     {
@@ -134,9 +127,9 @@ class BasicRelation
     }
 
     /**
-     * Returns the cast class path of the relation
-     * 
-     * @return string 
+     * Returns the cast class path of the relation.
+     *
+     * @return string
      */
     public function getCastClassPath()
     {

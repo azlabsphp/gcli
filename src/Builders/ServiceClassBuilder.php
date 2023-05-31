@@ -15,18 +15,20 @@ namespace Drewlabs\GCli\Builders;
 
 use Drewlabs\CodeGenerator\Contracts\Blueprint;
 use Drewlabs\CodeGenerator\Contracts\CallableInterface;
+
 use function Drewlabs\CodeGenerator\Proxy\PHPClass;
 use function Drewlabs\CodeGenerator\Proxy\PHPClassMethod;
 use function Drewlabs\CodeGenerator\Proxy\PHPFunctionParameter;
+
 use Drewlabs\CodeGenerator\Types\PHPTypesModifiers;
+use Drewlabs\Core\Helpers\Str;
 use Drewlabs\GCli\Contracts\ComponentBuilder;
 use Drewlabs\GCli\Helpers\ComponentBuilderHelpers;
+
 use function Drewlabs\GCli\Proxy\PHPScript;
+
 use Drewlabs\GCli\Traits\HasNamespaceAttribute;
-use Drewlabs\Core\Helpers\Str;
 use Illuminate\Support\Pluralizer;
-use InvalidArgumentException;
-use RuntimeException;
 
 class ServiceClassBuilder implements ComponentBuilder
 {
@@ -43,7 +45,7 @@ class ServiceClassBuilder implements ComponentBuilder
      * @var string[]
      */
     private const CLASS_FUNCTION_PATHS = [
-        'Drewlabs\Laravel\Query\Proxy\\useActionQueryCommand'
+        'Drewlabs\Laravel\Query\Proxy\\useActionQueryCommand',
     ];
 
     /**
@@ -76,15 +78,17 @@ class ServiceClassBuilder implements ComponentBuilder
     private $modelName_ = 'Test';
 
     /**
-     * Creates a service builder class
-     * 
-     * @param (null|string)|null $name 
-     * @param (null|string)|null $namespace 
-     * @param (null|string)|null $path 
-     * @return void 
-     * @throws InvalidArgumentException 
-     * @throws RuntimeException 
-     * @throws \Exception 
+     * Creates a service builder class.
+     *
+     * @param (string|null)|null $name
+     * @param (string|null)|null $namespace
+     * @param (string|null)|null $path
+     *
+     * @throws \InvalidArgumentException
+     * @throws \RuntimeException
+     * @throws \Exception
+     *
+     * @return void
      */
     public function __construct(
         ?string $name = null,
@@ -92,7 +96,7 @@ class ServiceClassBuilder implements ComponentBuilder
         ?string $path = null
     ) {
         $this->setName($name ? (!Str::endsWith($name, 'Service') ?
-            Str::camelize(Pluralizer::singular($name)) . 'Service' :
+            Str::camelize(Pluralizer::singular($name)).'Service' :
             Str::camelize(Pluralizer::singular($name))) : self::DEFAULT_NAME);
         // Set the component write path
         $this->setWritePath($path ?? self::DEFAULT_PATH);
@@ -113,7 +117,8 @@ class ServiceClassBuilder implements ComponentBuilder
         } else {
             $this->modelName_ = $classPath;
         }
-        $this->setName(Str::camelize(Pluralizer::singular($this->modelName_)) . 'Service');
+        $this->setName(Str::camelize(Pluralizer::singular($this->modelName_)).'Service');
+
         return $this;
     }
 
@@ -131,7 +136,7 @@ class ServiceClassBuilder implements ComponentBuilder
 
     public function build()
     {
-        $component = (PHPClass($this->name()));
+        $component = PHPClass($this->name());
         foreach (static::CLASS_FUNCTION_PATHS as $functionPath) {
             /**
              * @var BluePrint|PHPClass
@@ -151,22 +156,22 @@ class ServiceClassBuilder implements ComponentBuilder
                     return null !== $line;
                 }), static function (CallableInterface $carry, $curr) {
                     return $carry->addLine($curr);
-                }, (PHPClassMethod(
+                }, PHPClassMethod(
                     'handle',
                     [
                         PHPFunctionParameter(
                             'action',
                             \Drewlabs\Contracts\Support\Actions\Action::class,
                         ),
-                        (PHPFunctionParameter(
+                        PHPFunctionParameter(
                             'callback',
                             '\Closure',
-                        ))->asOptional(),
+                        )->asOptional(),
                     ],
                     \Drewlabs\Contracts\Support\Actions\ActionResult::class,
                     PHPTypesModifiers::PUBLIC,
                     '{@inheritDoc}'
-                )->throws(\Drewlabs\Contracts\Support\Actions\Exceptions\InvalidActionException::class)))
+                )->throws(\Drewlabs\Contracts\Support\Actions\Exceptions\InvalidActionException::class))
             )
             ->addToNamespace($this->namespace_ ?? self::DEFAULT_NAMESPACE);
 

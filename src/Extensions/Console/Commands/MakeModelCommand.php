@@ -20,7 +20,9 @@ use Drewlabs\GCli\Contracts\ORMModelDefinition;
 use Drewlabs\GCli\Contracts\SourceFileInterface;
 use Drewlabs\GCli\Extensions\Console\ComponentCommandsHelpers;
 use Drewlabs\GCli\Helpers\ComponentBuilderHelpers;
+
 use function Drewlabs\GCli\Proxy\ComponentsScriptWriter;
+
 use Illuminate\Console\Command;
 use Illuminate\Container\Container;
 
@@ -87,12 +89,11 @@ class MakeModelCommand extends Command
     }
 
     /**
-     * 
-     * @param mixed $basePath 
-     * @param SourceFileInterface $component 
-     * @param null|ORMModelDefinition $definition 
-     * @return void 
-     * @throws PHPVariableException 
+     * @param mixed $basePath
+     *
+     * @throws PHPVariableException
+     *
+     * @return void
      */
     public static function createComponents($basePath, SourceFileInterface $component, ?ORMModelDefinition $definition = null)
     {

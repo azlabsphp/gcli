@@ -13,10 +13,9 @@ declare(strict_types=1);
 
 namespace Drewlabs\GCli\Helpers;
 
-use Closure;
+use Drewlabs\Core\Helpers\Str;
 use Drewlabs\GCli\Contracts\ForeignKeyConstraintDefinition;
 use Drewlabs\GCli\Contracts\UniqueKeyConstraintDefinition;
-use Drewlabs\Core\Helpers\Str;
 
 class DataTypeToFluentValidationRulesHelper
 {
@@ -78,34 +77,34 @@ class DataTypeToFluentValidationRulesHelper
         }
         // Handle unique rules
         if (!\is_string($definition)) {
-            throw new \Exception('$definition parameter type must be a PHP string or instance of ' . ForeignKeyConstraintDefinition::class);
+            throw new \Exception('$definition parameter type must be a PHP string or instance of '.ForeignKeyConstraintDefinition::class);
         }
         // Here we handle string types
         return self::getSimpleRule($definition, $predicate);
     }
 
     /**
-     * Returns the unique validation rule
-     * 
-     * @param UniqueKeyConstraintDefinition $metadata 
-     * @return string 
+     * Returns the unique validation rule.
+     *
+     * @return string
      */
-    public static function getUniqueRule(UniqueKeyConstraintDefinition $metadata, string $primaryKey = null, bool $updates = false)
+    public static function getUniqueRule(UniqueKeyConstraintDefinition $metadata, ?string $primaryKey = null, bool $updates = false)
     {
         $columns = $metadata->getColumns();
-        return !$updates ? "expr:\$this->has('$primaryKey') ? '" . sprintf(
+
+        return !$updates ? "expr:\$this->has('$primaryKey') ? '".sprintf(
             "unique:%s,%s,' . ",
             $metadata->getTable(),
             \is_array($columns) ? ($columns[0] ?? 'id') : ($columns ?? 'id')
-        ) . "\$this->{$primaryKey} " . sprintf(
+        )."\$this->{$primaryKey} ".sprintf(
             ": 'unique:%s,%s",
             $metadata->getTable(),
             \is_array($columns) ? ($columns[0] ?? 'id') : ($columns ?? 'id')
-        ) . "'" : "expr:'" . sprintf(
+        )."'" : "expr:'".sprintf(
             "unique:%s,%s,' . ",
             $metadata->getTable(),
             \is_array($columns) ? ($columns[0] ?? 'id') : ($columns ?? 'id')
-        ) . "\$this->{$primaryKey} ";
+        )."\$this->{$primaryKey} ";
     }
 
     /**
@@ -123,10 +122,9 @@ class DataTypeToFluentValidationRulesHelper
     }
 
     /**
-     * 
-     * @param string $type 
-     * @param (null|Closure)|null $predicate 
-     * @return array 
+     * @param (\Closure|null)|null $predicate
+     *
+     * @return array
      */
     private static function getSimpleRule(string $type, ?\Closure $predicate = null)
     {

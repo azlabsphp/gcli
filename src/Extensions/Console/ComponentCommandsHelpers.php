@@ -14,11 +14,11 @@ declare(strict_types=1);
 namespace Drewlabs\GCli\Extensions\Console;
 
 use Drewlabs\CodeGenerator\Exceptions\PHPVariableException;
+use Drewlabs\Core\Helpers\Str;
 use Drewlabs\GCli\Builders\EloquentORMModelBuilder;
 use Drewlabs\GCli\Helpers\ComponentBuilderHelpers;
-use function Drewlabs\GCli\Proxy\ComponentsScriptWriter;
 
-use Drewlabs\Core\Helpers\Str;
+use function Drewlabs\GCli\Proxy\ComponentsScriptWriter;
 
 class ComponentCommandsHelpers
 {

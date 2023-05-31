@@ -21,14 +21,14 @@ interface ComponentBuilder
     public function build();
 
     /**
-     * Source code script path getter
+     * Source code script path getter.
      */
     public function getWritePath(): string;
 
     /**
-     * Source code class path getter
-     * 
-     * @return string 
+     * Source code class path getter.
+     *
+     * @return string
      */
     public function getClassPath();
 

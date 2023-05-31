@@ -29,21 +29,18 @@ class ORMColumnDefinition implements ContractsORMColumnDefinition
     private $unsigned;
 
     /**
-     * Creates class instance
-     * 
-     * @param string $name 
-     * @param string $type 
-     * @param string|null $table 
-     * @param bool $required 
-     * @param string|int|float $default 
-     * @param bool $unsigned 
-     * @param ForeignKeyConstraintDefinition $foreignKeyConstraint 
-     * @param UniqueKeyConstraintDefinition $uniqueKeyConstraint 
+     * Creates class instance.
+     *
+     * @param bool                           $required
+     * @param string|int|float               $default
+     * @param bool                           $unsigned
+     * @param ForeignKeyConstraintDefinition $foreignKeyConstraint
+     * @param UniqueKeyConstraintDefinition  $uniqueKeyConstraint
      */
     public function __construct(
         string $name,
         string $type,
-        string $table = null,
+        ?string $table = null,
         $required = false,
         $default = null,
         $unsigned = false,
@@ -74,6 +71,7 @@ class ORMColumnDefinition implements ContractsORMColumnDefinition
     {
         $self = clone $this;
         $self->foreignKeyConstraint = $value;
+
         return $self;
     }
 
@@ -81,6 +79,7 @@ class ORMColumnDefinition implements ContractsORMColumnDefinition
     {
         $self = clone $this;
         $self->uniqueKeyConstraint = $value;
+
         return $self;
     }
 
@@ -91,12 +90,12 @@ class ORMColumnDefinition implements ContractsORMColumnDefinition
 
     public function required()
     {
-        return boolval($this->required) ?? false;
+        return (bool) $this->required ?? false;
     }
 
     public function unsigned()
     {
-        return boolval($this->unsigned) ?? false;
+        return (bool) $this->unsigned ?? false;
     }
 
     public function foreignConstraint()
@@ -116,7 +115,7 @@ class ORMColumnDefinition implements ContractsORMColumnDefinition
 
     public function jsonSerialize()
     {
-        $result  = [
+        $result = [
             'table' => $this->table,
             'name' => $this->name,
             'type' => $this->type,
@@ -126,6 +125,7 @@ class ORMColumnDefinition implements ContractsORMColumnDefinition
             'required' => $this->required,
             'unsigned' => $this->unsigned,
         ];
+
         return array_filter($result, static function ($value) {
             return null !== $value;
         });

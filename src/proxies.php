@@ -25,8 +25,8 @@ use Drewlabs\GCli\Builders\ViewModelClassBuilder;
 use Drewlabs\GCli\ComponentsScriptWriter;
 use Drewlabs\GCli\Contracts\ORMModelDefinition;
 use Drewlabs\GCli\Contracts\ScriptWriter;
-use Drewlabs\GCli\ReverseEngineeringService;
 use Drewlabs\GCli\PHP\PHPScriptFile;
+use Drewlabs\GCli\ReverseEngineeringService;
 
 /**
  * Provides a proxy function to the {@link ScriptWriter} constructor.
@@ -150,28 +150,21 @@ function DatabaseSchemaReverseEngineeringRunner(
 }
 
 /**
- * Creates policy builder class
- * 
- * @param string|null $name 
- * @param string|null $namespace 
- * @param string|null $path 
- * @return PolicyClassBuilder 
+ * Creates policy builder class.
+ *
+ * @return PolicyClassBuilder
  */
-function MVCPolicyBuilder(string $name = null, string $namespace = null, string $path = null)
+function MVCPolicyBuilder(?string $name = null, ?string $namespace = null, ?string $path = null)
 {
     return new PolicyClassBuilder($name, $namespace, $path);
 }
 
 /**
- * Creates new policy service providers instance
- * 
- * @param array $policies 
- * @param string|null $namespace 
- * @param string|null $path 
- * @param string|null $name 
- * @return PolicyServiceProviderBuilder 
+ * Creates new policy service providers instance.
+ *
+ * @return PolicyServiceProviderBuilder
  */
-function MVCPolicyServiceProviderBuilder(array $policies = [],  string $namespace = null, string $path = null, string $name = null)
+function MVCPolicyServiceProviderBuilder(array $policies = [], ?string $namespace = null, ?string $path = null, ?string $name = null)
 {
     return new PolicyServiceProviderBuilder($policies);
 }

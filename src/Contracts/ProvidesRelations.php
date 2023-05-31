@@ -16,18 +16,16 @@ namespace Drewlabs\GCli\Contracts;
 interface ProvidesRelations
 {
     /**
-     * Set the list realtions to be provideded
-     * 
-     * @param array $relations 
-     * 
+     * Set the list realtions to be provideded.
+     *
      * @return self|ORMModelBuilder
      */
     public function provideRelations(array $relations = []);
 
     /**
-     * Makes the model a pivot model
-     * 
-     * @return self|ORMModelBuilder 
+     * Makes the model a pivot model.
+     *
+     * @return self|ORMModelBuilder
      */
     public function asPivot();
 }

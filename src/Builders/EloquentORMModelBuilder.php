@@ -20,72 +20,70 @@ use function Drewlabs\CodeGenerator\Proxy\PHPClass;
 use function Drewlabs\CodeGenerator\Proxy\PHPClassMethod;
 use function Drewlabs\CodeGenerator\Proxy\PHPClassProperty;
 use function Drewlabs\CodeGenerator\Proxy\PHPVariable;
+
 use Drewlabs\CodeGenerator\Types\PHPTypesModifiers;
-use Drewlabs\GCli\BasicRelation;
+use Drewlabs\Core\Helpers\Str;
 use Drewlabs\GCli\Contracts\ComponentBuilder;
 use Drewlabs\GCli\Contracts\EloquentORMModelBuilder as ContractsEloquentORMModel;
 use Drewlabs\GCli\Contracts\ORMColumnDefinition;
 use Drewlabs\GCli\Contracts\ORMModelDefinition;
 use Drewlabs\GCli\Contracts\ProvidesRelations;
 use Drewlabs\GCli\Helpers\ComponentBuilderHelpers;
-use Drewlabs\GCli\ThoughRelation;
-use Drewlabs\GCli\RelationTypes;
 
 use function Drewlabs\GCli\Proxy\PHPScript;
+
+use Drewlabs\GCli\RelationTypes;
 use Drewlabs\GCli\Traits\HasNamespaceAttribute;
 use Drewlabs\GCli\Traits\ProvidesTrimTableSchema;
 use Drewlabs\GCli\Traits\ViewModelBuilder;
-use Drewlabs\Core\Helpers\Str;
 use Illuminate\Database\Eloquent\Model as EloquentModel;
 use Illuminate\Support\Pluralizer;
-use InvalidArgumentException;
-use RuntimeException;
 
 class EloquentORMModelBuilder implements ContractsEloquentORMModel, ComponentBuilder, ProvidesRelations
 {
     use HasNamespaceAttribute;
-    use ViewModelBuilder;
     use ProvidesTrimTableSchema;
+    use ViewModelBuilder;
 
     /**
      * The name of the model.
      *
      * @var string
      */
-    const DEFAULT_NAME = 'Test';
+    public const DEFAULT_NAME = 'Test';
 
     /**
      * The namespace of the model.
      *
      * @var string
      */
-    const DEFAULT_NAMESPACE = 'App\\Models';
+    public const DEFAULT_NAMESPACE = 'App\\Models';
 
     /**
      * @var string
      */
-    const DEFAULT_PATH = 'Models';
+    public const DEFAULT_PATH = 'Models';
 
-        /**
+    /**
      * @var string[]
      */
-    const CLASS_PATHS = [
+    public const CLASS_PATHS = [
         'Drewlabs\\PHPValue\\Contracts\\Adaptable',
         'Drewlabs\\Query\\Contracts\\Queryable as AbstractQueryable',
         'Illuminate\\Database\\Eloquent\\Model',
-        'Drewlabs\\Laravel\\Query\\Traits\\Queryable'
+        'Drewlabs\\Laravel\\Query\\Traits\\Queryable',
     ];
 
     /**
      * @var string[]
      */
-    const CLASS_TRAITS = [
-        'Queryable'
+    public const CLASS_TRAITS = [
+        'Queryable',
     ];
 
-    const CLASS_IMPLEMENTATIONS = [
+    public const CLASS_IMPLEMENTATIONS = [
         'AbstractQueryable',
-        'Adaptable'
+        'Adaptable',
     ];
 
     /**
@@ -157,30 +155,30 @@ class EloquentORMModelBuilder implements ContractsEloquentORMModel, ComponentBui
     private $defintion;
 
     /**
-     * List of model relations to provide
-     * 
+     * List of model relations to provide.
+     *
      * @var (\Drewlabs\GCli\BasicRelation|\Drewlabs\GCli\ThroughRelationTables)[]
      */
     private $relations;
 
-
     /**
-     * Makes the table a pivot table
-     * 
+     * Makes the table a pivot table.
+     *
      * @var bool
      */
     private $aspivot;
 
     /**
-     * Creates a model builder class instance
-     * 
-     * @param ORMModelDefinition $defintion 
-     * @param (null|string)|null $schema 
-     * @param (null|string)|null $path 
-     * @return void 
-     * @throws InvalidArgumentException 
-     * @throws RuntimeException 
-     * @throws \Exception 
+     * Creates a model builder class instance.
+     *
+     * @param (string|null)|null $schema
+     * @param (string|null)|null $path
+     *
+     * @throws \InvalidArgumentException
+     * @throws \RuntimeException
+     * @throws \Exception
+     *
+     * @return void
      */
     public function __construct(
         ORMModelDefinition $defintion,
@@ -284,18 +282,20 @@ class EloquentORMModelBuilder implements ContractsEloquentORMModel, ComponentBui
     public function provideRelations(array $relations = [])
     {
         $this->relations = $relations;
+
         return $this;
     }
 
     public function asPivot()
     {
         $this->aspivot = true;
+
         return $this;
     }
 
     public function build()
     {
-        $component = (PHPClass($this->name()));
+        $component = PHPClass($this->name());
         if ($this->isViewModel_) {
             /**
              * @var BluePrint
@@ -307,14 +307,14 @@ class EloquentORMModelBuilder implements ContractsEloquentORMModel, ComponentBui
                 PHPTypesModifiers::PUBLIC,
                 'Returns a fluent validation rules'
             ))->addMethod(
-                (PHPClassMethod(
+                PHPClassMethod(
                     'messages',
                     [],
                     'array<string,string|string[]>',
                     PHPTypesModifiers::PUBLIC,
                     'Returns a fluent validation rules'
-                ))->addContents(
-                    'return ' . PHPVariable('rules', null, $this->rules_ ?? [])->asRValue()->__toString()
+                )->addContents(
+                    'return '.PHPVariable('rules', null, $this->rules_ ?? [])->asRValue()->__toString()
                 )
             );
             if (!$this->isSingleActionValidator_) {
@@ -330,7 +330,7 @@ class EloquentORMModelBuilder implements ContractsEloquentORMModel, ComponentBui
                             'array<string,string|string[]>',
                             PHPTypesModifiers::PUBLIC,
                             'Returns a fluent validation rules applied during update actions'
-                        )->addContents('return ' . PHPVariable('rules', null, $this->rules_ ?? [])->asRValue()->__toString())
+                        )->addContents('return '.PHPVariable('rules', null, $this->rules_ ?? [])->asRValue()->__toString())
                     );
             } else {
                 /**
@@ -405,13 +405,13 @@ class EloquentORMModelBuilder implements ContractsEloquentORMModel, ComponentBui
                     'List of model relation methods'
                 )
             )->addMethod(
-                (PHPClassMethod(
+                PHPClassMethod(
                     'boot',
                     [],
                     'void',
                     PHPTypesModifiers::PROTECTED,
                     'Bootstrap the model and its traits.'
-                ))->asStatic(true)->addLine('parent::boot()')
+                )->asStatic(true)->addLine('parent::boot()')
             )
             ->addToNamespace($this->namespace_ ?? self::DEFAULT_NAMESPACE);
 
@@ -458,6 +458,7 @@ class EloquentORMModelBuilder implements ContractsEloquentORMModel, ComponentBui
          */
         $component = array_reduce(static::CLASS_IMPLEMENTATIONS, static function (Blueprint $carry, $curr) {
             $carry = $carry->addImplementation($curr);
+
             return $carry;
         }, $component);
 
@@ -467,6 +468,7 @@ class EloquentORMModelBuilder implements ContractsEloquentORMModel, ComponentBui
          */
         $component = array_reduce(static::CLASS_TRAITS, static function (Blueprint $carry, $curr) {
             $carry = $carry->addTrait($curr);
+
             return $carry;
         }, $component);
 
@@ -476,6 +478,7 @@ class EloquentORMModelBuilder implements ContractsEloquentORMModel, ComponentBui
          */
         $component = array_reduce(static::CLASS_PATHS, static function (Blueprint $carry, $curr) {
             $carry = $carry->addClassPath($curr);
+
             return $carry;
         }, $component);
 
@@ -517,13 +520,15 @@ class EloquentORMModelBuilder implements ContractsEloquentORMModel, ComponentBui
     }
 
     /**
-     * Set the base properties of the current component
-     * 
-     * @param mixed $schema 
-     * @param mixed $table 
-     * @param mixed $name 
-     * @return void 
-     * @throws InvalidArgumentException 
+     * Set the base properties of the current component.
+     *
+     * @param mixed $schema
+     * @param mixed $table
+     * @param mixed $name
+     *
+     * @throws \InvalidArgumentException
+     *
+     * @return void
      */
     private function setComponentBaseDefintions($schema, $table, $name)
     {
@@ -544,11 +549,9 @@ class EloquentORMModelBuilder implements ContractsEloquentORMModel, ComponentBui
     }
 
     /**
-     * Add model releation methods
-     * 
-     * @param Blueprint $component
-     * 
-     * @return Blueprint 
+     * Add model releation methods.
+     *
+     * @return Blueprint
      */
     private function addRelations(BluePrint $component)
     {
@@ -558,23 +561,23 @@ class EloquentORMModelBuilder implements ContractsEloquentORMModel, ComponentBui
         $this->relationMethods_ = $this->relationMethods_ ?? [];
         $methods = [];
         foreach ($this->relations as $relation) {
-            if (!array_key_exists($method = $relation->getName(), $methods)) {
+            if (!\array_key_exists($method = $relation->getName(), $methods)) {
                 $methods[$method] = 0;
             } else {
                 $methods[$method] = ($method[$method] ?? 0 + 1);
             }
             $type = $relation->getType();
-            if ($type === RelationTypes::ONE_TO_MANY || $type === RelationTypes::ONE_TO_ONE) {
+            if (RelationTypes::ONE_TO_MANY === $type || RelationTypes::ONE_TO_ONE === $type) {
                 $component = $component->addMethod($this->createOneOrManyMethodTemplate($relation, $type, $methods));
                 $this->relationMethods_[] = $relation->getName();
                 continue;
             }
-            if ($type === RelationTypes::MANY_TO_ONE) {
+            if (RelationTypes::MANY_TO_ONE === $type) {
                 $component = $component->addMethod($this->createBelongsToTemplate($relation, $methods));
                 $this->relationMethods_[] = $relation->getName();
                 continue;
             }
-            if ($type === RelationTypes::MANY_TO_MANY && $relation instanceof \Drewlabs\GCli\ThoughRelation) {
+            if (RelationTypes::MANY_TO_MANY === $type && $relation instanceof \Drewlabs\GCli\ThoughRelation) {
                 /**
                  * @var BluePrint
                  */
@@ -583,8 +586,8 @@ class EloquentORMModelBuilder implements ContractsEloquentORMModel, ComponentBui
                 continue;
             }
             if (
-                in_array($type, [RelationTypes::ONE_TO_MANY_THROUGH, RelationTypes::ONE_TO_ONE_THROUGH]) &&
-                $relation instanceof \Drewlabs\GCli\ThoughRelation
+                \in_array($type, [RelationTypes::ONE_TO_MANY_THROUGH, RelationTypes::ONE_TO_ONE_THROUGH], true)
+                && $relation instanceof \Drewlabs\GCli\ThoughRelation
             ) {
                 /**
                  * @var BluePrint
@@ -594,27 +597,26 @@ class EloquentORMModelBuilder implements ContractsEloquentORMModel, ComponentBui
                 continue;
             }
         }
+
         return $component;
     }
 
-
     /**
-     * Creates a HasMany or HasOne method template
-     * 
-     * @param BasicRelation $relation 
-     * @param string $type 
-     * @return CallableInterface 
+     * Creates a HasMany or HasOne method template.
+     *
+     * @return CallableInterface
      */
     private function createOneOrManyMethodTemplate(\Drewlabs\GCli\BasicRelation $relation, string $type, array $methods)
     {
         $model = $relation->getModel();
         $local = $relation->getLocal();
         $reference = $relation->getReference();
-        $returns = $type === RelationTypes::ONE_TO_MANY ?
+        $returns = RelationTypes::ONE_TO_MANY === $type ?
             \Illuminate\Database\Eloquent\Relations\HasMany::class :
             \Illuminate\Database\Eloquent\Relations\HasOne::class;
-        $method = $type === RelationTypes::ONE_TO_MANY ? 'hasMany' : 'hasOne';
-        return  PHPClassMethod(
+        $method = RelationTypes::ONE_TO_MANY === $type ? 'hasMany' : 'hasOne';
+
+        return PHPClassMethod(
             $this->resolvename($relation->getName(), $methods),
             [],
             $returns,
@@ -623,10 +625,9 @@ class EloquentORMModelBuilder implements ContractsEloquentORMModel, ComponentBui
     }
 
     /**
-     * Creates a belongs to method template
-     * 
-     * @param BasicRelation $relation 
-     * @return CallableInterface 
+     * Creates a belongs to method template.
+     *
+     * @return CallableInterface
      */
     private function createBelongsToTemplate(\Drewlabs\GCli\BasicRelation $relation, array $methods)
     {
@@ -634,6 +635,7 @@ class EloquentORMModelBuilder implements ContractsEloquentORMModel, ComponentBui
         $local = $relation->getLocal();
         $reference = $relation->getReference();
         $returns = \Illuminate\Database\Eloquent\Relations\BelongsTo::class;
+
         return PHPClassMethod(
             $this->resolvename($relation->getName(), $methods),
             [],
@@ -642,16 +644,14 @@ class EloquentORMModelBuilder implements ContractsEloquentORMModel, ComponentBui
         )->addLine("return \$this->belongsTo(\\$model::class, '$local', '$reference')");
     }
 
-
     /**
-     * Createa a one to one through or a one to many though relation method template for the model
-     * 
-     * @param ThoughRelation $relation 
-     * @return CallableInterface 
+     * Createa a one to one through or a one to many though relation method template for the model.
+     *
+     * @return CallableInterface
      */
     private function createThroughRelationTemplate(\Drewlabs\GCli\ThoughRelation $relation, array $methods)
     {
-        $returns = $relation->getType() === RelationTypes::ONE_TO_MANY_THROUGH ?
+        $returns = RelationTypes::ONE_TO_MANY_THROUGH === $relation->getType() ?
             \Illuminate\Database\Eloquent\Relations\HasManyThrough::class :
             \Illuminate\Database\Eloquent\Relations\HasOneThrough::class;
         $left = $relation->getLeftTable();
@@ -660,7 +660,7 @@ class EloquentORMModelBuilder implements ContractsEloquentORMModel, ComponentBui
         $rightforeignkey = $relation->getRightForeignKey();
         $leftlocalkey = $relation->getLeftLocalKey();
         $rightlocalkey = $relation->getRightLocalKey();
-        $line = $relation->getType() === RelationTypes::ONE_TO_MANY_THROUGH ?
+        $line = RelationTypes::ONE_TO_MANY_THROUGH === $relation->getType() ?
             "return \$this->hasManyThrough(\\$left::class, \\$right::class, " :
             "return \$this->hasOneThrough(\\$left::class, \\$right::class, ";
         if ($leftforeignkey) {
@@ -676,6 +676,7 @@ class EloquentORMModelBuilder implements ContractsEloquentORMModel, ComponentBui
             $line .= "'$rightlocalkey'";
         }
         $line .= ')';
+
         return PHPClassMethod(
             $this->resolvename($relation->getName(), $methods),
             [],
@@ -685,11 +686,9 @@ class EloquentORMModelBuilder implements ContractsEloquentORMModel, ComponentBui
     }
 
     /**
-     * Creates a many to many relation method template
-     * 
-     * @param ThoughRelation $relation
-     * 
-     * @return CallableInterface 
+     * Creates a many to many relation method template.
+     *
+     * @return CallableInterface
      */
     private function createManyToManyRelationTemplate(\Drewlabs\GCli\ThoughRelation $relation, array $methods)
     {
@@ -722,6 +721,7 @@ class EloquentORMModelBuilder implements ContractsEloquentORMModel, ComponentBui
         if ($through) {
             $line .= "->using(\\$through::class)";
         }
+
         return PHPClassMethod(
             $this->resolvename($relation->getName(), $methods),
             [],
@@ -731,11 +731,9 @@ class EloquentORMModelBuilder implements ContractsEloquentORMModel, ComponentBui
     }
 
     /**
-     * Resolve relation name
-     * 
-     * @param string $name 
-     * @param array $methods 
-     * @return string 
+     * Resolve relation name.
+     *
+     * @return string
      */
     private function resolvename(string $name, array $methods)
     {

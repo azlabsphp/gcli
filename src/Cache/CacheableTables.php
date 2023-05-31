@@ -14,7 +14,6 @@ declare(strict_types=1);
 namespace Drewlabs\GCli\Cache;
 
 use Drewlabs\GCli\Contracts\Cacheable as ContractsCacheable;
-use InvalidArgumentException;
 
 class CacheableTables implements ContractsCacheable
 {
@@ -23,13 +22,12 @@ class CacheableTables implements ContractsCacheable
     private $subNamespace;
 
     /**
-     * Creates class instance
-     * 
-     * @param iterable $tables 
-     * @param string $namespace 
-     * @param string|null $subNamespace 
+     * Creates class instance.
+     *
+     * @param iterable $tables
+     * @param string   $namespace
      */
-    public function __construct(array $tables, string $namespace = null, string $subNamespace = null)
+    public function __construct(array $tables, ?string $namespace = null, ?string $subNamespace = null)
     {
         $this->tables = $tables;
         $this->namespace = $namespace;
@@ -63,9 +61,10 @@ class CacheableTables implements ContractsCacheable
     public function unserialize(string $value)
     {
         $result = unserialize($value);
-        if (!is_array($result)) {
-            throw new InvalidArgumentException("Serialized string is malformed");
+        if (!\is_array($result)) {
+            throw new \InvalidArgumentException('Serialized string is malformed');
         }
+
         return new self($result['tables'] ?? [], $result['namespace'] ?? null, $result['subNamespace']);
     }
 

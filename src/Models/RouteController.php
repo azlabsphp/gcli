@@ -13,7 +13,6 @@ declare(strict_types=1);
 
 namespace Drewlabs\GCli\Models;
 
-
 class RouteController
 {
     /**
@@ -27,12 +26,12 @@ class RouteController
     private $name;
 
     /**
-     * Creates class instance
-     * 
-     * @param string $namespace 
-     * @param string $name 
+     * Creates class instance.
+     *
+     * @param string $namespace
+     * @param string $name
      */
-    public function __construct(string $namespace = null, string $name = null)
+    public function __construct(?string $namespace = null, ?string $name = null)
     {
         $this->namespace = $namespace;
         $this->name = $name;

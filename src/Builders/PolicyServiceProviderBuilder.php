@@ -13,15 +13,18 @@ declare(strict_types=1);
 
 namespace Drewlabs\GCli\Builders;
 
-use Drewlabs\CodeGenerator\Types\PHPTypesModifiers;
-use Drewlabs\GCli\Contracts\ComponentBuilder;
-use Drewlabs\GCli\Helpers\ComponentBuilderHelpers;
-use Drewlabs\GCli\Traits\HasNamespaceAttribute;
-
 use function Drewlabs\CodeGenerator\Proxy\PHPClass;
 use function Drewlabs\CodeGenerator\Proxy\PHPClassMethod;
 use function Drewlabs\CodeGenerator\Proxy\PHPClassProperty;
+
+use Drewlabs\CodeGenerator\Types\PHPTypesModifiers;
+
+use Drewlabs\GCli\Contracts\ComponentBuilder;
+use Drewlabs\GCli\Helpers\ComponentBuilderHelpers;
+
 use function Drewlabs\GCli\Proxy\PHPScript;
+
+use Drewlabs\GCli\Traits\HasNamespaceAttribute;
 
 class PolicyServiceProviderBuilder implements ComponentBuilder
 {
@@ -50,27 +53,23 @@ class PolicyServiceProviderBuilder implements ComponentBuilder
      * @var array
      */
     private $classPaths = [
-        'Illuminate\\Support\\Facades\\Gate'
+        'Illuminate\\Support\\Facades\\Gate',
     ];
 
     /**
-     * 
      * @var array
      */
     private $policies = [];
 
-
     /**
-     * Creates new class instance
-     * 
-     * @param array $policies 
-     * @param string|null $path 
-     * @param string|null $namespace 
-     * @return void 
-     * @throws RuntimeException 
-     * @throws \Exception 
+     * Creates new class instance.
+     *
+     * @throws RuntimeException
+     * @throws \Exception
+     *
+     * @return void
      */
-    public function __construct(array $policies = [], string $path = null, string $namespace = null)
+    public function __construct(array $policies = [], ?string $path = null, ?string $namespace = null)
     {
         $this->setName(self::__NAME__);
 
@@ -92,22 +91,22 @@ class PolicyServiceProviderBuilder implements ComponentBuilder
         }
         $component = $component->asFinal()
             ->addProperty(PHPClassProperty('policies', 'array', PHPTypesModifiers::PRIVATE, $this->policies, [
-                'Map application models to policies'
+                'Map application models to policies',
             ]))
             ->addMethod(
                 PHPClassMethod('policies', [], 'array', PHPTypesModifiers::PRIVATE, [
-                    'Policies property getter'
-                ])->addLine("return \$this->policies")
+                    'Policies property getter',
+                ])->addLine('return $this->policies')
             )
             ->addMethod(
                 PHPClassMethod('registerPolicies', [], 'void', PHPTypesModifiers::PRIVATE, ['Register authorization policies.'])
-                    ->addLine("foreach (\$this->policies() as \$model => \$policy) {")
+                    ->addLine('foreach ($this->policies() as $model => $policy) {')
                     ->addLine("\tGate::policy(\$model, \$policy)")
-                    ->addLine("}")
+                    ->addLine('}')
             )
             ->addMethod(
                 PHPClassMethod('boot', [], 'void', PHPTypesModifiers::PUBLIC, ['Boot application services.'])
-                    ->addLine("\$this->registerPolicies()")
+                    ->addLine('$this->registerPolicies()')
             )
             ->addToNamespace($this->namespace_ ?? self::__NAMESPACE__);
 
