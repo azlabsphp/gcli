@@ -49,6 +49,7 @@ class DataTransfertClassBuilder implements ComponentBuilder
         'Drewlabs\\PHPValue\\Traits\\Castable',
         'Drewlabs\\PHPValue\\Traits\\ObjectAdapter',
         'Drewlabs\\PHPValue\\Contracts\\Adaptable',
+        'Drewlabs\\PHPValue\\Contracts\\HiddenAware'
     ];
 
     /**
@@ -248,6 +249,7 @@ class DataTransfertClassBuilder implements ComponentBuilder
             )
             ->asFinal()
             ->addImplementation('ValueInterface')
+            ->addImplementation('HiddenAware')
             ->addToNamespace($this->namespace_ ?? self::DEFAULT_NAMESPACE)
             ->addMethod(
                 PHPClassMethod(
