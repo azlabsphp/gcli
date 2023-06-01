@@ -13,7 +13,7 @@ declare(strict_types=1);
 
 namespace Drewlabs\GCli\Extensions\Console\Commands;
 
-use Drewlabs\GCli\Builders\EloquentORMModelBuilder;
+use Drewlabs\GCli\Builders\ORMModelBuilder;
 use Drewlabs\GCli\Helpers\ComponentBuilderHelpers;
 
 use function Drewlabs\GCli\Proxy\ComponentsScriptWriter;
@@ -50,7 +50,7 @@ class MakeServiceCommand extends Command
         // Parameters initialization
         $name = $this->argument('name') ?? null;
         $model = $this->option('model') ?
-            EloquentORMModelBuilder::defaultClassPath($this->option('model')) :
+            ORMModelBuilder::defaultClassPath($this->option('model')) :
             null;
         $namespace = $this->option('namespace') ?? '\\App\\Services';
         $basePath = $this->app->basePath($this->option('path') ?? 'app');

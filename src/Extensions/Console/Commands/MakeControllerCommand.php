@@ -16,7 +16,7 @@ namespace Drewlabs\GCli\Extensions\Console\Commands;
 use Drewlabs\CodeGenerator\Exceptions\PHPVariableException;
 use Drewlabs\Core\Helpers\Str;
 use Drewlabs\GCli\Builders\DtoAttributesFactory;
-use Drewlabs\GCli\Builders\EloquentORMModelBuilder;
+use Drewlabs\GCli\Builders\ORMModelBuilder;
 use Drewlabs\GCli\Builders\ViewModelRulesFactory;
 use Drewlabs\GCli\Extensions\Console\ComponentCommandsHelpers;
 use Drewlabs\GCli\Helpers\ComponentBuilderHelpers;
@@ -59,7 +59,7 @@ class MakeControllerCommand extends Command
     public function handle()
     {
         $name = $this->argument('name') ?? null;
-        $model = $this->option('model') ? EloquentORMModelBuilder::defaultClassPath($this->option('model')) : null;
+        $model = $this->option('model') ? ORMModelBuilder::defaultClassPath($this->option('model')) : null;
         $namespace = $this->option('namespace') ?? '\\App\\Http\\Controllers';
         $basePath = $this->app->basePath($this->option('path') ?? 'app');
         $service = $this->option('service') ?? null;
@@ -105,7 +105,7 @@ class MakeControllerCommand extends Command
         $modelComponent = null;
         $modelName = Str::contains($modelClassPath, '\\') ? Str::afterLast('\\', $modelClassPath) : $modelClassPath;
         $modelNamespace = sprintf('\\%s\\Models', ComponentCommandsHelpers::getBaseNamespace($namespace) ?? 'App');
-        if (null !== $model && !class_exists($model) && !class_exists(EloquentORMModelBuilder::defaultClassPath($model))) {
+        if (null !== $model && !class_exists($model) && !class_exists(ORMModelBuilder::defaultClassPath($model))) {
             $modelComponent = ComponentBuilderHelpers::createModelBuilder(
                 $pluralizer($modelName),
                 $columns ?? [],

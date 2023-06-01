@@ -17,7 +17,7 @@ use Doctrine\DBAL\Schema\AbstractSchemaManager;
 use Drewlabs\CodeGenerator\Contracts\Stringable;
 use Drewlabs\GCli\Builders\ControllerClassBuilder;
 use Drewlabs\GCli\Builders\DataTransfertClassBuilder;
-use Drewlabs\GCli\Builders\EloquentORMModelBuilder;
+use Drewlabs\GCli\Builders\ORMModelBuilder;
 use Drewlabs\GCli\Builders\PolicyClassBuilder;
 use Drewlabs\GCli\Builders\PolicyServiceProviderBuilder;
 use Drewlabs\GCli\Builders\ServiceClassBuilder;
@@ -41,14 +41,14 @@ function ComponentsScriptWriter(string $srcPath)
 /**
  * Provides a proxy function to the {@link \Drewlabs\GCli\Contracts\EloquentORMModelBuilder} constructor.
  *
- * @return EloquentORMModelBuilder
+ * @return ORMModelBuilder
  */
 function EloquentORMModelBuilder(
     ORMModelDefinition $defintion,
     ?string $schema = null,
     ?string $path = null
 ) {
-    return new EloquentORMModelBuilder($defintion, $schema, $path);
+    return new ORMModelBuilder($defintion, $schema, $path);
 }
 
 /**

@@ -52,8 +52,9 @@ class PolicyServiceProviderBuilder implements ComponentBuilder
      *
      * @var array
      */
-    private $classPaths = [
+    private const CLASS_PATHS = [
         'Illuminate\\Support\\Facades\\Gate',
+        "Illuminate\\Support\\ServiceProvider"
     ];
 
     /**
@@ -86,10 +87,11 @@ class PolicyServiceProviderBuilder implements ComponentBuilder
     {
 
         $component = PHPClass($this->name());
-        foreach ($this->classPaths ?? [] as $value) {
+        foreach (self::CLASS_PATHS ?? [] as $value) {
             $component = $component->addClassPath($value);
         }
         $component = $component->asFinal()
+            ->setBaseClass('ServiceProvider')
             ->addProperty(PHPClassProperty('policies', 'array', PHPTypesModifiers::PRIVATE, $this->policies, [
                 'Map application models to policies',
             ]))

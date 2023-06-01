@@ -19,12 +19,13 @@ use Drewlabs\CodeGenerator\Contracts\CallableInterface;
 use function Drewlabs\CodeGenerator\Proxy\PHPClass;
 use function Drewlabs\CodeGenerator\Proxy\PHPClassMethod;
 use function Drewlabs\CodeGenerator\Proxy\PHPClassProperty;
+use function Drewlabs\CodeGenerator\Proxy\PHPFunctionParameter;
 use function Drewlabs\CodeGenerator\Proxy\PHPVariable;
 
 use Drewlabs\CodeGenerator\Types\PHPTypesModifiers;
 use Drewlabs\Core\Helpers\Str;
 use Drewlabs\GCli\Contracts\ComponentBuilder;
-use Drewlabs\GCli\Contracts\EloquentORMModelBuilder as ContractsEloquentORMModel;
+use Drewlabs\GCli\Contracts\EloquentORMModelBuilder as AbstractORMModelBuilder;
 use Drewlabs\GCli\Contracts\ORMColumnDefinition;
 use Drewlabs\GCli\Contracts\ORMModelDefinition;
 use Drewlabs\GCli\Contracts\ProvidesRelations;
@@ -39,7 +40,7 @@ use Drewlabs\GCli\Traits\ViewModelBuilder;
 use Illuminate\Database\Eloquent\Model as EloquentModel;
 use Illuminate\Support\Pluralizer;
 
-class EloquentORMModelBuilder implements ContractsEloquentORMModel, ComponentBuilder, ProvidesRelations
+class ORMModelBuilder implements AbstractORMModelBuilder, ComponentBuilder, ProvidesRelations
 {
     use HasNamespaceAttribute;
     use ProvidesTrimTableSchema;
@@ -314,7 +315,7 @@ class EloquentORMModelBuilder implements ContractsEloquentORMModel, ComponentBui
                     PHPTypesModifiers::PUBLIC,
                     'Returns a fluent validation rules'
                 )->addContents(
-                    'return '.PHPVariable('rules', null, $this->rules_ ?? [])->asRValue()->__toString()
+                    'return ' . PHPVariable('rules', null, $this->rules_ ?? [])->asRValue()->__toString()
                 )
             );
             if (!$this->isSingleActionValidator_) {
@@ -330,7 +331,7 @@ class EloquentORMModelBuilder implements ContractsEloquentORMModel, ComponentBui
                             'array<string,string|string[]>',
                             PHPTypesModifiers::PUBLIC,
                             'Returns a fluent validation rules applied during update actions'
-                        )->addContents('return '.PHPVariable('rules', null, $this->rules_ ?? [])->asRValue()->__toString())
+                        )->addContents('return ' . PHPVariable('rules', null, $this->rules_ ?? [])->asRValue()->__toString())
                     );
             } else {
                 /**
@@ -404,16 +405,35 @@ class EloquentORMModelBuilder implements ContractsEloquentORMModel, ComponentBui
                     $this->relationMethods_ ?? [],
                     'List of model relation methods'
                 )
-            )->addMethod(
-                PHPClassMethod(
-                    'boot',
-                    [],
-                    'void',
-                    PHPTypesModifiers::PROTECTED,
-                    'Bootstrap the model and its traits.'
-                )->asStatic(true)->addLine('parent::boot()')
             )
             ->addToNamespace($this->namespace_ ?? self::DEFAULT_NAMESPACE);
+
+        //#region Add properties setters and getters
+        // TODO : Add these method to a class region instance in future release
+        foreach ($this->columns_ as $column) {
+            // Do not include setter and getters for created_at, updated_at, and primaryKey we continue to the next iteration
+            if(in_array($name = $column->name(), [$this->primaryKey_ ?? 'id', 'created_at', 'updated_at'])) {
+                continue;
+            }
+            $component = $component->addMethod($this->createPropertySetter($name))
+                ->addMethod($this->createPropertyGetter($name));
+        }
+        //#region Add properties setters and getters
+
+        // #region add boot method
+        /**
+         * @var Blueprint
+         */
+        $component = $component->addMethod(
+            PHPClassMethod(
+                'boot',
+                [],
+                'void',
+                PHPTypesModifiers::PROTECTED,
+                'Bootstrap the model and its traits.'
+            )->asStatic(true)->addLine('parent::boot()')
+        );
+        // #endregion add boot method
 
         if (null !== $this->primaryKey_) {
             /**
@@ -520,6 +540,33 @@ class EloquentORMModelBuilder implements ContractsEloquentORMModel, ComponentBui
     }
 
     /**
+     * Create model property setter
+     * 
+     * @param string $name 
+     * @param string|null $type 
+     * @return CallableInterface 
+     */
+    private function createPropertySetter(string $name, string $type = null)
+    {
+        return PHPClassMethod(sprintf('set%s', Str::camelize($name)), [PHPFunctionParameter('value', $type)], 'static', 'public', sprintf("Set `%s` property to the parameter value", $name))
+            ->addLine(sprintf("\$this->setAttribute('%s', \$value)", $name))
+            ->addLine('return $this');
+    }
+
+    /**
+     * Creates model property getter
+     * 
+     * @param string $name 
+     * @param string|null $type 
+     * @return CallableInterface 
+     */
+    private function createPropertyGetter(string $name, string $type = null)
+    {
+        return PHPClassMethod(sprintf('get%s', Str::camelize($name)), [], $type ?? 'mixed', 'public', sprintf("Get `%s` property value", $name))
+            ->addLine(sprintf("return \$this->getAttribute('%s')", $name));
+    }
+
+    /**
      * Set the base properties of the current component.
      *
      * @param mixed $schema
@@ -611,16 +658,15 @@ class EloquentORMModelBuilder implements ContractsEloquentORMModel, ComponentBui
         $model = $relation->getModel();
         $local = $relation->getLocal();
         $reference = $relation->getReference();
-        $returns = RelationTypes::ONE_TO_MANY === $type ?
-            \Illuminate\Database\Eloquent\Relations\HasMany::class :
-            \Illuminate\Database\Eloquent\Relations\HasOne::class;
+        $returns = RelationTypes::ONE_TO_MANY === $type ? \Illuminate\Database\Eloquent\Relations\HasMany::class : \Illuminate\Database\Eloquent\Relations\HasOne::class;
         $method = RelationTypes::ONE_TO_MANY === $type ? 'hasMany' : 'hasOne';
 
         return PHPClassMethod(
             $this->resolvename($relation->getName(), $methods),
             [],
             $returns,
-            'public'
+            'public',
+            RelationTypes::ONE_TO_MANY === $type ? 'returns an eloquent `has many` relation' : 'returns an eloquent `has one` relation'
         )->addLine("return \$this->$method(\\$model::class, '$local', '$reference')");
     }
 
@@ -640,7 +686,8 @@ class EloquentORMModelBuilder implements ContractsEloquentORMModel, ComponentBui
             $this->resolvename($relation->getName(), $methods),
             [],
             $returns,
-            'public'
+            'public',
+            'returns an eloquent `belongs to` relation'
         )->addLine("return \$this->belongsTo(\\$model::class, '$local', '$reference')");
     }
 
@@ -651,18 +698,14 @@ class EloquentORMModelBuilder implements ContractsEloquentORMModel, ComponentBui
      */
     private function createThroughRelationTemplate(\Drewlabs\GCli\ThoughRelation $relation, array $methods)
     {
-        $returns = RelationTypes::ONE_TO_MANY_THROUGH === $relation->getType() ?
-            \Illuminate\Database\Eloquent\Relations\HasManyThrough::class :
-            \Illuminate\Database\Eloquent\Relations\HasOneThrough::class;
+        $returns = RelationTypes::ONE_TO_MANY_THROUGH === $relation->getType() ? \Illuminate\Database\Eloquent\Relations\HasManyThrough::class : \Illuminate\Database\Eloquent\Relations\HasOneThrough::class;
         $left = $relation->getLeftTable();
         $right = $relation->getRightTable();
         $leftforeignkey = $relation->getLeftForeignKey();
         $rightforeignkey = $relation->getRightForeignKey();
         $leftlocalkey = $relation->getLeftLocalKey();
         $rightlocalkey = $relation->getRightLocalKey();
-        $line = RelationTypes::ONE_TO_MANY_THROUGH === $relation->getType() ?
-            "return \$this->hasManyThrough(\\$left::class, \\$right::class, " :
-            "return \$this->hasOneThrough(\\$left::class, \\$right::class, ";
+        $line = RelationTypes::ONE_TO_MANY_THROUGH === $relation->getType() ? "return \$this->hasManyThrough(\\$left::class, \\$right::class, " : "return \$this->hasOneThrough(\\$left::class, \\$right::class, ";
         if ($leftforeignkey) {
             $line .= "'$leftforeignkey', ";
         }
@@ -681,7 +724,8 @@ class EloquentORMModelBuilder implements ContractsEloquentORMModel, ComponentBui
             $this->resolvename($relation->getName(), $methods),
             [],
             $returns,
-            'public'
+            'public',
+            'returns an eloquent `through` relation'
         )->addLine($line);
     }
 

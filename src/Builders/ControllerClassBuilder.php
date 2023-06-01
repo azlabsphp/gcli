@@ -45,6 +45,7 @@ class ControllerClassBuilder implements ContractsControllerBuilder
 
     public const CLASS_PATHS = [
         'Drewlabs\\Http\\Factory\\OkResponseFactoryInterface',
+        'Drewlabs\\PHPValue\\Utils\\SanitizeCustomProperties'
     ];
 
     /**
@@ -399,10 +400,11 @@ class ControllerClassBuilder implements ContractsControllerBuilder
                     ] : [],
                     $this->mustGenerateActionContents() ? array_merge(
                         [
-                            '//#region Hidden & Columns attributes',
+                            '//#region Excepts & attributes',
                             "\$columns = \${$vmParamName}->getColumns()",
-                            "\$excepts = \${$vmParamName}->get('_hidden') ?? []",
-                            '//#endregion Hidden & Columns attributes',
+                            "\$excepts = \${$vmParamName}->getExcludes()",
+                            "\$properties = (new SanitizeCustomProperties(true))(\$columns)",
+                            '//#endregion Excepts & attributes',
                             '',
                             '$result = $this->service->handle(', // \t
                             "\t\${$vmParamName}->has('per_page') ? SelectQueryAction(",
@@ -417,8 +419,8 @@ class ControllerClassBuilder implements ContractsControllerBuilder
 
                         ],
                         $this->dtoClass_ ? [
-                            "\tuseMapQueryResult(function (\$value)  use (\$excepts, \$columns) {",
-                            "\t\treturn \$value ? $this->dtoClass_::new(\$value)->addProperties(\$columns)->mergeHidden(\$excepts) : \$value",
+                            "\tuseMapQueryResult(function (\$value)  use (\$excepts, \$properties) {",
+                            "\t\treturn \$value ? $this->dtoClass_::new(\$value)->addProperties(\$properties)->mergeHidden(array_merge(\$excepts, " . "\$value" . "->getHidden() ?? [])) : \$value",
                             "\t})",
                             ')',
                         ] :
@@ -444,17 +446,18 @@ class ControllerClassBuilder implements ContractsControllerBuilder
                         '',
                     ] : [],
                     [
-                        '//#region Hidden & Columns attributes',
+                        '//#region Excepts & attributes',
                         "\$columns = \${$vmParamName}->getColumns()",
-                        "\$excepts = \${$vmParamName}->get('_hidden') ?? []",
-                        '//#endregion Hidden & Columns attributes',
+                        "\$excepts = \${$vmParamName}->getExcludes()",
+                        "\$properties = (new SanitizeCustomProperties(true))(\$columns)",
+                        '//#endregion Excepts & attributes',
                         '',
                     ],
                     null !== $this->dtoClass_ ? [
                         '$result = $this->service->handle(',
                         "\tSelectQueryAction(\$id, \$columns),",
-                        "\tfunction (\$value)  use (\$excepts, \$columns) {",
-                        "\t\treturn null !== \$value ? $this->dtoClass_::new(\$value)->addProperties(\$columns)->mergeHidden(\$excepts) : \$value",
+                        "\tfunction (\$value)  use (\$excepts, \$properties) {",
+                        "\t\treturn null !== \$value ? $this->dtoClass_::new(\$value)->addProperties(\$properties)->mergeHidden(array_merge(\$excepts, " . "\$value" . "->getHidden() ?? [])) : \$value",
                         "\t}",
                         ')',
                     ] : ['$result = $this->service->handle(SelectQueryAction($id, $columns)'],

@@ -150,7 +150,7 @@ class ViewModelClassBuilder implements ComponentBuilder
     ) {
         $this->setName($name ?
             (!Str::endsWith($name, 'ViewModel') ?
-                Str::camelize(Pluralizer::singular($name)).'ViewModel' :
+                Str::camelize(Pluralizer::singular($name)) . 'ViewModel' :
                 Str::camelize(Pluralizer::singular($name))) :
             self::DEFAULT_NAME);
         // Set the component write path
@@ -175,7 +175,7 @@ class ViewModelClassBuilder implements ComponentBuilder
         if ($isclasspath) {
             $this->modelName_ = $isclasspath ? array_reverse(explode('\\', $this->modelClassPath_))[0] : $this->modelClassPath_;
         }
-        $this->setName(Str::camelize(Pluralizer::singular($this->modelName_)).'ViewModel');
+        $this->setName(Str::camelize(Pluralizer::singular($this->modelName_)) . 'ViewModel');
 
         return $this;
     }
@@ -209,7 +209,7 @@ class ViewModelClassBuilder implements ComponentBuilder
                 'array<string,string|string[]>',
                 PHPTypesModifiers::PUBLIC,
                 'Returns a fluent validation rules'
-            )->addContents('return '.PHPVariable('rules', null, $this->rules_ ?? [])->asRValue()->__toString()))
+            )->addContents('return ' . PHPVariable('rules', null, $this->rules_ ?? [])->asRValue()->__toString()))
             ->addMethod(PHPClassMethod(
                 'messages',
                 [],
@@ -228,7 +228,7 @@ class ViewModelClassBuilder implements ComponentBuilder
                 'array<string,string|string[]>',
                 PHPTypesModifiers::PUBLIC,
                 'Returns a fluent validation rules applied during update actions'
-            )->addContents('return '.PHPVariable('rules', null, $this->updateRules_ ?? [])->asRValue()->__toString()));
+            )->addContents('return ' . PHPVariable('rules', null, $this->updateRules_ ?? [])->asRValue()->__toString()));
         }
         // Add inputs traits
         if ($this->hasInputsTraits_) {
@@ -241,7 +241,7 @@ class ViewModelClassBuilder implements ComponentBuilder
                         'model_',
                         PHPTypes::STRING,
                         PHPTypesModifiers::PRIVATE,
-                        $this->modelName_.'::class',
+                        $this->modelName_ . '::class',
                         'Model class associated with the view model'
                     )
                 );
@@ -257,7 +257,7 @@ class ViewModelClassBuilder implements ComponentBuilder
                         'dtoclass_',
                         PHPTypes::STRING,
                         PHPTypesModifiers::PRIVATE,
-                        Str::afterLast('\\', $this->dtoclasspath).'::class',
+                        Str::afterLast('\\', $this->dtoclasspath) . '::class',
                         'Data transfer class associated with the view model'
                     )
                 );
@@ -291,8 +291,12 @@ class ViewModelClassBuilder implements ComponentBuilder
                     ->addLine('return $this->model_')
             )
                 ->addMethod(
-                    PHPClassMethod('getColumns', [], 'array', 'public', 'returns the list of queried columns from current instance')
-                        ->addLine("return \$this->has('_columns') ? (is_array(\$columns_ = \$this->get('_columns')) ? \$columns_ : (@json_decode(\$columns_, true) ?? ['*'])): ['*']")
+                    PHPClassMethod('getColumns', [], 'array', 'public', 'returns the list of queried columns')
+                        ->addLine("return \$this->has('_columns') ? (is_array(\$columns = \$this->get('_columns')) ? \$columns : (@json_decode(\$columns, true) ?? ['*'])): ['*']")
+                )
+                ->addMethod(
+                    PHPClassMethod('getExcludes', [], 'array', 'public', 'returns the list of excluded columns')
+                        ->addLine("return \$this->has('_hidden') ? (is_array(\$columns = \$this->get('_hidden')) ? \$columns : (@json_decode(\$columns, true) ?? ['*'])): ['*']")
                 );
         } else {
 
