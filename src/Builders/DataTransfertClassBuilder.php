@@ -3,7 +3,7 @@
 declare(strict_types=1);
 
 /*
- * This file is part of the Drewlabs package.
+ * This file is part of the drewlabs namespace.
  *
  * (c) Sidoine Azandrew <azandrewdevelopper@gmail.com>
  *
@@ -49,7 +49,7 @@ class DataTransfertClassBuilder implements ComponentBuilder
         'Drewlabs\\PHPValue\\Traits\\Castable',
         'Drewlabs\\PHPValue\\Traits\\ObjectAdapter',
         'Drewlabs\\PHPValue\\Contracts\\Adaptable',
-        'Drewlabs\\PHPValue\\Contracts\\HiddenAware'
+        'Drewlabs\\PHPValue\\Contracts\\HiddenAware',
     ];
 
     /**

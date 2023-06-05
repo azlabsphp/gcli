@@ -3,7 +3,7 @@
 declare(strict_types=1);
 
 /*
- * This file is part of the Drewlabs package.
+ * This file is part of the drewlabs namespace.
  *
  * (c) Sidoine Azandrew <azandrewdevelopper@gmail.com>
  *
@@ -150,7 +150,7 @@ class ViewModelClassBuilder implements ComponentBuilder
     ) {
         $this->setName($name ?
             (!Str::endsWith($name, 'ViewModel') ?
-                Str::camelize(Pluralizer::singular($name)) . 'ViewModel' :
+                Str::camelize(Pluralizer::singular($name)).'ViewModel' :
                 Str::camelize(Pluralizer::singular($name))) :
             self::DEFAULT_NAME);
         // Set the component write path
@@ -175,7 +175,7 @@ class ViewModelClassBuilder implements ComponentBuilder
         if ($isclasspath) {
             $this->modelName_ = $isclasspath ? array_reverse(explode('\\', $this->modelClassPath_))[0] : $this->modelClassPath_;
         }
-        $this->setName(Str::camelize(Pluralizer::singular($this->modelName_)) . 'ViewModel');
+        $this->setName(Str::camelize(Pluralizer::singular($this->modelName_)).'ViewModel');
 
         return $this;
     }
@@ -209,7 +209,7 @@ class ViewModelClassBuilder implements ComponentBuilder
                 'array<string,string|string[]>',
                 PHPTypesModifiers::PUBLIC,
                 'Returns a fluent validation rules'
-            )->addContents('return ' . PHPVariable('rules', null, $this->rules_ ?? [])->asRValue()->__toString()))
+            )->addContents('return '.PHPVariable('rules', null, $this->rules ?? [])->asRValue()->__toString()))
             ->addMethod(PHPClassMethod(
                 'messages',
                 [],
@@ -218,7 +218,7 @@ class ViewModelClassBuilder implements ComponentBuilder
                 'Returns a list of validation error messages'
             )->addContents('return []'));
 
-        if (!$this->isSingleActionValidator_) {
+        if (!$this->isSingleActionValidator) {
             /**
              * @var BluePrint|PHPClass
              */
@@ -228,10 +228,10 @@ class ViewModelClassBuilder implements ComponentBuilder
                 'array<string,string|string[]>',
                 PHPTypesModifiers::PUBLIC,
                 'Returns a fluent validation rules applied during update actions'
-            )->addContents('return ' . PHPVariable('rules', null, $this->updateRules_ ?? [])->asRValue()->__toString()));
+            )->addContents('return '.PHPVariable('rules', null, $this->updateRules ?? [])->asRValue()->__toString()));
         }
         // Add inputs traits
-        if ($this->hasInputsTraits_) {
+        if ($this->hasInputsTraits) {
             if ($this->modelClassPath_ && $this->modelName_) {
                 /**
                  * @var Blueprint
@@ -241,7 +241,7 @@ class ViewModelClassBuilder implements ComponentBuilder
                         'model_',
                         PHPTypes::STRING,
                         PHPTypesModifiers::PRIVATE,
-                        $this->modelName_ . '::class',
+                        $this->modelName_.'::class',
                         'Model class associated with the view model'
                     )
                 );
@@ -257,7 +257,7 @@ class ViewModelClassBuilder implements ComponentBuilder
                         'dtoclass_',
                         PHPTypes::STRING,
                         PHPTypesModifiers::PRIVATE,
-                        Str::afterLast('\\', $this->dtoclasspath) . '::class',
+                        Str::afterLast('\\', $this->dtoclasspath).'::class',
                         'Data transfer class associated with the view model'
                     )
                 );

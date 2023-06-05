@@ -3,7 +3,7 @@
 declare(strict_types=1);
 
 /*
- * This file is part of the Drewlabs package.
+ * This file is part of the drewlabs namespace.
  *
  * (c) Sidoine Azandrew <azandrewdevelopper@gmail.com>
  *
@@ -13,13 +13,13 @@ declare(strict_types=1);
 
 namespace Drewlabs\GCli;
 
-use Drewlabs\GCli\Builders\DtoAttributesFactory;
-use Drewlabs\GCli\Builders\ViewModelRulesFactory;
+use Drewlabs\GCli\Contracts\DtoAttributesFactory;
 use Drewlabs\GCli\Contracts\ORMColumnDefinition;
-use Drewlabs\GCli\Contracts\ORMModelDefinition as ContractsORMModelDefinition;
+use Drewlabs\GCli\Contracts\ORMModelDefinition as AbstractORMModelDefinition;
+use Drewlabs\GCli\Contracts\ViewModelRulesFactory;
 use Drewlabs\GCli\Helpers\DataTypeToFluentValidationRulesHelper;
 
-class ORMModelDefinition implements ContractsORMModelDefinition, DtoAttributesFactory, ViewModelRulesFactory
+class ORMModelDefinition implements AbstractORMModelDefinition, DtoAttributesFactory, ViewModelRulesFactory
 {
     private $primaryKey;
     private $name;
@@ -95,7 +95,7 @@ class ORMModelDefinition implements ContractsORMModelDefinition, DtoAttributesFa
 
     public function createDtoAttributes()
     {
-        return iterator_to_array((static function (ContractsORMModelDefinition $model) {
+        return iterator_to_array((static function (AbstractORMModelDefinition $model) {
             /*
              * @var ORMColumnDefinition
              */
@@ -107,7 +107,7 @@ class ORMModelDefinition implements ContractsORMModelDefinition, DtoAttributesFa
 
     public function createRules(bool $update = false)
     {
-        return iterator_to_array((function (ContractsORMModelDefinition $model) use ($update) {
+        return iterator_to_array((function (AbstractORMModelDefinition $model) use ($update) {
             foreach ($model->columns() as $value) {
                 yield $value->name() => $this->getColumRules($value, $model->primaryKey(), $update);
             }

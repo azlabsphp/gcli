@@ -43,7 +43,8 @@
     "require": {
         "php": ">=7.2",
         "drewlabs/code-generator": "^0.2.4",
-        "drewlabs/core-helpers": "^0.2.2"
+        "drewlabs/core-helpers": "^0.2.2",
+        "drewlabs/htr": "^0.2.0"
     },
     "extra": {
         "laravel": {

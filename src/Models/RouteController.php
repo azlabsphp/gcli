@@ -3,7 +3,7 @@
 declare(strict_types=1);
 
 /*
- * This file is part of the Drewlabs package.
+ * This file is part of the drewlabs namespace.
  *
  * (c) Sidoine Azandrew <azandrewdevelopper@gmail.com>
  *
@@ -23,26 +23,34 @@ class RouteController
     /**
      * @var string
      */
+    private $classPath;
+
+    /**
+     * @var string
+     */
     private $name;
 
     /**
      * Creates class instance.
      *
      * @param string $namespace
-     * @param string $name
+     * @param string $classPath
      */
-    public function __construct(?string $namespace = null, ?string $name = null)
+    public function __construct(string $name, ?string $namespace = null, ?string $classPath = null)
     {
-        $this->namespace = $namespace;
         $this->name = $name;
+        $this->namespace = $namespace;
+        $this->classPath = $classPath;
     }
 
     public function __serialize(): array
     {
-        return [
-            'name' => $this->getName(),
-            'namespace' => $this->getNamespace(),
-        ];
+        return ['classpath' => $this->getClassPath(), 'namespace' => $this->getNamespace()];
+    }
+
+    public function getClassPath()
+    {
+        return $this->classPath;
     }
 
     public function getName()

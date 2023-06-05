@@ -3,7 +3,7 @@
 declare(strict_types=1);
 
 /*
- * This file is part of the Drewlabs package.
+ * This file is part of the drewlabs namespace.
  *
  * (c) Sidoine Azandrew <azandrewdevelopper@gmail.com>
  *
@@ -20,57 +20,77 @@ trait ViewModelBuilder
      *
      * @var bool
      */
-    private $isSingleActionValidator_ = false;
+    private $isSingleActionValidator = false;
 
     /**
      * List of rules to add to the view model.
      *
      * @var array
      */
-    private $rules_ = [];
+    private $rules = [];
 
     /**
      * List of update rules to add to the view model.
      *
      * @var array
      */
-    private $updateRules_ = [];
+    private $updateRules = [];
 
     /**
      * Provides methods or traits for writing inputs to / reading inputs from the viewmodel.
      *
      * @var bool
      */
-    private $hasInputsTraits_ = false;
+    private $hasInputsTraits = false;
 
     public function setRules(array $rules = [])
     {
         if (null !== $rules) {
-            $this->rules_ = $rules;
+            $this->rules = $rules;
         }
 
         return $this;
+    }
+
+    /**
+     * returns the list of rules during create action.
+     *
+     * @return array
+     */
+    public function getRules()
+    {
+        return $this->rules ?? [];
     }
 
     public function setUpdateRules(array $rules = [])
     {
         if (null !== $rules) {
-            $this->updateRules_ = $rules;
+            $this->updateRules = $rules;
         }
 
         return $this;
     }
 
+    /**
+     * returns list of rules during update action.
+     *
+     * @return array
+     */
+    public function getUpdateRules()
+    {
+        return $this->updateRules ?? [];
+    }
+
     public function asSingleActionValidator()
     {
-        $this->isSingleActionValidator_ = true;
+        $this->isSingleActionValidator = true;
 
         return $this;
     }
 
     public function addInputsTraits()
     {
-        $this->hasInputsTraits_ = true;
+        $this->hasInputsTraits = true;
 
         return $this;
     }

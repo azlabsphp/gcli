@@ -3,7 +3,7 @@
 declare(strict_types=1);
 
 /*
- * This file is part of the Drewlabs package.
+ * This file is part of the drewlabs namespace.
  *
  * (c) Sidoine Azandrew <azandrewdevelopper@gmail.com>
  *
@@ -52,13 +52,11 @@ class RouteDefinitionsHelper
     public static function for(string $name, RouteController $controller)
     {
         return static function ($isLumen) use ($name, $controller) {
-            $classPath = $controller->getName();
+            $classPath = $controller->getClassPath();
             $namespace = $controller->getNamespace();
             if ($isLumen) {
                 $classPath = Str::contains($classPath, '\\') ? array_reverse(explode('\\', $classPath))[0] ?? $classPath : $classPath;
-                $classPath = !empty($namespace) ?
-                    sprintf('%s\\%s', $namespace, $classPath) :
-                    $classPath;
+                $classPath = !empty($namespace) ? sprintf('%s\\%s', $namespace, $classPath) : $classPath;
 
                 return [
                     "\$router->get('/$name', ['uses' => '$classPath@index']);",

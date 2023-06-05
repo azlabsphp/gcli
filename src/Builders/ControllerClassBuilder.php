@@ -3,7 +3,7 @@
 declare(strict_types=1);
 
 /*
- * This file is part of the Drewlabs package.
+ * This file is part of the drewlabs namespace.
  *
  * (c) Sidoine Azandrew <azandrewdevelopper@gmail.com>
  *
@@ -45,7 +45,7 @@ class ControllerClassBuilder implements ContractsControllerBuilder
 
     public const CLASS_PATHS = [
         'Drewlabs\\Http\\Factory\\OkResponseFactoryInterface',
-        'Drewlabs\\PHPValue\\Utils\\SanitizeCustomProperties'
+        'Drewlabs\\PHPValue\\Utils\\SanitizeCustomProperties',
     ];
 
     /**
@@ -395,7 +395,7 @@ class ControllerClassBuilder implements ContractsControllerBuilder
                 'returns' => 'mixed',
                 'contents' => array_merge(
                     $this->hasAuthenticatable_ && $this->policies && (null !== $this->viewModelClass_) ? [
-                        "\$$vmParamName" . "->authorize('viewAny', [" . "\$$vmParamName" . "->getModel(), \$$vmParamName])",
+                        "\$$vmParamName" . "->authorize('viewAny', " . "\$$vmParamName" . " [->getModel(), \$$vmParamName])",
                         '',
                     ] : [],
                     $this->mustGenerateActionContents() ? array_merge(
@@ -403,7 +403,7 @@ class ControllerClassBuilder implements ContractsControllerBuilder
                             '//#region Excepts & attributes',
                             "\$columns = \${$vmParamName}->getColumns()",
                             "\$excepts = \${$vmParamName}->getExcludes()",
-                            "\$properties = (new SanitizeCustomProperties(true))(\$columns)",
+                            '$properties = (new SanitizeCustomProperties(true))($columns)',
                             '//#endregion Excepts & attributes',
                             '',
                             '$result = $this->service->handle(', // \t
@@ -420,7 +420,7 @@ class ControllerClassBuilder implements ContractsControllerBuilder
                         ],
                         $this->dtoClass_ ? [
                             "\tuseMapQueryResult(function (\$value)  use (\$excepts, \$properties) {",
-                            "\t\treturn \$value ? $this->dtoClass_::new(\$value)->addProperties(\$properties)->mergeHidden(array_merge(\$excepts, " . "\$value" . "->getHidden() ?? [])) : \$value",
+                            "\t\treturn \$value ? $this->dtoClass_::new(\$value)->addProperties(\$properties)->mergeHidden(array_merge(\$excepts, " . '$value->getHidden() ?? [])) : $value',
                             "\t})",
                             ')',
                         ] :
@@ -449,7 +449,7 @@ class ControllerClassBuilder implements ContractsControllerBuilder
                         '//#region Excepts & attributes',
                         "\$columns = \${$vmParamName}->getColumns()",
                         "\$excepts = \${$vmParamName}->getExcludes()",
-                        "\$properties = (new SanitizeCustomProperties(true))(\$columns)",
+                        '$properties = (new SanitizeCustomProperties(true))($columns)',
                         '//#endregion Excepts & attributes',
                         '',
                     ],
@@ -457,7 +457,7 @@ class ControllerClassBuilder implements ContractsControllerBuilder
                         '$result = $this->service->handle(',
                         "\tSelectQueryAction(\$id, \$columns),",
                         "\tfunction (\$value)  use (\$excepts, \$properties) {",
-                        "\t\treturn null !== \$value ? $this->dtoClass_::new(\$value)->addProperties(\$properties)->mergeHidden(array_merge(\$excepts, " . "\$value" . "->getHidden() ?? [])) : \$value",
+                        "\t\treturn null !== \$value ? $this->dtoClass_::new(\$value)->addProperties(\$properties)->mergeHidden(array_merge(\$excepts, " . '$value->getHidden() ?? [])) : $value',
                         "\t}",
                         ')',
                     ] : ['$result = $this->service->handle(SelectQueryAction($id, $columns)'],
@@ -479,7 +479,7 @@ class ControllerClassBuilder implements ContractsControllerBuilder
                 'returns' => 'mixed',
                 'contents' => $this->mustGenerateActionContents() ? array_merge(
                     $this->hasAuthenticatable_ && $this->policies && (null !== $this->viewModelClass_) ? [
-                        "\$$vmParamName" . "->authorize('create', [" . "\$$vmParamName" . "->getModel(), \$$vmParamName])",
+                        "\$$vmParamName" . "->authorize('create', " . "\$$vmParamName" . "[->getModel(), \$$vmParamName])",
                         '',
                     ] : [],
                     null === $this->viewModelClass_ ? [
@@ -576,7 +576,7 @@ class ControllerClassBuilder implements ContractsControllerBuilder
                 ],
                 'returns' => 'mixed',
                 'contents' => $this->mustGenerateActionContents() ? [
-                    $this->hasAuthenticatable_ && $this->policies && (null !== $this->viewModelClass_) ? "\$$vmParamName" . "->authorize('delete', [\$$vmParamName" . ("->find(\$id), \$$vmParamName])") : null,
+                    $this->hasAuthenticatable_ && $this->policies && (null !== $this->viewModelClass_) ? ("\$$vmParamName" . "->authorize('delete', [\$$vmParamName") . ("->find(\$id), \$$vmParamName])") : null,
                     '',
                     '$result = $this->service->handle(DeleteQueryAction($id))',
                     'return $this->response->create($result)',

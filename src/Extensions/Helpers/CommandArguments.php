@@ -3,7 +3,7 @@
 declare(strict_types=1);
 
 /*
- * This file is part of the Drewlabs package.
+ * This file is part of the drewlabs namespace.
  *
  * (c) Sidoine Azandrew <azandrewdevelopper@gmail.com>
  *
@@ -51,9 +51,7 @@ class CommandArguments
     {
 
         // #endregion command options
-        $options = ($inputpath = $this->options->get('input')) ?
-            ('json' === $this->options->get('format') ? Options::json($inputpath) : Options::yaml($inputpath)) :
-            new Options([]);
+        $options = ($inputpath = $this->options->get('input')) ? ('json' === $this->options->get('format') ? Options::json($inputpath) : Options::yaml($inputpath)) : new Options([]);
         // TODO : Override default option with parameters
         $options = $options->merge([
             'path' => Path::new($basePath)->__toString(),
@@ -100,6 +98,22 @@ class CommandArguments
                 'models.relations.one-to-one-though' => iterator_to_array(static::flattenComposed($this->options->get('onethroughs') ?? [])),
                 'models.relations.one-to-many-though' => iterator_to_array(static::flattenComposed($this->options->get('manythroughs') ?? [])),
             ]);
+        }
+
+        if ($policies = ($this->options->get('policies') ?? false)) {
+            $options = $options->merge(['policies' => $policies]);
+        }
+
+        if ($htr = ($this->options->get('htr') ?? false)) {
+            $options = $options->merge(['htr' => $htr]);
+        }
+
+        if ($htrDir = ($this->options->get('htrDir') ?? null)) {
+            $options = $options->merge(['htrDir' => $htrDir]);
+        }
+
+        if ($htrHost = ($this->options->get('htrHost') ?? null)) {
+            $options = $options->merge(['htrHost' => $htrHost]);
         }
 
         return $options;

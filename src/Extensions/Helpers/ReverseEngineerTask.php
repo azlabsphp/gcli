@@ -3,7 +3,7 @@
 declare(strict_types=1);
 
 /*
- * This file is part of the Drewlabs package.
+ * This file is part of the drewlabs namespace.
  *
  * (c) Sidoine Azandrew <azandrewdevelopper@gmail.com>
  *
@@ -17,7 +17,6 @@ use Closure;
 use Doctrine\DBAL\DriverManager;
 use Drewlabs\Core\Helpers\Arr;
 use Drewlabs\Core\Helpers\Str;
-use Drewlabs\GCli\Builders\DataTransfertClassBuilder;
 use Drewlabs\GCli\Builders\ViewModelClassBuilder;
 use Drewlabs\GCli\ComponentsScriptWriter as ComponentsScriptWriterClass;
 use Drewlabs\GCli\Contracts\ComponentBuilder;
@@ -29,6 +28,7 @@ use Drewlabs\GCli\Extensions\Traits\ReverseEngineerRelations;
 use Drewlabs\GCli\Helpers\ComponentBuilderHelpers;
 use Drewlabs\GCli\Helpers\RouteDefinitionsHelper;
 
+use Drewlabs\GCli\HTr\RouteRequestBodyMap;
 use Drewlabs\GCli\Models\RouteController;
 
 use function Drewlabs\GCli\Proxy\ComponentsScriptWriter;
@@ -206,7 +206,7 @@ class ReverseEngineerTask
     /**
      * Creates a code generator factory function based on provided options.
      *
-     * @return Closure(string $routesDirectory, string $cachePath, string $routesCachePath, Closure $onStartCallback, null|\Closure($policies) $onCompleteCallback = null, null|Closure $onExistsCallback = null): void
+     * @return Closure(string $routesDirectory, string $cachePath, string $routesCachePath, Closure $onStartCallback, null|\Closure($policies) $onCompleteCallback = null, null|Closure $onExistsCallback = null, null|Closure $createHTrProjectsCallback = null): void
      */
     public function run(
         array $options,
@@ -229,6 +229,7 @@ class ReverseEngineerTask
             \Closure $onStartCallback,
             ?\Closure $onCompleteCallback = null,
             ?\Closure $onExistsCallback = null,
+            ?\Closure $createHTrProjectsCallback = null
         ) use (
             $options,
             $src,
@@ -334,6 +335,7 @@ class ReverseEngineerTask
                 $onethroughs,
                 $schema
             ) : [[], []];
+            $requestBodyMap = new RouteRequestBodyMap();
             // #endregion Create components models relations
             $routes = iterator_to_array((static function () use (
                 $camelize,
@@ -343,7 +345,8 @@ class ReverseEngineerTask
                 $relations,
                 $pivots,
                 &$onExistsCallback,
-                &$policies
+                &$policies,
+                &$requestBodyMap
             ) {
                 foreach ($values as $component) {
                     $modelbuilder = Arr::get($component, 'model.class');
@@ -393,7 +396,8 @@ class ReverseEngineerTask
                         $name = \is_callable($nameBuilder = Arr::get($controller, 'route.nameBuilder')) ? $nameBuilder($controllersource) : Arr::get($controller, 'route.name');
                         $classPath = \is_callable($classPathBuilder = Arr::get($controller, 'route.classPathBuilder')) ? $classPathBuilder($controllersource) : Arr::get($controller, 'route.classPath');
                         static::writeComponentSourceCode(Arr::get($controller, 'path'), $controllersource, $onExistsCallback);
-                        $routeController = new RouteController($subPackage, $classPath);
+                        $routeController = new RouteController($name, $subPackage, $classPath);
+                        $requestBodyMap->put($name, $viewmodelbuilder->getRules(), $viewmodelbuilder->getUpdateRules());
                         yield $name => $routeController;
                     }
                     if (null !== ($policy = Arr::get($component, 'policy'))) {
@@ -420,6 +424,11 @@ class ReverseEngineerTask
                     // generated routes, consider appending the new table routes
                     // to existing routes
                 )($routes, !empty($this->tables));
+                // Once the routes are ready, we invoke function to create htr requests
+                if ($createHTrProjectsCallback) {
+                    $createHTrProjectsCallback($routes, $requestBodyMap, $routePrefix);
+                }
+                // create htr document for each route
                 $indicator->advance();
             }
 
@@ -478,17 +487,9 @@ class ReverseEngineerTask
             $definitions = [];
             foreach ($routes as $key => $value) {
                 // Call the route definitions creator function
-                $definitions[$key] = RouteDefinitionsHelper::for(
-                    $key,
-                    $value
-                )($lumen);
+                $definitions[$key] = RouteDefinitionsHelper::for($key, $value)($lumen);
             }
-            RouteDefinitionsHelper::writeRouteDefinitions(
-                $routesDirectory,
-                $definitions,
-                $routingfilename,
-                $partial
-            )(
+            RouteDefinitionsHelper::writeRouteDefinitions($routesDirectory, $definitions, $routingfilename, $partial)(
                 $lumen,
                 $prefix,
                 $middleware,

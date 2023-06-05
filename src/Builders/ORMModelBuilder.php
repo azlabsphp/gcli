@@ -3,7 +3,7 @@
 declare(strict_types=1);
 
 /*
- * This file is part of the Drewlabs package.
+ * This file is part of the drewlabs namespace.
  *
  * (c) Sidoine Azandrew <azandrewdevelopper@gmail.com>
  *
@@ -315,10 +315,10 @@ class ORMModelBuilder implements AbstractORMModelBuilder, ComponentBuilder, Prov
                     PHPTypesModifiers::PUBLIC,
                     'Returns a fluent validation rules'
                 )->addContents(
-                    'return ' . PHPVariable('rules', null, $this->rules_ ?? [])->asRValue()->__toString()
+                    'return '.PHPVariable('rules', null, $this->rules ?? [])->asRValue()->__toString()
                 )
             );
-            if (!$this->isSingleActionValidator_) {
+            if (!$this->isSingleActionValidator) {
                 /**
                  * @var BluePrint|PHPClass
                  */
@@ -331,7 +331,7 @@ class ORMModelBuilder implements AbstractORMModelBuilder, ComponentBuilder, Prov
                             'array<string,string|string[]>',
                             PHPTypesModifiers::PUBLIC,
                             'Returns a fluent validation rules applied during update actions'
-                        )->addContents('return ' . PHPVariable('rules', null, $this->rules_ ?? [])->asRValue()->__toString())
+                        )->addContents('return '.PHPVariable('rules', null, $this->rules ?? [])->asRValue()->__toString())
                     );
             } else {
                 /**
@@ -343,7 +343,7 @@ class ORMModelBuilder implements AbstractORMModelBuilder, ComponentBuilder, Prov
         }
 
         // Add inputs traits
-        if ($this->hasInputsTraits_) {
+        if ($this->hasInputsTraits) {
             /**
              * @var BluePrint
              */
@@ -408,17 +408,17 @@ class ORMModelBuilder implements AbstractORMModelBuilder, ComponentBuilder, Prov
             )
             ->addToNamespace($this->namespace_ ?? self::DEFAULT_NAMESPACE);
 
-        //#region Add properties setters and getters
+        // #region Add properties setters and getters
         // TODO : Add these method to a class region instance in future release
         foreach ($this->columns_ as $column) {
             // Do not include setter and getters for created_at, updated_at, and primaryKey we continue to the next iteration
-            if(in_array($name = $column->name(), [$this->primaryKey_ ?? 'id', 'created_at', 'updated_at'])) {
+            if (\in_array($name = $column->name(), [$this->primaryKey_ ?? 'id', 'created_at', 'updated_at'], true)) {
                 continue;
             }
             $component = $component->addMethod($this->createPropertySetter($name))
                 ->addMethod($this->createPropertyGetter($name));
         }
-        //#region Add properties setters and getters
+        // #region Add properties setters and getters
 
         // #region add boot method
         /**
@@ -540,29 +540,25 @@ class ORMModelBuilder implements AbstractORMModelBuilder, ComponentBuilder, Prov
     }
 
     /**
-     * Create model property setter
-     * 
-     * @param string $name 
-     * @param string|null $type 
-     * @return CallableInterface 
+     * Create model property setter.
+     *
+     * @return CallableInterface
      */
-    private function createPropertySetter(string $name, string $type = null)
+    private function createPropertySetter(string $name, ?string $type = null)
     {
-        return PHPClassMethod(sprintf('set%s', Str::camelize($name)), [PHPFunctionParameter('value', $type)], 'static', 'public', sprintf("Set `%s` property to the parameter value", $name))
+        return PHPClassMethod(sprintf('set%s', Str::camelize($name)), [PHPFunctionParameter('value', $type)], 'static', 'public', sprintf('Set `%s` property to the parameter value', $name))
             ->addLine(sprintf("\$this->setAttribute('%s', \$value)", $name))
             ->addLine('return $this');
     }
 
     /**
-     * Creates model property getter
-     * 
-     * @param string $name 
-     * @param string|null $type 
-     * @return CallableInterface 
+     * Creates model property getter.
+     *
+     * @return CallableInterface
      */
-    private function createPropertyGetter(string $name, string $type = null)
+    private function createPropertyGetter(string $name, ?string $type = null)
     {
-        return PHPClassMethod(sprintf('get%s', Str::camelize($name)), [], $type ?? 'mixed', 'public', sprintf("Get `%s` property value", $name))
+        return PHPClassMethod(sprintf('get%s', Str::camelize($name)), [], $type ?? 'mixed', 'public', sprintf('Get `%s` property value', $name))
             ->addLine(sprintf("return \$this->getAttribute('%s')", $name));
     }
 
