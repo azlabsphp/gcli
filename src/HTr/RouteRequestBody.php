@@ -36,17 +36,28 @@ class RouteRequestBody
     public function __construct(string $name, array $rules, array $updateRules)
     {
         $this->name = $name;
-        $this->postBody = array_reduce(array_keys($rules), static function ($carry, $current) {
-            $carry[$current] = '';
+        $this->postBody = array_reduce(
+            array_filter(array_keys($rules), function ($item) {
+                return !in_array($item, ['created_at', 'updated_at', 'id']);
+            }),
+            static function ($carry, $current) {
+                $carry[$current] = '';
 
-            return $carry;
-        }, []);
-        $this->putBody = array_reduce(array_keys($updateRules), static function ($carry, $current) {
-            $carry[$current] = '';
+                return $carry;
+            },
+            []
+        );
+        $this->putBody = array_reduce(
+            array_filter(array_keys($updateRules), function ($item) {
+                return !in_array($item, ['created_at', 'updated_at', 'id']);
+            }),
+            static function ($carry, $current) {
+                $carry[$current] = '';
 
-            return $carry;
-        }, []);
-
+                return $carry;
+            },
+            []
+        );
     }
 
     /**
