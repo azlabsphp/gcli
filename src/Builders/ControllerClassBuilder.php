@@ -395,7 +395,7 @@ class ControllerClassBuilder implements ContractsControllerBuilder
                 'returns' => 'mixed',
                 'contents' => array_merge(
                     $this->hasAuthenticatable_ && $this->policies && (null !== $this->viewModelClass_) ? [
-                        "\$$vmParamName" . "->authorize('viewAny', " . "\$$vmParamName" . " [->getModel(), \$$vmParamName])",
+                        "\$$vmParamName" . "->authorize('viewAny', " . " [\$$vmParamName" . "->getModel(), \$$vmParamName])",
                         '',
                     ] : [],
                     $this->mustGenerateActionContents() ? array_merge(
@@ -479,7 +479,7 @@ class ControllerClassBuilder implements ContractsControllerBuilder
                 'returns' => 'mixed',
                 'contents' => $this->mustGenerateActionContents() ? array_merge(
                     $this->hasAuthenticatable_ && $this->policies && (null !== $this->viewModelClass_) ? [
-                        "\$$vmParamName" . "->authorize('create', " . "\$$vmParamName" . "[->getModel(), \$$vmParamName])",
+                        "\$$vmParamName" . "->authorize('create', " . "[\$$vmParamName" . "->getModel(), \$$vmParamName])",
                         '',
                     ] : [],
                     null === $this->viewModelClass_ ? [
