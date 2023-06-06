@@ -178,7 +178,7 @@ class MakeProjectComponentsCommand extends Command
 
                 return $this->confirm(sprintf('Override existing class at %s? ', $options->get('path')) . \DIRECTORY_SEPARATOR . $writable->getPath());
             },
-            static function (array $routes, ?string $prefix = null, RouteRequestBodyMap $map) use ($options, $htrDirectory) {
+            static function (array $routes, RouteRequestBodyMap $map, ?string $prefix = null) use ($options, $htrDirectory) {
                 if (boolval($options->get('htr'))) {
                     foreach ($routes as $route) {
                         $factory = new RouteProjectFactory($route, $map, $prefix, $options->get('htrHost', 'http://127.0.0.1:8000'));
