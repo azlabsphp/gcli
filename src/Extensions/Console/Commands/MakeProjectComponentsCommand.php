@@ -68,7 +68,8 @@ class MakeProjectComponentsCommand extends Command
         . '{--policies : Generates policies for the model }'
         . '{--htr : Enables project generator to generates htr test files }'
         . '{--htrDir= : Output directory for htr tests}'
-        . '{--htrHost= : Base url for htr tests}';
+        . '{--htrHost= : Base url for htr tests}'
+        . '{--htrFormat=json : Htr output document format}';
 
     /**
      * The console command description.
@@ -183,7 +184,7 @@ class MakeProjectComponentsCommand extends Command
                     foreach ($routes as $route) {
                         $factory = new RouteProjectFactory($route, $map, $prefix, $options->get('htrHost', 'http://127.0.0.1:8000'));
                         $project = $factory->create();
-                        Disk::new($htrDirectory)->write($factory->getRouteName() . '.yml', $project->compile('yml'));
+                        Disk::new($htrDirectory)->write($factory->getRouteName() . '.yml', $project->compile($options->get('htrFormat', 'json')));
                     }
                 }
             }
