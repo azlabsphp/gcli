@@ -184,7 +184,8 @@ class MakeProjectComponentsCommand extends Command
                     foreach ($routes as $route) {
                         $factory = new RouteProjectFactory($route, $map, $prefix, $options->get('htrHost', 'http://127.0.0.1:8000'));
                         $project = $factory->create();
-                        Disk::new($htrDirectory)->write($factory->getRouteName() . '.yml', $project->compile($options->get('htrFormat', 'json')));
+                        $format = $options->get('htrFormat', 'json');
+                        Disk::new($htrDirectory)->write($factory->getRouteName() . '.' . $format, $project->compile($format));
                     }
                 }
             }
