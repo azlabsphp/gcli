@@ -252,16 +252,16 @@
         },
         {
             "name": "drewlabs/htr",
-            "version": "v0.2.5",
+            "version": "v0.2.8",
             "source": {
                 "type": "git",
                 "url": "https://github.com/azandrew-sidoine/php-htr.git",
-                "reference": "d5602b296080f58e83bfef064631498aad8aa753"
+                "reference": "5826b75fb3ccf1d8cc5183a03769fbfad1d86c40"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/azandrew-sidoine/php-htr/zipball/d5602b296080f58e83bfef064631498aad8aa753",
-                "reference": "d5602b296080f58e83bfef064631498aad8aa753",
+                "url": "https://api.github.com/repos/azandrew-sidoine/php-htr/zipball/5826b75fb3ccf1d8cc5183a03769fbfad1d86c40",
+                "reference": "5826b75fb3ccf1d8cc5183a03769fbfad1d86c40",
                 "shasum": ""
             },
             "require": {
@@ -299,9 +299,9 @@
             ],
             "support": {
                 "issues": "https://github.com/azandrew-sidoine/php-htr/issues",
-                "source": "https://github.com/azandrew-sidoine/php-htr/tree/v0.2.5"
+                "source": "https://github.com/azandrew-sidoine/php-htr/tree/v0.2.8"
             },
-            "time": "2023-06-06T10:01:10+00:00"
+            "time": "2023-06-06T20:01:05+00:00"
         },
         {
             "name": "psr/http-factory",
@@ -6471,5 +6471,5 @@
         "php": ">=7.2"
     },
     "platform-dev": [],
-    "plugin-api-version": "2.3.0"
+    "plugin-api-version": "2.2.0"
 }
