@@ -68,7 +68,8 @@ class MakeProjectComponentsCommand extends Command
         . '{--policies : Generates policies for the model }'
         . '{--htr : Enables project generator to generates htr test files }'
         . '{--htrDir= : Output directory for htr tests}'
-        . '{--htrHost= : Base url for htr tests}';
+        . '{--htrHost= : Base url for htr tests}'
+        . '{--htrFormat=json : Htr output document format}';
 
     /**
      * The console command description.
@@ -178,12 +179,13 @@ class MakeProjectComponentsCommand extends Command
 
                 return $this->confirm(sprintf('Override existing class at %s? ', $options->get('path')) . \DIRECTORY_SEPARATOR . $writable->getPath());
             },
-            static function (array $routes, ?string $prefix = null, RouteRequestBodyMap $map) use ($options, $htrDirectory) {
+            static function (array $routes, RouteRequestBodyMap $map, ?string $prefix = null) use ($options, $htrDirectory) {
                 if (boolval($options->get('htr'))) {
                     foreach ($routes as $route) {
                         $factory = new RouteProjectFactory($route, $map, $prefix, $options->get('htrHost', 'http://127.0.0.1:8000'));
                         $project = $factory->create();
-                        Disk::new($htrDirectory)->write($factory->getRouteName() . '.yml', $project->compile('yml'));
+                        $format = $options->get('htrFormat', 'json');
+                        Disk::new($htrDirectory)->write($factory->getRouteName() . '.' . $format, $project->compile($format));
                     }
                 }
             }

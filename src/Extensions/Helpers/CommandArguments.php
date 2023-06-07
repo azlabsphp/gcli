@@ -114,6 +114,10 @@ class CommandArguments
 
         if ($htrHost = ($this->options->get('htrHost') ?? null)) {
             $options = $options->merge(['htrHost' => $htrHost]);
+        } // 
+
+        if ($htrFormat = ($this->options->get('htrFormat') ?? null)) {
+            $options = $options->merge(['htrFormat' => $htrFormat]);
         }
 
         return $options;
