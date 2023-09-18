@@ -27,7 +27,7 @@ class ComponentCommandsHelpers
      *
      * @return void
      */
-    public static function createService(string $namespace, string $basePath, ?string $model = null, ?string $class = null)
+    public static function createService(string $namespace, string $basePath, string $model = null, string $class = null)
     {
         if (null !== $class && !class_exists($class) && !class_exists(ORMModelBuilder::defaultClassPath($class))) {
             $name = Str::contains($class, '\\') ? Str::afterLast('\\', $class) : $class;
@@ -50,7 +50,7 @@ class ComponentCommandsHelpers
      *
      * @return string|void
      */
-    public static function createDto(string $namespace, string $basePath, ?string $model = null, ?string $class = null, array $attributes = [])
+    public static function createDto(string $namespace, string $basePath, string $model = null, string $class = null, array $attributes = [])
     {
         if (null !== $class && !class_exists($class) && !class_exists(ORMModelBuilder::defaultClassPath($class))) {
             $name = Str::contains($class, '\\') ? Str::afterLast('\\', $class) : $class;
@@ -74,7 +74,7 @@ class ComponentCommandsHelpers
      *
      * @return string|void
      */
-    public static function createViewModel(string $namespace, string $basePath, ?string $model = null, ?string $class = null, array $rules = [], array $updateRules = [])
+    public static function createViewModel(string $namespace, string $basePath, string $model = null, string $class = null, array $rules = [], array $updateRules = [])
     {
         if (null !== $class && !class_exists($class) && !class_exists(ORMModelBuilder::defaultClassPath($class))) {
             $name = Str::contains($class, '\\') ? Str::afterLast('\\', $class) : $class;

@@ -47,7 +47,7 @@ class ProjectBuilder
     /**
      * Creates new builder instance.
      */
-    public function __construct(string $name, string $version = '0.2.0', ?string $schemaUri = null)
+    public function __construct(string $name, string $version = '0.2.0', string $schemaUri = null)
     {
         $this->name = $name;
         $this->version = $version ?? '0.2.0';

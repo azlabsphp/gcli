@@ -25,10 +25,9 @@ class Options
     private $options = [];
 
     /**
-     * Creates options instance
-     * 
-     * @param array $options 
-     * @return void 
+     * Creates options instance.
+     *
+     * @return void
      */
     public function __construct(array $options)
     {
@@ -117,7 +116,7 @@ class Options
      *
      * @return self
      */
-    public function merge($value, ?string $key = null)
+    public function merge($value, string $key = null)
     {
         if (null === $key) {
             foreach ($value as $k => $v) {

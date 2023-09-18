@@ -29,11 +29,11 @@
 
 ## 20210119210
 
-- Generate static::creating entry for non incrementable models [ x ]
-- Generate relation method to foreign keys definitions [ x ]
+- Generate static::creating entry for non incrementable models [x]
+- Generate relation method to foreign keys definitions [x]
 - Create command generator command []
-- Add override prompt for recreating mvc components using command [ x ]
+- Add override prompt for recreating mvc components using command [x]
 
 ## 20230516
 
-- Remove dependency to `drewlabs/filesystem` library [  ]
+- Remove dependency to `drewlabs/filesystem` library [x]

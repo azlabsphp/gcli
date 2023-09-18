@@ -34,9 +34,9 @@ class RouteRequestBodyMap
      *
      * @return $this
      */
-    public function put(string $name, array $post, array $put)
+    public function put(string $name, array $post, array $put, array $relations)
     {
-        $this->values[] = new RouteRequestBody($name, $post, $put);
+        $this->values[] = new RouteRequestBody($name, $post, $put, $relations);
 
         return $this;
     }

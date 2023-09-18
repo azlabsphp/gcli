@@ -21,6 +21,7 @@ use function Drewlabs\CodeGenerator\Proxy\PHPClassProperty;
 use function Drewlabs\CodeGenerator\Proxy\PHPFunctionParameter;
 
 use Drewlabs\CodeGenerator\Types\PHPTypesModifiers;
+use Drewlabs\Contracts\Support\Actions\ActionHandler;
 use Drewlabs\Core\Helpers\Str;
 use Drewlabs\GCli\Contracts\ControllerBuilder as ContractsControllerBuilder;
 use Drewlabs\GCli\Helpers\ComponentBuilderHelpers;
@@ -99,9 +100,9 @@ class ControllerClassBuilder implements ContractsControllerBuilder
     private $serviceClass_;
 
     /**
-     * @var false
+     * @var string|null
      */
-    private $hasActionHandlerInterface_ = false;
+    private $serviceType;
 
     /**
      * List of classes to imports.
@@ -140,12 +141,12 @@ class ControllerClassBuilder implements ContractsControllerBuilder
      * @return self
      */
     public function __construct(
-        ?string $name = null,
-        ?string $namespace = null,
-        ?string $path = null
+        string $name = null,
+        string $namespace = null,
+        string $path = null
     ) {
         $this->setName($name ? (!Str::endsWith($name, 'Controller') ?
-            Str::camelize(Pluralizer::plural($name)) . 'Controller' :
+            Str::camelize(Pluralizer::plural($name)).'Controller' :
             Str::camelize(Pluralizer::plural($name))) : self::DEFAULT_NAME);
         // Set the component write path
         $this->setWritePath($path ?? self::DEFAULT_PATH);
@@ -204,15 +205,12 @@ class ControllerClassBuilder implements ContractsControllerBuilder
         return $this;
     }
 
-    public function bindService(string $serviceClass)
+    public function bindService(string $serviceClass, string $type = null)
     {
         if (!Str::contains($serviceClass, '\\')) {
             return $this;
         }
-        $actionHandlerInterface = \Drewlabs\Contracts\Support\Actions\ActionHandler::class;
-        if (interface_exists($actionHandlerInterface) && is_a($serviceClass, $actionHandlerInterface, true)) {
-            $this->hasActionHandlerInterface_ = true;
-        }
+        $this->serviceType = $type ?? (interface_exists(ActionHandler::class) ? ActionHandler::class : $this->serviceType);
         $this->serviceClass_ = $this->getClassFromClassPath($serviceClass);
         $this->classPaths_[] = $serviceClass;
 
@@ -259,14 +257,14 @@ class ControllerClassBuilder implements ContractsControllerBuilder
                         PHPFunctionParameter('response', 'OkResponseFactoryInterface'),
                     ],
                     // Add the service class as parameter to the constructor
-                    (null !== $this->serviceClass_) || $this->hasActionHandlerInterface_ ? ($this->hasActionHandlerInterface_ ? [
-                        PHPFunctionParameter('service', \Drewlabs\Contracts\Support\Actions\ActionHandler::class)->asOptional(),
+                    (null !== $this->serviceClass_) || (null !== $this->serviceType) ? ($this->serviceType ? [
+                        PHPFunctionParameter('service', $this->serviceType)->asOptional(),
                     ] : [
                         PHPFunctionParameter('service', $this->serviceClass_),
                     ]) : [],
                 ),
-                array_merge(['$this->validator = $validator', '$this->response = $response'], (null !== $this->serviceClass_) || $this->hasActionHandlerInterface_ ?
-                    [$this->hasActionHandlerInterface_ && (null !== $this->serviceClass_) ? "\$this->service = \$service ?? new $this->serviceClass_()" : '$this->service = $service'] : [])
+                array_merge(['$this->validator = $validator', '$this->response = $response'], (null !== $this->serviceClass_) || $this->serviceType ?
+                    [(null !== $this->serviceType) && (null !== $this->serviceClass_) ? "\$this->service = \$service ?? new $this->serviceClass_()" : '$this->service = $service'] : [])
             )
             ->addToNamespace($this->namespace_ ?? self::DEFAULT_NAMESPACE);
 
@@ -293,9 +291,7 @@ class ControllerClassBuilder implements ContractsControllerBuilder
             $component = $component->addProperty(
                 PHPClassProperty(
                     'service',
-                    $this->hasActionHandlerInterface_ ?
-                        \Drewlabs\Contracts\Support\Actions\ActionHandler::class :
-                        $this->serviceClass_,
+                    $this->serviceType ?? $this->serviceClass_,
                     PHPTypesModifiers::PRIVATE,
                     null,
                     'Injected instance of MVC service'
@@ -338,7 +334,7 @@ class ControllerClassBuilder implements ContractsControllerBuilder
                     PHPTypesModifiers::PUBLIC,
                     [
                         'Handles http request action',
-                        '@Route /POST /' . $this->routeName_ . '/{id}',
+                        '@Route /POST /'.$this->routeName_.'/{id}',
                     ]
                 )
             );
@@ -355,7 +351,7 @@ class ControllerClassBuilder implements ContractsControllerBuilder
         )->setNamespace($component->getNamespace());
     }
 
-    public static function defaultClassPath(?string $classname = null)
+    public static function defaultClassPath(string $classname = null)
     {
         $classname = $classname ?? 'Test';
         if (Str::contains($classname, '\\')) {
@@ -390,28 +386,28 @@ class ControllerClassBuilder implements ContractsControllerBuilder
                 ],
                 'descriptors' => [
                     'Display or Returns a list of items',
-                    '@Route /GET /' . $this->routeName_ . '[/{$id}]',
+                    '@Route /GET /'.$this->routeName_.'[/{$id}]',
                 ],
                 'returns' => 'mixed',
                 'contents' => array_merge(
                     $this->hasAuthenticatable_ && $this->policies && (null !== $this->viewModelClass_) ? [
-                        "\$$vmParamName" . "->authorize('viewAny', " . " [\$$vmParamName" . "->getModel(), \$$vmParamName])",
+                        sprintf("\$%s->authorize('viewAny',  [\$%s->getModel(), \$$vmParamName])", $vmParamName, $vmParamName),
                         '',
                     ] : [],
                     $this->mustGenerateActionContents() ? array_merge(
                         [
                             '//#region Excepts & attributes',
-                            "\$columns = \${$vmParamName}->getColumns()",
-                            "\$excepts = \${$vmParamName}->getExcludes()",
+                            sprintf("\$columns = \$%s->getColumns()", $vmParamName),
+                            sprintf("\$excepts = \$%s->getExcludes()", $vmParamName),
                             '$properties = (new SanitizeCustomProperties(true))($columns)',
                             '//#endregion Excepts & attributes',
                             '',
                             '$result = $this->service->handle(', // \t
-                            "\t\${$vmParamName}->has('per_page') ? SelectQueryAction(",
+                            sprintf("\t\$%s->has('per_page') ? SelectQueryAction(", $vmParamName),
                             "\t\t\$viewModel->makeFilters(),",
-                            "\t\t(int)\${$vmParamName}->get('per_page'),",
+                            sprintf("\t\t(int)\$%s->get('per_page'),", $vmParamName),
                             "\t\t\$columns,",
-                            "\t\t\${$vmParamName}->has('page') ? (int)\${$vmParamName}->get('page') : null,",
+                            sprintf("\t\t\$%s->has('page') ? (int)\$%s->get('page') : null,", $vmParamName, $vmParamName),
                             "\t) : SelectQueryAction(",
                             "\t\t\$viewModel->makeFilters(),",
                             "\t\t\$columns,",
@@ -420,7 +416,7 @@ class ControllerClassBuilder implements ContractsControllerBuilder
                         ],
                         $this->dtoClass_ ? [
                             "\tuseMapQueryResult(function (\$value)  use (\$excepts, \$properties) {",
-                            "\t\treturn \$value ? $this->dtoClass_::new(\$value)->addProperties(\$properties)->mergeHidden(array_merge(\$excepts, " . '$value->getHidden() ?? [])) : $value',
+                            "\t\treturn \$value ? $this->dtoClass_::new(\$value)->addProperties(\$properties)->mergeHidden(array_merge(\$excepts, ".'$value->getHidden() ?? [])) : $value',
                             "\t})",
                             ')',
                         ] :
@@ -437,18 +433,18 @@ class ControllerClassBuilder implements ContractsControllerBuilder
                 ],
                 'descriptors' => [
                     'Display or Returns an item matching the specified id',
-                    '@Route /GET /' . $this->routeName_ . '/{$id}',
+                    '@Route /GET /'.$this->routeName_.'/{$id}',
                 ],
                 'returns' => 'mixed',
                 'contents' => $this->mustGenerateActionContents() ? array_merge(
                     $this->hasAuthenticatable_ && $this->policies && (null !== $this->viewModelClass_) ? [
-                        "\$$vmParamName" . "->authorize('view', [\$$vmParamName" . ("->find(\$id), \$$vmParamName])"),
+                        sprintf("\$%s->authorize('view', [\$%s->find(\$id), \$$vmParamName])", $vmParamName, $vmParamName),
                         '',
                     ] : [],
                     [
                         '//#region Excepts & attributes',
-                        "\$columns = \${$vmParamName}->getColumns()",
-                        "\$excepts = \${$vmParamName}->getExcludes()",
+                        sprintf("\$columns = \$%s->getColumns()", $vmParamName),
+                        sprintf("\$excepts = \$%s->getExcludes()", $vmParamName),
                         '$properties = (new SanitizeCustomProperties(true))($columns)',
                         '//#endregion Excepts & attributes',
                         '',
@@ -457,7 +453,7 @@ class ControllerClassBuilder implements ContractsControllerBuilder
                         '$result = $this->service->handle(',
                         "\tSelectQueryAction(\$id, \$columns),",
                         "\tfunction (\$value)  use (\$excepts, \$properties) {",
-                        "\t\treturn null !== \$value ? $this->dtoClass_::new(\$value)->addProperties(\$properties)->mergeHidden(array_merge(\$excepts, " . '$value->getHidden() ?? [])) : $value',
+                        "\t\treturn null !== \$value ? $this->dtoClass_::new(\$value)->addProperties(\$properties)->mergeHidden(array_merge(\$excepts, ".'$value->getHidden() ?? [])) : $value',
                         "\t}",
                         ')',
                     ] : ['$result = $this->service->handle(SelectQueryAction($id, $columns)'],
@@ -474,12 +470,12 @@ class ControllerClassBuilder implements ContractsControllerBuilder
                 ]),
                 'descriptors' => [
                     'Stores a new item in the storage',
-                    '@Route /POST /' . $this->routeName_,
+                    '@Route /POST /'.$this->routeName_,
                 ],
                 'returns' => 'mixed',
                 'contents' => $this->mustGenerateActionContents() ? array_merge(
                     $this->hasAuthenticatable_ && $this->policies && (null !== $this->viewModelClass_) ? [
-                        "\$$vmParamName" . "->authorize('create', " . "[\$$vmParamName" . "->getModel(), \$$vmParamName])",
+                        sprintf("\$%s->authorize('create', [\$%s->getModel(), \$$vmParamName])", $vmParamName, $vmParamName),
                         '',
                     ] : [],
                     null === $this->viewModelClass_ ? [
@@ -524,8 +520,8 @@ class ControllerClassBuilder implements ContractsControllerBuilder
                 ]),
                 'descriptors' => [
                     'Update the specified resource in storage.',
-                    '@Route /PUT /' . $this->routeName_ . '/{id}',
-                    '@Route /PATCH /' . $this->routeName_ . '/{id}',
+                    '@Route /PUT /'.$this->routeName_.'/{id}',
+                    '@Route /PATCH /'.$this->routeName_.'/{id}',
                 ],
                 'returns' => 'mixed',
                 'contents' => $this->mustGenerateActionContents() ? array_merge(
@@ -534,7 +530,7 @@ class ControllerClassBuilder implements ContractsControllerBuilder
                         '',
                     ],
                     $this->hasAuthenticatable_ && $this->policies && (null !== $this->viewModelClass_) ? [
-                        "\$$vmParamName" . "->authorize('update', [\$$vmParamName" . ("->find(\$id), \$$vmParamName])"),
+                        sprintf("\$%s->authorize('update', [\$$vmParamName", $vmParamName).("->find(\$id), \$$vmParamName])"),
                         '',
                     ] : [],
                     null === $this->viewModelClass_ ? [
@@ -572,11 +568,11 @@ class ControllerClassBuilder implements ContractsControllerBuilder
                 ],
                 'descriptors' => [
                     'Remove the specified resource from storage.',
-                    '@Route /DELETE /' . $this->routeName_ . '/{id}',
+                    '@Route /DELETE /'.$this->routeName_.'/{id}',
                 ],
                 'returns' => 'mixed',
                 'contents' => $this->mustGenerateActionContents() ? [
-                    $this->hasAuthenticatable_ && $this->policies && (null !== $this->viewModelClass_) ? ("\$$vmParamName" . "->authorize('delete', [\$$vmParamName") . ("->find(\$id), \$$vmParamName])") : null,
+                    $this->hasAuthenticatable_ && $this->policies && (null !== $this->viewModelClass_) ? sprintf("\$%s->authorize('delete', [\$$vmParamName", $vmParamName).("->find(\$id), \$$vmParamName])") : null,
                     '',
                     '$result = $this->service->handle(DeleteQueryAction($id))',
                     'return $this->response->create($result)',

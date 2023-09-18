@@ -50,7 +50,7 @@ class RouteProjectFactory
     public function __construct(
         RouteController $route,
         RouteRequestBodyMap $map,
-        ?string $prefix = null,
+        string $prefix = null,
         string $baseUrl = 'http://127.0.0.1:8000'
     ) {
         $this->route = $route;
@@ -71,6 +71,7 @@ class RouteProjectFactory
     {
         $name = $this->getRouteName();
         $requestBody = $this->map->get($name) ?? null;
+        $relations = $requestBody ? $requestBody->getRelations() : [];
 
         // Instanciate the project builder instance
         $builder = new ProjectBuilder(sprintf('%s HTr Project', ucfirst(strtolower(str_replace(['-', '_'], ' ', $name)))));
@@ -80,14 +81,26 @@ class RouteProjectFactory
             ->addReqHost($this->baseUrl)
             ->addEnvironment(new Env('_id', 1))
             ->addComponent(
-                RequestBuilder::new($name, 'GET', $this->prefix)
+                (new RequestBuilder(
+                    $name,
+                    'GET',
+                    $this->prefix,
+                    $this->getNameFromPath($name),
+                    sprintf('%s. %s', $this->getDescriptionFromPath($name), !empty($relations) ? sprintf('Note: This route currently support the following relations: %s', implode(', ', $relations)) : '')
+                ))
                     ->setCookies([])
                     ->setParams([])
                     // ->setTests([])
                     ->build()
             )
             ->addComponent(
-                RequestBuilder::new(sprintf('%s/[_id]', $name), 'GET', $this->prefix)
+                (new RequestBuilder(
+                    sprintf('%s/[_id]', $name),
+                    'GET',
+                    $this->prefix,
+                    $this->getNameFromPath(sprintf('%s/[_id]', $name)),
+                    sprintf('%s. %s', $this->getDescriptionFromPath(sprintf('%s/[_id]', $name)), !empty($relations) ? sprintf('Note: This route currently support the following relations: %s', implode(', ', $relations)) : '')
+                ))
                     ->setCookies([])
                     ->setParams([])
                     // ->setTests([])
@@ -97,7 +110,6 @@ class RouteProjectFactory
                 RequestBuilder::new($name, 'POST', $this->prefix)
                     ->setCookies([])
                     ->setParams([])
-                    // TODO: Provide a request body
                     ->setBody($requestBody ? $requestBody->getPostBody() : [])
                     // ->setTests([])
                     ->build()
@@ -106,7 +118,6 @@ class RouteProjectFactory
                 RequestBuilder::new(sprintf('%s/[_id]', $name), 'PUT', $this->prefix)
                     ->setCookies([])
                     ->setParams([])
-                    // TODO: Provide a request body
                     ->setBody($requestBody ? $requestBody->getPutBody() : [])
                     // ->setTests([])
                     ->build()
@@ -131,5 +142,28 @@ class RouteProjectFactory
     public function getRouteName()
     {
         return $this->route->getName() ?? 'tests';
+    }
+
+    /**
+     * returns the request name.
+     *
+     * @return string|null
+     */
+    private function getNameFromPath(string $path)
+    {
+        $components = explode('/', ltrim($path, '/'));
+        $name = $components[0] ?? null;
+
+        return null !== $name ? str_replace(['-', '_'], ' ', $name) : $name;
+    }
+
+    /**
+     * returns the request description from request parameters.
+     *
+     * @return string
+     */
+    private function getDescriptionFromPath(string $path, string $method = 'GET')
+    {
+        return sprintf('/%s %s', $method, $path);
     }
 }

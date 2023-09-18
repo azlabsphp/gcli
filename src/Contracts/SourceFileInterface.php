@@ -51,4 +51,11 @@ interface SourceFileInterface extends Writable, Stringable
      * @return NamespaceComponent
      */
     public function getContent();
+
+    /**
+     * Returns the class path of the source file.
+     *
+     * @return string
+     */
+    public function getClassPath();
 }

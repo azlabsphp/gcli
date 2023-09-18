@@ -65,7 +65,7 @@ class DataTypeToFluentValidationRulesHelper
      *
      * @return array
      */
-    public static function getRule($definition, ?\Closure $predicate = null)
+    public static function getRule($definition, \Closure $predicate = null)
     {
         // Handle Foreign key definition rules
         if ($definition instanceof ForeignKeyConstraintDefinition) {
@@ -88,7 +88,7 @@ class DataTypeToFluentValidationRulesHelper
      *
      * @return string
      */
-    public static function getUniqueRule(UniqueKeyConstraintDefinition $metadata, ?string $primaryKey = null, bool $updates = false)
+    public static function getUniqueRule(UniqueKeyConstraintDefinition $metadata, string $primaryKey = null, bool $updates = false)
     {
         $columns = $metadata->getColumns();
 
@@ -126,7 +126,7 @@ class DataTypeToFluentValidationRulesHelper
      *
      * @return array
      */
-    private static function getSimpleRule(string $type, ?\Closure $predicate = null)
+    private static function getSimpleRule(string $type, \Closure $predicate = null)
     {
         if (!Str::contains($type, ':')) {
             return array_filter([self::TYPE_MAPS[$type] ?? null], $predicate ?? static function ($item) {

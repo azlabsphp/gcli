@@ -36,40 +36,40 @@ class MakeProjectComponentsCommand extends Command
      * @var string
      */
     protected $signature = 'gcli:make:project {--srcPath= : Path to the business logic component folder}'
-        . '{--package= : Package namespace for components}'
-        . '{--subPackage= : Subpackage will group each component part in a subfolder}'
-        . '{--connectionURL= : Database connection URL}'
-        . '{--dbname= : Database name}'
-        . '{--host= : Database host name}'
-        . '{--port= : Database host port number}'
-        . '{--user= : Database authentication user}'
-        . '{--password= : Database authentication password}'
-        . '{--driver= : Database driver name}'
-        . '{--server_version= : Database server version}'
-        . '{--charset= : Database Connection collation}'
-        . '{--unix_socket= : Unix socket to use for connections}'
-        . '{--routePrefix= : The prefix for the generated route definitions}'
-        . '{--middleware= : Middleware group defined for the routes prefix}'
-        . '{--routingfilename= : Routing filename (Default = web.php)}'
-        . '{--excepts=* : List of tables not to be included in the generated output}'
-        . '{--disableCache : Caching tables not supported}'
-        . '{--noAuth : Indicates whether project controllers supports authentication}'
-        . '{--input= : Path to options configurations file}'
-        . '{--format=json : Inpu file extension or format. Supported input format are ex:json|yml|yaml}'
-        . '{--schema= : Schema prefix to database tables}'
-        . '{--http : Whether to generates controllers and routes}'
-        . '{--force : Force rewrite of existing classes }'
-        . '{--relations : Generates relations for model and relations casting entries for data transfer object }'
-        . '{--manytomany=* :  List of many to many relations. (ex - lefttable->middletable->righttable) }'
-        . '{--toones=* :  List of one to one relations. (ex - lefttable->righttable) }'
-        . '{--manythroughs=* :  List of many through relations. (ex - lefttable->middletable->righttable) }'
-        . '{--onethroughs=* :  List of one through relations. (ex - lefttable->middletable->righttable) }'
-        . '{--only=* : Restrict the generator to generate code only for the specified table structures }'
-        . '{--policies : Generates policies for the model }'
-        . '{--htr : Enables project generator to generates htr test files }'
-        . '{--htrDir= : Output directory for htr tests}'
-        . '{--htrHost= : Base url for htr tests}'
-        . '{--htrFormat=json : Htr output document format}';
+        .'{--package= : Package namespace for components}'
+        .'{--subPackage= : Subpackage will group each component part in a subfolder}'
+        .'{--connectionURL= : Database connection URL}'
+        .'{--dbname= : Database name}'
+        .'{--host= : Database host name}'
+        .'{--port= : Database host port number}'
+        .'{--user= : Database authentication user}'
+        .'{--password= : Database authentication password}'
+        .'{--driver= : Database driver name}'
+        .'{--server_version= : Database server version}'
+        .'{--charset= : Database Connection collation}'
+        .'{--unix_socket= : Unix socket to use for connections}'
+        .'{--routePrefix= : The prefix for the generated route definitions}'
+        .'{--middleware= : Middleware group defined for the routes prefix}'
+        .'{--routingfilename= : Routing filename (Default = web.php)}'
+        .'{--excepts=* : List of tables not to be included in the generated output}'
+        .'{--disableCache : Caching tables not supported}'
+        .'{--noAuth : Indicates whether project controllers supports authentication}'
+        .'{--input= : Path to options configurations file}'
+        .'{--format=json : Inpu file extension or format. Supported input format are ex:json|yml|yaml}'
+        .'{--schema= : Schema prefix to database tables}'
+        .'{--http : Whether to generates controllers and routes}'
+        .'{--force : Force rewrite of existing classes }'
+        .'{--relations : Generates relations for model and relations casting entries for data transfer object }'
+        .'{--manytomany=* :  List of many to many relations. (ex - lefttable->middletable->righttable) }'
+        .'{--toones=* :  List of one to one relations. (ex - lefttable->righttable) }'
+        .'{--manythroughs=* :  List of many through relations. (ex - lefttable->middletable->righttable) }'
+        .'{--onethroughs=* :  List of one through relations. (ex - lefttable->middletable->righttable) }'
+        .'{--only=* : Restrict the generator to generate code only for the specified table structures }'
+        .'{--policies : Generates policies for the model }'
+        .'{--htr : Enables project generator to generates htr test files }'
+        .'{--htrDir= : Output directory for htr tests}'
+        .'{--htrHost= : Base url for htr tests}'
+        .'{--htrFormat=json : Htr output document format}';
 
     /**
      * The console command description.
@@ -137,11 +137,11 @@ class MakeProjectComponentsCommand extends Command
             ->setOnThroughRelations($options->get('models.relations.one-to-one-though', []))
             ->setManyThroughRelations($options->get('models.relations.one-to-many-though', []));
 
-        //#region Add policies conditions
+        // #region Add policies conditions
         if ($policies) {
             $task = $task->withPolicies();
         }
-        //#endregion Add policies conditions
+        // #endregion Add policies conditions
 
         $task->run(
             $commandargs->providesdboptions(static function ($key, $default = null) {
@@ -168,7 +168,7 @@ class MakeProjectComponentsCommand extends Command
 
                 return new ProgressbarIndicator($this->output->createProgressBar(\count($values)));
             },
-            function (?string $message = null) {
+            function (string $message = null) {
                 $this->info("\nReverse engineering completed successfully!\n");
                 $this->warn($message ?? '');
             },
@@ -177,15 +177,15 @@ class MakeProjectComponentsCommand extends Command
                     return true;
                 }
 
-                return $this->confirm(sprintf('Override existing class at %s? ', $options->get('path')) . \DIRECTORY_SEPARATOR . $writable->getPath());
+                return $this->confirm(sprintf('Override existing class at %s? ', $options->get('path')).\DIRECTORY_SEPARATOR.$writable->getPath());
             },
-            static function (array $routes, RouteRequestBodyMap $map, ?string $prefix = null) use ($options, $htrDirectory) {
-                if (boolval($options->get('htr'))) {
+            static function (array $routes, RouteRequestBodyMap $map, string $prefix = null) use ($options, $htrDirectory) {
+                if ((bool) $options->get('htr')) {
                     foreach ($routes as $route) {
                         $factory = new RouteProjectFactory($route, $map, $prefix, $options->get('htrHost', 'http://127.0.0.1:8000'));
                         $project = $factory->create();
                         $format = $options->get('htrFormat', 'json');
-                        Disk::new($htrDirectory)->write($factory->getRouteName() . '.' . $format, $project->compile($format));
+                        Disk::new($htrDirectory)->write($factory->getRouteName().'.'.$format, $project->compile($format));
                     }
                 }
             }

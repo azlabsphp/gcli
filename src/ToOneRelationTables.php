@@ -13,7 +13,7 @@ declare(strict_types=1);
 
 namespace Drewlabs\GCli;
 
-class ToOneTablesRelation
+class ToOneRelationTables
 {
     /**
      * Table at the left hand side of the relation.

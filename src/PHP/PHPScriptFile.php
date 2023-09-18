@@ -150,4 +150,9 @@ EOT;
             Str::before('.', $this->name_) :
             $this->name_ ?? 'Test';
     }
+
+    public function getClassPath()
+    {
+        return sprintf('%s\\%s', $this->getNamespace(), Str::camelize($this->getName()));
+    }
 }

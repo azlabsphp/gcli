@@ -17,24 +17,23 @@ use Closure;
 use Doctrine\DBAL\DriverManager;
 use Drewlabs\Core\Helpers\Arr;
 use Drewlabs\Core\Helpers\Str;
-use Drewlabs\GCli\Builders\ViewModelClassBuilder;
 use Drewlabs\GCli\ComponentsScriptWriter as ComponentsScriptWriterClass;
 use Drewlabs\GCli\Contracts\ComponentBuilder;
 use Drewlabs\GCli\Contracts\ForeignKeyConstraintDefinition;
 use Drewlabs\GCli\Contracts\ProvidesRelations;
+use Drewlabs\GCli\Contracts\SourceFileInterface;
 use Drewlabs\GCli\Contracts\Writable;
 use Drewlabs\GCli\Extensions\Contracts\Progress;
 use Drewlabs\GCli\Extensions\Traits\ReverseEngineerRelations;
 use Drewlabs\GCli\Helpers\ComponentBuilderHelpers;
 use Drewlabs\GCli\Helpers\RouteDefinitionsHelper;
-
 use Drewlabs\GCli\HTr\RouteRequestBodyMap;
 use Drewlabs\GCli\Models\RouteController;
 
 use function Drewlabs\GCli\Proxy\ComponentsScriptWriter;
 use function Drewlabs\GCli\Proxy\DatabaseSchemaReverseEngineeringRunner;
 
-use function Drewlabs\GCli\Proxy\MVCPolicyServiceProviderBuilder;
+use function Drewlabs\GCli\Proxy\MVCServiceProviderBuilder;
 
 use Drewlabs\GCli\RelationTypes;
 
@@ -212,14 +211,14 @@ class ReverseEngineerTask
         array $options,
         string $src,
         string $routingfilename,
-        ?string $routePrefix = null,
-        ?string $middleware = null,
+        string $routePrefix = null,
+        string $middleware = null,
         bool $forLumen = true,
         bool $disableCache = false,
         bool $noAuth = false,
-        ?string $namespace = null,
-        ?string $subPackage = null,
-        ?string $schema = null,
+        string $namespace = null,
+        string $subPackage = null,
+        string $schema = null,
         bool $hasHttpHandlers = false
     ) {
         return function (
@@ -227,9 +226,9 @@ class ReverseEngineerTask
             string $cachePath,
             string $routesCachePath,
             \Closure $onStartCallback,
-            ?\Closure $onCompleteCallback = null,
-            ?\Closure $onExistsCallback = null,
-            ?\Closure $createHTrProjectsCallback = null
+            \Closure $onCompleteCallback = null,
+            \Closure $onExistsCallback = null,
+            \Closure $createHTrProjectsCallback = null
         ) use (
             $options,
             $src,
@@ -252,6 +251,7 @@ class ReverseEngineerTask
             $camelize = $this->camelize;
             $policies = [];
             $message = [];
+            $bindings = [];
 
             $onCompleteCallback = $onCompleteCallback ?? static function () {
                 printf("\nTask Completed successfully...\n");
@@ -260,7 +260,7 @@ class ReverseEngineerTask
             $schemaManager = $connection->createSchemaManager();
             $connection->getDatabasePlatform()->registerDoctrineTypeMapping('enum', 'string');
             // the generated tables
-            $tablesFilterFunc = static function ($table) {
+            $exceptFn = static function ($table) {
                 return !(Str::contains($table->getName(), 'auth_')
                     || Str::startsWith($table->getName(), 'acl_')
                     || ('accounts_verifications' === $table->getName())
@@ -275,11 +275,7 @@ class ReverseEngineerTask
             };
             // Execute the runner
             // # Create the migrations runner
-            $runner = DatabaseSchemaReverseEngineeringRunner(
-                $schemaManager,
-                $src,
-                $namespace ?? 'App'
-            );
+            $runner = DatabaseSchemaReverseEngineeringRunner($schemaManager, $src, $namespace ?? 'App');
             if ($hasHttpHandlers) {
                 $runner = $runner->withHttpHandlers();
             }
@@ -300,8 +296,8 @@ class ReverseEngineerTask
              */
             $tablesindexes = [];
             // #endregion Create migration runner
-            $traversable = $runner->setSubNamespace($subPackage)
-                ->bindExceptMethod($tablesFilterFunc)
+            $traversable = $runner->setDomain($subPackage)
+                ->bindExceptMethod($exceptFn)
                 ->only($this->tables ?? [])
                 ->except($this->exceptions ?? [])
                 ->setSchema($schema)
@@ -346,9 +342,11 @@ class ReverseEngineerTask
                 $pivots,
                 &$onExistsCallback,
                 &$policies,
+                &$bindings,
                 &$requestBodyMap
             ) {
                 foreach ($values as $component) {
+                    // #region Write model source code
                     $modelbuilder = Arr::get($component, 'model.class');
                     if (($modelbuilder instanceof ProvidesRelations) && \is_array($componentrelations = $relations[Arr::get($component, 'model.classPath')] ?? [])) {
                         $modelbuilder = $modelbuilder->provideRelations($componentrelations);
@@ -356,48 +354,72 @@ class ReverseEngineerTask
                             $modelbuilder = $modelbuilder->asPivot();
                         }
                     }
-                    /**
-                     * @var ViewModelClassBuilder
-                     */
-                    $viewmodelbuilder = Arr::get($component, 'viewModel.class');
-                    /*
-                     * @var DataTransfertClassBuilder
-                     */
-                    if ($dtobuiler = Arr::get($component, 'controller.dto.class')) {
-                        $viewmodelbuilder = $viewmodelbuilder->setDTOClassPath($dtobuiler->getClassPath());
-                    }
-                    $viewmodelsourcecode = self::resolveWritable($viewmodelbuilder);
-                    $servicesourcecode = self::resolveWritable(Arr::get($component, 'service.class'));
                     static::writeComponentSourceCode(Arr::get($component, 'model.path'), self::resolveWritable($modelbuilder), $onExistsCallback);
-                    static::writeComponentSourceCode(Arr::get($component, 'viewModel.path'), $viewmodelsourcecode, $onExistsCallback);
-                    static::writeComponentSourceCode(Arr::get($component, 'service.path'), $servicesourcecode, $onExistsCallback);
-                    if (null !== $controller = Arr::get($component, 'controller')) {
-                        if (\is_array($componentrelations) && method_exists($dtobuiler, 'setCasts')) {
-                            $currentDtoCasts = [];
-                            foreach ($componentrelations as $_current) {
-                                $currentDtoCasts[$_current->getName()] = \in_array(
-                                    $_current->getType(),
-                                    [
-                                        RelationTypes::ONE_TO_MANY,
-                                        RelationTypes::MANY_TO_MANY,
-                                        RelationTypes::ONE_TO_MANY_THROUGH,
-                                    ],
-                                    true
-                                ) ?
-                                    'collectionOf:\\'.ltrim($_current->getCastClassPath(), '\\') :
-                                    'value:\\'.ltrim($_current->getCastClassPath(), '\\');
-                            }
-                            $dtobuiler->setCamelizeProperties($camelize)->setCasts($currentDtoCasts);
+                    // #endregion Write model source code
+
+                    // #region Write view model source code
+                    $viewmodelbuilder = Arr::get($component, 'viewModel.class');
+                    if ($dtoBuilder = Arr::get($component, 'dto.class')) {
+                        $viewmodelbuilder = $viewmodelbuilder->setDTOClassPath($dtoBuilder->getClassPath());
+                    }
+                    $viewmodelSourceCode = self::resolveWritable($viewmodelbuilder);
+                    static::writeComponentSourceCode(Arr::get($component, 'viewModel.path'), $viewmodelSourceCode, $onExistsCallback);
+                    // #endregion Write view model source code
+
+                    // #region Write service source code
+                    $serviceSourceCode = self::resolveWritable(Arr::get($component, 'service.class'));
+                    if ((null !== ($serviceType = Arr::get($component, 'service.type.class'))) && $serviceTypeSourceCode = self::resolveWritable($serviceType)) {
+                        static::writeComponentSourceCode(Arr::get($component, 'service.type.path'), $serviceTypeSourceCode, $onExistsCallback);
+                    }
+                    static::writeComponentSourceCode(Arr::get($component, 'service.path'), $serviceSourceCode, $onExistsCallback);
+                    $bindings[$serviceTypeSourceCode->getClassPath()] = sprintf("\%s", $serviceSourceCode->getClassPath());
+                    // #endregion Write service source code
+
+                    // #region Write DTO Component source code
+                    if (\is_array($componentrelations) && method_exists($dtoBuilder, 'setCasts')) {
+                        $currentDtoCasts = [];
+                        foreach ($componentrelations as $_current) {
+                            $currentDtoCasts[$_current->getName()] = \in_array(
+                                $_current->getType(),
+                                [
+                                    RelationTypes::ONE_TO_MANY,
+                                    RelationTypes::MANY_TO_MANY,
+                                    RelationTypes::ONE_TO_MANY_THROUGH,
+                                ],
+                                true
+                            ) ?
+                                'collectionOf:\\'.ltrim($_current->getCastClassPath(), '\\') :
+                                'value:\\'.ltrim($_current->getCastClassPath(), '\\');
                         }
-                        $dtosourcecode = self::resolveWritable($dtobuiler);
-                        static::writeComponentSourceCode(Arr::get($controller, 'dto.path'), $dtosourcecode, $onExistsCallback);
+                        $dtoBuilder->setCamelizeProperties($camelize)->setCasts($currentDtoCasts);
+                    }
+                    $dtoSourceCode = self::resolveWritable($dtoBuilder);
+                    static::writeComponentSourceCode(Arr::get($component, 'dto.path'), $dtoSourceCode, $onExistsCallback);
+                    // #endregion Write DTO Component source code
+
+                    if (null !== $controller = Arr::get($component, 'controller')) {
                         // Call the controller factory builder function with the required parameters
-                        $controllersource = self::resolveWritable(Arr::get($controller, 'class'), $servicesourcecode, $viewmodelsourcecode, $dtosourcecode);
+                        $controllersource = self::resolveWritable(
+                            Arr::get($controller, 'class'),
+                            [
+                                $serviceSourceCode->getClassPath(),
+                                $serviceTypeSourceCode->getClassPath(),
+                            ],
+                            $viewmodelSourceCode->getClassPath(),
+                            $dtoSourceCode->getClassPath()
+                        );
                         $name = \is_callable($nameBuilder = Arr::get($controller, 'route.nameBuilder')) ? $nameBuilder($controllersource) : Arr::get($controller, 'route.name');
                         $classPath = \is_callable($classPathBuilder = Arr::get($controller, 'route.classPathBuilder')) ? $classPathBuilder($controllersource) : Arr::get($controller, 'route.classPath');
                         static::writeComponentSourceCode(Arr::get($controller, 'path'), $controllersource, $onExistsCallback);
                         $routeController = new RouteController($name, $subPackage, $classPath);
-                        $requestBodyMap->put($name, $viewmodelbuilder->getRules(), $viewmodelbuilder->getUpdateRules());
+                        $requestBodyMap->put(
+                            $name,
+                            $viewmodelbuilder->getRules(),
+                            $viewmodelbuilder->getUpdateRules(),
+                            array_map(static function ($current) {
+                                return sprintf('%s (%s)', $current->getName(), (string) $current);
+                            }, \is_array($componentrelations) ? $componentrelations : [$componentrelations])
+                        );
                         yield $name => $routeController;
                     }
                     if (null !== ($policy = Arr::get($component, 'policy'))) {
@@ -433,10 +455,16 @@ class ReverseEngineerTask
             }
 
             // Case policies where generated, we creates a policy service provider class in the project
-            if (\is_array($policies) && !empty($policies)) {
-                $policiesServiceProviderBuilder = MVCPolicyServiceProviderBuilder($policies);
-                static::writeComponentSourceCode($src, self::resolveWritable($policiesServiceProviderBuilder), $onExistsCallback);
-                $message = [sprintf("Please add [\%s::class] to the list of application service providers to apply policies.\n", $policiesServiceProviderBuilder->getClassPath())];
+            if (\is_array($policies) && !empty($policies) || (\is_array($bindings) && !empty($bindings))) {
+                $serviceProviderBuilder = MVCServiceProviderBuilder(
+                    $policies ?? [],
+                    $bindings ?? [],
+                    sprintf('%s%s', $namespace, $subPackage ? trim(sprintf('\\%s', "$subPackage")) : ''),
+                    implode(\DIRECTORY_SEPARATOR, [$src, $subPackage ? sprintf('%s', "$subPackage/") : 'Providers']),
+                    $subPackage ? 'ServiceProvider' : null
+                );
+                static::writeComponentSourceCode($src, self::resolveWritable($serviceProviderBuilder), $onExistsCallback);
+                $message = [sprintf("Please add [\%s::class] to the list of application service providers.\n", $serviceProviderBuilder->getClassPath())];
             }
             if ((null !== $indicator) && ($indicator instanceof Progress)) {
                 $indicator->complete();
@@ -462,12 +490,12 @@ class ReverseEngineerTask
     protected function writeRoutes(
         ?bool $disableCache,
         ?bool $lumen = false,
-        ?string $routesDirectory = null,
-        ?string $cachePath = null,
-        ?string $routingfilename = null,
-        ?string $prefix = null,
-        ?string $middleware = null,
-        ?string $subPackage = null
+        string $routesDirectory = null,
+        string $cachePath = null,
+        string $routingfilename = null,
+        string $prefix = null,
+        string $middleware = null,
+        string $subPackage = null
     ) {
         return static function (array $routes = [], bool $partial = false) use (
             $disableCache,
@@ -516,7 +544,7 @@ class ReverseEngineerTask
      *
      * @return void
      */
-    private static function writeComponentSourceCode($path, Writable $writable, ?callable $callback = null)
+    private static function writeComponentSourceCode($path, Writable $writable, callable $callback = null)
     {
         /**
          * @var ComponentsScriptWriterClass
@@ -533,12 +561,12 @@ class ReverseEngineerTask
     /**
      * Resolve writable instance.
      *
-     * @param Writable|ComponentBuilder|\Closure(...$args):Writable $component
+     * @param Writable|ComponentBuilder|\Closure(...$args):SourceFileInterface $component
      * @param mixed $args
      *
      * @throws RuntimeExWritableception
      *
-     * @return Writable
+     * @return SourceFileInterface
      */
     private static function resolveWritable($component, ...$args)
     {

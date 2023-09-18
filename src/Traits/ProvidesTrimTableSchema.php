@@ -20,7 +20,7 @@ trait ProvidesTrimTableSchema
      *
      * @return string
      */
-    public static function trimschema(string $table, ?string $schema = null)
+    public static function trimschema(string $table, string $schema = null)
     {
         if (null === $schema) {
             return $table;

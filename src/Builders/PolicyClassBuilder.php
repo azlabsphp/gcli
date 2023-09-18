@@ -85,9 +85,9 @@ class PolicyClassBuilder implements ComponentBuilder
      * @return void
      */
     public function __construct(
-        ?string $name = null,
-        ?string $namespace = null,
-        ?string $path = null
+        string $name = null,
+        string $namespace = null,
+        string $path = null
     ) {
         $this->setName($name ? (!Str::endsWith($name, 'Policy') ? Str::camelize($name).'Policy' : Str::camelize($name)) : self::__NAME__);
         // Set the component write path

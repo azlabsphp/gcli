@@ -114,7 +114,7 @@ class CommandArguments
 
         if ($htrHost = ($this->options->get('htrHost') ?? null)) {
             $options = $options->merge(['htrHost' => $htrHost]);
-        } // 
+        }
 
         if ($htrFormat = ($this->options->get('htrFormat') ?? null)) {
             $options = $options->merge(['htrFormat' => $htrFormat]);
@@ -130,7 +130,7 @@ class CommandArguments
      *
      * @return array
      */
-    public function providesdboptions(?\Closure $queryConfig = null)
+    public function providesdboptions(\Closure $queryConfig = null)
     {
         $queryConfig = $queryConfig ?? static function ($key, $default = null) {
             return $default;

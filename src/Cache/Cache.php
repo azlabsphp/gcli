@@ -29,7 +29,7 @@ class Cache
     /**
      * Creates class instance.
      */
-    public function __construct(?string $path = null)
+    public function __construct(string $path = null)
     {
         $this->path = $path ? Path::new($path) : Path::new(sprintf('%s%s%s', drewlabs_component_generator_cache_path(), \DIRECTORY_SEPARATOR, 'components'));
     }
@@ -39,7 +39,7 @@ class Cache
      *
      * @return Cache
      */
-    public static function new(?string $path = null)
+    public static function new(string $path = null)
     {
         return new self($path);
     }

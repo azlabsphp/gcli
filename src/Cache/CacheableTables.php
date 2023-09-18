@@ -27,7 +27,7 @@ class CacheableTables implements ContractsCacheable
      * @param iterable $tables
      * @param string   $namespace
      */
-    public function __construct(array $tables, ?string $namespace = null, ?string $subNamespace = null)
+    public function __construct(array $tables, string $namespace = null, string $subNamespace = null)
     {
         $this->tables = $tables;
         $this->namespace = $namespace;

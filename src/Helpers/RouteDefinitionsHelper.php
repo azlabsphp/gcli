@@ -95,9 +95,9 @@ class RouteDefinitionsHelper
     ) {
         return static function (
             bool $lumen,
-            ?string $prefix = null,
-            ?string $middleware = null,
-            ?\Closure $callback = null
+            string $prefix = null,
+            string $middleware = null,
+            \Closure $callback = null
         ) use ($definitions, $filename, $basePath, $partial) {
             $adapter = Disk::new($basePath);
             $output = '';
@@ -154,7 +154,7 @@ class RouteDefinitionsHelper
      *
      * @return void
      */
-    public static function cacheRouteDefinitions(string $path, array $routes, ?string $namespace = null)
+    public static function cacheRouteDefinitions(string $path, array $routes, string $namespace = null)
     {
         Cache::new($path)->dump(new CacheableRoutes([
             'routes' => $routes,

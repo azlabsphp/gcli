@@ -13,7 +13,7 @@ declare(strict_types=1);
 
 namespace Drewlabs\GCli;
 
-class ThoughRelation
+class ThroughRelation
 {
     /**
      * relation method name.
@@ -91,12 +91,12 @@ class ThoughRelation
         string $type,
         string $left,
         string $right,
-        ?string $through = null,
-        ?string $leftforeignkey = null,
-        ?string $rightforeignkey = null,
-        ?string $leftlocalkey = null,
-        ?string $rightlocalkey = null,
-        ?string $castclasspath = null
+        string $through = null,
+        string $leftforeignkey = null,
+        string $rightforeignkey = null,
+        string $leftlocalkey = null,
+        string $rightlocalkey = null,
+        string $castclasspath = null
     ) {
         $this->name = $name;
         $this->type = $type;
@@ -108,6 +108,16 @@ class ThoughRelation
         $this->leftlocalkey = $leftlocalkey;
         $this->rightlocalkey = $rightlocalkey;
         $this->castclasspath = $castclasspath;
+    }
+
+    /**
+     * Returns the string representation of the relation.
+     *
+     * @return string
+     */
+    public function __toString()
+    {
+        return sprintf('%s', $this->getType());
     }
 
     /**

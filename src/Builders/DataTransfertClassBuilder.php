@@ -121,9 +121,9 @@ class DataTransfertClassBuilder implements ComponentBuilder
      */
     public function __construct(
         array $json_attributes = [],
-        ?string $name = null,
-        ?string $namespace = null,
-        ?string $path = null
+        string $name = null,
+        string $namespace = null,
+        string $path = null
     ) {
         $this->setName($name ? (!Str::endsWith($name, 'Dto') ?
             Str::camelize(Pluralizer::singular($name)).'Dto' :
@@ -340,7 +340,7 @@ class DataTransfertClassBuilder implements ComponentBuilder
         )->setNamespace($component->getNamespace());
     }
 
-    public static function defaultClassPath(?string $classname = null)
+    public static function defaultClassPath(string $classname = null)
     {
         $classname = $classname ?? 'Test';
         if (Str::contains($classname, '\\')) {

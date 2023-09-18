@@ -58,7 +58,7 @@ class ComponentBuilderHelpers
         $isViewModel = false,
         array $hidden = [],
         array $appends = [],
-        ?string $comments = null
+        string $comments = null
     ) {
         $component = EloquentORMModelBuilder(
             new ORMModelDefinition(
@@ -109,9 +109,9 @@ class ComponentBuilderHelpers
      */
     public static function createServiceBuilder(
         bool $asCRUD = false,
-        ?string $name = null,
-        ?string $namespace = null,
-        ?string $model = null
+        string $name = null,
+        string $namespace = null,
+        string $model = null
     ) {
         return ($component = \is_string($model) ? MVCServiceBuilder($name, $namespace)->bindModel($model) : MVCServiceBuilder($name, $namespace)) && $asCRUD ? $component->asCRUDService() : $component;
     }
@@ -132,10 +132,10 @@ class ComponentBuilderHelpers
         bool $single = false,
         array $rules = [],
         array $updateRules = [],
-        ?string $name = null,
-        ?string $namespace = null,
-        ?string $path = null,
-        ?string $model = null,
+        string $name = null,
+        string $namespace = null,
+        string $path = null,
+        string $model = null,
         ?bool $hasHttpHandlers = false
     ) {
         $rulesParserFunc = static function ($definitions) {
@@ -193,9 +193,9 @@ class ComponentBuilderHelpers
     public static function createDtoBuilder(
         array $attributes = [],
         array $hidden = [],
-        ?string $name = null,
-        ?string $namespace = null,
-        ?string $model = null
+        string $name = null,
+        string $namespace = null,
+        string $model = null
     ) {
         $component = DataTransfertClassBuilder($attributes, $name, $namespace);
         if (\is_string($model)) {
@@ -220,8 +220,8 @@ class ComponentBuilderHelpers
         $service = null,
         $viewModel = null,
         $dto = null,
-        ?string $name = null,
-        ?string $namespace = null,
+        string $name = null,
+        string $namespace = null,
         bool $auth = true,
         bool $authorize = false
     ) {
@@ -235,7 +235,8 @@ class ComponentBuilderHelpers
         }
         // Check null state of the service parameter
         if (null !== $service) {
-            $component = $component->bindService(\is_string($service) ? $service : $service::class);
+            $arguments = \is_array($service) ? $service : [\is_string($service) ? $service : $service::class];
+            $component = $component->bindService(...$arguments);
         }
         // Check null state of the model parameter
         if (null !== $model) {
@@ -274,7 +275,7 @@ class ComponentBuilderHelpers
         $vm = false,
         array $hidden = [],
         array $appends = [],
-        ?string $comments = null
+        string $comments = null
     ) {
         return static::createModelBuilder(
             $table,
@@ -303,9 +304,9 @@ class ComponentBuilderHelpers
      */
     public static function buildServiceDefinition(
         bool $asCRUD = false,
-        ?string $name = null,
-        ?string $namespace = null,
-        ?string $model = null
+        string $name = null,
+        string $namespace = null,
+        string $model = null
     ) {
         return self::createServiceBuilder($asCRUD, $name, $namespace, $model)->build();
     }
@@ -328,10 +329,10 @@ class ComponentBuilderHelpers
         bool $single = false,
         array $rules = [],
         array $updateRules = [],
-        ?string $name = null,
-        ?string $namespace = null,
-        ?string $path = null,
-        ?string $model = null,
+        string $name = null,
+        string $namespace = null,
+        string $path = null,
+        string $model = null,
         ?bool $hasHttpHandlers = false
     ) {
         return self::createViewModelBuilder(
@@ -361,9 +362,9 @@ class ComponentBuilderHelpers
     public static function buildDtoObjectDefinition(
         array $attributes = [],
         array $hidden = [],
-        ?string $name = null,
-        ?string $namespace = null,
-        ?string $model = null
+        string $name = null,
+        string $namespace = null,
+        string $model = null
     ) {
         return self::createDtoBuilder(
             $attributes,
@@ -389,8 +390,8 @@ class ComponentBuilderHelpers
         $service = null,
         $viewModel = null,
         $dto = null,
-        ?string $name = null,
-        ?string $namespace = null,
+        string $name = null,
+        string $namespace = null,
         bool $auth = true,
         bool $authorize = false
     ) {
@@ -466,7 +467,7 @@ class ComponentBuilderHelpers
      *
      * @return void
      */
-    public static function cacheComponentDefinitions(string $path, array $tables, ?string $namespace = null, ?string $subPackage = null)
+    public static function cacheComponentDefinitions(string $path, array $tables, string $namespace = null, string $subPackage = null)
     {
         Cache::new($path)->dump(new CacheableTables($tables, $namespace, $subPackage));
     }

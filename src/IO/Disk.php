@@ -66,7 +66,7 @@ class Disk
      *
      * @return string|false
      */
-    public function read(string $path, ?int $length = null, int $offset = 0, int $mode = \LOCK_EX | \LOCK_NB)
+    public function read(string $path, int $length = null, int $offset = 0, int $mode = \LOCK_EX | \LOCK_NB)
     {
         return Reader::open($this->resolvePath($path))->read($length, $offset, $mode);
     }
@@ -80,7 +80,7 @@ class Disk
      *
      * @return int|false
      */
-    public function write(string $path, string $data, ?int $length = null, $mode = \LOCK_EX | \LOCK_NB)
+    public function write(string $path, string $data, int $length = null, $mode = \LOCK_EX | \LOCK_NB)
     {
         $path = $this->resolvePath($path);
         $this->ensureDirectoryExists(Path::new($path)->dirname());

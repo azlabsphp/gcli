@@ -95,7 +95,7 @@ class MakeModelCommand extends Command
      *
      * @return void
      */
-    public static function createComponents($basePath, SourceFileInterface $component, ?ORMModelDefinition $definition = null)
+    public static function createComponents($basePath, SourceFileInterface $component, ORMModelDefinition $definition = null)
     {
         $modelClassPath = sprintf('\\%s\\%s', $component->getNamespace(), $component->getName());
         $service = $service ?? sprintf('%sService', $component->getName());

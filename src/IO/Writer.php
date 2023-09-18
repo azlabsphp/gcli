@@ -61,7 +61,7 @@ class Writer
      *
      * @return int|false
      */
-    public function write(string $data, ?int $length = null, $operation = \LOCK_EX | \LOCK_NB)
+    public function write(string $data, int $length = null, $operation = \LOCK_EX | \LOCK_NB)
     {
         // Case the read writer is not a resource, we simply return false
         if (!\is_resource($this->handle)) {

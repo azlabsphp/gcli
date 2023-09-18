@@ -31,14 +31,19 @@ class RouteRequestBody
     private $putBody;
 
     /**
+     * @var array
+     */
+    private $relations = [];
+
+    /**
      * Creates class instance.
      */
-    public function __construct(string $name, array $rules, array $updateRules)
+    public function __construct(string $name, array $rules, array $updateRules, array $relations)
     {
         $this->name = $name;
         $this->postBody = array_reduce(
-            array_filter(array_keys($rules), function ($item) {
-                return !in_array($item, ['created_at', 'updated_at', 'id']);
+            array_filter(array_keys($rules), static function ($item) {
+                return !\in_array($item, ['created_at', 'updated_at', 'id'], true);
             }),
             static function ($carry, $current) {
                 $carry[$current] = '';
@@ -48,8 +53,8 @@ class RouteRequestBody
             []
         );
         $this->putBody = array_reduce(
-            array_filter(array_keys($updateRules), function ($item) {
-                return !in_array($item, ['created_at', 'updated_at', 'id']);
+            array_filter(array_keys($updateRules), static function ($item) {
+                return !\in_array($item, ['created_at', 'updated_at', 'id'], true);
             }),
             static function ($carry, $current) {
                 $carry[$current] = '';
@@ -58,6 +63,7 @@ class RouteRequestBody
             },
             []
         );
+        $this->relations = $relations;
     }
 
     /**
@@ -88,5 +94,15 @@ class RouteRequestBody
     public function getPutBody()
     {
         return $this->putBody ?? [];
+    }
+
+    /**
+     * Returns the list of supported relation on the request.
+     *
+     * @return string[]
+     */
+    public function getRelations()
+    {
+        return $this->relations;
     }
 }

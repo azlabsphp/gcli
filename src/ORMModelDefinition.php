@@ -122,7 +122,7 @@ class ORMModelDefinition implements AbstractORMModelDefinition, DtoAttributesFac
      *
      * @return array
      */
-    private function getColumRules(ORMColumnDefinition $column, ?string $primaryKey = null, $updates = false)
+    private function getColumRules(ORMColumnDefinition $column, string $primaryKey = null, $updates = false)
     {
         $rules[] = !$column->required() ? DataTypeToFluentValidationRulesHelper::NULLABLE : ($column->required() && $column->hasDefault() ?
                 DataTypeToFluentValidationRulesHelper::NULLABLE : ($updates ? DataTypeToFluentValidationRulesHelper::SOMETIMES :
@@ -143,7 +143,7 @@ class ORMModelDefinition implements AbstractORMModelDefinition, DtoAttributesFac
         return array_merge($rules);
     }
 
-    private function createColumnRule(ORMColumnDefinition $column, ?string $key = null)
+    private function createColumnRule(ORMColumnDefinition $column, string $key = null)
     {
         if ($column->name() === $key) {
             return DataTypeToFluentValidationRulesHelper::SOMETIMES;

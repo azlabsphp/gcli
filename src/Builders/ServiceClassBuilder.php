@@ -28,11 +28,13 @@ use Drewlabs\GCli\Helpers\ComponentBuilderHelpers;
 use function Drewlabs\GCli\Proxy\PHPScript;
 
 use Drewlabs\GCli\Traits\HasNamespaceAttribute;
+use Drewlabs\GCli\Traits\ProvidesContracts;
 use Illuminate\Support\Pluralizer;
 
 class ServiceClassBuilder implements ComponentBuilder
 {
     use HasNamespaceAttribute;
+    use ProvidesContracts;
 
     /**
      * Service default class namespace.
@@ -91,9 +93,9 @@ class ServiceClassBuilder implements ComponentBuilder
      * @return void
      */
     public function __construct(
-        ?string $name = null,
-        ?string $namespace = null,
-        ?string $path = null
+        string $name = null,
+        string $namespace = null,
+        string $path = null
     ) {
         $this->setName($name ? (!Str::endsWith($name, 'Service') ?
             Str::camelize(Pluralizer::singular($name)).'Service' :
@@ -118,6 +120,13 @@ class ServiceClassBuilder implements ComponentBuilder
             $this->modelName_ = $classPath;
         }
         $this->setName(Str::camelize(Pluralizer::singular($this->modelName_)).'Service');
+
+        return $this;
+    }
+
+    public function addImplementation(...$implementations)
+    {
+        $this->contracts = $implementations;
 
         return $this;
     }
@@ -148,8 +157,11 @@ class ServiceClassBuilder implements ComponentBuilder
             $component = $component->addClassPath($value);
         }
 
-        $component->addImplementation(\Drewlabs\Contracts\Support\Actions\ActionHandler::class)
-            ->asFinal()
+        foreach ($this->getContracts() as $contract) {
+            $component = $component->addImplementation($contract);
+        }
+
+        $component->asFinal()
             // Add Handler method
             ->addMethod(
                 array_reduce(array_filter([$this->asCRUD_ ? "return useActionQueryCommand($this->modelName_::class)(\$action, \$callback)" : '#code...'], static function ($line) {
@@ -183,7 +195,7 @@ class ServiceClassBuilder implements ComponentBuilder
         )->setNamespace($component->getNamespace());
     }
 
-    public static function defaultClassPath(?string $classname = null)
+    public static function defaultClassPath(string $classname = null)
     {
         $classname = $classname ?? 'Test';
         if (Str::contains($classname, '\\')) {

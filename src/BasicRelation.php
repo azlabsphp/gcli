@@ -66,7 +66,7 @@ class BasicRelation
         string $reference,
         string $local,
         string $type = RelationTypes::ONE_TO_MANY,
-        ?string $castclasspath = null
+        string $castclasspath = null
     ) {
         $this->name = $name;
         $this->model = $model;
@@ -74,6 +74,11 @@ class BasicRelation
         $this->local = $local;
         $this->type = $type ?? RelationTypes::ONE_TO_MANY;
         $this->castclasspath = $castclasspath;
+    }
+
+    public function __toString()
+    {
+        return sprintf('%s', $this->getType());
     }
 
     /**

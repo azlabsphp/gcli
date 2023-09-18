@@ -61,7 +61,7 @@ class Reader
      *
      * @return string|false
      */
-    public function read(?int $length = null, int $offset = 0, int $operation = \LOCK_EX | \LOCK_NB)
+    public function read(int $length = null, int $offset = 0, int $operation = \LOCK_EX | \LOCK_NB)
     {
         // Case the read writer is not a resource, we simply return false
         if (!\is_resource($this->handle)) {
@@ -92,7 +92,7 @@ class Reader
      *
      * @return string|false
      */
-    private function readBytes(int $length, int $operation, ?int $offset = null)
+    private function readBytes(int $length, int $operation, int $offset = null)
     {
         $contents = false;
         if ($this->handle && @flock($this->handle, $operation)) {

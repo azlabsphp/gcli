@@ -183,12 +183,12 @@ class ORMModelBuilder implements AbstractORMModelBuilder, ComponentBuilder, Prov
      */
     public function __construct(
         ORMModelDefinition $defintion,
-        ?string $schema = null,
-        ?string $path = null
+        string $schema = null,
+        string $path = null
     ) {
         $this->setDefinition($defintion);
         [$table, $name] = [$defintion->table(), $defintion->name() ?? self::DEFAULT_NAME];
-        $this->setComponentBaseDefintions($schema, $table, $name);
+        $this->setComponentBaseDefinitions($schema, $table, $name);
         // Set the primary key
         if ($defintion->primaryKey()) {
             $this->setKeyName($defintion->primaryKey() ?? 'id');
@@ -338,7 +338,7 @@ class ORMModelBuilder implements AbstractORMModelBuilder, ComponentBuilder, Prov
                  * @var Blueprint
                  */
                 $component = $component
-                    ->addImplementation(\Drewlabs\Contracts\Validator\CoreValidatable::class);
+                    ->addImplementation(\Drewlabs\Contracts\Validator\BaseValidatable::class);
             }
         }
 
@@ -513,7 +513,7 @@ class ORMModelBuilder implements AbstractORMModelBuilder, ComponentBuilder, Prov
         )->setNamespace($component->getNamespace());
     }
 
-    public static function defaultClassPath(?string $classname = null)
+    public static function defaultClassPath(string $classname = null)
     {
         $classname = $classname ?? 'Test';
         if (Str::contains($classname, '\\')) {
@@ -544,7 +544,7 @@ class ORMModelBuilder implements AbstractORMModelBuilder, ComponentBuilder, Prov
      *
      * @return CallableInterface
      */
-    private function createPropertySetter(string $name, ?string $type = null)
+    private function createPropertySetter(string $name, string $type = null)
     {
         return PHPClassMethod(sprintf('set%s', Str::camelize($name)), [PHPFunctionParameter('value', $type)], 'static', 'public', sprintf('Set `%s` property to the parameter value', $name))
             ->addLine(sprintf("\$this->setAttribute('%s', \$value)", $name))
@@ -556,7 +556,7 @@ class ORMModelBuilder implements AbstractORMModelBuilder, ComponentBuilder, Prov
      *
      * @return CallableInterface
      */
-    private function createPropertyGetter(string $name, ?string $type = null)
+    private function createPropertyGetter(string $name, string $type = null)
     {
         return PHPClassMethod(sprintf('get%s', Str::camelize($name)), [], $type ?? 'mixed', 'public', sprintf('Get `%s` property value', $name))
             ->addLine(sprintf("return \$this->getAttribute('%s')", $name));
@@ -573,7 +573,7 @@ class ORMModelBuilder implements AbstractORMModelBuilder, ComponentBuilder, Prov
      *
      * @return void
      */
-    private function setComponentBaseDefintions($schema, $table, $name)
+    private function setComponentBaseDefinitions($schema, $table, $name)
     {
         $table = (null === $table) ? (null !== $name ? Str::snakeCase(Pluralizer::plural($name)) : null) : $table;
         // Set the table name
@@ -620,7 +620,7 @@ class ORMModelBuilder implements AbstractORMModelBuilder, ComponentBuilder, Prov
                 $this->relationMethods_[] = $relation->getName();
                 continue;
             }
-            if (RelationTypes::MANY_TO_MANY === $type && $relation instanceof \Drewlabs\GCli\ThoughRelation) {
+            if (RelationTypes::MANY_TO_MANY === $type && $relation instanceof \Drewlabs\GCli\ThroughRelation) {
                 /**
                  * @var BluePrint
                  */
@@ -630,7 +630,7 @@ class ORMModelBuilder implements AbstractORMModelBuilder, ComponentBuilder, Prov
             }
             if (
                 \in_array($type, [RelationTypes::ONE_TO_MANY_THROUGH, RelationTypes::ONE_TO_ONE_THROUGH], true)
-                && $relation instanceof \Drewlabs\GCli\ThoughRelation
+                && $relation instanceof \Drewlabs\GCli\ThroughRelation
             ) {
                 /**
                  * @var BluePrint
@@ -692,7 +692,7 @@ class ORMModelBuilder implements AbstractORMModelBuilder, ComponentBuilder, Prov
      *
      * @return CallableInterface
      */
-    private function createThroughRelationTemplate(\Drewlabs\GCli\ThoughRelation $relation, array $methods)
+    private function createThroughRelationTemplate(\Drewlabs\GCli\ThroughRelation $relation, array $methods)
     {
         $returns = RelationTypes::ONE_TO_MANY_THROUGH === $relation->getType() ? \Illuminate\Database\Eloquent\Relations\HasManyThrough::class : \Illuminate\Database\Eloquent\Relations\HasOneThrough::class;
         $left = $relation->getLeftTable();
@@ -730,7 +730,7 @@ class ORMModelBuilder implements AbstractORMModelBuilder, ComponentBuilder, Prov
      *
      * @return CallableInterface
      */
-    private function createManyToManyRelationTemplate(\Drewlabs\GCli\ThoughRelation $relation, array $methods)
+    private function createManyToManyRelationTemplate(\Drewlabs\GCli\ThroughRelation $relation, array $methods)
     {
         $returns = \Illuminate\Database\Eloquent\Relations\BelongsToMany::class;
         $left = $relation->getLeftTable();

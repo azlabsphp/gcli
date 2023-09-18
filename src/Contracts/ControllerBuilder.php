@@ -50,7 +50,7 @@ interface ControllerBuilder extends ComponentBuilder
      *
      * @return self
      */
-    public function bindService(string $serviceClass);
+    public function bindService(string $serviceClass, string $type = null);
 
     /**
      * Set the name property of the controller.

@@ -45,7 +45,7 @@ class ViewModelClassBuilder implements ComponentBuilder
      *
      * @var string
      */
-    public const DEFAULT_NAMESPACE = 'App\\Http\\ViewModels';
+    public const DEFAULT_NAMESPACE = 'App\\ViewModels';
 
     /**
      * @var string[]
@@ -108,7 +108,7 @@ class ViewModelClassBuilder implements ComponentBuilder
     /**
      * @var string
      */
-    private const DEFAULT_PATH = 'Http/ViewModels';
+    private const DEFAULT_PATH = 'ViewModels';
 
     /**
      * @var bool
@@ -144,9 +144,9 @@ class ViewModelClassBuilder implements ComponentBuilder
      * @return void
      */
     public function __construct(
-        ?string $name = null,
-        ?string $namespace = null,
-        ?string $path = null
+        string $name = null,
+        string $namespace = null,
+        string $path = null
     ) {
         $this->setName($name ?
             (!Str::endsWith($name, 'ViewModel') ?
@@ -326,7 +326,7 @@ class ViewModelClassBuilder implements ComponentBuilder
         )->setNamespace($component->getNamespace());
     }
 
-    public static function defaultClassPath(?string $classname = null)
+    public static function defaultClassPath(string $classname = null)
     {
         $classname = $classname ?? 'Test';
         if (Str::contains($classname, '\\')) {

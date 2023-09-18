@@ -19,8 +19,9 @@ use Drewlabs\GCli\Builders\ControllerClassBuilder;
 use Drewlabs\GCli\Builders\DataTransfertClassBuilder;
 use Drewlabs\GCli\Builders\ORMModelBuilder;
 use Drewlabs\GCli\Builders\PolicyClassBuilder;
-use Drewlabs\GCli\Builders\PolicyServiceProviderBuilder;
 use Drewlabs\GCli\Builders\ServiceClassBuilder;
+use Drewlabs\GCli\Builders\ServiceInterfaceBuilder;
+use Drewlabs\GCli\Builders\ServiceProviderBuilder;
 use Drewlabs\GCli\Builders\ViewModelClassBuilder;
 use Drewlabs\GCli\ComponentsScriptWriter;
 use Drewlabs\GCli\Contracts\ORMModelDefinition;
@@ -45,8 +46,8 @@ function ComponentsScriptWriter(string $srcPath)
  */
 function EloquentORMModelBuilder(
     ORMModelDefinition $defintion,
-    ?string $schema = null,
-    ?string $path = null
+    string $schema = null,
+    string $path = null
 ) {
     return new ORMModelBuilder($defintion, $schema, $path);
 }
@@ -57,15 +58,11 @@ function EloquentORMModelBuilder(
  * @return ControllerClassBuilder
  */
 function MVCControllerBuilder(
-    ?string $name = null,
-    ?string $namespace = null,
-    ?string $path = null
+    string $name = null,
+    string $namespace = null,
+    string $path = null
 ) {
-    return new ControllerClassBuilder(
-        $name,
-        $namespace,
-        $path
-    );
+    return new ControllerClassBuilder($name, $namespace, $path);
 }
 
 /**
@@ -74,15 +71,11 @@ function MVCControllerBuilder(
  * @return ServiceClassBuilder
  */
 function MVCServiceBuilder(
-    ?string $name = null,
-    ?string $namespace = null,
-    ?string $path = null
+    string $name = null,
+    string $namespace = null,
+    string $path = null
 ) {
-    return new ServiceClassBuilder(
-        $name,
-        $namespace,
-        $path
-    );
+    return new ServiceClassBuilder($name, $namespace, $path);
 }
 
 /**
@@ -91,15 +84,11 @@ function MVCServiceBuilder(
  * @return ViewModelClassBuilder
  */
 function ViewModelBuilder(
-    ?string $name = null,
-    ?string $namespace = null,
-    ?string $path = null
+    string $name = null,
+    string $namespace = null,
+    string $path = null
 ) {
-    return new ViewModelClassBuilder(
-        $name,
-        $namespace,
-        $path
-    );
+    return new ViewModelClassBuilder($name, $namespace, $path);
 }
 
 /**
@@ -109,9 +98,9 @@ function ViewModelBuilder(
  */
 function DataTransfertClassBuilder(
     array $json_attributes = [],
-    ?string $name = null,
-    ?string $namespace = null,
-    ?string $path = null
+    string $name = null,
+    string $namespace = null,
+    string $path = null
 ) {
     return new DataTransfertClassBuilder($json_attributes, $name, $namespace, $path);
 }
@@ -133,20 +122,11 @@ function PHPScript(
 /**
  * Provides a proxy function to the  {@link \Drewlabs\GCli\DatabaseSchemaReverseEngineeringRunner} constructor.
  *
- * @param string $blocComponentNamespace
- *
  * @return ReverseEngineeringService
  */
-function DatabaseSchemaReverseEngineeringRunner(
-    AbstractSchemaManager $manager,
-    string $blocComponentPath,
-    ?string $blocComponentNamespace = 'App'
-) {
-    return new ReverseEngineeringService(
-        $manager,
-        $blocComponentPath,
-        $blocComponentNamespace
-    );
+function DatabaseSchemaReverseEngineeringRunner(AbstractSchemaManager $manager, string $directory, ?string $namespace = 'App')
+{
+    return new ReverseEngineeringService($manager, $directory, $namespace);
 }
 
 /**
@@ -154,17 +134,28 @@ function DatabaseSchemaReverseEngineeringRunner(
  *
  * @return PolicyClassBuilder
  */
-function MVCPolicyBuilder(?string $name = null, ?string $namespace = null, ?string $path = null)
+function MVCPolicyBuilder(string $name = null, string $namespace = null, string $path = null)
 {
     return new PolicyClassBuilder($name, $namespace, $path);
 }
 
 /**
+ * Creates a service interface builder instance.
+ *
+ * @return ServiceInterfaceBuilder
+ */
+function ServiceInterfaceBuilderProxy(string $name = null, string $namespace = null, string $path = null)
+{
+
+    return new ServiceInterfaceBuilder($name, $namespace, $path);
+}
+
+/**
  * Creates new policy service providers instance.
  *
- * @return PolicyServiceProviderBuilder
+ * @return ServiceProviderBuilder
  */
-function MVCPolicyServiceProviderBuilder(array $policies = [], ?string $namespace = null, ?string $path = null, ?string $name = null)
+function MVCServiceProviderBuilder(array $policies = [], array $bindings = [], string $namespace = null, string $path = null, string $name = null)
 {
-    return new PolicyServiceProviderBuilder($policies);
+    return new ServiceProviderBuilder($policies, $bindings, $namespace, $path, $name);
 }

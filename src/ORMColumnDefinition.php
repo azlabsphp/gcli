@@ -40,7 +40,7 @@ class ORMColumnDefinition implements ContractsORMColumnDefinition
     public function __construct(
         string $name,
         string $type,
-        ?string $table = null,
+        string $table = null,
         $required = false,
         $default = null,
         $unsigned = false,
