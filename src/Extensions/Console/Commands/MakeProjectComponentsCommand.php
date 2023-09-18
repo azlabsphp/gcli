@@ -155,7 +155,7 @@ class MakeProjectComponentsCommand extends Command
             !$options->get('cache', false),
             $noAuth,
             $options->get('namespace.default'),
-            $subPackage,
+            $options->get('namespace.domain'),
             $options->get('schema'),
             $httpHandlers
         )(

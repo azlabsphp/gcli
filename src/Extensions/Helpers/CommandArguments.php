@@ -82,6 +82,11 @@ class CommandArguments
         if ($namespace = $this->options->get('package')) {
             $options = $options->merge(['namespace.default' => $namespace]);
         }
+
+        if ($domain = $this->options->get('subPackage')) {
+            $options = $options->merge(['namespace.domain' => $domain]);
+        }
+
         if ($schema = $this->options->get('schema')) {
             $options = $options->merge(['schema' => $schema]);
         }
