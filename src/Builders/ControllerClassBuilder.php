@@ -397,8 +397,8 @@ class ControllerClassBuilder implements ContractsControllerBuilder
                     $this->mustGenerateActionContents() ? array_merge(
                         [
                             '//#region Excepts & attributes',
-                            sprintf("\$columns = \$%s->getColumns()", $vmParamName),
-                            sprintf("\$excepts = \$%s->getExcludes()", $vmParamName),
+                            sprintf('$columns = $%s->getColumns()', $vmParamName),
+                            sprintf('$excepts = $%s->getExcludes()', $vmParamName),
                             '$properties = (new SanitizeCustomProperties(true))($columns)',
                             '//#endregion Excepts & attributes',
                             '',
@@ -443,8 +443,8 @@ class ControllerClassBuilder implements ContractsControllerBuilder
                     ] : [],
                     [
                         '//#region Excepts & attributes',
-                        sprintf("\$columns = \$%s->getColumns()", $vmParamName),
-                        sprintf("\$excepts = \$%s->getExcludes()", $vmParamName),
+                        sprintf('$columns = $%s->getColumns()', $vmParamName),
+                        sprintf('$excepts = $%s->getExcludes()', $vmParamName),
                         '$properties = (new SanitizeCustomProperties(true))($columns)',
                         '//#endregion Excepts & attributes',
                         '',
