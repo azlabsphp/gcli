@@ -110,19 +110,19 @@ class CommandArguments
         }
 
         if ($htr = ($this->options->get('htr') ?? false)) {
-            $options = $options->merge(['htr' => $htr]);
+            $options = $options->merge(['htr' => []]);
         }
 
         if ($htrDir = ($this->options->get('htrDir') ?? null)) {
-            $options = $options->merge(['htrDir' => $htrDir]);
+            $options = $options->merge(['htr.directory' => $htrDir]);
         }
 
         if ($htrHost = ($this->options->get('htrHost') ?? null)) {
-            $options = $options->merge(['htrHost' => $htrHost]);
+            $options = $options->merge(['htr.host' => $htrHost]);
         }
 
         if ($htrFormat = ($this->options->get('htrFormat') ?? null)) {
-            $options = $options->merge(['htrFormat' => $htrFormat]);
+            $options = $options->merge(['htr.format' => $htrFormat]);
         }
 
         return $options;

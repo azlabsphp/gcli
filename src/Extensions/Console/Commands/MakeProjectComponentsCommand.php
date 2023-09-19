@@ -55,7 +55,7 @@ class MakeProjectComponentsCommand extends Command
         .'{--disableCache : Caching tables not supported}'
         .'{--noAuth : Indicates whether project controllers supports authentication}'
         .'{--input= : Path to options configurations file}'
-        .'{--format=json : Inpu file extension or format. Supported input format are ex:json|yml|yaml}'
+        .'{--format=json : Input file extension or format. Supported input format are ex:json|yml|yaml}'
         .'{--schema= : Schema prefix to database tables}'
         .'{--http : Whether to generates controllers and routes}'
         .'{--force : Force rewrite of existing classes }'
@@ -124,7 +124,6 @@ class MakeProjectComponentsCommand extends Command
         $commandargs = new CommandArguments($commandoptions);
         $options = $commandargs->providesoptions($this->cachePath, $this->laravel->basePath($this->option('srcPath') ?? 'app'));
         $policies = $options->get('policies') ?? false;
-        $htrDirectory = $this->laravel->basePath($this->option('htrDir') ?? 'htr');
         // #endregion command options
         // !Ends Local variables initialization
         $task = (new ReverseEngineerTask())
@@ -179,13 +178,13 @@ class MakeProjectComponentsCommand extends Command
 
                 return $this->confirm(sprintf('Override existing class at %s? ', $options->get('path')).\DIRECTORY_SEPARATOR.$writable->getPath());
             },
-            static function (array $routes, RouteRequestBodyMap $map, string $prefix = null) use ($options, $htrDirectory) {
+            function (array $routes, RouteRequestBodyMap $map, string $prefix = null) use ($options) {
                 if ((bool) $options->get('htr')) {
                     foreach ($routes as $route) {
-                        $factory = new RouteProjectFactory($route, $map, $prefix, $options->get('htrHost', 'http://127.0.0.1:8000'));
+                        $factory = new RouteProjectFactory($route, $map, $prefix, $options->get('htr.host', 'http://127.0.0.1:8000'));
                         $project = $factory->create();
-                        $format = $options->get('htrFormat', 'json');
-                        Disk::new($htrDirectory)->write($factory->getRouteName().'.'.$format, $project->compile($format));
+                        $format = $options->get('htr.format', 'json');
+                        Disk::new($this->laravel->basePath($options->get('htr.directory') ?? 'htr'))->write($factory->getRouteName().'.'.$format, $project->compile($format));
                     }
                 }
             }
