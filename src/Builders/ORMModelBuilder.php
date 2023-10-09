@@ -92,63 +92,63 @@ class ORMModelBuilder implements AbstractORMModelBuilder, ComponentBuilder, Prov
      *
      * @var array
      */
-    private $appends_ = [];
+    private $appends = [];
 
     /**
      * List of model properties that will not be added to serialized output.
      *
      * @var array
      */
-    private $hidden_ = [];
+    private $hidden = [];
 
     /**
      * Indicates whether the model must have a timestamp or Not.
      *
      * @var bool
      */
-    private $hasTimestamps_ = true;
+    private $hasTimestamps = true;
 
     /**
      * The table name binded to the model.
      *
      * @var string
      */
-    private $table_;
+    private $table;
 
     /**
      * List of table columns.
      *
      * @var ORMColumnDefinition[]
      */
-    private $columns_ = [];
+    private $columns = [];
 
     /**
      * They primary key of the model/table.
      *
      * @var string
      */
-    private $primaryKey_ = 'id';
+    private $primaryKey = 'id';
 
     /**
      * Is the model primary key incrementable.
      *
      * @var true
      */
-    private $autoIncrements_ = true;
+    private $autoIncrements = true;
 
     /**
      * List of eloquent relation methods.
      *
      * @var array
      */
-    private $relationMethods_ = [];
+    private $relationMethods = [];
 
     /**
      * Specify that the model act like a view model.
      *
      * @var false
      */
-    private $isViewModel_ = false;
+    private $isViewModel = false;
 
     /**
      * @var ORMModelDefinition
@@ -168,6 +168,31 @@ class ORMModelBuilder implements AbstractORMModelBuilder, ComponentBuilder, Prov
      * @var bool
      */
     private $aspivot;
+
+    /**
+     * A growable list of reserved keywords for which setter
+     * and getters should not be generated when generating methods
+     * for columns.
+     * 
+     * @var string[]
+     */
+    const RESERVED_KEYWORDS = [
+        'table',
+        'key',
+        'primary_key',
+        'fillable',
+        'fillables',
+        'hidden',
+        'casts',
+        'guards',
+        'attributes',
+        'created_at',
+        'updated_at',
+        'timestamp',
+        'timestamp',
+        'time_stamps',
+        'time_stamp'
+    ];
 
     /**
      * Creates a model builder class instance.
@@ -214,56 +239,56 @@ class ORMModelBuilder implements AbstractORMModelBuilder, ComponentBuilder, Prov
 
     public function setRelationMethods(array $names)
     {
-        $this->relationMethods_ = $names;
+        $this->relationMethods = $names;
 
         return $this;
     }
 
     public function setAppends(array $columns)
     {
-        $this->appends_ = $columns;
+        $this->appends = $columns;
 
         return $this;
     }
 
     public function setHiddenColumns(array $columns)
     {
-        $this->hidden_ = $columns;
+        $this->hidden = $columns;
 
         return $this;
     }
 
     public function hasTimestamps(bool $value)
     {
-        $this->hasTimestamps_ = $value;
+        $this->hasTimestamps = $value;
 
         return $this;
     }
 
     public function setTableName(string $table)
     {
-        $this->table_ = $table;
+        $this->table = $table;
 
         return $this;
     }
 
     public function setColumns(array $columns = [])
     {
-        $this->columns_ = $columns;
+        $this->columns = $columns;
 
         return $this;
     }
 
     public function setKeyName(string $name)
     {
-        $this->primaryKey_ = $name;
+        $this->primaryKey = $name;
 
         return $this;
     }
 
     public function doesNotAutoIncrements()
     {
-        $this->autoIncrements_ = false;
+        $this->autoIncrements = false;
 
         return $this;
     }
@@ -275,7 +300,7 @@ class ORMModelBuilder implements AbstractORMModelBuilder, ComponentBuilder, Prov
      */
     public function asViewModel()
     {
-        $this->isViewModel_ = true;
+        $this->isViewModel = true;
 
         return $this->addInputsTraits();
     }
@@ -297,7 +322,7 @@ class ORMModelBuilder implements AbstractORMModelBuilder, ComponentBuilder, Prov
     public function build()
     {
         $component = PHPClass($this->name());
-        if ($this->isViewModel_) {
+        if ($this->isViewModel) {
             /**
              * @var BluePrint
              */
@@ -315,7 +340,7 @@ class ORMModelBuilder implements AbstractORMModelBuilder, ComponentBuilder, Prov
                     PHPTypesModifiers::PUBLIC,
                     'Returns a fluent validation rules'
                 )->addContents(
-                    'return '.PHPVariable('rules', null, $this->rules ?? [])->asRValue()->__toString()
+                    'return ' . PHPVariable('rules', null, $this->rules ?? [])->asRValue()->__toString()
                 )
             );
             if (!$this->isSingleActionValidator) {
@@ -331,7 +356,7 @@ class ORMModelBuilder implements AbstractORMModelBuilder, ComponentBuilder, Prov
                             'array<string,string|string[]>',
                             PHPTypesModifiers::PUBLIC,
                             'Returns a fluent validation rules applied during update actions'
-                        )->addContents('return '.PHPVariable('rules', null, $this->rules ?? [])->asRValue()->__toString())
+                        )->addContents('return ' . PHPVariable('rules', null, $this->rules ?? [])->asRValue()->__toString())
                     );
             } else {
                 /**
@@ -361,7 +386,7 @@ class ORMModelBuilder implements AbstractORMModelBuilder, ComponentBuilder, Prov
                     'table',
                     'string',
                     PHPTypesModifiers::PROTECTED,
-                    $this->table_ ?? 'examples',
+                    $this->table ?? 'examples',
                     'Model referenced table'
                 )
             )
@@ -371,7 +396,7 @@ class ORMModelBuilder implements AbstractORMModelBuilder, ComponentBuilder, Prov
                     'hidden',
                     'array',
                     PHPTypesModifiers::PROTECTED,
-                    $this->hidden_ ?? [],
+                    $this->hidden ?? [],
                     'List of values that must be hidden when generating the json output'
                 )
             )
@@ -381,7 +406,7 @@ class ORMModelBuilder implements AbstractORMModelBuilder, ComponentBuilder, Prov
                     'appends',
                     'array',
                     PHPTypesModifiers::PROTECTED,
-                    $this->appends_ ?? [],
+                    $this->appends ?? [],
                     'List of attributes that will be appended to the json output of the model'
                 )
             )
@@ -391,9 +416,9 @@ class ORMModelBuilder implements AbstractORMModelBuilder, ComponentBuilder, Prov
                     'fillable',
                     'array',
                     PHPTypesModifiers::PROTECTED,
-                    $this->columns_ ? array_map(static function (ORMColumnDefinition $column) {
+                    $this->columns ? array_map(static function (ORMColumnDefinition $column) {
                         return $column->name();
-                    }, $this->columns_) : [],
+                    }, $this->columns) : [],
                     'List of fillable properties of the current model'
                 )
             )
@@ -402,7 +427,7 @@ class ORMModelBuilder implements AbstractORMModelBuilder, ComponentBuilder, Prov
                     'relation_methods',
                     'array',
                     PHPTypesModifiers::PUBLIC,
-                    $this->relationMethods_ ?? [],
+                    $this->relationMethods ?? [],
                     'List of model relation methods'
                 )
             )
@@ -410,9 +435,9 @@ class ORMModelBuilder implements AbstractORMModelBuilder, ComponentBuilder, Prov
 
         // #region Add properties setters and getters
         // TODO : Add these method to a class region instance in future release
-        foreach ($this->columns_ as $column) {
+        foreach ($this->columns as $column) {
             // Do not include setter and getters for created_at, updated_at, and primaryKey we continue to the next iteration
-            if (\in_array($name = $column->name(), [$this->primaryKey_ ?? 'id', 'created_at', 'updated_at'], true)) {
+            if (\in_array($name = $column->name(), array_merge(static::RESERVED_KEYWORDS, [$this->primaryKey ?? 'id']), true)) { // RESERVED_KEYWORDS
                 continue;
             }
             $component = $component->addMethod($this->createPropertySetter($name))
@@ -435,7 +460,7 @@ class ORMModelBuilder implements AbstractORMModelBuilder, ComponentBuilder, Prov
         );
         // #endregion add boot method
 
-        if (null !== $this->primaryKey_) {
+        if (null !== $this->primaryKey) {
             /**
              * @var Blueprint
              */
@@ -444,13 +469,13 @@ class ORMModelBuilder implements AbstractORMModelBuilder, ComponentBuilder, Prov
                     'primaryKey',
                     'string',
                     PHPTypesModifiers::PROTECTED,
-                    $this->primaryKey_ ?? 'id',
+                    $this->primaryKey ?? 'id',
                     'Table primary key'
                 )
             );
         }
 
-        if ((null !== $this->autoIncrements_) && !$this->autoIncrements_) {
+        if ((null !== $this->autoIncrements) && !$this->autoIncrements) {
             $component = $component->addTrait(trait_exists(\Illuminate\Database\Eloquent\Concerns\HasUuids::class) ? \Illuminate\Database\Eloquent\Concerns\HasUuids::class : \Drewlabs\Laravel\Query\Traits\HasUuids::class);
         }
 
@@ -460,7 +485,7 @@ class ORMModelBuilder implements AbstractORMModelBuilder, ComponentBuilder, Prov
             $component = $component->addTrait(\Illuminate\Database\Eloquent\Relations\Concerns\AsPivot::class);
         }
 
-        if (!$this->hasTimestamps_) {
+        if (!$this->hasTimestamps) {
             $component = $component->addProperty(
                 PHPClassProperty(
                     'timestamps',
@@ -601,7 +626,7 @@ class ORMModelBuilder implements AbstractORMModelBuilder, ComponentBuilder, Prov
         if (empty($this->relations)) {
             return $component;
         }
-        $this->relationMethods_ = $this->relationMethods_ ?? [];
+        $this->relationMethods = $this->relationMethods ?? [];
         $methods = [];
         foreach ($this->relations as $relation) {
             if (!\array_key_exists($method = $relation->getName(), $methods)) {
@@ -612,12 +637,12 @@ class ORMModelBuilder implements AbstractORMModelBuilder, ComponentBuilder, Prov
             $type = $relation->getType();
             if (RelationTypes::ONE_TO_MANY === $type || RelationTypes::ONE_TO_ONE === $type) {
                 $component = $component->addMethod($this->createOneOrManyMethodTemplate($relation, $type, $methods));
-                $this->relationMethods_[] = $relation->getName();
+                $this->relationMethods[] = $relation->getName();
                 continue;
             }
             if (RelationTypes::MANY_TO_ONE === $type) {
                 $component = $component->addMethod($this->createBelongsToTemplate($relation, $methods));
-                $this->relationMethods_[] = $relation->getName();
+                $this->relationMethods[] = $relation->getName();
                 continue;
             }
             if (RelationTypes::MANY_TO_MANY === $type && $relation instanceof \Drewlabs\GCli\ThroughRelation) {
@@ -625,7 +650,7 @@ class ORMModelBuilder implements AbstractORMModelBuilder, ComponentBuilder, Prov
                  * @var BluePrint
                  */
                 $component = $component->addMethod($this->createManyToManyRelationTemplate($relation, $methods));
-                $this->relationMethods_[] = $relation->getName();
+                $this->relationMethods[] = $relation->getName();
                 continue;
             }
             if (
@@ -636,7 +661,7 @@ class ORMModelBuilder implements AbstractORMModelBuilder, ComponentBuilder, Prov
                  * @var BluePrint
                  */
                 $component = $component->addMethod($this->createThroughRelationTemplate($relation, $methods));
-                $this->relationMethods_[] = $relation->getName();
+                $this->relationMethods[] = $relation->getName();
                 continue;
             }
         }
