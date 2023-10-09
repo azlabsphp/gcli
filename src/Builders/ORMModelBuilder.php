@@ -28,6 +28,7 @@ use Drewlabs\GCli\Contracts\ComponentBuilder;
 use Drewlabs\GCli\Contracts\EloquentORMModelBuilder as AbstractORMModelBuilder;
 use Drewlabs\GCli\Contracts\ORMColumnDefinition;
 use Drewlabs\GCli\Contracts\ORMModelDefinition;
+use Drewlabs\GCli\Contracts\ProvidesPropertyAccessors;
 use Drewlabs\GCli\Contracts\ProvidesRelations;
 use Drewlabs\GCli\Helpers\ComponentBuilderHelpers;
 
@@ -40,7 +41,7 @@ use Drewlabs\GCli\Traits\ViewModelBuilder;
 use Illuminate\Database\Eloquent\Model as EloquentModel;
 use Illuminate\Support\Pluralizer;
 
-class ORMModelBuilder implements AbstractORMModelBuilder, ComponentBuilder, ProvidesRelations
+class ORMModelBuilder implements AbstractORMModelBuilder, ComponentBuilder, ProvidesRelations, ProvidesPropertyAccessors
 {
     use HasNamespaceAttribute;
     use ProvidesTrimTableSchema;
@@ -195,6 +196,11 @@ class ORMModelBuilder implements AbstractORMModelBuilder, ComponentBuilder, Prov
     ];
 
     /**
+     * @var false
+     */
+    private $provideAccessors = true;
+
+    /**
      * Creates a model builder class instance.
      *
      * @param (string|null)|null $schema
@@ -319,6 +325,13 @@ class ORMModelBuilder implements AbstractORMModelBuilder, ComponentBuilder, Prov
         return $this;
     }
 
+    public function withoutAccessors()
+    {
+        $self = clone $this;
+        $self->provideAccessors = false;
+        return $self;
+    }
+
     public function build()
     {
         $component = PHPClass($this->name());
@@ -435,13 +448,14 @@ class ORMModelBuilder implements AbstractORMModelBuilder, ComponentBuilder, Prov
 
         // #region Add properties setters and getters
         // TODO : Add these method to a class region instance in future release
-        foreach ($this->columns as $column) {
-            // Do not include setter and getters for created_at, updated_at, and primaryKey we continue to the next iteration
-            if (\in_array($name = $column->name(), array_merge(static::RESERVED_KEYWORDS, [$this->primaryKey ?? 'id']), true)) { // RESERVED_KEYWORDS
-                continue;
+        if ($this->provideAccessors) {
+            foreach ($this->columns as $column) {
+                if (\in_array($name = $column->name(), array_merge(static::RESERVED_KEYWORDS, [$this->primaryKey ?? 'id']), true)) { // RESERVED_KEYWORDS
+                    continue;
+                }
+                $component = $component->addMethod($this->createPropertySetter($name))
+                    ->addMethod($this->createPropertyGetter($name));
             }
-            $component = $component->addMethod($this->createPropertySetter($name))
-                ->addMethod($this->createPropertyGetter($name));
         }
         // #region Add properties setters and getters
 

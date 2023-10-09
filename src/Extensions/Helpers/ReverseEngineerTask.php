@@ -17,9 +17,11 @@ use Closure;
 use Doctrine\DBAL\DriverManager;
 use Drewlabs\Core\Helpers\Arr;
 use Drewlabs\Core\Helpers\Str;
+use Drewlabs\GCli\Builders\ORMModelBuilder;
 use Drewlabs\GCli\ComponentsScriptWriter as ComponentsScriptWriterClass;
 use Drewlabs\GCli\Contracts\ComponentBuilder;
 use Drewlabs\GCli\Contracts\ForeignKeyConstraintDefinition;
+use Drewlabs\GCli\Contracts\ProvidesPropertyAccessors;
 use Drewlabs\GCli\Contracts\ProvidesRelations;
 use Drewlabs\GCli\Contracts\SourceFileInterface;
 use Drewlabs\GCli\Contracts\Writable;
@@ -219,7 +221,8 @@ class ReverseEngineerTask
         string $namespace = null,
         string $subPackage = null,
         string $schema = null,
-        bool $hasHttpHandlers = false
+        bool $hasHttpHandlers = false,
+        bool $disableModelAccessors = true
     ) {
         return function (
             string $routesDirectory,
@@ -241,7 +244,8 @@ class ReverseEngineerTask
             $namespace,
             $subPackage,
             $schema,
-            $hasHttpHandlers
+            $hasHttpHandlers,
+            $disableModelAccessors
         ) {
             $providesRelations = $this->provideRelations;
             $toones = $this->oneToOnes ?? [];
@@ -287,6 +291,7 @@ class ReverseEngineerTask
             if ($noAuth) {
                 $runner = $runner->withoutAuth();
             }
+
             /**
              * @var ForeignKeyConstraintDefinition[]
              */
@@ -340,6 +345,7 @@ class ReverseEngineerTask
                 $indicator,
                 $relations,
                 $pivots,
+                $disableModelAccessors,
                 &$onExistsCallback,
                 &$policies,
                 &$bindings,
@@ -354,6 +360,12 @@ class ReverseEngineerTask
                             $modelbuilder = $modelbuilder->asPivot();
                         }
                     }
+
+                    // disable accessor generator case providesModelAccessors is false
+                    if ($modelbuilder instanceof ProvidesPropertyAccessors && $disableModelAccessors) {
+                        $modelbuilder = $modelbuilder->withoutAccessors();
+                    }
+
                     static::writeComponentSourceCode(Arr::get($component, 'model.path'), self::resolveWritable($modelbuilder), $onExistsCallback);
                     // #endregion Write model source code
 

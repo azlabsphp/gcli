@@ -104,6 +104,8 @@ class CommandArguments
                 'models.relations.one-to-many-though' => iterator_to_array(static::flattenComposed($this->options->get('manythroughs') ?? [])),
             ]);
         }
+        // Add model accessors' flag
+        $options = $options->merge(['models.no-accessors' => (bool) $this->options->get('no-model-accessors')]);
 
         if ($policies = ($this->options->get('policies') ?? false)) {
             $options = $options->merge(['policies' => $policies]);

@@ -58,6 +58,7 @@ class MakeProjectComponentsCommand extends Command
         .'{--format=json : Input file extension or format. Supported input format are ex:json|yml|yaml}'
         .'{--schema= : Schema prefix to database tables}'
         .'{--http : Whether to generates controllers and routes}'
+        .'{--no-model-accessors : Disable model property accessor generator }'
         .'{--force : Force rewrite of existing classes }'
         .'{--relations : Generates relations for model and relations casting entries for data transfer object }'
         .'{--manytomany=* :  List of many to many relations. (ex - lefttable->middletable->righttable) }'
@@ -114,7 +115,6 @@ class MakeProjectComponentsCommand extends Command
         $forLumen = drewlabs_code_generator_is_running_lumen_app(Container::getInstance());
         // #region command options
         $noAuth = (bool) $this->option('noAuth');
-        $subPackage = $this->option('subPackage');
         $httpHandlers = (bool) $this->option('http');
         $commandoptions = $this->mergeCamelizeOption(
             $this->choice('How should data transfert properties map to model attributes ?', self::CAMEL_CASE_CHOICES, 0),
@@ -156,7 +156,8 @@ class MakeProjectComponentsCommand extends Command
             $options->get('namespace.default'),
             $options->get('namespace.domain'),
             $options->get('schema'),
-            $httpHandlers
+            $httpHandlers,
+            $options->get('models.no-accessors', false)
         )(
             $this->laravel->basePath('routes'),
             $this->cachePath,
