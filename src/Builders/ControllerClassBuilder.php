@@ -490,12 +490,12 @@ class ControllerClassBuilder implements ContractsControllerBuilder
                     (null === $this->viewModelClass_) ? [
                         "\t\t// TODO: Uncomment the code below to support relations insertion",
                         "\t\t//'relations' => \$viewModel->get('_query.relations') ?? []",
-                        "\t\t'upsert_conditions' => \$query['upsert_conditions'] ?? (\$request->has('id') ?",
+                        "\t\t'upsert_conditions' => \$viewModel->get('_query.upsert_conditions') ?? (\$request->has('id') ?",
                         "\t\t\t['id' => \$request->get('id'),] : []),",
                     ] : [
                         "\t\t// TODO: Uncomment the code below to support relations insertion",
                         "\t\t//'relations' => \$viewModel->get('_query.relations') ?? []",
-                        "\t\t'upsert_conditions' => \$query['upsert_conditions'] ?? (\$viewModel->has(\$viewModel->getPrimaryKey()) ?",
+                        "\t\t'upsert_conditions' => \$viewModel->get('_query.upsert_conditions') ?? (\$viewModel->has(\$viewModel->getPrimaryKey()) ?",
                         "\t\t\t[\$viewModel->getPrimaryKey() => \$viewModel->get(\$viewModel->getPrimaryKey()),] : []),",
                     ],
                     [
