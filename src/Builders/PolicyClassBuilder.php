@@ -174,7 +174,7 @@ class PolicyClassBuilder implements ComponentBuilder
                     'public',
                     '`show` action policy gate handler'
                 )->addLine('if (null === $model) {')
-                    ->addLine("\treturn \$this->deny()")
+                    ->addLine("\treturn \$this->denyWithStatus(404)")
                     ->addLine('}')
                     ->addLine('return true')
             )
@@ -206,7 +206,7 @@ class PolicyClassBuilder implements ComponentBuilder
                     '`edit/update` action policy gate handler'
                 )
                     ->addLine('if (null === $model) {')
-                    ->addLine("\treturn \$this->deny()")
+                    ->addLine("\treturn \$this->denyWithStatus(404)")
                     ->addLine('}')
                     ->addLine('return true')
             )
@@ -224,7 +224,7 @@ class PolicyClassBuilder implements ComponentBuilder
                     '`delete/destroy` action policy gate handler'
                 )
                     ->addLine('if (null === $model) {')
-                    ->addLine("\treturn \$this->deny()")
+                    ->addLine("\treturn \$this->denyWithStatus(404)")
                     ->addLine('}')
                     ->addLine('return true')
             )
