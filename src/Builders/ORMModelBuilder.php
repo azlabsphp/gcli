@@ -586,7 +586,7 @@ class ORMModelBuilder implements AbstractORMModelBuilder, ComponentBuilder, Prov
     private function createPropertySetter(string $name, string $type = null)
     {
         return PHPClassMethod(sprintf('set%s', Str::camelize($name)), [PHPFunctionParameter('value', $type)], 'static', 'public', sprintf('Set `%s` property to the parameter value', $name))
-            ->addLine(sprintf("\$this->setAttribute('%s', \$value)", $name))
+            ->addLine(sprintf("\$this->setRawPropertyValue('%s', \$value)", $name))
             ->addLine('return $this');
     }
 
@@ -598,7 +598,7 @@ class ORMModelBuilder implements AbstractORMModelBuilder, ComponentBuilder, Prov
     private function createPropertyGetter(string $name, string $type = null)
     {
         return PHPClassMethod(sprintf('get%s', Str::camelize($name)), [], $type ?? 'mixed', 'public', sprintf('Get `%s` property value', $name))
-            ->addLine(sprintf("return \$this->getAttribute('%s')", $name));
+            ->addLine(sprintf("return \$this->getRawPropertyValue('%s')", $name));
     }
 
     /**
