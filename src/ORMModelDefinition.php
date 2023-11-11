@@ -128,7 +128,7 @@ class ORMModelDefinition implements AbstractORMModelDefinition, DtoAttributesFac
                 DataTypeToFluentValidationRulesHelper::NULLABLE : ($updates ? DataTypeToFluentValidationRulesHelper::SOMETIMES :
                     $this->createColumnRule($column, $primaryKey)));
 
-        if ($column->name() === $primaryKey) {
+        if ($column->name() === $primaryKey && $updates) {
             $rules[] = DataTypeToFluentValidationRulesHelper::getExistsRule($this->table(), $primaryKey);
         }
         $columnRules = DataTypeToFluentValidationRulesHelper::getRule($column->type());
