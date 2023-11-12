@@ -17,7 +17,6 @@ use Closure;
 use Doctrine\DBAL\DriverManager;
 use Drewlabs\Core\Helpers\Arr;
 use Drewlabs\Core\Helpers\Str;
-use Drewlabs\GCli\Builders\ORMModelBuilder;
 use Drewlabs\GCli\ComponentsScriptWriter as ComponentsScriptWriterClass;
 use Drewlabs\GCli\Contracts\ComponentBuilder;
 use Drewlabs\GCli\Contracts\ForeignKeyConstraintDefinition;
@@ -477,7 +476,7 @@ class ReverseEngineerTask
                 );
 
                 // Register domain routes case the route name is not web nor api
-                if (!in_array($routingfilename, ['api', 'web'])) {
+                if (!in_array($routingfilename, ['api', 'web', 'api.php', 'web.php'])) {
                     $serviceProviderBuilder = $serviceProviderBuilder->withDomainRouting($routingfilename);
                 }
                 static::writeComponentSourceCode($src, self::resolveWritable($serviceProviderBuilder), $onExistsCallback);
