@@ -101,11 +101,11 @@ class RouteDefinitionsHelper
         ) use ($definitions, $filename, $basePath, $partial) {
             $adapter = Disk::new($basePath);
             $output = '';
-            [$before, $between, $after] = static::getRouteParts($adapter, $filename, $partial);
+            [$before, $between, $after] = static::getRouteParts($lumen, $adapter, $filename, $partial);
             // Write the content before to the output
             $output .= $before;
             // Write route definition start
-            $output .= self::ROUTE_DEFINITION_START.\PHP_EOL;
+            $output .= self::ROUTE_DEFINITION_START . \PHP_EOL;
             // Write the existing route defintions
             $output .= $between;
             // Prepare the new routes script
@@ -131,14 +131,14 @@ class RouteDefinitionsHelper
                 }
             );
             foreach ($definitions as $key => $value) {
-                $output .= \PHP_EOL.($groupRoutes ? "\t" : '')."// Route definitions for $key".\PHP_EOL;
+                $output .= \PHP_EOL . ($groupRoutes ? "\t" : '') . "// Route definitions for $key" . \PHP_EOL;
                 $output .= implode(\PHP_EOL, $value);
-                $output .= \PHP_EOL.($groupRoutes ? "\t" : '')."// !End Route definitions for $key".\PHP_EOL;
+                $output .= \PHP_EOL . ($groupRoutes ? "\t" : '') . "// !End Route definitions for $key" . \PHP_EOL;
             }
             if ((null !== $prefix) || (null !== $middleware)) {
                 $output .= '});';
             }
-            $output .= \PHP_EOL.self::ROUTE_DEFINITION_END;
+            $output .= \PHP_EOL . self::ROUTE_DEFINITION_END;
             $output .= $after;
             $adapter->write($filename, $output);
             // Call the callback
@@ -189,7 +189,7 @@ class RouteDefinitionsHelper
             foreach ($values as $key => $value) {
                 yield is_numeric($key) ?
                     $strfn($value) :
-                    "'$key' => ".$strfn($value);
+                    "'$key' => " . $strfn($value);
             }
         };
         $output = @json_encode(
@@ -214,15 +214,15 @@ class RouteDefinitionsHelper
      *
      * @return array
      */
-    private static function getRouteParts($adapter, string $filename, bool $partial = false)
+    private static function getRouteParts(bool $lumen, $adapter, string $filename, bool $partial = false)
     {
         if (!$adapter->exists($filename)) {
-            return ['<?php'.\PHP_EOL, '', ''];
+            return !$lumen ? ['<?php' . \PHP_EOL . "\n" . 'use Illuminate\Support\Facades\Route;' . PHP_EOL, '', ''] :['<?php' . \PHP_EOL, '', ''];
         }
         // Read content and locate where to write the new data
         $content = $adapter->read($filename);
         if (empty(trim($content))) {
-            return ['<?php'.\PHP_EOL, '', ''];
+            return ['<?php' . \PHP_EOL, '', ''];
         }
         // Read the generated script start and end values
         if (
