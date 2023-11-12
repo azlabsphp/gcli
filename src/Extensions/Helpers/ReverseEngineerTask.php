@@ -473,8 +473,13 @@ class ReverseEngineerTask
                     $bindings ?? [],
                     sprintf('%s%s', $namespace, $subPackage ? trim(sprintf('\\%s', "$subPackage")) : ''),
                     implode(\DIRECTORY_SEPARATOR, [$src, $subPackage ? sprintf('%s', "$subPackage/") : 'Providers']),
-                    $subPackage ? 'ServiceProvider' : null
+                    $subPackage ? 'ServiceProvider' : null,
                 );
+
+                // Register domain routes case the route name is not web nor api
+                if (!in_array($routingfilename, ['api', 'web'])) {
+                    $serviceProviderBuilder = $serviceProviderBuilder->withDomainRouting($routingfilename);
+                }
                 static::writeComponentSourceCode($src, self::resolveWritable($serviceProviderBuilder), $onExistsCallback);
                 $message = [sprintf("Please add [\%s::class] to the list of application service providers.\n", $serviceProviderBuilder->getClassPath())];
             }
