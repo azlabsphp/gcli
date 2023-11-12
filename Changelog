@@ -63,6 +63,7 @@
 
 - Removed drewlabs/filesystem and drewlabs/psr7-stream dependencies
 
-# 0.2.50 [2023-11-11]
+# 0.2.5x [2023-11-11]
 
 - Updated ORMModelDefinition to not add exists rule during create action
+- Added domain route registar to generated service provider
