@@ -108,9 +108,9 @@ trait ReverseEngineerRelations
                         /**
                          * @var ToOneRelationTables $current
                          */
-                        $oneresult = array_filter($ones, static function (ToOneRelationTables $currrent) use ($foreigntable, $table) {
+                        $oneresult = array_values(array_filter($ones, static function (ToOneRelationTables $currrent) use ($foreigntable, $table) {
                             return ($currrent->leftTable() === $foreigntable) && ($currrent->rightTable() === $table);
-                        });
+                        }));
                         $relations = self::mergearray(
                             self::mergearray(
                                 $relations,
