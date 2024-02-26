@@ -274,7 +274,7 @@ class ReverseEngineeringService
             if ($this->http) {
                 $components['controller'] = [
                     'path' => $this->directory,
-                    'class' => $this->createControllerFactoryMethod($modelClassPath, (bool) $this->policies),
+                    'class' => $this->createControllerFactoryMethod($modelClassPath, (bool) $this->policies, $value->primaryKey() ?? 'id'),
                     'route' => [
                         'nameBuilder' => static function ($controller) {
                             return $controller instanceof ControllerBuilder ?
@@ -314,18 +314,19 @@ class ReverseEngineeringService
 
     /**
      * Creates a factory method that create the controller script.
-     *
-     * @param bool|null $authorizable
-     *
-     * @return Closure((null|string|string[])|null $service = null, (null|string)|null $viewModel = null, (null|string)|null $dtoObject = null): SourceFileInterface
+     * 
+     * @param string|null $model 
+     * @param bool $authorizable 
+     * @param string $key 
+     * @return Closure(mixed $service = null, mixed $viewModel = null, mixed $dtoObject = null): SourceFileInterface 
      */
-    private function createControllerFactoryMethod(string $model = null, bool $authorizable = false)
+    private function createControllerFactoryMethod(string $model = null, bool $authorizable = false, string $key = 'id')
     {
         return function (
             $service = null,
             $viewModel = null,
             $dtoObject = null,
-        ) use ($model, $authorizable) {
+        ) use ($model, $authorizable, $key) {
             return ComponentBuilderHelpers::buildController(
                 $model,
                 $service ?? null,
@@ -335,7 +336,8 @@ class ReverseEngineeringService
                 // TODO: Check in future release if controller should be moved to the Domain space
                 sprintf('%s\\%s', $this->namespace ?? self::DEFAULT_PROJECT_NAMESPACE, sprintf('%s%s', 'Http\\Controllers', $this->domain ? "\\$this->domain" : '')),
                 $this->auth,
-                $authorizable
+                $authorizable,
+                $key
             );
         };
     }

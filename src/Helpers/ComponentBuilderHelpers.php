@@ -223,9 +223,14 @@ class ComponentBuilderHelpers
         string $name = null,
         string $namespace = null,
         bool $auth = true,
-        bool $authorize = false
+        bool $authorize = false,
+        string $key = 'id'
     ) {
         $component = MVCControllerBuilder($name, $namespace);
+        // Add binding for primary key
+        if (!is_null($key)) {
+            $component = $component->withPrimaryKey($key);
+        }
         if (!$auth) {
             $component = $component->withoutAuthenticatable();
         }
@@ -246,6 +251,7 @@ class ComponentBuilderHelpers
         if (null !== $viewModel) {
             $component = $component->bindViewModel(\is_string($viewModel) ? $viewModel : $viewModel::class);
         }
+
         // Check null state of the dtoObject parameter
         if (null !== $dto) {
             $component = $component->bindDTOObject(\is_string($dto) ? $dto : $dto::class);
@@ -393,7 +399,8 @@ class ComponentBuilderHelpers
         string $name = null,
         string $namespace = null,
         bool $auth = true,
-        bool $authorize = false
+        bool $authorize = false,
+        string $key = 'id'
     ) {
         return self::createControllerBuilder(
             $model,
@@ -403,7 +410,8 @@ class ComponentBuilderHelpers
             $name,
             $namespace,
             $auth,
-            $authorize
+            $authorize,
+            $key
         )->build();
     }
 

@@ -113,22 +113,22 @@ class ViewModelClassBuilder implements ComponentBuilder
     /**
      * @var bool
      */
-    private $hasHttpHandlers_ = false;
+    private $supportHttp = false;
 
     /**
      * @var string
      */
-    private $modelClassPath_;
+    private $modelPath;
 
     /**
      * @var string
      */
-    private $modelName_;
+    private $model;
 
     /**
      * @var string
      */
-    private $dtoclasspath;
+    private $dtoPath;
 
     /**
      * Creates an instance of view model class.
@@ -150,7 +150,7 @@ class ViewModelClassBuilder implements ComponentBuilder
     ) {
         $this->setName($name ?
             (!Str::endsWith($name, 'ViewModel') ?
-                Str::camelize(Pluralizer::singular($name)).'ViewModel' :
+                Str::camelize(Pluralizer::singular($name)) . 'ViewModel' :
                 Str::camelize(Pluralizer::singular($name))) :
             self::DEFAULT_NAME);
         // Set the component write path
@@ -159,37 +159,33 @@ class ViewModelClassBuilder implements ComponentBuilder
         $this->setNamespace($namespace ?? self::DEFAULT_NAMESPACE);
     }
 
-    public function bindModel(string $model)
+    public function bindModel($model)
     {
         if (empty($model)) {
             return $this;
         }
-        $isclasspath = Str::contains($model, '\\');
-        $this->modelName_ = 'Test';
-        if ($isclasspath) {
-            $this->modelClassPath_ = $model;
-        }
-        if (\is_object($model)) {
-            $this->modelClassPath_ = $model::class;
-        }
-        if ($isclasspath) {
-            $this->modelName_ = $isclasspath ? array_reverse(explode('\\', $this->modelClassPath_))[0] : $this->modelClassPath_;
-        }
-        $this->setName(Str::camelize(Pluralizer::singular($this->modelName_)).'ViewModel');
+        /**
+         * @var string
+         */
+        $path = \is_object($model) ? $model::class : strval($model);
+        $isPath = Str::contains($path, '\\');
+        $this->modelPath = $isPath ? $path : $this->modelPath;
+        $this->model = $isPath ? $this->getClassNameFromPath($path) : $path;
+        $this->setName(Str::camelize(Pluralizer::singular($this->model)) . 'ViewModel');
 
         return $this;
     }
 
     public function withHttpHandlers()
     {
-        $this->hasHttpHandlers_ = true;
+        $this->supportHttp = true;
 
         return $this;
     }
 
-    public function setDTOClassPath(string $classname)
+    public function setDTOClassPath(string $path)
     {
-        $this->dtoclasspath = $classname;
+        $this->dtoPath = $path;
 
         return $this;
     }
@@ -209,7 +205,7 @@ class ViewModelClassBuilder implements ComponentBuilder
                 'array<string,string|string[]>',
                 PHPTypesModifiers::PUBLIC,
                 'Returns a fluent validation rules'
-            )->addContents('return '.PHPVariable('rules', null, $this->rules ?? [])->asRValue()->__toString()))
+            )->addContents('return ' . PHPVariable('rules', null, $this->rules ?? [])->asRValue()->__toString()))
             ->addMethod(PHPClassMethod(
                 'messages',
                 [],
@@ -228,11 +224,11 @@ class ViewModelClassBuilder implements ComponentBuilder
                 'array<string,string|string[]>',
                 PHPTypesModifiers::PUBLIC,
                 'Returns a fluent validation rules applied during update actions'
-            )->addContents('return '.PHPVariable('rules', null, $this->updateRules ?? [])->asRValue()->__toString()));
+            )->addContents('return ' . PHPVariable('rules', null, $this->updateRules ?? [])->asRValue()->__toString()));
         }
         // Add inputs traits
         if ($this->hasInputsTraits) {
-            if ($this->modelClassPath_ && $this->modelName_) {
+            if ($this->modelPath && $this->model) {
                 /**
                  * @var Blueprint
                  */
@@ -241,14 +237,14 @@ class ViewModelClassBuilder implements ComponentBuilder
                         'model_',
                         PHPTypes::STRING,
                         PHPTypesModifiers::PRIVATE,
-                        $this->modelName_.'::class',
+                        $this->model . '::class',
                         'Model class associated with the view model'
                     )
                 );
-                $component = $component->addClassPath($this->modelClassPath_);
+                $component = $component->addClassPath($this->modelPath);
             }
 
-            if ($this->dtoclasspath) {
+            if ($this->dtoPath) {
                 /**
                  * @var Blueprint
                  */
@@ -257,14 +253,14 @@ class ViewModelClassBuilder implements ComponentBuilder
                         'dtoclass_',
                         PHPTypes::STRING,
                         PHPTypesModifiers::PRIVATE,
-                        Str::afterLast('\\', $this->dtoclasspath).'::class',
+                        Str::afterLast('\\', $this->dtoPath) . '::class',
                         'Data transfer class associated with the view model'
                     )
                 );
-                $component = $component->addClassPath($this->dtoclasspath);
+                $component = $component->addClassPath($this->dtoPath);
             }
         }
-        if ($this->hasHttpHandlers_) {
+        if ($this->supportHttp) {
 
             // #region Add class paths
             foreach (static::HTTP_CLASS_PATHS as $classPath) {
@@ -334,5 +330,10 @@ class ViewModelClassBuilder implements ComponentBuilder
         }
 
         return sprintf('%s%s%s', self::DEFAULT_NAMESPACE, '\\', $classname);
+    }
+
+    private function getClassNameFromPath(string $name)
+    {
+        return array_reverse(explode('\\', $name))[0];
     }
 }

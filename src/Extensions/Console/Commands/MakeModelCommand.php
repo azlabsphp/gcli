@@ -83,7 +83,7 @@ class MakeModelCommand extends Command
         $component = $builder->build();
         ComponentsScriptWriter($basePath)->write($component);
         if ($this->option('all')) {
-            static::createComponents($basePath, $component, $definition);
+            static::createComponents($basePath, $component, $definition, $primaryKey);
         }
         $this->info("Model successfully generated for table : $table\n");
     }
@@ -95,7 +95,7 @@ class MakeModelCommand extends Command
      *
      * @return void
      */
-    public static function createComponents($basePath, SourceFileInterface $component, ORMModelDefinition $definition = null)
+    public static function createComponents($basePath, SourceFileInterface $component, ORMModelDefinition $definition = null, string $primaryKey = 'id')
     {
         $modelClassPath = sprintf('\\%s\\%s', $component->getNamespace(), $component->getName());
         $service = $service ?? sprintf('%sService', $component->getName());
@@ -112,6 +112,9 @@ class MakeModelCommand extends Command
                 $dtoClass,
                 null,
                 sprintf('\\%s\\Http\\Controllers', ComponentCommandsHelpers::getBaseNamespace($component->getNamespace()) ?? 'App'),
+                true,
+                false,
+                $primaryKey
             )
         );
     }

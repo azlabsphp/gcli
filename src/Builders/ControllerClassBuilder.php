@@ -136,6 +136,12 @@ class ControllerClassBuilder implements ContractsControllerBuilder
     private $policies = false;
 
     /**
+     * 
+     * @var string
+     */
+    private $primaryKey = 'id';
+
+    /**
      * Create an instance of the controller builder.
      *
      * @return self
@@ -226,6 +232,18 @@ class ControllerClassBuilder implements ContractsControllerBuilder
     {
         $this->hasAuthenticatable_ = false;
 
+        return $this;
+    }
+
+    /**
+     * Set the name for the primary key object
+     * 
+     * @param string $key 
+     * @return $this 
+     */
+    public function withPrimaryKey(string $key)
+    {
+        $this->primaryKey = $key;
         return $this;
     }
 
@@ -377,7 +395,7 @@ class ControllerClassBuilder implements ContractsControllerBuilder
 
     private function addResourcesActions(Blueprint $component)
     {
-        $vmParamName = null === $this->viewModelClass_ ? 'request' : 'viewModel';
+        $vmParamName = null === $this->viewModelClass_ ? 'request' : 'view';
         $actions = [
             [
                 'name' => 'index',
@@ -404,12 +422,12 @@ class ControllerClassBuilder implements ContractsControllerBuilder
                             '',
                             '$result = $this->service->handle(', // \t
                             sprintf("\t\$%s->has('per_page') ? SelectQueryAction(", $vmParamName),
-                            "\t\t\$viewModel->makeFilters(),",
+                            "\t\t\$view->makeFilters(),",
                             sprintf("\t\t(int)\$%s->get('per_page'),", $vmParamName),
                             "\t\t\$columns,",
                             sprintf("\t\t\$%s->has('page') ? (int)\$%s->get('page') : null,", $vmParamName, $vmParamName),
                             "\t) : SelectQueryAction(",
-                            "\t\t\$viewModel->makeFilters(),",
+                            "\t\t\$view->makeFilters(),",
                             "\t\t\$columns,",
                             "\t),",
 
@@ -466,7 +484,7 @@ class ControllerClassBuilder implements ContractsControllerBuilder
                 'name' => 'store',
                 'params' => array_filter([
                     null === $this->viewModelClass_ ? PHPFunctionParameter('request', Request::class) : null,
-                    null === $this->viewModelClass_ ? null : PHPFunctionParameter('viewModel', $this->viewModelClass_),
+                    null === $this->viewModelClass_ ? null : PHPFunctionParameter('view', $this->viewModelClass_),
                 ]),
                 'descriptors' => [
                     'Stores a new item in the storage',
@@ -482,21 +500,21 @@ class ControllerClassBuilder implements ContractsControllerBuilder
                         '$result = $this->validator->validate([], $request->all(), function () use ($request) {',
                         '// After validation logic goes here...',
                     ] : [
-                        '$result = $viewModel->validate($this->validator, function () use ($viewModel) {',
+                        '$result = $view->validate($this->validator, function () use ($view) {',
                     ],
                     [
-                        (null === $this->viewModelClass_) ? "\treturn \$this->service->handle(CreateQueryAction(\$request, [" : "\treturn \$this->service->handle(CreateQueryAction(\$viewModel, [",
+                        (null === $this->viewModelClass_) ? "\treturn \$this->service->handle(CreateQueryAction(\$request, [" : "\treturn \$this->service->handle(CreateQueryAction(\$view, [",
                     ],
                     (null === $this->viewModelClass_) ? [
                         "\t\t// TODO: Uncomment the code below to support relations insertion",
-                        "\t\t//'relations' => \$viewModel->get('_query.relations') ?? []",
-                        "\t\t'upsert_conditions' => \$viewModel->get('_query.upsert_conditions') ?? (\$request->has('id') ?",
+                        "\t\t//'relations' => \$view->get('_query.relations') ?? []",
+                        "\t\t'upsert_conditions' => \$view->get('_query.upsert_conditions') ?? (\$request->has('id') ?",
                         "\t\t\t['id' => \$request->get('id'),] : []),",
                     ] : [
                         "\t\t// TODO: Uncomment the code below to support relations insertion",
-                        "\t\t//'relations' => \$viewModel->get('_query.relations') ?? []",
-                        "\t\t'upsert_conditions' => \$viewModel->get('_query.upsert_conditions') ?? (\$viewModel->has(\$viewModel->getPrimaryKey()) ?",
-                        "\t\t\t[\$viewModel->getPrimaryKey() => \$viewModel->get(\$viewModel->getPrimaryKey()),] : []),",
+                        "\t\t//'relations' => \$view->get('_query.relations') ?? []",
+                        "\t\t'upsert_conditions' => \$view->get('_query.upsert_conditions') ?? (\$view->has(\"$this->primaryKey\") ? [\"$this->primaryKey\" => \$view->get(\"$this->primaryKey\")] : []),",
+                        // "\t\t\t",
                     ],
                     [
                         null === $this->dtoClass_ ? "\t])," : "\t]), function (\$value) {",
@@ -515,7 +533,7 @@ class ControllerClassBuilder implements ContractsControllerBuilder
                 'name' => 'update',
                 'params' => array_filter([
                     null === $this->viewModelClass_ ? PHPFunctionParameter('request', Request::class) : null,
-                    null === $this->viewModelClass_ ? null : PHPFunctionParameter('viewModel', $this->viewModelClass_),
+                    null === $this->viewModelClass_ ? null : PHPFunctionParameter('view', $this->viewModelClass_),
                     PHPFunctionParameter('id', null),
                 ]),
                 'descriptors' => [
@@ -526,7 +544,7 @@ class ControllerClassBuilder implements ContractsControllerBuilder
                 'returns' => 'mixed',
                 'contents' => $this->mustGenerateActionContents() ? array_merge(
                     [
-                        (null !== $this->viewModelClass_) ? null : '$request = $request->merge(["id" => $id])',
+                        (null !== $this->viewModelClass_) ? null : '$request = $request->merge(["'. $this->primaryKey .'" => $id])',
                         '',
                     ],
                     $this->hasAuthenticatable_ && $this->policies && (null !== $this->viewModelClass_) ? [
@@ -537,14 +555,14 @@ class ControllerClassBuilder implements ContractsControllerBuilder
                         '$result = $this->validator->updating()->validate([], $request->all(), function () use ($id, $request) {',
                         '// After validation logic goes here...',
                     ] : [
-                        '$result = $viewModel->merge(["id" => $id])->validate($this->validator->updating(), function () use ($id, $viewModel) {',
+                        '$result = $view->merge(["'. $this->primaryKey .'" => $id])->validate($this->validator->updating(), function () use ($id, $view) {',
                     ],
                     [
-                        (null === $this->viewModelClass_) ? "\treturn \$this->service->handle(UpdateQueryAction(\$id, \$request, [" : "\treturn \$this->service->handle(UpdateQueryAction(\$id, \$viewModel, [",
+                        (null === $this->viewModelClass_) ? "\treturn \$this->service->handle(UpdateQueryAction(\$id, \$request, [" : "\treturn \$this->service->handle(UpdateQueryAction(\$id, \$view, [",
                     ],
                     [
                         "\t\t// TODO: Uncomment the code below to support relations insertion",
-                        "\t\t//'relations' => \$viewModel->get('_query.relations') ?? [],",
+                        "\t\t//'relations' => \$view->get('_query.relations') ?? [],",
                     ],
                     [
                         null === $this->dtoClass_ ? "\t\t])," : "\t]), function (\$value) {",

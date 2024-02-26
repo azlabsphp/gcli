@@ -156,7 +156,7 @@ class DataTransfertClassBuilder implements ComponentBuilder
         if (null === $model) {
             return $this;
         }
-        $classname = \is_object($model) ? $model::class : $model;
+        $classname = \is_object($model) ? $model::class : strval($model);
         $isClassPath = Str::contains($classname, '\\');
         if ($isClassPath) {
             $this->modelClassPath = $classname;
