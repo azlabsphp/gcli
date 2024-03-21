@@ -41,7 +41,7 @@
     "minimum-stability": "stable",
     "prefer-stable": true,
     "require": {
-        "php": ">=7.2",
+        "php": "^7.2|^8.0",
         "drewlabs/code-generator": "^0.2.4",
         "drewlabs/core-helpers": "^0.2.2|^0.3",
         "drewlabs/htr": "^0.2.0"
