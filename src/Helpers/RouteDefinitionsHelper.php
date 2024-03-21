@@ -111,16 +111,7 @@ class RouteDefinitionsHelper
             // Prepare the new routes script
             $groupRoutes = (null !== $prefix) || (null !== $middleware);
             if ($groupRoutes) {
-                $output .= sprintf(
-                    '%s%s, function() %s {',
-                    $lumen ? '$router->group(' : 'Route::group(',
-                    Str::replace(
-                        '"',
-                        '',
-                        static::createGroupPart($prefix, $middleware)
-                    ),
-                    $lumen ? 'use ($router)' : ''
-                );
+                $output .= $lumen ? static::createLumenGroup($prefix, $middleware) : static::createLaravelGroup($prefix, $middleware);
             }
             $definitions = Arr::map(
                 $definitions ?? [],
@@ -217,7 +208,7 @@ class RouteDefinitionsHelper
     private static function getRouteParts(bool $lumen, $adapter, string $filename, bool $partial = false)
     {
         if (!$adapter->exists($filename)) {
-            return !$lumen ? ['<?php' . \PHP_EOL . "\n" . 'use Illuminate\Support\Facades\Route;' . PHP_EOL, '', ''] :['<?php' . \PHP_EOL, '', ''];
+            return !$lumen ? ['<?php' . \PHP_EOL . "\n" . 'use Illuminate\Support\Facades\Route;' . PHP_EOL, '', ''] : ['<?php' . \PHP_EOL, '', ''];
         }
         // Read content and locate where to write the new data
         $content = $adapter->read($filename);
@@ -237,5 +228,33 @@ class RouteDefinitionsHelper
         }
 
         return [$content, '', ''];
+    }
+
+    private static function createLumenGroup(string $prefix = null, string $middleware = null)
+    {
+        return sprintf(
+            '%s%s, function() %s {',
+            '$router->group(',
+            Str::replace('"', '', static::createGroupPart($prefix, $middleware)),
+            'use ($router)'
+        );
+    }
+
+    private static function createLaravelGroup(string $prefix = null, string $middleware = null)
+    {
+        $output = '';
+        if (!is_null($prefix)) {
+            $output .= sprintf("Route::prefix('%s')", $prefix);
+        }
+
+        if (!is_null($middleware)) {
+            $output .= empty($output) ? sprintf("Route::middleware('%s')", $middleware) : sprintf("->middleware('%s')", $middleware);
+        }
+
+        if (empty($output)) {
+            return $output;
+        }
+
+        return sprintf("%s->group(function() {", $output);
     }
 }

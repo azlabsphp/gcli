@@ -4,13 +4,13 @@
     "type": "library",
     "require-dev": {
         "phpunit/phpunit": "^9.5",
-        "illuminate/database": "^7.0|^8.0|^9.0",
+        "illuminate/database": "8.0|^9.0|^10.0|^11.0",
         "doctrine/dbal": "^2.0|^3.3",
-        "drewlabs/php-value": "^0.2.5",
-        "drewlabs/laravel-query": "^0.2.2",
-        "drewlabs/laravel-http": "^0.2.2",
-        "drewlabs/contracts": "^0.2.5",
-        "drewlabs/validation": "^0.2.6"
+        "drewlabs/php-value": "^0.2.5|^0.3",
+        "drewlabs/laravel-query": "^0.2.2|^0.3",
+        "drewlabs/laravel-http": "^0.2.2|^0.3",
+        "drewlabs/contracts": "^0.2.5|^0.3",
+        "drewlabs/validation": "^0.2.6|^0.3"
     },
     "license": "MIT",
     "autoload": {
@@ -38,12 +38,12 @@
             }
         }
     },
-    "minimum-stability": "dev",
+    "minimum-stability": "stable",
     "prefer-stable": true,
     "require": {
         "php": ">=7.2",
         "drewlabs/code-generator": "^0.2.4",
-        "drewlabs/core-helpers": "^0.2.2",
+        "drewlabs/core-helpers": "^0.2.2|^0.3",
         "drewlabs/htr": "^0.2.0"
     },
     "extra": {

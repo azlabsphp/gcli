@@ -517,10 +517,11 @@ class ControllerClassBuilder implements ContractsControllerBuilder
                         // "\t\t\t",
                     ],
                     [
-                        null === $this->dtoClass_ ? "\t])," : "\t]), function (\$value) {",
+                        null === $this->dtoClass_ ? "\t])," : "\t]), function (\$value) use (\$$vmParamName) {",
                     ],
                     null !== $this->dtoClass_ ? [
-                        "\t\treturn null !== \$value ? new $this->dtoClass_(\$value) : \$value",
+                        "\t\t\$properties = (new SanitizeCustomProperties(true))(" . sprintf("$%s->getColumns()", $vmParamName) . ")",
+                        "\t\treturn null !== \$value ? $this->dtoClass_::new(\$value)->addProperties(\$properties)->mergeHidden(array_merge(" . sprintf("$%s->getExcludes(), ", $vmParamName) .'$value->getHidden() ?? [])) : $value',
                         "\t});",
                     ] : ["\t)"],
                     [
@@ -565,10 +566,11 @@ class ControllerClassBuilder implements ContractsControllerBuilder
                         "\t\t//'relations' => \$view->get('_query.relations') ?? [],",
                     ],
                     [
-                        null === $this->dtoClass_ ? "\t\t])," : "\t]), function (\$value) {",
+                        null === $this->dtoClass_ ? "\t\t])," : "\t]), function (\$value) use (\$$vmParamName) {",
                     ],
                     null !== $this->dtoClass_ ? [
-                        "\t\treturn null !== \$value ? new $this->dtoClass_(\$value) : \$value",
+                        "\t\t\$properties = (new SanitizeCustomProperties(true))(" . sprintf("$%s->getColumns()", $vmParamName) . ")",
+                        "\t\treturn null !== \$value ? $this->dtoClass_::new(\$value)->addProperties(\$properties)->mergeHidden(array_merge(" . sprintf("$%s->getExcludes(), ", $vmParamName) .'$value->getHidden() ?? [])) : $value',
                         "\t});",
                     ] : ["\t)"],
                     [
