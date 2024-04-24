@@ -75,7 +75,6 @@ class RouteProjectFactory
 
         // Instanciate the project builder instance
         $builder = new ProjectBuilder(sprintf('%s HTr Project', ucfirst(strtolower(str_replace(['-', '_'], ' ', $name)))));
-
         // Build the project using the project builder instance
         $builder->addBearerToken()
             ->addReqHost($this->baseUrl)

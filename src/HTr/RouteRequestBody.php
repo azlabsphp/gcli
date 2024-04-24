@@ -38,26 +38,36 @@ class RouteRequestBody
     /**
      * Creates class instance.
      */
-    public function __construct(string $name, array $rules, array $updateRules, array $relations)
+    public function __construct(string $name, array $post, array $put, array $relations)
     {
         $this->name = $name;
         $this->postBody = array_reduce(
-            array_filter(array_keys($rules), static function ($item) {
+            array_filter(array_keys($post), static function ($item) {
                 return !\in_array($item, ['created_at', 'updated_at', 'id'], true);
             }),
-            static function ($carry, $current) {
-                $carry[$current] = '';
+            static function ($carry, $current) use ($post) {
+                $carry[] = [
+                    'name' => $current,
+                    'value' => '',
+                    'type' => 'text',
+                    'required' => in_array('nullable', $post[$current] ?? []) ? false : true
+                ];
 
                 return $carry;
             },
             []
         );
         $this->putBody = array_reduce(
-            array_filter(array_keys($updateRules), static function ($item) {
+            array_filter(array_keys($put), static function ($item) {
                 return !\in_array($item, ['created_at', 'updated_at', 'id'], true);
             }),
-            static function ($carry, $current) {
-                $carry[$current] = '';
+            static function ($carry, $current) use ($put) {
+                $carry[] = [
+                    'name' => $current,
+                    'value' => '',
+                    'type' => 'text',
+                    'required' => in_array('nullable', $put[$current] ?? []) ? false : true
+                ];
 
                 return $carry;
             },
