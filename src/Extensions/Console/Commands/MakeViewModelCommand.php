@@ -14,17 +14,18 @@ declare(strict_types=1);
 namespace Drewlabs\GCli\Extensions\Console\Commands;
 
 use Drewlabs\GCli\Builders\ORMModelBuilder;
-use Drewlabs\GCli\Helpers\ComponentBuilderHelpers;
-
-use function Drewlabs\GCli\Proxy\ComponentsScriptWriter;
-
+use Drewlabs\GCli\Helpers\ComponentBuilder;
 use Illuminate\Console\Command;
 use Illuminate\Container\Container;
 
-use Illuminate\Contracts\Foundation\Application;
+use function Drewlabs\GCli\Proxy\ComponentsScriptWriter;
 
+/**
+ * @property \Illuminate\Contracts\Foundation\Application app
+ */
 class MakeViewModelCommand extends Command
 {
+    /** @var string */
     protected $signature = 'gcli:make:viewmodel '
         .'{name=TestViewModel : View model class name }'
         .'{--namespace= : View model namespace}'
@@ -35,11 +36,8 @@ class MakeViewModelCommand extends Command
         .'{--updateRules=* : List of rules to apply on update actions }'
         .'{--http : Whether to create an HTTP Viewmodel or a simple Viewmodel }';
 
+    /** @var string */
     protected $description = 'Creates a Drewlabs package MVC controller';
-    /**
-     * @var Application
-     */
-    private $app;
 
     public function __construct()
     {
@@ -63,7 +61,7 @@ class MakeViewModelCommand extends Command
         $updateRules = $this->option('updateRules') ?? [];
         // # End of parameters initialization
         ComponentsScriptWriter($basePath)->write(
-            ComponentBuilderHelpers::buildViewModelDefinition(
+            ComponentBuilder::buildViewModelDefinition(
                 $this->option('single') ?? false,
                 $rules,
                 $updateRules,

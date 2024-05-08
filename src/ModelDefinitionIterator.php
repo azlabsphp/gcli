@@ -14,7 +14,7 @@ declare(strict_types=1);
 namespace Drewlabs\GCli;
 
 use Drewlabs\Core\Helpers\Functional;
-use Drewlabs\GCli\Helpers\ColumnsDefinitionHelpers;
+use Drewlabs\GCli\Helpers\ColumnsDefinition;
 
 final class ModelDefinitionIterator implements \IteratorAggregate
 {
@@ -46,7 +46,7 @@ final class ModelDefinitionIterator implements \IteratorAggregate
     }
 
     /**
-     * @return \Traversable<ORMModelDefinition>
+     * @return \Traversable<ORMModel>
      */
     public function getIterator(): \Traversable
     {
@@ -60,13 +60,13 @@ final class ModelDefinitionIterator implements \IteratorAggregate
             // #region column definition
             $columns = Functional::compose(
                 static function ($table_name) use ($table) {
-                    return ColumnsDefinitionHelpers::createColumnDefinitionsGenerator($table_name, new \ArrayIterator($table->getColumns()));
+                    return ColumnsDefinition::createColumnDefinitionsGenerator($table_name, new \ArrayIterator($table->getColumns()));
                 },
                 static function ($columns) use ($table) {
-                    return ColumnsDefinitionHelpers::bindForeignConstTraintsToColumns($table->getForeignKeys())($columns);
+                    return ColumnsDefinition::bindForeignConstTraintsToColumns($table->getForeignKeys())($columns);
                 },
                 static function ($columns) use ($table) {
-                    return ColumnsDefinitionHelpers::bindUniqueConstraintsToColumns($table->getIndexes())($columns);
+                    return ColumnsDefinition::bindUniqueConstraintsToColumns($table->getIndexes())($columns);
                 },
                 static function ($columns) {
                     return array_values($columns);
@@ -78,7 +78,7 @@ final class ModelDefinitionIterator implements \IteratorAggregate
             // # Get unique primary key value - Cause Eloquent does not support composite keys
             $key = \is_array($primaryKey) ? ($primaryKey[0] ?? null) : $primaryKey;
             // # Get unique primary key value
-            yield new ORMModelDefinition(
+            yield new ORMModel(
                 $key ?? null,
                 null,
                 $name_,

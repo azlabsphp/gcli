@@ -13,34 +13,31 @@ declare(strict_types=1);
 
 namespace Drewlabs\GCli\Extensions\Console\Commands;
 
-use function Drewlabs\CodeGenerator\Proxy\PHPClass;
-
-use Drewlabs\GCli\Helpers\ComponentBuilderHelpers;
-
-use function Drewlabs\GCli\Proxy\ComponentsScriptWriter;
-use function Drewlabs\GCli\Proxy\PHPScript;
-
+use Drewlabs\GCli\Helpers\ComponentBuilder;
 use Illuminate\Console\Command;
 use Illuminate\Container\Container;
-use Illuminate\Contracts\Foundation\Application;
 
+use function Drewlabs\CodeGenerator\Proxy\PHPClass;
+use function Drewlabs\GCli\Proxy\ComponentsScriptWriter;
+use function Drewlabs\GCli\Proxy\PHPScript;
+/**
+ * @property \Illuminate\Contracts\Foundation\Application app
+ */
 class MakeClassCommand extends Command
 {
+    /** @var string */
     protected $signature = 'gcli:make:class '
-        .'{--name= : Class name }'
-        .'{--namespace= : View model namespace }'
-        .'{--path= : Project source code path }'
-        .'{--final : Creates a final class }';
+        . '{--name= : Class name }'
+        . '{--namespace= : View model namespace }'
+        . '{--path= : Project source code path }'
+        . '{--final : Creates a final class }';
 
+    /** @var string */
     protected $description = 'Creates a Drewlabs package MVC controller';
-    /**
-     * @var Application
-     */
-    private $app;
 
     public function __construct()
     {
-        $this->app = ($this->getLaravel() ?? Container::getInstance());
+        $this->app = $this->getLaravel() ?? Container::getInstance();
         parent::__construct();
     }
 
@@ -54,22 +51,20 @@ class MakeClassCommand extends Command
         $namespace = $this->option('namespace') ?? '\\App';
         $basePath = $this->option('path') ?? 'app';
         // # End of parameters initialization
-        $component = PHPClass($name)
-            ->addConstructor()
-            ->addToNamespace($namespace);
+        $component = PHPClass($name)->addConstructor()->addToNamespace($namespace);
         if ($this->option('final')) {
             $component = $component->asFinal();
         }
-        ComponentsScriptWriter('')->write(
-            PHPScript(
-                $component->getName(),
-                $component,
-                ComponentBuilderHelpers::rebuildComponentPath(
-                    $namespace ?? '\\App',
-                    $basePath
-                )
-            )->setNamespace($component->getNamespace())
-        );
+
+        ComponentsScriptWriter('')->write(PHPScript(
+            $component->getName(),
+            $component,
+            ComponentBuilder::rebuildComponentPath(
+                $namespace ?? '\\App',
+                $basePath
+            )
+        )->setNamespace($component->getNamespace()));
+
         $this->info("Class successfully generated\n");
     }
 }

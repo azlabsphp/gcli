@@ -16,7 +16,7 @@ namespace Drewlabs\GCli\Extensions\Console;
 use Drewlabs\CodeGenerator\Exceptions\PHPVariableException;
 use Drewlabs\Core\Helpers\Str;
 use Drewlabs\GCli\Builders\ORMModelBuilder;
-use Drewlabs\GCli\Helpers\ComponentBuilderHelpers;
+use Drewlabs\GCli\Helpers\ComponentBuilder;
 
 use function Drewlabs\GCli\Proxy\ComponentsScriptWriter;
 
@@ -33,7 +33,7 @@ class ComponentCommandsHelpers
             $name = Str::contains($class, '\\') ? Str::afterLast('\\', $class) : $class;
             $class_name_space = sprintf('\\%s\\Services', static::getBaseNamespace($namespace) ?? 'App');
             ComponentsScriptWriter($basePath)->write(
-                ComponentBuilderHelpers::buildServiceDefinition(
+                ComponentBuilder::buildServiceDefinition(
                     true,
                     $name,
                     $class_name_space,
@@ -56,7 +56,7 @@ class ComponentCommandsHelpers
             $name = Str::contains($class, '\\') ? Str::afterLast('\\', $class) : $class;
             $class_name_space = sprintf('\\%s\\Dto', static::getBaseNamespace($namespace) ?? 'App');
             ComponentsScriptWriter($basePath)->write(
-                ComponentBuilderHelpers::buildDtoObjectDefinition(
+                ComponentBuilder::buildDtoObjectDefinition(
                     $attributes ?? [],
                     [],
                     $name,
@@ -80,7 +80,7 @@ class ComponentCommandsHelpers
             $name = Str::contains($class, '\\') ? Str::afterLast('\\', $class) : $class;
             $class_namespace = sprintf('\\%s\\Http\\ViewModels', static::getBaseNamespace($namespace) ?? 'App');
             ComponentsScriptWriter($basePath)->write(
-                ComponentBuilderHelpers::buildViewModelDefinition(
+                ComponentBuilder::buildViewModelDefinition(
                     false,
                     $rules ?? [],
                     $updateRules ?? [],

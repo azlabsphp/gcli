@@ -21,22 +21,16 @@ use Drewlabs\GCli\Cache\CacheableRoutes;
 use Drewlabs\GCli\IO\Disk;
 use Drewlabs\GCli\Models\RouteController;
 
-class RouteDefinitionsHelper
+class RouteDefinitions
 {
-    /**
-     * @var string
-     */
-    public const ROUTE_DEFINITION_START = "\n// Drewlabs Generated MVC Route Defnitions, Please Do not delete to avoid duplicates route definitions";
+    /** @var string */
+    const ROUTE_DEFINITION_START = "\n// Drewlabs Generated MVC Route Defnitions, Please Do not delete to avoid duplicates route definitions";
 
-    /**
-     * @var string
-     */
-    public const ROUTE_DEFINITION_END = "// !End Drewlabs Generated MVC Route Defnitions, Please Do not delete to avoid duplicates route definitions\n";
+    /** @var string */
+    const ROUTE_DEFINITION_END = "// !End Drewlabs Generated MVC Route Defnitions, Please Do not delete to avoid duplicates route definitions\n";
 
-    /**
-     * @var array
-     */
-    public const HTTP_VERB_MAP = [
+    /** @var array */
+    const HTTP_VERB_MAP = [
         'index' => 'get',
         'show' => 'get',
         'store' => 'post',
@@ -87,7 +81,7 @@ class RouteDefinitionsHelper
     /**
      * @return \Closure
      */
-    public static function writeRouteDefinitions(
+    public static function writeRoutes(
         string $basePath,
         array $definitions,
         string $filename = 'web.php',
@@ -145,7 +139,7 @@ class RouteDefinitionsHelper
      *
      * @return void
      */
-    public static function cacheRouteDefinitions(string $path, array $routes, string $namespace = null)
+    public static function cacheRoutes(string $path, array $routes, string $namespace = null)
     {
         Cache::new($path)->dump(new CacheableRoutes([
             'routes' => $routes,
@@ -158,7 +152,7 @@ class RouteDefinitionsHelper
      *
      * @return CacheableRoutes
      */
-    public static function getCachedRouteDefinitions(string $path)
+    public static function getCachedRoutes(string $path)
     {
         return Cache::new($path)->load(CacheableRoutes::class);
     }

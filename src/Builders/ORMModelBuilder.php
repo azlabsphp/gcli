@@ -24,13 +24,13 @@ use function Drewlabs\CodeGenerator\Proxy\PHPVariable;
 
 use Drewlabs\CodeGenerator\Types\PHPTypesModifiers;
 use Drewlabs\Core\Helpers\Str;
-use Drewlabs\GCli\Contracts\ComponentBuilder;
+use Drewlabs\GCli\Contracts\ComponentBuilder as AbstractBuilder;
 use Drewlabs\GCli\Contracts\EloquentORMModelBuilder as AbstractORMModelBuilder;
 use Drewlabs\GCli\Contracts\ORMColumnDefinition;
 use Drewlabs\GCli\Contracts\ORMModelDefinition;
 use Drewlabs\GCli\Contracts\ProvidesPropertyAccessors;
 use Drewlabs\GCli\Contracts\ProvidesRelations;
-use Drewlabs\GCli\Helpers\ComponentBuilderHelpers;
+use Drewlabs\GCli\Helpers\ComponentBuilder;
 
 use function Drewlabs\GCli\Proxy\PHPScript;
 
@@ -41,7 +41,7 @@ use Drewlabs\GCli\Traits\ViewModelBuilder;
 use Illuminate\Database\Eloquent\Model as EloquentModel;
 use Illuminate\Support\Pluralizer;
 
-class ORMModelBuilder implements AbstractORMModelBuilder, ComponentBuilder, ProvidesRelations, ProvidesPropertyAccessors
+class ORMModelBuilder implements AbstractORMModelBuilder, AbstractBuilder, ProvidesRelations, ProvidesPropertyAccessors
 {
     use HasNamespaceAttribute;
     use ProvidesTrimTableSchema;
@@ -545,7 +545,7 @@ class ORMModelBuilder implements AbstractORMModelBuilder, ComponentBuilder, Prov
         return PHPScript(
             $component->getName(),
             $component,
-            ComponentBuilderHelpers::rebuildComponentPath(
+            ComponentBuilder::rebuildComponentPath(
                 $this->namespace_ ?? self::DEFAULT_NAMESPACE,
                 $this->path_ ?? self::DEFAULT_PATH
             )

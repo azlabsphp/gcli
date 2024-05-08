@@ -14,29 +14,27 @@ declare(strict_types=1);
 namespace Drewlabs\GCli\Extensions\Console\Commands;
 
 use Drewlabs\GCli\Builders\ORMModelBuilder;
-use Drewlabs\GCli\Helpers\ComponentBuilderHelpers;
-
-use function Drewlabs\GCli\Proxy\ComponentsScriptWriter;
-
+use Drewlabs\GCli\Helpers\ComponentBuilder;
 use Illuminate\Console\Command;
 use Illuminate\Container\Container;
 
-use Illuminate\Contracts\Foundation\Application;
+use function Drewlabs\GCli\Proxy\ComponentsScriptWriter;
 
+/**
+ * @property \Illuminate\Contracts\Foundation\Application app
+ */
 class MakeServiceCommand extends Command
 {
+    /** @var string */
     protected $signature = 'gcli:make:service '
-        .'{name=TestService : Service name }'
-        .'{--namespace= : Controller namespace}'
-        .'{--path= : Project source code path}'
-        .'{--model= : Model attached to the controller generated code}'
-        .'{--asCRUD : Generate a CRUD Service }';
+        . '{name=TestService : Service name }'
+        . '{--namespace= : Controller namespace}'
+        . '{--path= : Project source code path}'
+        . '{--model= : Model attached to the controller generated code}'
+        . '{--asCRUD : Generate a CRUD Service }';
 
+    /** @var string */
     protected $description = 'Creates a Drewlabs package MVC controller';
-    /**
-     * @var Application
-     */
-    private $app;
 
     public function __construct()
     {
@@ -56,7 +54,7 @@ class MakeServiceCommand extends Command
         $basePath = $this->app->basePath($this->option('path') ?? 'app');
         // # End of parameters initialization
         ComponentsScriptWriter($basePath)->write(
-            ComponentBuilderHelpers::buildServiceDefinition(
+            ComponentBuilder::buildServiceDefinition(
                 $this->option('asCRUD'),
                 $name,
                 $namespace,

@@ -15,18 +15,32 @@ namespace Drewlabs\GCli;
 
 use Drewlabs\GCli\Contracts\DtoAttributesFactory;
 use Drewlabs\GCli\Contracts\ORMColumnDefinition;
-use Drewlabs\GCli\Contracts\ORMModelDefinition as AbstractORMModelDefinition;
+use Drewlabs\GCli\Contracts\ORMModelDefinition as ModelDefinition;
 use Drewlabs\GCli\Contracts\ViewModelRulesFactory;
-use Drewlabs\GCli\Helpers\DataTypeToFluentValidationRulesHelper;
+use Drewlabs\GCli\Helpers\FluentRules;
 
-class ORMModelDefinition implements AbstractORMModelDefinition, DtoAttributesFactory, ViewModelRulesFactory
+/** @internal */
+class ORMModel implements ModelDefinition, DtoAttributesFactory, ViewModelRulesFactory
 {
+    /**  @var string */
     private $primaryKey;
+
+    /**  @var string */
     private $name;
+    
+    /**  @var string */
     private $table;
+    
+    /**  @var ORMColumnDefinition[] */
     private $columns;
+    
+    /**  @var bool */
     private $increments;
+    
+    /**  @var string */
     private $namespace;
+    
+    /**  @var string */
     private $comment;
 
     /**
@@ -95,7 +109,7 @@ class ORMModelDefinition implements AbstractORMModelDefinition, DtoAttributesFac
 
     public function createDtoAttributes()
     {
-        return iterator_to_array((static function (AbstractORMModelDefinition $model) {
+        return iterator_to_array((static function (ModelDefinition $model) {
             /*
              * @var ORMColumnDefinition
              */
@@ -107,7 +121,7 @@ class ORMModelDefinition implements AbstractORMModelDefinition, DtoAttributesFac
 
     public function createRules(bool $update = false)
     {
-        return iterator_to_array((function (AbstractORMModelDefinition $model) use ($update) {
+        return iterator_to_array((function (ModelDefinition $model) use ($update) {
             foreach ($model->columns() as $value) {
                 yield $value->name() => $this->getColumRules($value, $model->primaryKey(), $update);
             }
@@ -124,20 +138,20 @@ class ORMModelDefinition implements AbstractORMModelDefinition, DtoAttributesFac
      */
     private function getColumRules(ORMColumnDefinition $column, string $primaryKey = null, $updates = false)
     {
-        $rules[] = !$column->required() ? DataTypeToFluentValidationRulesHelper::NULLABLE : ($column->required() && $column->hasDefault() ?
-                DataTypeToFluentValidationRulesHelper::NULLABLE : ($updates ? DataTypeToFluentValidationRulesHelper::SOMETIMES :
+        $rules[] = !$column->required() ? FluentRules::NULLABLE : ($column->required() && $column->hasDefault() ?
+                FluentRules::NULLABLE : ($updates ? FluentRules::SOMETIMES :
                     $this->createColumnRule($column, $primaryKey)));
 
         if ($column->name() === $primaryKey && $updates) {
-            $rules[] = DataTypeToFluentValidationRulesHelper::getExistsRule($this->table(), $primaryKey);
+            $rules[] = FluentRules::getExistsRule($this->table(), $primaryKey);
         }
-        $columnRules = DataTypeToFluentValidationRulesHelper::getRule($column->type());
+        $columnRules = FluentRules::getRule($column->type());
         $rules = [...$rules, ...$columnRules];
         if ($constraints = $column->foreignConstraint()) {
-            $rules = [...$rules, ...DataTypeToFluentValidationRulesHelper::getRule($constraints)];
+            $rules = [...$rules, ...FluentRules::getRule($constraints)];
         }
         if (($constraints = $column->unique()) && ($column->name() !== $primaryKey)) {
-            $rules = [...$rules, DataTypeToFluentValidationRulesHelper::getUniqueRule($constraints, $primaryKey, $updates)];
+            $rules = [...$rules, FluentRules::getUniqueRule($constraints, $primaryKey, $updates)];
         }
 
         return array_merge($rules);
@@ -146,14 +160,14 @@ class ORMModelDefinition implements AbstractORMModelDefinition, DtoAttributesFac
     private function createColumnRule(ORMColumnDefinition $column, string $key = null)
     {
         if ($column->name() === $key) {
-            return DataTypeToFluentValidationRulesHelper::SOMETIMES;
+            return FluentRules::SOMETIMES;
         }
 
         return null !== $key ?
             sprintf(
                 '%s:%s',
-                DataTypeToFluentValidationRulesHelper::REQUIRED_WITHOUT,
+                FluentRules::REQUIRED_WITHOUT,
                 $key
-            ) : DataTypeToFluentValidationRulesHelper::REQUIRED;
+            ) : FluentRules::REQUIRED;
     }
 }

@@ -19,20 +19,21 @@ use Drewlabs\GCli\Builders\ORMModelBuilder;
 use Drewlabs\GCli\Contracts\DtoAttributesFactory;
 use Drewlabs\GCli\Contracts\ViewModelRulesFactory;
 use Drewlabs\GCli\Extensions\Console\ComponentCommandsHelpers;
-use Drewlabs\GCli\Helpers\ComponentBuilderHelpers;
-
-use function Drewlabs\GCli\Proxy\ComponentsScriptWriter;
-
-use function Drewlabs\GCli\Proxy\MVCControllerBuilder;
-
+use Drewlabs\GCli\Helpers\ComponentBuilder;
 use Illuminate\Console\Command;
 use Illuminate\Container\Container;
-
 use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Support\Pluralizer;
 
+use function Drewlabs\GCli\Proxy\ComponentsScriptWriter;
+use function Drewlabs\GCli\Proxy\MVCControllerBuilder;
+
+/**
+ * @property \Illuminate\Contracts\Foundation\Application app
+ */
 class MakeControllerCommand extends Command
 {
+    /** @var string */
     protected $signature = 'gcli:make:controller '
         . '{name=TestController : Controller name}'
         . '{--namespace= : Controller namespace}'
@@ -45,11 +46,8 @@ class MakeControllerCommand extends Command
         . '{--authorizable : Add policy handlers to the controller class}'
         . '{--primaryKey=id : Set the value for the primary key used for the controller}';
 
+    /** @var string */
     protected $description = 'Creates a Drewlabs package MVC controller';
-    /**
-     * @var Application
-     */
-    private $app;
 
     public function __construct()
     {
@@ -120,7 +118,7 @@ class MakeControllerCommand extends Command
         $modelName = Str::contains($modelClassPath, '\\') ? Str::afterLast('\\', $modelClassPath) : $modelClassPath;
         $modelNamespace = sprintf('\\%s\\Models', ComponentCommandsHelpers::getBaseNamespace($namespace) ?? 'App');
         if (null !== $model && !class_exists($model) && !class_exists(ORMModelBuilder::defaultClassPath($model))) {
-            $modelComponent = ComponentBuilderHelpers::createModelBuilder(
+            $modelComponent = ComponentBuilder::createModelBuilder(
                 $pluralizer($modelName),
                 $columns ?? [],
                 $modelNamespace,
@@ -142,7 +140,7 @@ class MakeControllerCommand extends Command
             $viewModelClass = sprintf('%s\\%s', sprintf('\\%s\\Http\\ViewModels', ComponentCommandsHelpers::getBaseNamespace($namespace) ?? 'App'), "{$modelName}ViewModel");
         }
         ComponentsScriptWriter($basePath)->write(
-            ComponentBuilderHelpers::buildController(
+            ComponentBuilder::buildController(
                 $modelClassPath,
                 $serviceClass,
                 $viewModelClass,

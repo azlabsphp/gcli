@@ -23,8 +23,8 @@ use function Drewlabs\CodeGenerator\Proxy\PHPFunctionParameter;
 use Drewlabs\CodeGenerator\Types\PHPTypesModifiers;
 use Drewlabs\Contracts\Support\Actions\ActionHandler;
 use Drewlabs\Core\Helpers\Str;
-use Drewlabs\GCli\Contracts\ControllerBuilder as ContractsControllerBuilder;
-use Drewlabs\GCli\Helpers\ComponentBuilderHelpers;
+use Drewlabs\GCli\Contracts\ControllerBuilder as AbstractBuilder;
+use Drewlabs\GCli\Helpers\ComponentBuilder;
 
 use function Drewlabs\GCli\Proxy\PHPScript;
 
@@ -33,7 +33,7 @@ use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Pluralizer;
 
-class ControllerClassBuilder implements ContractsControllerBuilder
+class ControllerClassBuilder implements AbstractBuilder
 {
     use HasNamespaceAttribute;
 
@@ -362,7 +362,7 @@ class ControllerClassBuilder implements ContractsControllerBuilder
         return PHPScript(
             $component->getName(),
             $component,
-            ComponentBuilderHelpers::rebuildComponentPath(
+            ComponentBuilder::rebuildComponentPath(
                 $this->namespace_ ?? self::DEFAULT_NAMESPACE,
                 $this->path_ ?? self::DEFAULT_PATH
             )
@@ -381,7 +381,7 @@ class ControllerClassBuilder implements ContractsControllerBuilder
 
     private function setRouteName(string $classname)
     {
-        $this->routeName_ = ComponentBuilderHelpers::buildRouteName($classname ?? '');
+        $this->routeName_ = ComponentBuilder::buildRouteName($classname ?? '');
 
         return $this;
     }

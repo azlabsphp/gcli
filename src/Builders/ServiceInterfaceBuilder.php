@@ -18,14 +18,14 @@ use Drewlabs\CodeGenerator\Helpers\Str;
 use function Drewlabs\CodeGenerator\Proxy\PHPInterface;
 
 use Drewlabs\Contracts\Support\Actions\ActionHandler;
-use Drewlabs\GCli\Contracts\ComponentBuilder;
-use Drewlabs\GCli\Helpers\ComponentBuilderHelpers;
+use Drewlabs\GCli\Contracts\ComponentBuilder as AbstractBuilder;
+use Drewlabs\GCli\Helpers\ComponentBuilder;
 
 use function Drewlabs\GCli\Proxy\PHPScript;
 
 use Drewlabs\GCli\Traits\HasNamespaceAttribute;
 
-class ServiceInterfaceBuilder implements ComponentBuilder
+class ServiceInterfaceBuilder implements AbstractBuilder
 {
     use HasNamespaceAttribute;
 
@@ -92,7 +92,7 @@ class ServiceInterfaceBuilder implements ComponentBuilder
         return PHPScript(
             $component->getName(),
             $component,
-            ComponentBuilderHelpers::rebuildComponentPath($this->namespace_ ?? self::__NAMESPACE__, $this->path_ ?? self::__PATH__)
+            ComponentBuilder::rebuildComponentPath($this->namespace_ ?? self::__NAMESPACE__, $this->path_ ?? self::__PATH__)
         )->setNamespace($component->getNamespace());
     }
 }

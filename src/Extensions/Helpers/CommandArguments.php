@@ -15,7 +15,7 @@ namespace Drewlabs\GCli\Extensions\Helpers;
 
 use Drewlabs\GCli\DBDriverOptions;
 use Drewlabs\GCli\Exceptions\IOException;
-use Drewlabs\GCli\Helpers\ComponentBuilderHelpers;
+use Drewlabs\GCli\Helpers\ComponentBuilder;
 use Drewlabs\GCli\IO\Path;
 use Drewlabs\GCli\Options;
 
@@ -74,7 +74,7 @@ class CommandArguments
         }
         if ($options->get('cache', false)) {
             // Get component definitions from cache
-            $value = ComponentBuilderHelpers::getCachedComponentDefinitions((string) $cachePath);
+            $value = ComponentBuilder::getCachedComponentDefinitions((string) $cachePath);
             if (null !== $value) {
                 $options = $options->merge(['excludes' => $value->getTables()]);
             }

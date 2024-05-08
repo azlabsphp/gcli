@@ -22,15 +22,15 @@ use function Drewlabs\CodeGenerator\Proxy\PHPFunctionParameter;
 
 use Drewlabs\CodeGenerator\Types\PHPTypesModifiers;
 use Drewlabs\Core\Helpers\Str;
-use Drewlabs\GCli\Contracts\ComponentBuilder;
-use Drewlabs\GCli\Helpers\ComponentBuilderHelpers;
+use Drewlabs\GCli\Contracts\ComponentBuilder as AbstractBuilder;
+use Drewlabs\GCli\Helpers\ComponentBuilder;
 
 use function Drewlabs\GCli\Proxy\PHPScript;
 
 use Drewlabs\GCli\Traits\HasNamespaceAttribute;
 use Illuminate\Support\Pluralizer;
 
-class DataTransfertClassBuilder implements ComponentBuilder
+class DataTransfertClassBuilder implements AbstractBuilder
 {
     use HasNamespaceAttribute;
 
@@ -333,7 +333,7 @@ class DataTransfertClassBuilder implements ComponentBuilder
         return PHPScript(
             $component->getName(),
             $component,
-            ComponentBuilderHelpers::rebuildComponentPath(
+            ComponentBuilder::rebuildComponentPath(
                 $this->namespace_ ?? self::DEFAULT_NAMESPACE,
                 $this->path_ ?? self::DEFAULT_PATH
             )

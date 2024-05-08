@@ -14,18 +14,34 @@ declare(strict_types=1);
 namespace Drewlabs\GCli;
 
 use Drewlabs\GCli\Contracts\ForeignKeyConstraintDefinition;
-use Drewlabs\GCli\Contracts\ORMColumnDefinition as ContractsORMColumnDefinition;
+use Drewlabs\GCli\Contracts\ORMColumnDefinition as ColumnDefinition;
 use Drewlabs\GCli\Contracts\UniqueKeyConstraintDefinition;
 
-class ORMColumnDefinition implements ContractsORMColumnDefinition
+/** @internal */
+class ORMColumn implements ColumnDefinition
 {
+    /** @var string|null */
     private $table;
+
+    /** @var string */
     private $name;
+
+    /** @var string */
     private $type;
+
+    /** @var string|int|float|null */
     private $default;
+
+    /** @var ForeignKeyConstraintDefinition|null */
     private $foreignKeyConstraint;
+
+    /** @var UniqueKeyConstraintDefinition|null */
     private $uniqueKeyConstraint;
+
+    /** @var bool */
     private $required;
+
+    /**  @var bool */
     private $unsigned;
 
     /**

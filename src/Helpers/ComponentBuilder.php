@@ -29,9 +29,9 @@ use Drewlabs\GCli\Contracts\SourceFileInterface;
 
 use Drewlabs\GCli\Exceptions\IOException;
 use Drewlabs\GCli\IO\Path;
-use Drewlabs\GCli\ORMColumnDefinition;
+use Drewlabs\GCli\ORMColumn;
 
-use Drewlabs\GCli\ORMModelDefinition;
+use Drewlabs\GCli\ORMModel;
 
 use function Drewlabs\GCli\Proxy\DataTransfertClassBuilder;
 use function Drewlabs\GCli\Proxy\EloquentORMModelBuilder;
@@ -39,7 +39,7 @@ use function Drewlabs\GCli\Proxy\MVCControllerBuilder;
 use function Drewlabs\GCli\Proxy\MVCServiceBuilder;
 use function Drewlabs\GCli\Proxy\ViewModelBuilder;
 
-class ComponentBuilderHelpers
+class ComponentBuilder
 {
     /**
      * Creates a model builder class.
@@ -61,7 +61,7 @@ class ComponentBuilderHelpers
         string $comments = null
     ) {
         $component = EloquentORMModelBuilder(
-            new ORMModelDefinition(
+            new ORMModel(
                 $primaryKey,
                 null,
                 $table,
@@ -71,7 +71,7 @@ class ComponentBuilderHelpers
                         $least = explode(',', Str::after('|', $definition) ?? '');
                         $type = Arr::first($least) ?? null;
 
-                        return new ORMColumnDefinition($name, empty($type) ? null : $type);
+                        return new ORMColumn($name, empty($type) ? null : $type);
                     },
                     array_filter(array_map(static function ($column) {
                         if (\is_string($column) && !Str::contains($column, '|')) {

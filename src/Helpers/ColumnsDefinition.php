@@ -15,13 +15,13 @@ namespace Drewlabs\GCli\Helpers;
 
 use Doctrine\DBAL\Schema\Column;
 use Drewlabs\Core\Helpers\Iter;
-use Drewlabs\GCli\ORMColumnDefinition;
-use Drewlabs\GCli\ORMColumnDefinition as ColumnDefinition;
-use Drewlabs\GCli\ORMColumnForeignKeyConstraintDefinition;
-use Drewlabs\GCli\ORMColumnUniqueKeyDefinition;
+use Drewlabs\GCli\ORMColumn;
+use Drewlabs\GCli\ORMColumn as ColumnDefinition;
+use Drewlabs\GCli\ORMColumnForeignKey;
+use Drewlabs\GCli\ORMColumnUniqueKey;
 use Generator;
 
-class ColumnsDefinitionHelpers
+class ColumnsDefinition
 {
     /**
      * Create an iterator or a generator of {@link ColumnDefinition} from a list of doctrine dbal column instance.
@@ -34,15 +34,18 @@ class ColumnsDefinitionHelpers
     {
         foreach ($columns as $column) {
             $regex = null;
-            if ('datetime' === $column->getType()->getName()) {
+            $type = $column->getType();
+            $registry = $type->getTypeRegistry();
+            $typeName = $registry->lookupName($type);
+            if ('datetime' === $typeName) {
                 $regex = 'Y-m-d H:i:s';
             } elseif ($length = $column->getLength()) {
-                $regex = (null === $length && 'bigint' === $column->getType()->getName()) ? \PHP_INT_MAX : $length;
+                $regex = (null === $length && 'bigint' === $typeName) ? \PHP_INT_MAX : $length;
             }
             // Evaluate other types in the future
-            yield $column->getName() => new ORMColumnDefinition(
+            yield $column->getName() => new ORMColumn(
                 $column->getName(),
-                $regex ? sprintf('%s:%s', $column->getType()->getName(), $regex) : sprintf('%s', $column->getType()->getName()),
+                $regex ? sprintf('%s:%s', $typeName, $regex) : sprintf('%s', $typeName),
                 $table,
                 $column->getNotnull(),
                 $column->getDefault(),
@@ -57,7 +60,7 @@ class ColumnsDefinitionHelpers
         if (!empty($foreignKeys)) {
             $foreignKeys = iterator_to_array((static function ($keys) {
                 foreach ($keys as $key) {
-                    yield $key->getLocalColumns()[0] => new ORMColumnForeignKeyConstraintDefinition(
+                    yield $key->getLocalColumns()[0] => new ORMColumnForeignKey(
                         $key->getLocalTableName(),
                         $key->getLocalColumns(),
                         $key->getForeignTableName(),
@@ -95,10 +98,6 @@ class ColumnsDefinitionHelpers
         if (!empty($indexes)) {
             $uniqueIndexes = iterator_to_array(Iter::filter((static function ($keys) {
                 foreach ($keys as $key) {
-                    /**
-                     * @var Index
-                     */
-                    $key = $key;
                     yield $key->getColumns()[0] => $key->isUnique();
                 }
             })($indexes), static function ($item) {
@@ -114,7 +113,7 @@ class ColumnsDefinitionHelpers
             // Set the unique constraint on the definition
             foreach ($uniqueIndexes as $key => $value) {
                 if ($definition = $definitions[$key] ?? null) {
-                    $definition = $definition->setUnique(true === $value ? new ORMColumnUniqueKeyDefinition($definition->getTable(), [$definition->name()]) : null);
+                    $definition = $definition->setUnique(true === $value ? new ORMColumnUniqueKey($definition->getTable(), [$definition->name()]) : null);
                     $definitions = array_merge($definitions, [$key => $definition]);
                 }
             }

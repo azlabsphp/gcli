@@ -18,7 +18,7 @@ use Doctrine\DBAL\DriverManager;
 use Drewlabs\Core\Helpers\Arr;
 use Drewlabs\Core\Helpers\Str;
 use Drewlabs\GCli\ComponentsScriptWriter as ComponentsScriptWriterClass;
-use Drewlabs\GCli\Contracts\ComponentBuilder;
+use Drewlabs\GCli\Contracts\ComponentBuilder as AbstractBuilder;
 use Drewlabs\GCli\Contracts\ForeignKeyConstraintDefinition;
 use Drewlabs\GCli\Contracts\ProvidesPropertyAccessors;
 use Drewlabs\GCli\Contracts\ProvidesRelations;
@@ -26,8 +26,8 @@ use Drewlabs\GCli\Contracts\SourceFileInterface;
 use Drewlabs\GCli\Contracts\Writable;
 use Drewlabs\GCli\Extensions\Contracts\Progress;
 use Drewlabs\GCli\Extensions\Traits\ReverseEngineerRelations;
-use Drewlabs\GCli\Helpers\ComponentBuilderHelpers;
-use Drewlabs\GCli\Helpers\RouteDefinitionsHelper;
+use Drewlabs\GCli\Helpers\ComponentBuilder;
+use Drewlabs\GCli\Helpers\RouteDefinitions;
 use Drewlabs\GCli\HTr\RouteRequestBodyMap;
 use Drewlabs\GCli\Models\RouteController;
 
@@ -310,7 +310,7 @@ class ReverseEngineerTask
                     $tablesindexes,
                     static function ($tables) use ($namespace, $subPackage, $disableCache, $cachePath) {
                         if (!$disableCache) {
-                            ComponentBuilderHelpers::cacheComponentDefinitions(
+                            ComponentBuilder::cacheComponentDefinitions(
                                 $cachePath,
                                 $tables,
                                 $namespace,
@@ -525,22 +525,22 @@ class ReverseEngineerTask
         ) {
             if (!$disableCache && !$partial) {
                 // Get route definitions from cache
-                $value = $cachePath ? RouteDefinitionsHelper::getCachedRouteDefinitions($cachePath) : null;
+                $value = $cachePath ? RouteDefinitions::getCachedRoutes($cachePath) : null;
                 $routes = array_merge($routes, $value ? $value->getRoutes() : []);
             }
             $definitions = [];
             foreach ($routes as $key => $value) {
                 // Call the route definitions creator function
-                $definitions[$key] = RouteDefinitionsHelper::for($key, $value)($lumen);
+                $definitions[$key] = RouteDefinitions::for($key, $value)($lumen);
             }
-            RouteDefinitionsHelper::writeRouteDefinitions($routesDirectory, $definitions, $routingfilename, $partial)(
+            RouteDefinitions::writeRoutes($routesDirectory, $definitions, $routingfilename, $partial)(
                 $lumen,
                 $prefix,
                 $middleware,
                 static function () use ($routes, $disableCache, $cachePath, $subPackage) {
                     if (!$disableCache) {
                         // Add routes definitions to cache
-                        RouteDefinitionsHelper::cacheRouteDefinitions(
+                        RouteDefinitions::cacheRoutes(
                             $cachePath,
                             $routes,
                             $subPackage
@@ -577,7 +577,7 @@ class ReverseEngineerTask
     /**
      * Resolve writable instance.
      *
-     * @param Writable|ComponentBuilder|\Closure(...$args):SourceFileInterface $component
+     * @param Writable|AbstractBuilder|\Closure(...$args):SourceFileInterface $component
      * @param mixed $args
      *
      * @throws RuntimeExWritableception
@@ -589,7 +589,7 @@ class ReverseEngineerTask
         if ($component instanceof Writable) {
             return $component;
         }
-        if ($component instanceof ComponentBuilder) {
+        if ($component instanceof AbstractBuilder) {
             return $component->build();
         }
         if (\is_callable($component)) {

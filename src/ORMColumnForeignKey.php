@@ -15,12 +15,23 @@ namespace Drewlabs\GCli;
 
 use Drewlabs\GCli\Contracts\ForeignKeyConstraintDefinition;
 
-class ORMColumnForeignKeyConstraintDefinition implements ForeignKeyConstraintDefinition
+/** @internal */
+class ORMColumnForeignKey implements ForeignKeyConstraintDefinition
 {
+    
+    /**  @var string */
     private $local_table;
+    
+    /**  @var string[] */
     private $columns;
+    
+    /**  @var string */
     private $foreign_table;
+    
+    /**  @var string[] */
     private $foreign_columns;
+    
+    /**  @var string */
     private $key;
 
     /**

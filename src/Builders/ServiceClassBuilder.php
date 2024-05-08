@@ -22,8 +22,8 @@ use function Drewlabs\CodeGenerator\Proxy\PHPFunctionParameter;
 
 use Drewlabs\CodeGenerator\Types\PHPTypesModifiers;
 use Drewlabs\Core\Helpers\Str;
-use Drewlabs\GCli\Contracts\ComponentBuilder;
-use Drewlabs\GCli\Helpers\ComponentBuilderHelpers;
+use Drewlabs\GCli\Contracts\ComponentBuilder as AbstractBuilder;
+use Drewlabs\GCli\Helpers\ComponentBuilder;
 
 use function Drewlabs\GCli\Proxy\PHPScript;
 
@@ -31,7 +31,7 @@ use Drewlabs\GCli\Traits\HasNamespaceAttribute;
 use Drewlabs\GCli\Traits\ProvidesContracts;
 use Illuminate\Support\Pluralizer;
 
-class ServiceClassBuilder implements ComponentBuilder
+class ServiceClassBuilder implements AbstractBuilder
 {
     use HasNamespaceAttribute;
     use ProvidesContracts;
@@ -191,7 +191,7 @@ class ServiceClassBuilder implements ComponentBuilder
         return PHPScript(
             $component->getName(),
             $component,
-            ComponentBuilderHelpers::rebuildComponentPath($this->namespace_ ?? self::DEFAULT_NAMESPACE, $this->path_ ?? self::DEFAULT_PATH)
+            ComponentBuilder::rebuildComponentPath($this->namespace_ ?? self::DEFAULT_NAMESPACE, $this->path_ ?? self::DEFAULT_PATH)
         )->setNamespace($component->getNamespace());
     }
 

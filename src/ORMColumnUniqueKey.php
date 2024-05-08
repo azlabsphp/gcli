@@ -15,10 +15,13 @@ namespace Drewlabs\GCli;
 
 use Drewlabs\GCli\Contracts\UniqueKeyConstraintDefinition;
 
-class ORMColumnUniqueKeyDefinition implements UniqueKeyConstraintDefinition
+/** @internal */
+class ORMColumnUniqueKey implements UniqueKeyConstraintDefinition
 {
+    /** @var string */
     private $table;
 
+    /** @var string|string[] */
     private $columns;
 
     /**

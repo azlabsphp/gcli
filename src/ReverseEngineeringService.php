@@ -21,13 +21,11 @@ use Drewlabs\CodeGenerator\Exceptions\PHPVariableException;
 use Drewlabs\Core\Helpers\Arr;
 use Drewlabs\GCli\Contracts\ControllerBuilder;
 use Drewlabs\GCli\Contracts\SourceFileInterface;
-use Drewlabs\GCli\Helpers\ComponentBuilderHelpers;
+use Drewlabs\GCli\Helpers\ComponentBuilder;
 
 use function Drewlabs\GCli\Proxy\EloquentORMModelBuilder;
 use function Drewlabs\GCli\Proxy\MVCPolicyBuilder;
 use function Drewlabs\GCli\Proxy\ServiceInterfaceBuilderProxy;
-
-use Exception as GlobalException;
 
 class ReverseEngineeringService
 {
@@ -184,7 +182,7 @@ class ReverseEngineeringService
      *
      * @throws Exception
      * @throws SchemaException
-     * @throws GlobalException
+     * @throws \Exception
      * @throws \InvalidArgumentException
      * @throws PHPVariableException
      *
@@ -218,7 +216,7 @@ class ReverseEngineeringService
                 'definitions' => $value,
                 'classPath' => $modelClassPath,
             ];
-            $viewmodel = ComponentBuilderHelpers::createViewModelBuilder(
+            $viewmodel = ComponentBuilder::createViewModelBuilder(
                 false,
                 $value->createRules(),
                 $value->createRules(true),
@@ -232,13 +230,13 @@ class ReverseEngineeringService
                 sprintf('%s%s', array_reverse(explode('\\', $modelClassPath))[0], 'ServiceInterface'),
                 sprintf('%s\\%s', $this->namespace ?? self::DEFAULT_PROJECT_NAMESPACE, sprintf('%s%s', $this->domain ? "$this->domain\\" : '', 'Contracts'))
             );
-            $service = ComponentBuilderHelpers::createServiceBuilder(
+            $service = ComponentBuilder::createServiceBuilder(
                 true,
                 null,
                 sprintf('%s\\%s', $this->namespace ?? self::DEFAULT_PROJECT_NAMESPACE, sprintf('%s%s', $this->domain ? "$this->domain\\" : '', 'Services')),
                 $modelClassPath
             )->addContracts($serviceType->getClassPath()); // Add the service type as a contract to service
-            $dto = ComponentBuilderHelpers::createDtoBuilder(
+            $dto = ComponentBuilder::createDtoBuilder(
                 $value->createDtoAttributes(),
                 [],
                 null,
@@ -279,7 +277,7 @@ class ReverseEngineeringService
                         'nameBuilder' => static function ($controller) {
                             return $controller instanceof ControllerBuilder ?
                                 $controller->routeName() :
-                                ComponentBuilderHelpers::buildRouteName($controller->getName());
+                                ComponentBuilder::buildRouteName($controller->getName());
                         },
                         'classPathBuilder' => static function (SourceFileInterface $controller) {
                             return $controller->getClassPath();
@@ -327,7 +325,7 @@ class ReverseEngineeringService
             $viewModel = null,
             $dtoObject = null,
         ) use ($model, $authorizable, $key) {
-            return ComponentBuilderHelpers::buildController(
+            return ComponentBuilder::buildController(
                 $model,
                 $service ?? null,
                 $viewModel ?? null,

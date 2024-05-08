@@ -17,36 +17,24 @@ use Drewlabs\Core\Helpers\Str;
 use Drewlabs\GCli\Contracts\ForeignKeyConstraintDefinition;
 use Drewlabs\GCli\Contracts\UniqueKeyConstraintDefinition;
 
-class DataTypeToFluentValidationRulesHelper
+class FluentRules
 {
-    /**
-     * @Rule required if
-     */
-    public const REQUIRED_IF = 'required_if';
+    /** @var string */
+    const REQUIRED_IF = 'required_if';
 
-    /**
-     * @Rule required without
-     */
-    public const REQUIRED_WITHOUT = 'required_without';
+    /** @var string */
+    const REQUIRED_WITHOUT = 'required_without';
 
-    /**
-     * @Rule required
-     */
-    public const REQUIRED = 'required';
+    /** @var string */
+    const REQUIRED = 'required';
 
-    /**
-     * @Rule nullable
-     */
-    public const NULLABLE = 'nullable';
+    /** @var string */
+    const NULLABLE = 'nullable';
 
-    /**
-     * @Rule sometimes
-     */
-    public const SOMETIMES = 'sometimes';
+    /** @var string */
+    const SOMETIMES = 'sometimes';
 
-    /**
-     * @var array
-     */
+    /** @var array */
     private const TYPE_MAPS = [
         'bigint' => 'integer',
         'int' => 'integer',
@@ -77,7 +65,7 @@ class DataTypeToFluentValidationRulesHelper
         }
         // Handle unique rules
         if (!\is_string($definition)) {
-            throw new \Exception('$definition parameter type must be a PHP string or instance of '.ForeignKeyConstraintDefinition::class);
+            throw new \Exception('$definition parameter type must be a PHP string or instance of ' . ForeignKeyConstraintDefinition::class);
         }
         // Here we handle string types
         return self::getSimpleRule($definition, $predicate);
@@ -92,19 +80,19 @@ class DataTypeToFluentValidationRulesHelper
     {
         $columns = $metadata->getColumns();
 
-        return !$updates ? "expr:\$this->has('$primaryKey') ? '".sprintf(
+        return !$updates ? "expr:\$this->has('$primaryKey') ? '" . sprintf(
             "unique:%s,%s,' . ",
             $metadata->getTable(),
             \is_array($columns) ? ($columns[0] ?? 'id') : ($columns ?? 'id')
-        )."\$this->{$primaryKey} ".sprintf(
+        ) . "\$this->{$primaryKey} " . sprintf(
             ": 'unique:%s,%s",
             $metadata->getTable(),
             \is_array($columns) ? ($columns[0] ?? 'id') : ($columns ?? 'id')
-        )."'" : "expr:'".sprintf(
+        ) . "'" : "expr:'" . sprintf(
             "unique:%s,%s,' . ",
             $metadata->getTable(),
             \is_array($columns) ? ($columns[0] ?? 'id') : ($columns ?? 'id')
-        )."\$this->{$primaryKey} ";
+        ) . "\$this->{$primaryKey} ";
     }
 
     /**
@@ -114,11 +102,7 @@ class DataTypeToFluentValidationRulesHelper
      */
     public static function getExistsRule(string $table, $columns)
     {
-        return sprintf(
-            'exists:%s,%s',
-            $table,
-            \is_array($columns) ? ($columns[0] ?? 'id') : ($columns ?? 'id')
-        );
+        return sprintf('exists:%s,%s', $table, \is_array($columns) ? ($columns[0] ?? 'id') : ($columns ?? 'id'));
     }
 
     /**

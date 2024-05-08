@@ -19,17 +19,19 @@ use Drewlabs\GCli\Contracts\ORMModelDefinition;
 use Drewlabs\GCli\Contracts\SourceFileInterface;
 use Drewlabs\GCli\Contracts\ViewModelRulesFactory;
 use Drewlabs\GCli\Extensions\Console\ComponentCommandsHelpers;
-use Drewlabs\GCli\Helpers\ComponentBuilderHelpers;
-
-use function Drewlabs\GCli\Proxy\ComponentsScriptWriter;
-
+use Drewlabs\GCli\Helpers\ComponentBuilder;
 use Illuminate\Console\Command;
 use Illuminate\Container\Container;
 
-use Illuminate\Contracts\Foundation\Application;
 
+use function Drewlabs\GCli\Proxy\ComponentsScriptWriter;
+
+/**
+ * @property \Illuminate\Contracts\Foundation\Application app
+ */
 class MakeModelCommand extends Command
 {
+    /** @var string */
     protected $signature = 'gcli:make:model '
         .'{--increments : Makes the model primary key incrementable}'
         .'{--asViewModel : Generate the model as a view model class}'
@@ -43,11 +45,8 @@ class MakeModelCommand extends Command
         .'{--appends=* List of properties to append to the model }'
         .'{--all : Creates service, dto, view model and controller classes }';
 
+    /** @var string */
     protected $description = 'Creates a model using Drewlabs package model definitions';
-    /**
-     * @var Application
-     */
-    private $app;
 
     public function __construct()
     {
@@ -68,7 +67,7 @@ class MakeModelCommand extends Command
         $vm = $this->option('asViewModel') ?? false;
         $basePath = $this->app->basePath($this->option('path') ?? 'app');
         // # End of parameters initialization
-        $builder = ComponentBuilderHelpers::createModelBuilder(
+        $builder = ComponentBuilder::createModelBuilder(
             $table,
             $columns ?? [],
             $namespace,
@@ -93,7 +92,6 @@ class MakeModelCommand extends Command
      *
      * @throws PHPVariableException
      *
-     * @return void
      */
     public static function createComponents($basePath, SourceFileInterface $component, ORMModelDefinition $definition = null, string $primaryKey = 'id')
     {
@@ -105,7 +103,7 @@ class MakeModelCommand extends Command
         $dtoClass = ComponentCommandsHelpers::createDto($component->getNamespace(), $basePath, $modelClassPath, $dto, $definition instanceof DtoAttributesFactory ? $definition->createDtoAttributes() : []);
         $viewModelClass = ComponentCommandsHelpers::createViewModel($component->getNamespace(), $basePath, $modelClassPath, $viewModel, $definition instanceof ViewModelRulesFactory ? $definition->createRules() : [], $definition instanceof ViewModelRulesFactory ? $definition->createRules(true) : []);
         ComponentsScriptWriter($basePath)->write(
-            ComponentBuilderHelpers::buildController(
+            ComponentBuilder::buildController(
                 $modelClassPath,
                 $serviceClass,
                 $viewModelClass,

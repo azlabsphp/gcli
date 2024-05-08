@@ -26,8 +26,8 @@ use Drewlabs\CodeGenerator\Types\PHPTypes;
 use Drewlabs\CodeGenerator\Types\PHPTypesModifiers;
 
 use Drewlabs\Core\Helpers\Str;
-use Drewlabs\GCli\Contracts\ComponentBuilder;
-use Drewlabs\GCli\Helpers\ComponentBuilderHelpers;
+use Drewlabs\GCli\Contracts\ComponentBuilder as AbstractBuilder;
+use Drewlabs\GCli\Helpers\ComponentBuilder;
 
 use function Drewlabs\GCli\Proxy\PHPScript;
 
@@ -35,7 +35,7 @@ use Drewlabs\GCli\Traits\HasNamespaceAttribute;
 use Drewlabs\GCli\Traits\ViewModelBuilder;
 use Illuminate\Support\Pluralizer;
 
-class ViewModelClassBuilder implements ComponentBuilder
+class ViewModelClassBuilder implements AbstractBuilder
 {
     use HasNamespaceAttribute;
     use ViewModelBuilder;
@@ -318,7 +318,7 @@ class ViewModelClassBuilder implements ComponentBuilder
         return PHPScript(
             $component->getName(),
             $component,
-            ComponentBuilderHelpers::rebuildComponentPath($this->namespace_ ?? self::DEFAULT_NAMESPACE, $this->path_ ?? self::DEFAULT_PATH)
+            ComponentBuilder::rebuildComponentPath($this->namespace_ ?? self::DEFAULT_NAMESPACE, $this->path_ ?? self::DEFAULT_PATH)
         )->setNamespace($component->getNamespace());
     }
 

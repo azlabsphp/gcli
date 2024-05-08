@@ -14,17 +14,19 @@ declare(strict_types=1);
 namespace Drewlabs\GCli\Extensions\Console\Commands;
 
 use Drewlabs\GCli\Builders\ORMModelBuilder;
-use Drewlabs\GCli\Helpers\ComponentBuilderHelpers;
-
-use function Drewlabs\GCli\Proxy\ComponentsScriptWriter;
-
+use Drewlabs\GCli\Helpers\ComponentBuilder;
 use Illuminate\Console\Command;
 use Illuminate\Container\Container;
 
-use Illuminate\Contracts\Foundation\Application;
+use function Drewlabs\GCli\Proxy\ComponentsScriptWriter;
 
+
+/**
+ * @property \Illuminate\Contracts\Foundation\Application app
+ */
 class MakeDTOClassCommand extends Command
 {
+    /** @var string */
     protected $signature = 'gcli:make:dto '
         .'{name=TestDto : Generated view model name }'
         .'{--namespace= : View model namespace }'
@@ -33,11 +35,8 @@ class MakeDTOClassCommand extends Command
         .'{--attributes=* : List of Jsonable attributes }'
         .'{--hidden=* : List of hidden attributes }';
 
+    /** @var string */
     protected $description = 'Creates a Drewlabs package MVC controller';
-    /**
-     * @var Application
-     */
-    private $app;
 
     public function __construct()
     {
@@ -55,7 +54,7 @@ class MakeDTOClassCommand extends Command
         $hidden = $this->option('hidden') ?? [];
         // # End of parameters initialization
         ComponentsScriptWriter($basePath)->write(
-            ComponentBuilderHelpers::createDtoBuilder(
+            ComponentBuilder::createDtoBuilder(
                 iterator_to_array((static function () use ($attributes) {
                     foreach ($attributes as $value) {
                         yield $value => 'mixed';

@@ -26,15 +26,13 @@ use Illuminate\Container\Container;
 
 class MakeProjectComponentsCommand extends Command
 {
-    public const CAMEL_CASE_CHOICES = [
+    /** @var string[] */
+    const CAMEL_CASE_CHOICES = [
         'Direct (ex: Post { label, post_type_id } -> PostDto {label, post_type_id } )',
         'Camelize (ex: Post { label, post_type_id } -> PostDto {label, postTypeId } )',
     ];
-    /**
-     * The name and signature of the console command.
-     *
-     * @var string
-     */
+
+    /** @var string */
     protected $signature = 'gcli:make:project {--srcPath= : Path to the business logic component folder}'
         .'{--package= : Package namespace for components}'
         .'{--subPackage= : Subpackage will group each component part in a subfolder}'
@@ -72,11 +70,7 @@ class MakeProjectComponentsCommand extends Command
         .'{--htrHost= : Base url for htr tests}'
         .'{--htrFormat=json : Htr output document format}';
 
-    /**
-     * The console command description.
-     *
-     * @var string
-     */
+    /** @var string */
     protected $description = 'Reverse engineer database table to a full mvc components definitions';
 
     /**
@@ -84,9 +78,7 @@ class MakeProjectComponentsCommand extends Command
      */
     private $cachePath;
 
-    /**
-     * @var string
-     */
+    /** @var string */
     private $routesCachePath;
 
     /**
