@@ -37,3 +37,10 @@
 ## 20230516
 
 - Remove dependency to `drewlabs/filesystem` library [x]
+
+## 20240508
+
+- Add typescript built-type generator plugin [x]
+- Add typescript columns declaration generator plugin [x]
+- Add typescript form template generator plugin []
+- Add typescript CRUD configuration factory function generator [x]

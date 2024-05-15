@@ -13,17 +13,12 @@ declare(strict_types=1);
 
 namespace Drewlabs\GCli\Contracts;
 
-interface ORMModelDefinition
+interface ORMModelDefinition extends Type
 {
     /**
      * Returns the model primary key.
      */
     public function primaryKey(): ?string;
-
-    /**
-     * Returns the model name.
-     */
-    public function name(): ?string;
 
     /**
      * Returns the model associated table name.

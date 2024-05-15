@@ -44,6 +44,9 @@ class ORMColumn implements ColumnDefinition
     /**  @var bool */
     private $unsigned;
 
+    /** @var string */
+    private $rawType;
+
     /**
      * Creates class instance.
      *
@@ -65,7 +68,8 @@ class ORMColumn implements ColumnDefinition
     ) {
         $this->table = $table;
         $this->name = $name;
-        $this->type = $type;
+        $this->type = $type ?? 'string';
+        $this->setRawType($this->type);
         $this->default = $default;
         $this->foreignKeyConstraint = $foreignKeyConstraint;
         $this->uniqueKeyConstraint = $uniqueKeyConstraint;
@@ -73,14 +77,19 @@ class ORMColumn implements ColumnDefinition
         $this->unsigned = $unsigned;
     }
 
-    public function name()
+    public function name(): string
     {
         return $this->name ?? 'column';
     }
 
-    public function type()
+    public function type(): string
     {
-        return $this->type ?? 'string';
+        return $this->type;
+    }
+
+    public function getRawType(): string
+    {
+        return $this->type;
     }
 
     public function setForeignKey(ForeignKeyConstraintDefinition $value)
@@ -104,7 +113,7 @@ class ORMColumn implements ColumnDefinition
         return $this->uniqueKeyConstraint;
     }
 
-    public function required()
+    public function required(): bool
     {
         return (bool) $this->required ?? false;
     }
@@ -145,5 +154,10 @@ class ORMColumn implements ColumnDefinition
         return array_filter($result, static function ($value) {
             return null !== $value;
         });
+    }
+
+    private function setRawType(string $type)
+    {
+        $this->rawType = false !== ($pos = mb_strpos($type = $this->type(), ':')) ? mb_substr($type, 0, $pos) : $type;
     }
 }

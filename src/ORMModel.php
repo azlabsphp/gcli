@@ -27,19 +27,19 @@ class ORMModel implements ModelDefinition, DtoAttributesFactory, ViewModelRulesF
 
     /**  @var string */
     private $name;
-    
+
     /**  @var string */
     private $table;
-    
+
     /**  @var ORMColumnDefinition[] */
     private $columns;
-    
+
     /**  @var bool */
     private $increments;
-    
+
     /**  @var string */
     private $namespace;
-    
+
     /**  @var string */
     private $comment;
 
@@ -70,6 +70,11 @@ class ORMModel implements ModelDefinition, DtoAttributesFactory, ViewModelRulesF
         $this->increments = $increments;
         $this->namespace = $namespace;
         $this->comment = $comment;
+    }
+
+    public function getProperties(): array
+    {
+        return $this->columns ?? [];
     }
 
     public function primaryKey(): ?string
@@ -110,9 +115,6 @@ class ORMModel implements ModelDefinition, DtoAttributesFactory, ViewModelRulesF
     public function createDtoAttributes()
     {
         return iterator_to_array((static function (ModelDefinition $model) {
-            /*
-             * @var ORMColumnDefinition
-             */
             foreach ($model->columns() as $column) {
                 yield $column->name() => $column->type();
             }
@@ -139,8 +141,8 @@ class ORMModel implements ModelDefinition, DtoAttributesFactory, ViewModelRulesF
     private function getColumRules(ORMColumnDefinition $column, string $primaryKey = null, $updates = false)
     {
         $rules[] = !$column->required() ? FluentRules::NULLABLE : ($column->required() && $column->hasDefault() ?
-                FluentRules::NULLABLE : ($updates ? FluentRules::SOMETIMES :
-                    $this->createColumnRule($column, $primaryKey)));
+            FluentRules::NULLABLE : ($updates ? FluentRules::SOMETIMES :
+                $this->createColumnRule($column, $primaryKey)));
 
         if ($column->name() === $primaryKey && $updates) {
             $rules[] = FluentRules::getExistsRule($this->table(), $primaryKey);

@@ -13,7 +13,7 @@ declare(strict_types=1);
 
 namespace Drewlabs\GCli\Contracts;
 
-interface ORMColumnDefinition
+interface ORMColumnDefinition extends Property
 {
     /**
      * Return the table that the column belongs to.
@@ -23,18 +23,11 @@ interface ORMColumnDefinition
     public function getTable();
 
     /**
-     * Returns the column name from the definitions.
+     * returns the proiperty `type` definition.
      *
      * @return string
      */
-    public function name();
-
-    /**
-     * Returns the column type definition.
-     *
-     * @return string
-     */
-    public function type();
+    public function type(): string;
 
     /**
      * Returns the unique constraint rules on the column.
@@ -49,13 +42,6 @@ interface ORMColumnDefinition
      * @return ForeignKeyConstraintDefinition|null
      */
     public function foreignConstraint();
-
-    /**
-     * Indicates whether the column is required or not.
-     *
-     * @return bool
-     */
-    public function required();
 
     /**
      * Indicates whether the column is unsigned or not.
