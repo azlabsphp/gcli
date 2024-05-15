@@ -2,20 +2,19 @@
 
 namespace Drewlabs\GCli\Plugins;
 
+use Drewlabs\GCli\Contracts\Type;
+
 interface Plugin
 {
 
     /**
-     * return the directory in which the components should be written
+     * compile source code for the provided type and write all components
+     * source code to disk.
      * 
-     * @return string 
-     */
-    public function getOutputPath(): string;
-
-    /**
-     * returns the list component the plugin exposed to the generator
+     * @param string module
+     * @param Type $type
      * 
-     * @return PluginComponent[] 
+     * @return void 
      */
-    public function getComponents(): array;
+    public function generate(Type $type, string $module = null): void;
 }

@@ -16,11 +16,12 @@ namespace Drewlabs\GCli;
 use Drewlabs\GCli\Contracts\DtoAttributesFactory;
 use Drewlabs\GCli\Contracts\ORMColumnDefinition;
 use Drewlabs\GCli\Contracts\ORMModelDefinition as ModelDefinition;
+use Drewlabs\GCli\Contracts\ProvidesModuleMetadata;
 use Drewlabs\GCli\Contracts\ViewModelRulesFactory;
 use Drewlabs\GCli\Helpers\FluentRules;
 
 /** @internal */
-class ORMModel implements ModelDefinition, DtoAttributesFactory, ViewModelRulesFactory
+class ORMModel implements ModelDefinition, DtoAttributesFactory, ViewModelRulesFactory, ProvidesModuleMetadata
 {
     /**  @var string */
     private $primaryKey;
@@ -70,6 +71,11 @@ class ORMModel implements ModelDefinition, DtoAttributesFactory, ViewModelRulesF
         $this->increments = $increments;
         $this->namespace = $namespace;
         $this->comment = $comment;
+    }
+
+    public function getModuleName(): string
+    {
+        return $this->table();
     }
 
     public function getProperties(): array

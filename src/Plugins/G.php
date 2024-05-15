@@ -2,8 +2,11 @@
 
 namespace Drewlabs\GCli\Plugins;
 
+use Drewlabs\GCli\Contracts\ProvidesModuleMetadata;
+use Drewlabs\GCli\Contracts\Type;
+
 // Plugins files generator class implementation
-// It provides method to register plugins and generate source code using the plugin implementation
+// It provides method to register plugins and generate source codes using the plugin implementation
 class G
 {
 
@@ -16,7 +19,6 @@ class G
     // Private constructor
     private function __construct()
     {
-        
     }
 
     /**
@@ -48,12 +50,21 @@ class G
         $this->plugins[] = $plugin;
     }
 
-    public function run()
+    /**
+     * Use the registered plugin to generate source code for the
+     * list of provided type instances
+     * 
+     * @param Type[] $types
+     * 
+     * @return void 
+     */
+    public function generate(array $types)
     {
         // TODO: Implement the generator
         foreach ($this->plugins as $plugin) {
-            $components = $plugin->getComponents();
+            foreach ($types as $value) {
+                $plugin->generate($value, $value instanceof ProvidesModuleMetadata ? $value->getModuleName() : null);
+            }
         }
-
     }
 }
