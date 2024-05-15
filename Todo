@@ -42,5 +42,5 @@
 
 - Add typescript built-type generator plugin [x]
 - Add typescript columns declaration generator plugin [x]
-- Add typescript form template generator plugin []
+- Add typescript form template generator plugin [x]
 - Add typescript CRUD configuration factory function generator [x]

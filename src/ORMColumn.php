@@ -14,11 +14,14 @@ declare(strict_types=1);
 namespace Drewlabs\GCli;
 
 use Drewlabs\GCli\Contracts\ForeignKeyConstraintDefinition;
+use Drewlabs\GCli\Contracts\HasExistConstraint;
+use Drewlabs\GCli\Contracts\HasSizeProperty;
+use Drewlabs\GCli\Contracts\HasUniqueConstraint;
 use Drewlabs\GCli\Contracts\ORMColumnDefinition as ColumnDefinition;
 use Drewlabs\GCli\Contracts\UniqueKeyConstraintDefinition;
 
 /** @internal */
-class ORMColumn implements ColumnDefinition
+class ORMColumn implements ColumnDefinition, HasSizeProperty, HasExistConstraint, HasUniqueConstraint
 {
     /** @var string|null */
     private $table;
@@ -46,6 +49,9 @@ class ORMColumn implements ColumnDefinition
 
     /** @var string */
     private $rawType;
+
+    /** @var int */
+    private $size;
 
     /**
      * Creates class instance.
@@ -77,6 +83,26 @@ class ORMColumn implements ColumnDefinition
         $this->unsigned = $unsigned;
     }
 
+    public function hasSize(): bool
+    {
+        return !is_null($this->size);
+    }
+
+    public function getSize(): int
+    {
+        return intval($this->size);
+    }
+
+    public function hasExistContraint(): bool
+    {
+        return !is_null($this->foreignConstraint());
+    }
+
+    public function hasUniqueConstraint(): bool
+    {
+        return !is_null($this->unique());
+    }
+
     public function name(): string
     {
         return $this->name ?? 'column';
@@ -89,7 +115,7 @@ class ORMColumn implements ColumnDefinition
 
     public function getRawType(): string
     {
-        return $this->type;
+        return $this->rawType;
     }
 
     public function setForeignKey(ForeignKeyConstraintDefinition $value)
@@ -100,11 +126,17 @@ class ORMColumn implements ColumnDefinition
         return $self;
     }
 
+    public function withSize(int $value)
+    {
+        $self = clone $this;
+        $self->size = $value;
+        return $self;
+    }
+
     public function setUnique(UniqueKeyConstraintDefinition $value)
     {
         $self = clone $this;
         $self->uniqueKeyConstraint = $value;
-
         return $self;
     }
 

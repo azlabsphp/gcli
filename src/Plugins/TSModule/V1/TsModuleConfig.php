@@ -1,6 +1,6 @@
 <?php
 
-namespace Drewlabs\GCli\Plugins\TSModule;
+namespace Drewlabs\GCli\Plugins\TSModule\V1;
 
 use Drewlabs\CodeGenerator\Helpers\Str;
 use Drewlabs\GCli\Contracts\Type;

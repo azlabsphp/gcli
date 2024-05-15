@@ -37,13 +37,14 @@ class ColumnsDefinition
             $type = $column->getType();
             $registry = $type->getTypeRegistry();
             $typeName = $registry->lookupName($type);
+            $length = $column->getLength() ?? ('bigint' === $typeName ? \PHP_INT_MAX : null);
             if ('datetime' === $typeName) {
                 $regex = 'Y-m-d H:i:s';
             } elseif ($length = $column->getLength()) {
                 $regex = (null === $length && 'bigint' === $typeName) ? \PHP_INT_MAX : $length;
             }
-            // Evaluate other types in the future
-            yield $column->getName() => new ORMColumn(
+            
+            $instance = new ORMColumn(
                 $column->getName(),
                 $regex ? sprintf('%s:%s', $typeName, $regex) : sprintf('%s', $typeName),
                 $table,
@@ -51,6 +52,13 @@ class ColumnsDefinition
                 $column->getDefault(),
                 $column->getUnsigned(),
             );
+
+            // Add the size information to the column instance
+            if (!is_null($length)) {
+                $instance = $instance->withSize($length);
+            }
+
+            yield $column->getName() => $instance;
         }
     }
 

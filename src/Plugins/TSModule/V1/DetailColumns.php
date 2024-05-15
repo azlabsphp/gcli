@@ -1,11 +1,11 @@
 <?php
 
-namespace Drewlabs\GCli\Plugins\TSModule;
+namespace Drewlabs\GCli\Plugins\TSModule\V1;
 
 use Drewlabs\CodeGenerator\Helpers\Str;
 use Drewlabs\GCli\Contracts\Type;
 
-class DatagridColumns
+class DetailColumns
 {
     /** @var string */
     private $module;
@@ -36,8 +36,8 @@ class DatagridColumns
     public function __toString(): string
     {
         $lines = [
-            '/** returns the list of datagrid columns to display */',
-            'export const gridColumns: SearchableGridColumnType[] = ['
+            '/** returns the list of detail view columns to display */',
+            'export const viewColumns: DetailColumnType[] = ['
         ];
 
         foreach ($this->type->getProperties() as $property) {
@@ -45,17 +45,12 @@ class DatagridColumns
             $label = $this->camelize ? Str::camelize($propertyName, false) : $propertyName;
             $lines = array_merge($lines, [
                 "\t{",
+                "\t\ttitleTransform: ['translate', 'uppercase'],",
                 sprintf("\t\ttitle: 'app.modules.%s.datagrid.columns.%s',", $this->module, $label),
-                sprintf("\t\tlabel: '%s',", $label),
-                sprintf("\t\tfield: '%s',", $propertyName),
-                "\t\tsortable: false,",
+                sprintf("\t\tfield: '%s',", $label),
+                "\t\t// TODO: Uncomment codes below to enable data transformation and search query",
                 # TODO: Add date transform implementation
                 in_array(strtolower($property->getRawType()), ['date', 'datetime']) ? "\t\ttransform: 'date'" : "\t\t//transform: 'uppercase',",
-                "\t\t// TODO: Uncomment codes below to enable search query",
-                "\t\t//searcheable: true,",
-                "\t\t//search: {",
-                "\t\t\t//flexible: true,",
-                "\t\t//}",
                 "\t},"
             ]);
         }
@@ -65,5 +60,4 @@ class DatagridColumns
 
         return implode("\n", $lines);
     }
-
 }

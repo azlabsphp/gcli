@@ -1,6 +1,6 @@
 <?php
 
-namespace Drewlabs\GCli\Plugins\TSModule;
+namespace Drewlabs\GCli\Plugins\TSModule\V1;
 
 use Drewlabs\GCli\Contracts\Type;
 
