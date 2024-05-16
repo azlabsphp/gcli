@@ -68,7 +68,7 @@ class DBDriverOptions
     private function prepareSQLiteOptions(array $options = [])
     {
         $options['memory'] = false;
-        $options['path'] = $options['dbname'] ?? 'database.sqlite'; // Str::startsWith($options['dbname'] ?? '', '///') ? $options['dbname'] : sprintf("///%s", $options['dbname']) ;
+        $options['path'] = $options['dbname'] ?? 'database.sqlite';
         unset($options['dbname']);
 
         return $options;

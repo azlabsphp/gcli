@@ -11,7 +11,7 @@ declare(strict_types=1);
  * file that was distributed with this source code.
  */
 
-namespace Drewlabs\GCli;
+namespace Drewlabs\GCli\DBAL\T;
 
 use Drewlabs\GCli\Contracts\ForeignKeyConstraintDefinition;
 use Drewlabs\GCli\Contracts\HasExistConstraint;

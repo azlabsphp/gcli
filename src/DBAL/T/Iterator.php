@@ -15,8 +15,6 @@ namespace Drewlabs\GCli\DBAL\T;
 
 use Drewlabs\CodeGenerator\Helpers\Str;
 use Drewlabs\Core\Helpers\Functional;
-use Drewlabs\GCli\Helpers\ColumnsDefinition;
-use Drewlabs\GCli\Table;
 use Drewlabs\GCli\Traits\ProvidesTrimTableSchema;
 use Illuminate\Support\Pluralizer;
 
@@ -62,13 +60,14 @@ final class Iterator implements \IteratorAggregate
             // #region column definition
             $columns = Functional::compose(
                 static function ($table_name) use ($table) {
-                    return ColumnsDefinition::createColumnDefinitionsGenerator($table_name, new \ArrayIterator($table->getColumns()));
+                    $factory = new ColumnsIteratorFactory;
+                    return $factory->createIterator($table_name, new \ArrayIterator($table->getColumns()));
                 },
                 static function ($columns) use ($table) {
-                    return ColumnsDefinition::bindForeignConstTraintsToColumns($table->getForeignKeys())($columns);
+                    return ForeignKeyConstraint::new($table->getForeignKeys())->bind($columns);
                 },
                 static function ($columns) use ($table) {
-                    return ColumnsDefinition::bindUniqueConstraintsToColumns($table->getIndexes())($columns);
+                    return UniqueKeyConstraint::new($table->getIndexes())->bind($columns);
                 },
                 static function ($columns) {
                     return array_values($columns);

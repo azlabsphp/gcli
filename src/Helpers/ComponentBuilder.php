@@ -26,12 +26,11 @@ use Drewlabs\GCli\Contracts\ControllerBuilder;
 use Drewlabs\GCli\Contracts\ORMModelBuilder;
 
 use Drewlabs\GCli\Contracts\SourceFileInterface;
-
+use Drewlabs\GCli\DBAL\T\Column;
+use Drewlabs\GCli\DBAL\T\Table;
 use Drewlabs\GCli\Exceptions\IOException;
 use Drewlabs\GCli\IO\Path;
-use Drewlabs\GCli\Column;
 
-use Drewlabs\GCli\Table;
 use Drewlabs\GCli\Traits\ProvidesTrimTableSchema;
 use Illuminate\Support\Pluralizer;
 
