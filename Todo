@@ -31,7 +31,6 @@
 
 - Generate static::creating entry for non incrementable models [x]
 - Generate relation method to foreign keys definitions [x]
-- Create command generator command []
 - Add override prompt for recreating mvc components using command [x]
 
 ## 20230516
@@ -44,3 +43,11 @@
 - Add typescript columns declaration generator plugin [x]
 - Add typescript form template generator plugin [x]
 - Add typescript CRUD configuration factory function generator [x]
+
+## 20240516
+
+- Add ts module source code command implementation []
+
+## 20240516 (v0.3.x)
+
+- Move source code for generating laravel project components to laravel plugin []
