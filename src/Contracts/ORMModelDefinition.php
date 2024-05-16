@@ -23,7 +23,7 @@ interface ORMModelDefinition extends Type
     /**
      * Returns the model associated table name.
      */
-    public function table(): ?string;
+    public function table(): string;
 
     /**
      * Returns the list of columns definitions.

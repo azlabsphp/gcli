@@ -14,9 +14,7 @@ declare(strict_types=1);
 namespace Drewlabs\GCli\Extensions\Helpers;
 
 use Closure;
-use Doctrine\DBAL\DriverManager;
 use Drewlabs\Core\Helpers\Arr;
-use Drewlabs\Core\Helpers\Str;
 use Drewlabs\GCli\ComponentsScriptWriter as ComponentsScriptWriterClass;
 use Drewlabs\GCli\Contracts\ComponentBuilder as AbstractBuilder;
 use Drewlabs\GCli\Contracts\ForeignKeyConstraintDefinition;
@@ -30,13 +28,15 @@ use Drewlabs\GCli\Helpers\ComponentBuilder;
 use Drewlabs\GCli\Helpers\RouteDefinitions;
 use Drewlabs\GCli\HTr\RouteRequestBodyMap;
 use Drewlabs\GCli\Models\RouteController;
+use Drewlabs\GCli\ModulesIteratorFactory;
+use Drewlabs\GCli\Plugins\G;
 
 use function Drewlabs\GCli\Proxy\ComponentsScriptWriter;
-use function Drewlabs\GCli\Proxy\DatabaseSchemaReverseEngineeringRunner;
 
 use function Drewlabs\GCli\Proxy\MVCServiceProviderBuilder;
 
 use Drewlabs\GCli\RelationTypes;
+use Drewlabs\GCli\Validation\RulesFactory;
 
 class ReverseEngineerTask
 {
@@ -89,28 +89,18 @@ class ReverseEngineerTask
      */
     private $policies = false;
 
-    /**
-     * Specifies the tables for which code should be generated.
-     *
-     * @return self
-     */
-    public function only(array $tables)
-    {
-        $this->tables = $tables;
+    /** @var RulesFactory */
+    private $rulesFactory;
 
-        return $this;
-    }
 
     /**
-     * Add exception to some tables during code generation.
-     *
-     * @return self
+     * Class constructor
+     * 
+     * @param RulesFactory $rulesFactory 
      */
-    public function except(array $tables)
+    public function __construct(RulesFactory $rulesFactory)
     {
-        $this->exceptions = $tables;
-
-        return $this;
+        $this->rulesFactory = $rulesFactory;
     }
 
     /**
@@ -206,10 +196,10 @@ class ReverseEngineerTask
     /**
      * Creates a code generator factory function based on provided options.
      *
-     * @return Closure(string $routesDirectory, string $cachePath, string $routesCachePath, Closure $onStartCallback, null|\Closure($policies) $onCompleteCallback = null, null|Closure $onExistsCallback = null, null|Closure $createHTrProjectsCallback = null): void
+     * @return Closure(string $routesDirectory, string $routesCachePath, Closure $onStartCallback, null|\Closure($policies) $onCompleteCallback = null, null|Closure $onExistsCallback = null, null|Closure $createHTrProjectsCallback = null): void
      */
     public function run(
-        array $options,
+        \Traversable $traversable,
         string $src,
         string $routingfilename,
         string $routePrefix = null,
@@ -217,7 +207,7 @@ class ReverseEngineerTask
         bool $forLumen = true,
         bool $disableCache = false,
         bool $noAuth = false,
-        string $namespace = null,
+        string $namespace = 'App',
         string $subPackage = null,
         string $schema = null,
         bool $hasHttpHandlers = false,
@@ -227,12 +217,13 @@ class ReverseEngineerTask
             string $routesDirectory,
             string $cachePath,
             string $routesCachePath,
-            \Closure $onStartCallback,
-            \Closure $onCompleteCallback = null,
-            \Closure $onExistsCallback = null,
-            \Closure $createHTrProjectsCallback = null
+            callable $onStartCallback,
+            callable $onCompleteCallback = null,
+            callable $onExistsCallback = null,
+            callable $createHTrProjectsCallback = null,
+            callable $pluginsCallback = null
         ) use (
-            $options,
+            $traversable,
             $src,
             $routingfilename,
             $routePrefix,
@@ -259,67 +250,38 @@ class ReverseEngineerTask
             $onCompleteCallback = $onCompleteCallback ?? static function () {
                 printf("\nTask Completed successfully...\n");
             };
-            $connection = DriverManager::getConnection($options);
-            $schemaManager = $connection->createSchemaManager();
-            $connection->getDatabasePlatform()->registerDoctrineTypeMapping('enum', 'string');
-            // the generated tables
-            $exceptFn = static function ($table) {
-                return !(Str::contains($table->getName(), 'auth_')
-                    || Str::startsWith($table->getName(), 'acl_')
-                    || ('accounts_verifications' === $table->getName())
-                    || Str::contains($table->getName(), 'file_authorization')
-                    || Str::contains($table->getName(), 'uploaded_file')
-                    || Str::contains($table->getName(), 'server_authorized_')
-                    || Str::contains($table->getName(), 'shared_files')
-                    || Str::contains($table->getName(), 'form_')
-                    || ('forms' === $table->getName())
-                    || ('migrations' === $table->getName())
-                    || Str::startsWith($table->getName(), 'log_model_'));
-            };
+
             // Execute the runner
             // # Create the migrations runner
-            $runner = DatabaseSchemaReverseEngineeringRunner($schemaManager, $src, $namespace ?? 'App');
+            $modulesFactory = new ModulesIteratorFactory($this->rulesFactory, $src, $namespace);
+            $modulesFactory = $modulesFactory->setDomain($subPackage)->setSchema($schema);
             if ($hasHttpHandlers) {
-                $runner = $runner->withHttpHandlers();
+                $modulesFactory = $modulesFactory->withHttpHandlers();
             }
 
             if ($this->policies) {
-                $runner = $runner->withPolicies();
+                $modulesFactory = $modulesFactory->withPolicies();
             }
 
             if ($noAuth) {
-                $runner = $runner->withoutAuth();
+                $modulesFactory = $modulesFactory->withoutAuth();
             }
 
-            /**
-             * @var ForeignKeyConstraintDefinition[]
-             */
+            /** @var string[] */
+            $tableNames = [];
+            /** @var ForeignKeyConstraintDefinition[] */
             $foreignKeys = [];
-            /**
-             * @var array<string,int>
-             */
+            /** @var array<string,int> */
             $tablesindexes = [];
+
             // #endregion Create migration runner
-            $traversable = $runner->setDomain($subPackage)
-                ->bindExceptMethod($exceptFn)
-                ->only($this->tables ?? [])
-                ->except($this->exceptions ?? [])
-                ->setSchema($schema)
-                ->handle(
-                    $foreignKeys,
-                    $tablesindexes,
-                    static function ($tables) use ($namespace, $subPackage, $disableCache, $cachePath) {
-                        if (!$disableCache) {
-                            ComponentBuilder::cacheComponentDefinitions(
-                                $cachePath,
-                                $tables,
-                                $namespace,
-                                $subPackage
-                            );
-                        }
-                    }
-                );
-            $values = iterator_to_array($traversable);
+            $iterator = $modulesFactory->createModulesIterator($traversable, $foreignKeys, $tablesindexes, $tableNames);
+            $values = iterator_to_array($iterator);
+            //#region write tables to cache if caching is not disabled
+            if (!$disableCache) {
+                ComponentBuilder::cacheComponentDefinitions($cachePath, $tableNames, $namespace, $subPackage);
+            }
+            //#endregion write tables to cache if caching is not disabled
             /**
              * @var Progress
              */
@@ -368,6 +330,12 @@ class ReverseEngineerTask
                     static::writeComponentSourceCode(Arr::get($component, 'model.path'), self::resolveWritable($modelbuilder), $onExistsCallback);
                     // #endregion Write model source code
 
+                    // Use plugin code generator
+                    /** @var \Drewlabs\GCli\Contracts\Type $type */
+                    if (!is_null($type = Arr::get($component, 'model.definition'))) {
+                        G::getInstance()->generate($type);
+                    }
+
                     // #region Write view model source code
                     $viewmodelbuilder = Arr::get($component, 'viewModel.class');
                     if ($dtoBuilder = Arr::get($component, 'dto.class')) {
@@ -399,8 +367,8 @@ class ReverseEngineerTask
                                 ],
                                 true
                             ) ?
-                                'collectionOf:\\'.ltrim($_current->getCastClassPath(), '\\') :
-                                'value:\\'.ltrim($_current->getCastClassPath(), '\\');
+                                'collectionOf:\\' . ltrim($_current->getCastClassPath(), '\\') :
+                                'value:\\' . ltrim($_current->getCastClassPath(), '\\');
                         }
                         $dtoBuilder->setCamelizeProperties($camelize)->setCasts($currentDtoCasts);
                     }
@@ -525,8 +493,8 @@ class ReverseEngineerTask
         ) {
             if (!$disableCache && !$partial) {
                 // Get route definitions from cache
-                $value = $cachePath ? RouteDefinitions::getCachedRoutes($cachePath) : null;
-                $routes = array_merge($routes, $value ? $value->getRoutes() : []);
+                $cachedRoutes = $cachePath ? RouteDefinitions::getCachedRoutes($cachePath) : null;
+                $routes = array_merge($routes, $cachedRoutes ? $cachedRoutes->getRoutes() : []);
             }
             $definitions = [];
             foreach ($routes as $key => $value) {
@@ -596,6 +564,6 @@ class ReverseEngineerTask
             return $component(...$args);
         }
 
-        throw new \RuntimeException('Unsupported type '.(\is_object($component) && null !== $component ? $component::class : \gettype($component)));
+        throw new \RuntimeException('Unsupported type ' . (\is_object($component) && null !== $component ? $component::class : \gettype($component)));
     }
 }

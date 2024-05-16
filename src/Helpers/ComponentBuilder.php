@@ -29,9 +29,11 @@ use Drewlabs\GCli\Contracts\SourceFileInterface;
 
 use Drewlabs\GCli\Exceptions\IOException;
 use Drewlabs\GCli\IO\Path;
-use Drewlabs\GCli\ORMColumn;
+use Drewlabs\GCli\Column;
 
-use Drewlabs\GCli\ORMModel;
+use Drewlabs\GCli\Table;
+use Drewlabs\GCli\Traits\ProvidesTrimTableSchema;
+use Illuminate\Support\Pluralizer;
 
 use function Drewlabs\GCli\Proxy\DataTransfertClassBuilder;
 use function Drewlabs\GCli\Proxy\EloquentORMModelBuilder;
@@ -41,6 +43,8 @@ use function Drewlabs\GCli\Proxy\ViewModelBuilder;
 
 class ComponentBuilder
 {
+    use ProvidesTrimTableSchema;
+
     /**
      * Creates a model builder class.
      *
@@ -51,6 +55,7 @@ class ComponentBuilder
      */
     public static function createModelBuilder(
         string $table,
+        ?string $schema = null,
         array $columns = [],
         string $namespace = 'App\\Models',
         string $primaryKey = 'id',
@@ -60,10 +65,11 @@ class ComponentBuilder
         array $appends = [],
         string $comments = null
     ) {
+        $module = static::trimschema($table, $schema);
         $component = EloquentORMModelBuilder(
-            new ORMModel(
+            new Table(
                 $primaryKey,
-                null,
+                Str::camelize(Pluralizer::singular($module)),
                 $table,
                 array_map(
                     static function ($definition) {
@@ -71,7 +77,7 @@ class ComponentBuilder
                         $least = explode(',', Str::after('|', $definition) ?? '');
                         $type = Arr::first($least) ?? null;
 
-                        return new ORMColumn($name, empty($type) ? null : $type);
+                        return new Column($name, empty($type) ? null : $type);
                     },
                     array_filter(array_map(static function ($column) {
                         if (\is_string($column) && !Str::contains($column, '|')) {
@@ -85,6 +91,7 @@ class ComponentBuilder
                 ),
                 $increments,
                 $namespace,
+                $module,
                 $comments,
             )
         )->setHiddenColumns($hidden ?? [])
@@ -261,42 +268,6 @@ class ComponentBuilder
     }
 
     /**
-     * Build a model class script.
-     *
-     * @param bool               $vm
-     * @param (string|null)|null $comments
-     *
-     * @throws \RuntimeException
-     * @throws PHPVariableException
-     * @throws IOException
-     *
-     * @return SourceFileInterface
-     */
-    public static function buildModelDefinitionSourceFile(
-        string $table,
-        array $columns = [],
-        string $namespace = 'App\\Models',
-        string $primaryKey = 'id',
-        bool $increments = true,
-        $vm = false,
-        array $hidden = [],
-        array $appends = [],
-        string $comments = null
-    ) {
-        return static::createModelBuilder(
-            $table,
-            $columns,
-            $namespace,
-            $primaryKey,
-            $increments,
-            $vm,
-            $hidden,
-            $appends,
-            $comments
-        )->build();
-    }
-
-    /**
      * Build a service class script.
      *
      * @param (string|null)|null $name
@@ -467,6 +438,8 @@ class ComponentBuilder
     /**
      * Cache component definitions.
      *
+     * @param string $path
+     * @param string[] $tables
      * @param (string|null)|null $namespace
      * @param (string|null)|null $subPackage
      *

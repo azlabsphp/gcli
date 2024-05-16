@@ -5,7 +5,7 @@ namespace Drewlabs\GCli\Plugins\TSModule\V1;
 use Drewlabs\CodeGenerator\Helpers\Str;
 use Drewlabs\GCli\Contracts\Type;
 
-class BuiltType
+class Types
 {
     /** @var Type */
     private $type;

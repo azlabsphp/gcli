@@ -56,6 +56,7 @@ class CommandArguments
         $options = $options->merge([
             'path' => Path::new($basePath)->__toString(),
             'cache' => false === (bool) $this->options->get('disableCache'),
+            'plugins' => $this->options->get('plugins', []),
         ]);
         if ($routeingfilename = $this->options->get('routingfilename')) {
             $options = $options->merge(['routes.filename' => $routeingfilename]);

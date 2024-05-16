@@ -69,6 +69,6 @@ class Cache
             return null;
         }
 
-        return \call_user_func([\is_string($type) ? new $type() : $type, 'unserialize'], Reader::open($this->path->__toString())->read());
+        return \call_user_func([\is_string($type) ? new $type([]) : $type, 'unserialize'], Reader::open($this->path->__toString())->read());
     }
 }

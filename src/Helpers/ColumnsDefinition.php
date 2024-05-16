@@ -13,12 +13,11 @@ declare(strict_types=1);
 
 namespace Drewlabs\GCli\Helpers;
 
-use Doctrine\DBAL\Schema\Column;
+use Doctrine\DBAL\Schema\Column as DBALColumn;
 use Drewlabs\Core\Helpers\Iter;
-use Drewlabs\GCli\ORMColumn;
-use Drewlabs\GCli\ORMColumn as ColumnDefinition;
-use Drewlabs\GCli\ORMColumnForeignKey;
-use Drewlabs\GCli\ORMColumnUniqueKey;
+use Drewlabs\GCli\Column;
+use Drewlabs\GCli\ForeignKey;
+use Drewlabs\GCli\UniqueKey;
 use Generator;
 
 class ColumnsDefinition
@@ -26,7 +25,7 @@ class ColumnsDefinition
     /**
      * Create an iterator or a generator of {@link ColumnDefinition} from a list of doctrine dbal column instance.
      *
-     * @param \Traversable<Column> $columns
+     * @param \Traversable<SchemaColumn> $columns
      *
      * @return \Generator<mixed, ColumnDefinition, mixed, void>
      */
@@ -44,7 +43,7 @@ class ColumnsDefinition
                 $regex = (null === $length && 'bigint' === $typeName) ? \PHP_INT_MAX : $length;
             }
             
-            $instance = new ORMColumn(
+            $instance = new Column(
                 $column->getName(),
                 $regex ? sprintf('%s:%s', $typeName, $regex) : sprintf('%s', $typeName),
                 $table,
@@ -68,7 +67,7 @@ class ColumnsDefinition
         if (!empty($foreignKeys)) {
             $foreignKeys = iterator_to_array((static function ($keys) {
                 foreach ($keys as $key) {
-                    yield $key->getLocalColumns()[0] => new ORMColumnForeignKey(
+                    yield $key->getLocalColumns()[0] => new ForeignKey(
                         $key->getLocalTableName(),
                         $key->getLocalColumns(),
                         $key->getForeignTableName(),
@@ -121,7 +120,7 @@ class ColumnsDefinition
             // Set the unique constraint on the definition
             foreach ($uniqueIndexes as $key => $value) {
                 if ($definition = $definitions[$key] ?? null) {
-                    $definition = $definition->setUnique(true === $value ? new ORMColumnUniqueKey($definition->getTable(), [$definition->name()]) : null);
+                    $definition = $definition->setUnique(true === $value ? new UniqueKey($definition->getTable(), [$definition->name()]) : null);
                     $definitions = array_merge($definitions, [$key => $definition]);
                 }
             }

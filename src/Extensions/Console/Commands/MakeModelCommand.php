@@ -20,6 +20,7 @@ use Drewlabs\GCli\Contracts\SourceFileInterface;
 use Drewlabs\GCli\Contracts\ViewModelRulesFactory;
 use Drewlabs\GCli\Extensions\Console\ComponentCommandsHelpers;
 use Drewlabs\GCli\Helpers\ComponentBuilder;
+use Drewlabs\GCli\Validation\Fluent\RulesFactory;
 use Illuminate\Console\Command;
 use Illuminate\Container\Container;
 
@@ -33,17 +34,17 @@ class MakeModelCommand extends Command
 {
     /** @var string */
     protected $signature = 'gcli:make:model '
-        .'{--increments : Makes the model primary key incrementable}'
-        .'{--asViewModel : Generate the model as a view model class}'
-        .'{--comment= Comment to be added to the model }'
-        .'{--table= : Table name to attached to the model }'
-        .'{--namespace= : Component namespace }'
-        .'{--primaryKey= : Model primary key }'
-        .'{--path= : Project source code path }'
-        .'{--columns=* : List of model table fillable columns. (column|type) }'
-        .'{--hidden=* List of hidden properties}'
-        .'{--appends=* List of properties to append to the model }'
-        .'{--all : Creates service, dto, view model and controller classes }';
+        . '{--increments : Makes the model primary key incrementable}'
+        . '{--schema= : Schema prefix to database tables}'
+        . '{--comment= Comment to be added to the model }'
+        . '{--table= : Table name to attached to the model }'
+        . '{--namespace= : Component namespace }'
+        . '{--primaryKey= : Model primary key }'
+        . '{--path= : Project source code path }'
+        . '{--columns=* : List of model table fillable columns. (column|type) }'
+        . '{--hidden=* List of hidden properties}'
+        . '{--appends=* List of properties to append to the model }'
+        . '{--all : Creates service, dto, view model and controller classes }';
 
     /** @var string */
     protected $description = 'Creates a model using Drewlabs package model definitions';
@@ -64,16 +65,17 @@ class MakeModelCommand extends Command
         $increments = $this->option('increments') ?? false;
         $namespace = $this->option('namespace') ?? '\\App\\Models';
         $columns = $this->option('columns') ?? [];
-        $vm = $this->option('asViewModel') ?? false;
         $basePath = $this->app->basePath($this->option('path') ?? 'app');
+        $schema = $this->option('schema') ?? null;
         // # End of parameters initialization
         $builder = ComponentBuilder::createModelBuilder(
             $table,
+            $schema,
             $columns ?? [],
             $namespace,
             $primaryKey,
             $increments,
-            $vm,
+            false,
             $this->option('hidden'),
             $this->option('appends') ?? [],
             $this->option('comment') ?? null
@@ -95,13 +97,31 @@ class MakeModelCommand extends Command
      */
     public static function createComponents($basePath, SourceFileInterface $component, ORMModelDefinition $definition = null, string $primaryKey = 'id')
     {
+        $rulesFactory = new RulesFactory;
         $modelClassPath = sprintf('\\%s\\%s', $component->getNamespace(), $component->getName());
         $service = $service ?? sprintf('%sService', $component->getName());
         $dto = $dto ?? sprintf('%sDto', $component->getName());
         $viewModel = $viewModel ?? sprintf('%sViewModel', $component->getName());
         $serviceClass = ComponentCommandsHelpers::createService($component->getNamespace(), $basePath, $modelClassPath, $service);
-        $dtoClass = ComponentCommandsHelpers::createDto($component->getNamespace(), $basePath, $modelClassPath, $dto, $definition instanceof DtoAttributesFactory ? $definition->createDtoAttributes() : []);
-        $viewModelClass = ComponentCommandsHelpers::createViewModel($component->getNamespace(), $basePath, $modelClassPath, $viewModel, $definition instanceof ViewModelRulesFactory ? $definition->createRules() : [], $definition instanceof ViewModelRulesFactory ? $definition->createRules(true) : []);
+        $dtoClass = ComponentCommandsHelpers::createDto(
+            $component->getNamespace(),
+            $basePath,
+            $modelClassPath,
+            $dto,
+            iterator_to_array((static function ($model) {
+                foreach ($model->columns() as $column) {
+                    yield $column->name() => $column->type();
+                }
+            })($definition))
+        );
+        $viewModelClass = ComponentCommandsHelpers::createViewModel(
+            $component->getNamespace(),
+            $basePath,
+            $modelClassPath,
+            $viewModel,
+            $rulesFactory->createRules($definition),
+            $rulesFactory->createRules($definition, true)
+        );
         ComponentsScriptWriter($basePath)->write(
             ComponentBuilder::buildController(
                 $modelClassPath,

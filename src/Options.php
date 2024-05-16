@@ -110,6 +110,18 @@ class Options
     }
 
     /**
+     * magic method to make the options instance callable
+     * 
+     * @param string $key 
+     * @param mixed $default 
+     * @return mixed 
+     */
+    public function __invoke(string $key, $default = null)
+    {
+        return $this->get($key, $default);
+    }
+
+    /**
      * Merge values into the existing options.
      *
      * @param mixed $value

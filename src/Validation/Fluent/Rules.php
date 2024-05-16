@@ -11,13 +11,13 @@ declare(strict_types=1);
  * file that was distributed with this source code.
  */
 
-namespace Drewlabs\GCli\Helpers;
+ namespace Drewlabs\GCli\Validation\Fluent;
 
 use Drewlabs\Core\Helpers\Str;
 use Drewlabs\GCli\Contracts\ForeignKeyConstraintDefinition;
 use Drewlabs\GCli\Contracts\UniqueKeyConstraintDefinition;
 
-class FluentRules
+class Rules
 {
     /** @var string */
     const REQUIRED_IF = 'required_if';
@@ -53,22 +53,22 @@ class FluentRules
      *
      * @return array
      */
-    public static function getRule($definition, \Closure $predicate = null)
+    public static function get($definition, \Closure $predicate = null)
     {
         // Handle Foreign key definition rules
         if ($definition instanceof ForeignKeyConstraintDefinition) {
-            return [self::getExistsRule($definition->getForeignTableName(), $definition->getForeignColumns())];
+            return [self::exists($definition->getForeignTableName(), $definition->getForeignColumns())];
         }
         // Handle unique columns definitions
         if ($definition instanceof UniqueKeyConstraintDefinition) {
-            return [self::getUniqueRule($definition)];
+            return [self::unique($definition)];
         }
         // Handle unique rules
         if (!\is_string($definition)) {
             throw new \Exception('$definition parameter type must be a PHP string or instance of ' . ForeignKeyConstraintDefinition::class);
         }
         // Here we handle string types
-        return self::getSimpleRule($definition, $predicate);
+        return self::basic($definition, $predicate);
     }
 
     /**
@@ -76,7 +76,7 @@ class FluentRules
      *
      * @return string
      */
-    public static function getUniqueRule(UniqueKeyConstraintDefinition $metadata, string $primaryKey = null, bool $updates = false)
+    public static function unique(UniqueKeyConstraintDefinition $metadata, string $primaryKey = null, bool $updates = false)
     {
         $columns = $metadata->getColumns();
 
@@ -100,7 +100,7 @@ class FluentRules
      *
      * @return string
      */
-    public static function getExistsRule(string $table, $columns)
+    public static function exists(string $table, $columns)
     {
         return sprintf('exists:%s,%s', $table, \is_array($columns) ? ($columns[0] ?? 'id') : ($columns ?? 'id'));
     }
@@ -110,15 +110,15 @@ class FluentRules
      *
      * @return array
      */
-    private static function getSimpleRule(string $type, \Closure $predicate = null)
+    private static function basic(string $type, \Closure $predicate = null)
     {
         if (!Str::contains($type, ':')) {
             return array_filter([self::TYPE_MAPS[$type] ?? null], $predicate ?? static function ($item) {
                 return null !== $item;
             });
         }
-        [$part0, $part1] = [Str::before(':', $type), Str::after(':', $type)];
-        [$rule1, $rule2] = [self::TYPE_MAPS[$part0] ?? null, null];
+        list($part0, $part1) = [Str::before(':', $type), Str::after(':', $type)];
+        list($rule1, $rule2) = [self::TYPE_MAPS[$part0] ?? null, null];
         if (\in_array($rule1, ['string', 'numeric', 'integer'], true)) {
             $rule2 = "max:{$part1}";
         }

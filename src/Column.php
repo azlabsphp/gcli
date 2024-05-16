@@ -21,7 +21,7 @@ use Drewlabs\GCli\Contracts\ORMColumnDefinition as ColumnDefinition;
 use Drewlabs\GCli\Contracts\UniqueKeyConstraintDefinition;
 
 /** @internal */
-class ORMColumn implements ColumnDefinition, HasSizeProperty, HasExistConstraint, HasUniqueConstraint
+class Column implements ColumnDefinition, HasSizeProperty, HasExistConstraint, HasUniqueConstraint
 {
     /** @var string|null */
     private $table;

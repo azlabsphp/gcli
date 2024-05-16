@@ -27,7 +27,8 @@ use Drewlabs\GCli\ComponentsScriptWriter;
 use Drewlabs\GCli\Contracts\ORMModelDefinition;
 use Drewlabs\GCli\Contracts\ScriptWriter;
 use Drewlabs\GCli\PHP\PHPScriptFile;
-use Drewlabs\GCli\ReverseEngineeringService;
+use Drewlabs\GCli\ModulesIteratorFactory;
+use Drewlabs\GCli\Validation\RulesFactory;
 
 /**
  * Provides a proxy function to the {@link ScriptWriter} constructor.
@@ -120,13 +121,15 @@ function PHPScript(
 }
 
 /**
+ * @deprecated
+ * 
  * Provides a proxy function to the  {@link \Drewlabs\GCli\DatabaseSchemaReverseEngineeringRunner} constructor.
  *
- * @return ReverseEngineeringService
+ * @return ModulesIteratorFactory
  */
-function DatabaseSchemaReverseEngineeringRunner(AbstractSchemaManager $manager, string $directory, ?string $namespace = 'App')
+function DatabaseSchemaReverseEngineeringRunner(RulesFactory $factory, string $directory, ?string $namespace = 'App')
 {
-    return new ReverseEngineeringService($manager, $directory, $namespace);
+    return new ModulesIteratorFactory($factory, $directory, $namespace);
 }
 
 /**

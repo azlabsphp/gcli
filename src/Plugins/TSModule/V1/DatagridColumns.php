@@ -49,7 +49,6 @@ class DatagridColumns
                 sprintf("\t\tlabel: '%s',", $label),
                 sprintf("\t\tfield: '%s',", $propertyName),
                 "\t\tsortable: false,",
-                # TODO: Add date transform implementation
                 in_array(strtolower($property->getRawType()), ['date', 'datetime']) ? "\t\ttransform: 'date'" : "\t\t//transform: 'uppercase',",
                 "\t\t// TODO: Uncomment codes below to enable search query",
                 "\t\t//searcheable: true,",

@@ -16,7 +16,7 @@ namespace Drewlabs\GCli;
 use Drewlabs\GCli\Contracts\ForeignKeyConstraintDefinition;
 
 /** @internal */
-class ORMColumnForeignKey implements ForeignKeyConstraintDefinition
+class ForeignKey implements ForeignKeyConstraintDefinition
 {
     
     /**  @var string */

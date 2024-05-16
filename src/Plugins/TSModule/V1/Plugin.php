@@ -25,7 +25,7 @@ class Plugin implements AbstractPlugin
 
     public function generate(Type $type, string $module = null): void
     {
-        $builder = new BuiltType($type);
+        $builder = new Types($type);
         $columns = new Columns($module, $type);
         $config = new TsModuleConfig($module, $type);
         $form = new Config('posts', $type);

@@ -11,50 +11,52 @@ declare(strict_types=1);
  * file that was distributed with this source code.
  */
 
-namespace Drewlabs\GCli;
+namespace Drewlabs\GCli\DBAL\T;
 
+use Drewlabs\CodeGenerator\Helpers\Str;
 use Drewlabs\Core\Helpers\Functional;
 use Drewlabs\GCli\Helpers\ColumnsDefinition;
+use Drewlabs\GCli\Table;
+use Drewlabs\GCli\Traits\ProvidesTrimTableSchema;
+use Illuminate\Support\Pluralizer;
 
-final class ModelDefinitionIterator implements \IteratorAggregate
+final class Iterator implements \IteratorAggregate
 {
-    /**
-     * @var array
-     */
+    use ProvidesTrimTableSchema;
+
+    /** @var \Doctrine\DBAL\Schema\Table[] */
     private $tables;
 
-    /**
-     * @var string
-     */
+    /** @var string */
     private $namespace;
 
-    /**
-     * @var string
-     */
-    private $domain;
+    /** @var string|null */
+    private $schema;
 
     /**
      * Creates Iterator instance.
      *
-     * @param string $domain
+     * @param \Doctrine\DBAL\Schema\Table[] $tables
+     * @param string $namespace
+     * @param string|null $schema
      */
-    public function __construct(array $tables, string $namespace, string $domain = null)
+    public function __construct(array $tables, string $namespace, ?string $schema)
     {
         $this->tables = $tables;
         $this->namespace = $namespace;
-        $this->domain = $domain;
+        $this->schema = $schema;
     }
 
     /**
-     * @return \Traversable<ORMModel>
+     * @return \Traversable<Table>
      */
     public function getIterator(): \Traversable
     {
         foreach ($this->tables as $table) {
-            $name_ = $table->getName();
+            $tableName = $table->getName();
             // # region get table primary key columns
-            $tPrimaryKey = $table->getPrimaryKey();
-            $primaryKeyColumns = $tPrimaryKey ? $tPrimaryKey->getColumns() : [];
+            $tablePrimaryKey = $table->getPrimaryKey();
+            $primaryKeyColumns = $tablePrimaryKey ? $tablePrimaryKey->getColumns() : [];
             $primaryKey = ($columnCount = \count($primaryKeyColumns)) <= 1 ? (1 === $columnCount ? $primaryKeyColumns[0] : null) : $primaryKeyColumns;
             // # end region get table primary key columns
             // #region column definition
@@ -71,20 +73,22 @@ final class ModelDefinitionIterator implements \IteratorAggregate
                 static function ($columns) {
                     return array_values($columns);
                 }
-            )($name_);
+            )($tableName);
             // #endregion colum definition
             // # Get table comment
             $comment = $table->getComment();
             // # Get unique primary key value - Cause Eloquent does not support composite keys
             $key = \is_array($primaryKey) ? ($primaryKey[0] ?? null) : $primaryKey;
             // # Get unique primary key value
-            yield new ORMModel(
+            $module = static::trimschema($tableName, $this->schema);
+            yield new Table(
                 $key ?? null,
-                null,
-                $name_,
+                Str::camelize(Pluralizer::singular($module)),
+                $tableName,
                 $columns,
                 !empty($key) ? $table->getColumn($key)->getAutoincrement() : false,
-                sprintf('%s\\%s', $this->namespace, ltrim(sprintf('%s%s', $this->domain ? "$this->domain\\" : '', 'Models'))),
+                $this->namespace,
+                $module,
                 $comment,
             );
         }

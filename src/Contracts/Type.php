@@ -9,7 +9,15 @@ interface Type
      * 
      * @return string
      */
-    public function name(): ?string;
+    public function name(): string;
+
+
+    // /**
+    //  * returns the actual name from the name property of the current type
+    //  * 
+    //  * @return string 
+    //  */
+    // public function getActualName(): string;
 
 
     /**

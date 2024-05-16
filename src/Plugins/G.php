@@ -41,26 +41,25 @@ class G
      * @param Plugin $plugin 
      * @return void 
      */
-    public function addPlugin(Plugin $plugin)
+    public function addPlugin(string $name, Plugin $plugin)
     {
-        // In order not to register the same plugin twice
-        if (in_array($plugin, $this->plugins)) {
+        if (in_array($name, array_keys($this->plugins))) {
             return;
         }
-        $this->plugins[] = $plugin;
+        $this->plugins[$name] = $plugin;
     }
 
     /**
      * Use the registered plugin to generate source code for the
      * list of provided type instances
      * 
-     * @param Type[] $types
+     * @param Type|Type[] $types
      * 
      * @return void 
      */
-    public function generate(array $types)
+    public function generate($types)
     {
-        // TODO: Implement the generator
+        $types = is_array($types) ? $types : [$types];
         foreach ($this->plugins as $plugin) {
             foreach ($types as $value) {
                 $plugin->generate($value, $value instanceof ProvidesModuleMetadata ? $value->getModuleName() : null);

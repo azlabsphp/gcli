@@ -16,13 +16,12 @@ namespace Drewlabs\GCli\Extensions\Console\Commands;
 use Drewlabs\CodeGenerator\Exceptions\PHPVariableException;
 use Drewlabs\Core\Helpers\Str;
 use Drewlabs\GCli\Builders\ORMModelBuilder;
-use Drewlabs\GCli\Contracts\DtoAttributesFactory;
 use Drewlabs\GCli\Contracts\ViewModelRulesFactory;
 use Drewlabs\GCli\Extensions\Console\ComponentCommandsHelpers;
 use Drewlabs\GCli\Helpers\ComponentBuilder;
 use Illuminate\Console\Command;
 use Illuminate\Container\Container;
-use Illuminate\Contracts\Foundation\Application;
+use Drewlabs\GCli\Validation\Fluent\RulesFactory;
 use Illuminate\Support\Pluralizer;
 
 use function Drewlabs\GCli\Proxy\ComponentsScriptWriter;
@@ -51,8 +50,8 @@ class MakeControllerCommand extends Command
 
     public function __construct()
     {
-        $this->app = ($this->getLaravel() ?? Container::getInstance());
         parent::__construct();
+        $this->app = ($this->getLaravel() ?? Container::getInstance());
     }
 
     public function handle()
@@ -120,6 +119,7 @@ class MakeControllerCommand extends Command
         if (null !== $model && !class_exists($model) && !class_exists(ORMModelBuilder::defaultClassPath($model))) {
             $modelComponent = ComponentBuilder::createModelBuilder(
                 $pluralizer($modelName),
+                null,
                 $columns ?? [],
                 $modelNamespace,
             );
@@ -130,10 +130,28 @@ class MakeControllerCommand extends Command
             $viewModel = $viewModel ?? sprintf('%sViewModel', $modelName);
         }
         if ($modelComponent) {
+            $rulesFactory = new RulesFactory;
             $definition = $modelComponent->getDefinition();
             $serviceClass = ComponentCommandsHelpers::createService($namespace, $basePath, $modelClassPath, $service);
-            $dtoClass = ComponentCommandsHelpers::createDto($namespace, $basePath, $modelClassPath, $dto, $definition instanceof DtoAttributesFactory ? $definition->createDtoAttributes() : []);
-            $viewModelClass = ComponentCommandsHelpers::createViewModel($namespace, $basePath, $modelClassPath, $viewModel, $definition instanceof ViewModelRulesFactory ? $definition->createRules() : [], $definition instanceof ViewModelRulesFactory ? $definition->createRules(true) : []);
+            $dtoClass = ComponentCommandsHelpers::createDto(
+                $namespace,
+                $basePath,
+                $modelClassPath,
+                $dto,
+                iterator_to_array((static function ($model) {
+                    foreach ($model->columns() as $column) {
+                        yield $column->name() => $column->type();
+                    }
+                })($definition))
+            );
+            $viewModelClass = ComponentCommandsHelpers::createViewModel(
+                $namespace,
+                $basePath,
+                $modelClassPath,
+                $viewModel,
+                $rulesFactory->createRules($definition),
+                $rulesFactory->createRules($definition, true)
+            );
         } else {
             $serviceClass = sprintf('%s\\%s', sprintf('\\%s\\Services', ComponentCommandsHelpers::getBaseNamespace($namespace) ?? 'App'), "{$modelName}Service");
             $dtoClass = sprintf('%s\\%s', sprintf('\\%s\\Dto', ComponentCommandsHelpers::getBaseNamespace($namespace) ?? 'App'), "{$modelName}Dto");

@@ -48,7 +48,6 @@ class TsModuleConfig
             'import { gridColumns, viewColumns } from \'./columns\';',
             'import { Injector } from \'@angular/core\';',
             'import { Observable } from \'rxjs\';',
-
             '',
             'export default (',
             "\ttranslateColumns: <T extends { title: string }>(columns: T[]) => (injector: Injector) => T[] | Observable<T[]>,",

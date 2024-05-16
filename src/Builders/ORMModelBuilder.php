@@ -620,12 +620,12 @@ class ORMModelBuilder implements AbstractORMModelBuilder, AbstractBuilder, Provi
             $this->setTableName($table);
         }
         // Set model name
-        $name_ = $table ?? $name ?? null;
-        // TODO : REMOVE SCHEMA PREFIX IF ANY
-        if ($name_ && $schema) {
-            $name_ = self::trimschema($name_, $schema);
+        $result = $table ?? $name ?? null;
+        if ($result && $schema) {
+            $result = self::trimschema($result, $schema);
         }
-        if ($name = Str::camelize(Pluralizer::singular($name_))) {
+        
+        if ($name = Str::camelize(Pluralizer::singular($result))) {
             $this->setName($name);
         }
     }

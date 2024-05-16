@@ -14,147 +14,78 @@ declare(strict_types=1);
 namespace Drewlabs\GCli;
 
 use Closure;
-use Doctrine\DBAL\Exception;
-use Doctrine\DBAL\Schema\AbstractSchemaManager;
-use Doctrine\DBAL\Schema\SchemaException;
-use Drewlabs\CodeGenerator\Exceptions\PHPVariableException;
 use Drewlabs\Core\Helpers\Arr;
 use Drewlabs\GCli\Contracts\ControllerBuilder;
 use Drewlabs\GCli\Contracts\SourceFileInterface;
 use Drewlabs\GCli\Helpers\ComponentBuilder;
+use Generator;
+use InvalidArgumentException;
+use Drewlabs\GCli\Validation\RulesFactory;
 
 use function Drewlabs\GCli\Proxy\EloquentORMModelBuilder;
 use function Drewlabs\GCli\Proxy\MVCPolicyBuilder;
 use function Drewlabs\GCli\Proxy\ServiceInterfaceBuilderProxy;
 
-class ReverseEngineeringService
+class ModulesIteratorFactory
 {
     /**
      * @var array
      */
-    private const DEFAULT_TIMESTAMP_COLUMNS = ['created_at', 'updated_at'];
+    const DEFAULT_TIMESTAMP_COLUMNS = ['created_at', 'updated_at'];
 
-    /**
-     * @var string
-     */
-    private const DEFAULT_PROJECT_NAMESPACE = 'App';
+    /** @var string */
+    const DEFAULT_PROJECT_NAMESPACE = 'App';
 
-    /**
-     * @var AbstractSchemaManager
-     */
-    private $manager;
-
-    /**
-     * @var string
-     */
+    /** @var string */
     private $directory;
 
-    /**
-     * @var string
-     */
+    /** @var string */
     private $namespace;
 
-    /**
-     * List of table that must be ignore.
-     *
-     * @var string[]
-     */
-    private $excepts = [];
-
-    /**
-     * @var \Closure
-     */
-    private $tablesFilterFunc;
-
-    /**
-     * @var mixed
-     */
+    /** @var mixed */
     private $auth = true;
 
-    /**
-     * Components namespace.
-     *
-     * @var string
-     */
+    /** @var string */
     private $domain;
 
-    /**
-     * @var string
-     */
+    /**  @var string */
     private $schema;
 
-    /**
-     * @var bool
-     */
+    /** @var bool */
     private $http = false;
 
-    /**
-     * @var bool
-     */
+    /** @var bool */
     private $policies = false;
 
-    /**
-     * @var string[]
-     */
-    private $tables = [];
+    /** @var RulesFactory */
+    private $rulesFactory;
 
     /**
      * Creates a database reverse engineering service instance.
      */
-    public function __construct(
-        AbstractSchemaManager $manager,
-        string $directory,
-        string $namespace = 'App'
-    ) {
-        $this->manager = $manager;
+    public function __construct(RulesFactory $rulesFactory, string $directory, string $namespace = 'App')
+    {
+        $this->rulesFactory = $rulesFactory;
         $this->directory = $directory ?? 'app';
         $this->namespace = $namespace ?? self::DEFAULT_PROJECT_NAMESPACE;
     }
 
-    /**
-     * Specifies the tables for which code should be generated.
-     *
-     * @return self
-     */
-    public function only(array $tables)
-    {
-        $this->tables = $tables;
-
-        return $this;
-    }
-
-    public function except(array $tables)
-    {
-        $this->excepts = $tables ?? [];
-
-        return $this;
-    }
-
-    public function bindExceptMethod(\Closure $filterFn)
-    {
-        $this->tablesFilterFunc = $filterFn;
-
-        return $this;
-    }
 
     public function withoutAuth()
     {
         $this->auth = false;
-
         return $this;
     }
 
-    public function setDomain(string $namespace = null)
+    public function setDomain(string $domain = null)
     {
-        $this->domain = !empty($namespace) ? $namespace : $this->domain;
-
+        $this->domain = !empty($domain) ? $domain : $this->domain;
         return $this;
     }
 
     public function setSchema(string $value = null)
     {
         $this->schema = $value;
-
         return $this;
     }
 
@@ -164,40 +95,36 @@ class ReverseEngineeringService
     public function withHttpHandlers()
     {
         $this->http = true;
-
         return $this;
     }
 
     public function withPolicies()
     {
         $this->policies = true;
-
         return $this;
     }
 
     /**
      * Execute a reverse engeneering flow on database tables.
-     *
-     * @param (\Closure|null)|null $callback
-     *
-     * @throws Exception
-     * @throws SchemaException
-     * @throws \Exception
-     * @throws \InvalidArgumentException
-     * @throws PHPVariableException
-     *
-     * @return \Generator<int, array, mixed, void>
+     * 
+     * @param \Traversable<\Drewlabs\GCli\Contracts\ORMModelDefinition> $traversable 
+     * @param array $foreignKeys 
+     * @param array $tablesindexes 
+     * @param array $tableNames 
+     * @return Generator<int, array, mixed, void>
+     * 
+     * @throws InvalidArgumentException 
      */
-    public function handle(array &$foreignKeys, array &$tablesindexes, \Closure $callback = null)
+    public function createModulesIterator($traversable, array &$foreignKeys, array &$tablesindexes, array &$tableNames)
     {
         // We apply filters to only generate code for tables that
         // passes the filters
         $index = 0;
-        $tables = $this->applyFilters($this->manager->listTables());
-        $traversable = new ModelDefinitionIterator($tables, $this->namespace ?? self::DEFAULT_PROJECT_NAMESPACE, $this->domain);
         foreach ($traversable as $value) {
             ++$index;
-            $tablesindexes[$value->table()] = $index - 1;
+            $tableName = $value->table();
+            $tableNames[] = $tableName;
+            $tablesindexes[$tableName] = $index - 1;
             // for column foreign constraint push the constraint to the foreign key array
             foreach ($value->columns() as $column) {
                 if ($constraint = $column->foreignConstraint()) {
@@ -213,13 +140,13 @@ class ReverseEngineeringService
             $components['model'] = [
                 'path' => implode(\DIRECTORY_SEPARATOR, [$this->directory, sprintf('%s', $this->domain ? "$this->domain/" : '')]),
                 'class' => $builder,
-                'definitions' => $value,
+                'definition' => $value,
                 'classPath' => $modelClassPath,
             ];
             $viewmodel = ComponentBuilder::createViewModelBuilder(
                 false,
-                $value->createRules(),
-                $value->createRules(true),
+                $this->rulesFactory->createRules($value),
+                $this->rulesFactory->createRules($value, true),
                 null,
                 sprintf('%s\\%s', $this->namespace ?? self::DEFAULT_PROJECT_NAMESPACE, sprintf('%s%s', $this->domain ? "$this->domain\\" : '', 'ViewModels')),
                 null,
@@ -237,7 +164,11 @@ class ReverseEngineeringService
                 $modelClassPath
             )->addContracts($serviceType->getClassPath()); // Add the service type as a contract to service
             $dto = ComponentBuilder::createDtoBuilder(
-                $value->createDtoAttributes(),
+                iterator_to_array((static function ($model) {
+                    foreach ($model->columns() as $column) {
+                        yield $column->name() => $column->type();
+                    }
+                })($value)),
                 [],
                 null,
                 sprintf('%s\\%s', $this->namespace ?? self::DEFAULT_PROJECT_NAMESPACE, sprintf('%s%s', $this->domain ? "$this->domain\\" : '', 'Dto')),
@@ -302,12 +233,6 @@ class ReverseEngineeringService
             // Yield the components container
             yield $components;
         }
-
-        if ($callback) {
-            $callback(array_map(static function ($table) {
-                return $table->getName();
-            }, $tables));
-        }
     }
 
     /**
@@ -338,31 +263,5 @@ class ReverseEngineeringService
                 $key
             );
         };
-    }
-
-    /**
-     * Filter tables and ignore not required tables.
-     *
-     * @return array
-     */
-    private function applyFilters(array $tables)
-    {
-        if (!empty($this->excepts)) {
-            $tables = array_filter($tables, function ($table) {
-                return !\in_array($table->getName(), $this->excepts, true);
-            });
-        }
-        // We apply a filter that returns only tables having the name
-        // matching the names specified in the {@see $this->tables_} properties
-        if (!empty($this->tables)) {
-            $tables = array_filter($tables, function ($table) {
-                return \in_array($table->getName(), $this->tables, true);
-            });
-        }
-        if (null !== $this->tablesFilterFunc) {
-            $tables = array_filter($tables, $this->tablesFilterFunc);
-        }
-
-        return $tables;
     }
 }

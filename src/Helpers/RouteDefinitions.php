@@ -141,10 +141,7 @@ class RouteDefinitions
      */
     public static function cacheRoutes(string $path, array $routes, string $namespace = null)
     {
-        Cache::new($path)->dump(new CacheableRoutes([
-            'routes' => $routes,
-            'namespace' => $namespace,
-        ]));
+        Cache::new($path)->dump(new CacheableRoutes($routes, $namespace));
     }
 
     /**

@@ -50,10 +50,7 @@ class Columns
             '',
         ];
 
-        // TODO: Generate UI configuration for datagrid columns
         $lines[] = (string)(new DatagridColumns($this->module, $this->type, $this->camelize));
-
-        // TODO: Generate UI configuration for data detail columns
         $lines[] = (string)(new DetailColumns($this->module, $this->type, $this->camelize));
 
         return implode("\n", $lines);
