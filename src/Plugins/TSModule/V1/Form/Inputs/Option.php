@@ -56,10 +56,10 @@ class Option
             sprintf("\tname: '%s',", $propertyName),
             // We assume the input type to be an email input if the property name contains the word email
             sprintf("\ttype: '%s',", $this->optionType),
-            "\tclasses: undefined,",
+            "\tclasses: '',",
             "\tplaceholder: '...',",
             "\tvalue: null,",
-            "\tdescription: undefined,",
+            "\tdescription: '', // TODO: Add input description",
             sprintf("\tindex: %s,", $this->index ? $this->index : 'undefined'),
             "\tisRepeatable: false,",
             "\tcontainerClass: 'input-col-sm-12',",
