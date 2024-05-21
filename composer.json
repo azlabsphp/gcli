@@ -57,7 +57,8 @@
         "drewlabs/php-value": "required by data transfert objects classes ^0.2.10",
         "drewlabs/laravel-query": "required for eloquent query builder implementation ^0.2.6",
         "drewlabs/laravel-http": "required for laravel http bindings ^0.2.2",
-        "drewlabs/validation": "required for validation requirements ^0.2.6"
+        "drewlabs/validation": "required for validation requirements ^0.2.6",
+        "doctrine/dbal": "required for database tables & indexes resolvers ^4.0"
     },
     "config": {
         "optimize-autoloader": true,
