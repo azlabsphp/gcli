@@ -17,6 +17,7 @@ use Closure;
 use Drewlabs\Core\Helpers\Arr;
 use Drewlabs\GCli\Contracts\ControllerBuilder;
 use Drewlabs\GCli\Contracts\SourceFileInterface;
+use Drewlabs\GCli\Factories\RouteName;
 use Drewlabs\GCli\Helpers\ComponentBuilder;
 use Generator;
 use InvalidArgumentException;
@@ -208,7 +209,7 @@ class ModulesIteratorFactory
                         'nameBuilder' => static function ($controller) {
                             return $controller instanceof ControllerBuilder ?
                                 $controller->routeName() :
-                                ComponentBuilder::buildRouteName($controller->getName());
+                                RouteName::new()->createRouteName($controller->getName());
                         },
                         'classPathBuilder' => static function (SourceFileInterface $controller) {
                             return $controller->getClassPath();

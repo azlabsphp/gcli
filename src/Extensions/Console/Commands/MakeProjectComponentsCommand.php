@@ -14,10 +14,11 @@ declare(strict_types=1);
 namespace Drewlabs\GCli\Extensions\Console\Commands;
 
 use Drewlabs\GCli\Contracts\Writable;
+use Drewlabs\GCli\DBAL\DriverOptionsFactory;
 use Drewlabs\GCli\DBAL\T\IteratorFactory;
 use Drewlabs\GCli\Extensions\Helpers\CommandArguments;
 use Drewlabs\GCli\Extensions\Helpers\ReverseEngineerTask;
-use Drewlabs\GCli\Extensions\ProgressbarIndicator;
+use Drewlabs\GCli\Extensions\ProgressBar;
 use Drewlabs\GCli\HTr\RouteProjectFactory;
 use Drewlabs\GCli\HTr\RouteRequestBodyMap;
 use Drewlabs\GCli\IO\Disk;
@@ -125,10 +126,10 @@ class MakeProjectComponentsCommand extends Command
      */
     public function handle()
     {
-        $forLumen = drewlabs_code_generator_is_running_lumen_app(Container::getInstance());
+        $lumen = drewlabs_code_generator_is_running_lumen_app(Container::getInstance());
         //#region local variables initialization
         $noAuth = (bool) $this->option('noAuth');
-        $httpHandlers = (bool) $this->option('http');
+        $http = (bool) $this->option('http');
         $commandoptions = $this->mergeCamelizeOption($this->choice(static::PROMPT, self::CAMEL_CASE_CHOICES, 0), $this->options() ?? []);
         $commandoptions = array_merge($commandoptions, []);
         $commandargs = new CommandArguments($commandoptions);
@@ -160,10 +161,11 @@ class MakeProjectComponentsCommand extends Command
 
 
         //#region Load database tables
-        $dbOptions = $commandargs->providesdboptions(static function ($key, $default = null) {
+        $factory = new DriverOptionsFactory;
+        $dbOptions = $factory->createOptions($options, static function ($key, $default = null) {
             return config($key, $default);
         });
-        $factory = new IteratorFactory($tableNamespace, $schema, $dbOptions, $includes, $excludes);
+        $factory = new IteratorFactory($tableNamespace, $schema, $dbOptions->get(), $includes, $excludes);
         $iterator = $factory->createIterator();
         //#endregion Load database tables
 
@@ -173,14 +175,14 @@ class MakeProjectComponentsCommand extends Command
             $options->get('routes.filename', 'web.php'),
             $options->get('routes.prefix'),
             $options->get('routes.middleware'),
-            $forLumen,
+            $lumen,
             $disableCache,
             $noAuth,
             $namespace,
             $domain,
             $schema,
-            $httpHandlers,
-            $options->get('models.no-accessors', false)
+            $http,
+            $options->get('models.attributes.accessors', true)
         )(
             $this->laravel->basePath('routes'),
             $this->cachePath,
@@ -188,7 +190,7 @@ class MakeProjectComponentsCommand extends Command
             // Creates the progress indicator
             function ($values) {
                 $this->info("Started reverse engineering process...\n");
-                return new ProgressbarIndicator($this->output->createProgressBar(\count($values)));
+                return new ProgressBar($this->output->createProgressBar(\count($values)));
             },
             function (string $message = null) {
                 $this->info("\nReverse engineering completed successfully!\n");
@@ -223,10 +225,10 @@ class MakeProjectComponentsCommand extends Command
     private function mergeCamelizeOption($choice, array $options)
     {
         if ($choice === self::CAMEL_CASE_CHOICES[0]) {
-            return array_merge($options, ['camelize-attributes' => false]);
+            return array_merge($options, ['camelize' => false]);
         }
         if ($choice === self::CAMEL_CASE_CHOICES[1]) {
-            return array_merge($options, ['camelize-attributes' => true]);
+            return array_merge($options, ['camelize' => true]);
         }
 
         return $options;

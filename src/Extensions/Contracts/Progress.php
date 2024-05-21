@@ -28,5 +28,5 @@ interface Progress
     /**
      * Stop the progression. Indicates that the progress reach an end.
      */
-    public function complete(): void;
+    public function finish(): void;
 }

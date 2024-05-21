@@ -13,6 +13,7 @@ declare(strict_types=1);
 
 namespace Drewlabs\GCli\Extensions\Console\Commands;
 
+use Drewlabs\GCli\Factories\ComponentPath;
 use Drewlabs\GCli\Helpers\ComponentBuilder;
 use Illuminate\Console\Command;
 use Illuminate\Container\Container;
@@ -20,6 +21,7 @@ use Illuminate\Container\Container;
 use function Drewlabs\CodeGenerator\Proxy\PHPClass;
 use function Drewlabs\GCli\Proxy\ComponentsScriptWriter;
 use function Drewlabs\GCli\Proxy\PHPScript;
+
 /**
  * @property \Illuminate\Contracts\Foundation\Application app
  */
@@ -59,10 +61,7 @@ class MakeClassCommand extends Command
         ComponentsScriptWriter('')->write(PHPScript(
             $component->getName(),
             $component,
-            ComponentBuilder::rebuildComponentPath(
-                $namespace ?? '\\App',
-                $basePath
-            )
+            ComponentPath::new()->create($namespace ?? '\\App', $basePath)
         )->setNamespace($component->getNamespace()));
 
         $this->info("Class successfully generated\n");

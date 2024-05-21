@@ -162,4 +162,14 @@ class Options
 
         return $this;
     }
+
+    /**
+     * returns options as array
+     * 
+     * @return array 
+     */
+    public function all(): array
+    {
+        return $this->options;
+    }
 }

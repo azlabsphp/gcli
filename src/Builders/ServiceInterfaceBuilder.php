@@ -19,6 +19,7 @@ use function Drewlabs\CodeGenerator\Proxy\PHPInterface;
 
 use Drewlabs\Contracts\Support\Actions\ActionHandler;
 use Drewlabs\GCli\Contracts\ComponentBuilder as AbstractBuilder;
+use Drewlabs\GCli\Factories\ComponentPath;
 use Drewlabs\GCli\Helpers\ComponentBuilder;
 
 use function Drewlabs\GCli\Proxy\PHPScript;
@@ -92,7 +93,7 @@ class ServiceInterfaceBuilder implements AbstractBuilder
         return PHPScript(
             $component->getName(),
             $component,
-            ComponentBuilder::rebuildComponentPath($this->namespace_ ?? self::__NAMESPACE__, $this->path_ ?? self::__PATH__)
+            ComponentPath::new()->create($this->namespace_ ?? self::__NAMESPACE__, $this->path_ ?? self::__PATH__)
         )->setNamespace($component->getNamespace());
     }
 }

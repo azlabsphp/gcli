@@ -14,27 +14,32 @@ declare(strict_types=1);
 namespace Drewlabs\GCli\Extensions;
 
 use Drewlabs\GCli\Extensions\Contracts\Progress;
+use Symfony\Component\Console\Helper\ProgressBar as BaseProgressBar;
 
-final class FakeProgressIndicator implements Progress
+final class ProgressBar implements Progress
 {
     /**
-     * @var int
+     * @var ProgressBar
      */
-    private $steps = 0;
+    private $bar;
+
+    public function __construct(BaseProgressBar $bar)
+    {
+        $this->bar = $bar;
+    }
 
     public function start(): void
     {
-        printf('Progress started!');
+        $this->bar->start();
     }
 
     public function advance(): void
     {
-        ++$this->steps;
-        printf('-');
+        $this->bar->advance();
     }
 
-    public function complete(): void
+    public function finish(): void
     {
-        printf("\nProgress completed!\n");
+        $this->bar->finish();
     }
 }

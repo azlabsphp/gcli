@@ -15,6 +15,8 @@ namespace Drewlabs\GCli\Extensions\Helpers;
 
 use Closure;
 use Drewlabs\Core\Helpers\Arr;
+use Drewlabs\GCli\Cache\Cache;
+use Drewlabs\GCli\Cache\CacheableTables;
 use Drewlabs\GCli\ComponentsScriptWriter as ComponentsScriptWriterClass;
 use Drewlabs\GCli\Contracts\ComponentBuilder as AbstractBuilder;
 use Drewlabs\GCli\Contracts\ForeignKeyConstraintDefinition;
@@ -220,8 +222,7 @@ class ReverseEngineerTask
             callable $onStartCallback,
             callable $onCompleteCallback = null,
             callable $onExistsCallback = null,
-            callable $createHTrProjectsCallback = null,
-            callable $pluginsCallback = null
+            callable $createHTrProjectsCallback = null
         ) use (
             $traversable,
             $src,
@@ -279,7 +280,7 @@ class ReverseEngineerTask
             $values = iterator_to_array($iterator);
             //#region write tables to cache if caching is not disabled
             if (!$disableCache) {
-                ComponentBuilder::cacheComponentDefinitions($cachePath, $tableNames, $namespace, $subPackage);
+                Cache::new($cachePath)->dump(new CacheableTables($tableNames, $namespace, $subPackage));
             }
             //#endregion write tables to cache if caching is not disabled
             /**
@@ -451,7 +452,7 @@ class ReverseEngineerTask
                 $message = [sprintf("Please add [\%s::class] to the list of application service providers.\n", $serviceProviderBuilder->getClassPath())];
             }
             if ((null !== $indicator) && ($indicator instanceof Progress)) {
-                $indicator->complete();
+                $indicator->finish();
             }
             if (null !== $onCompleteCallback && ($onCompleteCallback instanceof \Closure)) {
                 $onCompleteCallback(implode(\PHP_EOL, $message));

@@ -13,9 +13,9 @@ declare(strict_types=1);
 
 namespace Drewlabs\GCli\Cache;
 
-use Drewlabs\GCli\Contracts\Cacheable as ContractsCacheable;
+use Drewlabs\GCli\Contracts\Cacheable as AbstractCacheable;
 
-class CacheableTables implements ContractsCacheable
+class CacheableTables implements AbstractCacheable
 {
     private $tables;
     private $namespace;

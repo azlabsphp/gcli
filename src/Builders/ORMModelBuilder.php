@@ -30,6 +30,7 @@ use Drewlabs\GCli\Contracts\ORMColumnDefinition;
 use Drewlabs\GCli\Contracts\ORMModelDefinition;
 use Drewlabs\GCli\Contracts\ProvidesPropertyAccessors;
 use Drewlabs\GCli\Contracts\ProvidesRelations;
+use Drewlabs\GCli\Factories\ComponentPath;
 use Drewlabs\GCli\Helpers\ComponentBuilder;
 
 use function Drewlabs\GCli\Proxy\PHPScript;
@@ -382,9 +383,7 @@ class ORMModelBuilder implements AbstractORMModelBuilder, AbstractBuilder, Provi
 
         // Add inputs traits
         if ($this->hasInputsTraits) {
-            /**
-             * @var BluePrint
-             */
+            /** @var BluePrint */
             $component = $component->addTrait(\Drewlabs\Core\Validator\Traits\ViewModel::class);
         }
 
@@ -545,10 +544,7 @@ class ORMModelBuilder implements AbstractORMModelBuilder, AbstractBuilder, Provi
         return PHPScript(
             $component->getName(),
             $component,
-            ComponentBuilder::rebuildComponentPath(
-                $this->namespace_ ?? self::DEFAULT_NAMESPACE,
-                $this->path_ ?? self::DEFAULT_PATH
-            )
+            ComponentPath::new()->create($this->namespace_ ?? self::DEFAULT_NAMESPACE, $this->path_ ?? self::DEFAULT_PATH)
         )->setNamespace($component->getNamespace());
     }
 
@@ -624,7 +620,7 @@ class ORMModelBuilder implements AbstractORMModelBuilder, AbstractBuilder, Provi
         if ($result && $schema) {
             $result = self::trimschema($result, $schema);
         }
-        
+
         if ($name = Str::camelize(Pluralizer::singular($result))) {
             $this->setName($name);
         }

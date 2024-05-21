@@ -13,10 +13,17 @@ declare(strict_types=1);
 
 namespace Drewlabs\GCli;
 
-class DBDriverOptions
+class  DBDriverOptions
 {
+    /** @var array */
     private $options;
 
+    /**
+     * class constructor
+     * 
+     * @param array $options 
+     * @return void 
+     */
     public function __construct(array $options = [])
     {
         $this->options = $options ?? [];
