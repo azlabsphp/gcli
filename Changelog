@@ -67,3 +67,8 @@
 
 - Updated ORMModelDefinition to not add exists rule during create action
 - Added domain route registar to generated service provider
+
+# 0.3.x [2024-05-21]
+
+- Registered TsModule command library
+- Added TsModuleCommand console application to service provider commands

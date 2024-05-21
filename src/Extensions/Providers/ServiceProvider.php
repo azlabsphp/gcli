@@ -19,6 +19,7 @@ use Drewlabs\GCli\Extensions\Console\Commands\MakeDTOClassCommand;
 use Drewlabs\GCli\Extensions\Console\Commands\MakeModelCommand;
 use Drewlabs\GCli\Extensions\Console\Commands\MakeProjectComponentsCommand;
 use Drewlabs\GCli\Extensions\Console\Commands\MakeServiceCommand;
+use Drewlabs\GCli\Extensions\Console\Commands\MakeTsModuleCommand;
 use Drewlabs\GCli\Extensions\Console\Commands\MakeViewModelCommand;
 use Illuminate\Support\ServiceProvider as SupportServiceProvider;
 
@@ -40,6 +41,7 @@ class ServiceProvider extends SupportServiceProvider
                 MakeModelCommand::class,
                 MakeServiceCommand::class,
                 MakeViewModelCommand::class,
+                MakeTsModuleCommand::class
             ]);
         }
     }

@@ -51,7 +51,7 @@ class MakeTsModuleCommand extends Command
         .'{--unix_socket= : Unix socket to use for connections}'
         .'{--excepts=* : List of tables not to be included in the generated output}'
         .'{--schema= : Database tables schema prefix}'
-        .'{--camelize: Rename table columns into their camel case corresponding value}'
+        .'{--camelize : Rename table columns into their camel case corresponding value}'
         .'{--force : Force rewrite of existing classes}';
 
     /** @var string */
@@ -80,7 +80,7 @@ class MakeTsModuleCommand extends Command
         $excludes = array_merge($options->get('excludes', []) ?? [], ['migrations']);
         $tables = $options->get('tables', []);
         $factory = new DriverOptionsFactory();
-        $plugin = new Plugin($this->laravel->publicPath('assets/lib'));
+        $plugin = new Plugin($this->laravel->publicPath('assets/lib'), boolval($this->option('camelize')));
         $dbOptions = $factory->createOptions($options, static function ($key, $default = null) {
             return config($key, $default);
         });
@@ -97,6 +97,6 @@ class MakeTsModuleCommand extends Command
         }
         $progress->finish();
 
-        $this->info('Task completed. Thank U for using the gcli:make:ts utility 😉.');
+        $this->info("\nTask completed. Thank U for using the gcli:make:ts utility 😉.");
     }
 }

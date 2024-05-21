@@ -23,20 +23,37 @@ class Plugin implements AbstractPlugin
     /** @var string */
     private $basePath;
 
+
+    /** @var bool */
+    private $camelize = false;
+
     /**
      * Creates TSModule source code generator plugin.
      *
      * @return void
      */
-    public function __construct(string $basePath)
+    public function __construct(string $basePath, bool $camelize = false)
     {
         $this->basePath = $basePath;
+        $this->camelize = $camelize;
+    }
+
+    /**
+     * Add support for camel case modifier
+     * 
+     * @return static 
+     */
+    public function withCamelCase()
+    {
+        $self = clone $this;
+        $self->camelize = true;
+        return $self;
     }
 
     public function generate(Type $type, string $module = null): void
     {
-        $builder = new Types($type);
-        $columns = new Columns($module, $type);
+        $builder = new Types($type, $this->camelize);
+        $columns = new Columns($module, $type, $this->camelize);
         $config = new TsModuleConfig($module, $type);
         $form = new Config('posts', $type);
         Disk::new($this->basePath)->write($module ? ($module.\DIRECTORY_SEPARATOR.'types.ts') : 'types.ts', $builder->__toString());
