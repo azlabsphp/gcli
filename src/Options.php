@@ -35,6 +35,18 @@ class Options
     }
 
     /**
+     * magic method to make the options instance callable.
+     *
+     * @param mixed $default
+     *
+     * @return mixed
+     */
+    public function __invoke(string $key, $default = null)
+    {
+        return $this->get($key, $default);
+    }
+
+    /**
      * Load the option from yaml configuration.
      *
      * @throws \RuntimeException
@@ -110,18 +122,6 @@ class Options
     }
 
     /**
-     * magic method to make the options instance callable
-     * 
-     * @param string $key 
-     * @param mixed $default 
-     * @return mixed 
-     */
-    public function __invoke(string $key, $default = null)
-    {
-        return $this->get($key, $default);
-    }
-
-    /**
      * Merge values into the existing options.
      *
      * @param mixed $value
@@ -139,6 +139,14 @@ class Options
         }
 
         return $this->mergeAt($key, $value);
+    }
+
+    /**
+     * returns options as array.
+     */
+    public function all(): array
+    {
+        return $this->options;
     }
 
     /**
@@ -161,15 +169,5 @@ class Options
             $value);
 
         return $this;
-    }
-
-    /**
-     * returns options as array
-     * 
-     * @return array 
-     */
-    public function all(): array
-    {
-        return $this->options;
     }
 }

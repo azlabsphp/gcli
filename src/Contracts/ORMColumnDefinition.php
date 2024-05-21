@@ -24,8 +24,6 @@ interface ORMColumnDefinition extends Property
 
     /**
      * returns the proiperty `type` definition.
-     *
-     * @return string
      */
     public function type(): string;
 

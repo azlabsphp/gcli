@@ -44,7 +44,7 @@ class Column implements ColumnDefinition, HasSizeProperty, HasExistConstraint, H
     /** @var bool */
     private $required;
 
-    /**  @var bool */
+    /** @var bool */
     private $unsigned;
 
     /** @var string */
@@ -85,22 +85,22 @@ class Column implements ColumnDefinition, HasSizeProperty, HasExistConstraint, H
 
     public function hasSize(): bool
     {
-        return !is_null($this->size);
+        return null !== $this->size;
     }
 
     public function getSize(): int
     {
-        return intval($this->size);
+        return (int) $this->size;
     }
 
     public function hasExistContraint(): bool
     {
-        return !is_null($this->foreignConstraint());
+        return null !== $this->foreignConstraint();
     }
 
     public function hasUniqueConstraint(): bool
     {
-        return !is_null($this->unique());
+        return null !== $this->unique();
     }
 
     public function name(): string
@@ -130,6 +130,7 @@ class Column implements ColumnDefinition, HasSizeProperty, HasExistConstraint, H
     {
         $self = clone $this;
         $self->size = $value;
+
         return $self;
     }
 
@@ -137,6 +138,7 @@ class Column implements ColumnDefinition, HasSizeProperty, HasExistConstraint, H
     {
         $self = clone $this;
         $self->uniqueKeyConstraint = $value;
+
         return $self;
     }
 

@@ -18,20 +18,19 @@ use Drewlabs\GCli\Contracts\ForeignKeyConstraintDefinition;
 /** @internal */
 class ForeignKey implements ForeignKeyConstraintDefinition
 {
-    
-    /**  @var string */
+    /** @var string */
     private $local_table;
-    
-    /**  @var string[] */
+
+    /** @var string[] */
     private $columns;
-    
-    /**  @var string */
+
+    /** @var string */
     private $foreign_table;
-    
-    /**  @var string[] */
+
+    /** @var string[] */
     private $foreign_columns;
-    
-    /**  @var string */
+
+    /** @var string */
     private $key;
 
     /**

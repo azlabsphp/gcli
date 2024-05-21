@@ -20,25 +20,25 @@ use Drewlabs\GCli\Contracts\ProvidesModuleMetadata;
 /** @internal */
 class Table implements ModelDefinition, ProvidesModuleMetadata
 {
-    /**  @var string */
+    /** @var string */
     private $primaryKey;
 
-    /**  @var string */
+    /** @var string */
     private $name;
 
-    /**  @var string */
+    /** @var string */
     private $table;
 
-    /**  @var ORMColumnDefinition[] */
+    /** @var ORMColumnDefinition[] */
     private $columns;
 
-    /**  @var bool */
+    /** @var bool */
     private $increments;
 
-    /**  @var string */
+    /** @var string */
     private $namespace;
 
-    /**  @var string */
+    /** @var string */
     private $comment;
 
     /** @var string */
@@ -48,12 +48,7 @@ class Table implements ModelDefinition, ProvidesModuleMetadata
      * Creates class instance.
      *
      * @param string                $primaryKey
-     * @param string                $name
-     * @param string                $table
      * @param ORMColumnDefinition[] $columns
-     * @param bool                  $increments
-     * @param string                $namespace
-     * @param string                $comment
      */
     public function __construct(
         $primaryKey,
@@ -61,9 +56,9 @@ class Table implements ModelDefinition, ProvidesModuleMetadata
         string $table,
         array $columns,
         bool $increments,
-        ?string $namespace = null,
-        ?string $module = null,
-        ?string $comment = null
+        string $namespace = null,
+        string $module = null,
+        string $comment = null
     ) {
         $this->primaryKey = $primaryKey;
         $this->name = $name;

@@ -1,17 +1,28 @@
 <?php
 
+declare(strict_types=1);
+
+/*
+ * This file is part of the drewlabs namespace.
+ *
+ * (c) Sidoine Azandrew <azandrewdevelopper@gmail.com>
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
+
 namespace Drewlabs\GCli\DBAL\T;
 
-use Drewlabs\GCli\Contracts\ORMColumnDefinition as AbstractColumn;
 use Doctrine\DBAL\Schema\Column as DBALColumn;
+use Drewlabs\GCli\Contracts\ORMColumnDefinition as AbstractColumn;
 
 class ColumnsIteratorFactory
 {
     /**
-     * Creates an iterator of columns
-     * 
-     * @param string $table 
-     * @param \Traversable<DBALColumn>|DBALColumn[] $columns 
+     * Creates an iterator of columns.
+     *
+     * @param \Traversable<DBALColumn>|DBALColumn[] $columns
+     *
      * @return \Traversable<AbstractColumn>
      */
     public function createIterator(string $table, $columns): \Traversable
@@ -38,7 +49,7 @@ class ColumnsIteratorFactory
             );
 
             // Add the size information to the column instance
-            if (!is_null($length)) {
+            if (null !== $length) {
                 $instance = $instance->withSize($length);
             }
 

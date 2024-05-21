@@ -35,8 +35,6 @@ final class Iterator implements \IteratorAggregate
      * Creates Iterator instance.
      *
      * @param \Doctrine\DBAL\Schema\Table[] $tables
-     * @param string $namespace
-     * @param string|null $schema
      */
     public function __construct(array $tables, string $namespace, ?string $schema)
     {
@@ -60,11 +58,12 @@ final class Iterator implements \IteratorAggregate
             // #region column definition
             $columns = Functional::compose(
                 static function ($table_name) use ($table) {
-                    $factory = new ColumnsIteratorFactory;
+                    $factory = new ColumnsIteratorFactory();
+
                     return $factory->createIterator($table_name, new \ArrayIterator($table->getColumns()));
                 },
                 static function ($columns) use ($table) {
-                    return ForeignKeyConstraint::new($table->getForeignKeys())->bind($columns);
+                    return ForeignKeyConstraint::new($table->getForeignKeys())->bind($table->getName(), $columns);
                 },
                 static function ($columns) use ($table) {
                     return UniqueKeyConstraint::new($table->getIndexes())->bind($columns);

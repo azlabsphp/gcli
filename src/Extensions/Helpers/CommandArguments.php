@@ -23,14 +23,9 @@ use Drewlabs\GCli\Options;
 class CommandArguments
 {
     /**
-     * @var array
-     */
-    private $options;
-
-    /**
      * @var string[]
      */
-    const SHOULD_RESOLVE = [
+    public const SHOULD_RESOLVE = [
         'path',
         'cache',
         'plugins',
@@ -55,8 +50,12 @@ class CommandArguments
         'htrFormat',
         'disableCache',
         'input',
-        'format'
+        'format',
     ];
+    /**
+     * @var array
+     */
+    private $options;
 
     /**
      * Creates a command line argument instance.
@@ -90,13 +89,12 @@ class CommandArguments
             'plugins' => $this->getOption('plugins', []),
         ]);
 
-        if (!is_null($path = $this->getOption('input'))) {
+        if (null !== ($path = $this->getOption('input'))) {
             $result = 'json' === $this->getOption('format') ? Options::json($path) : Options::yaml($path);
             $options = $options->merge($result->all());
         }
-
-        if ($routeingfilename = $this->getOption('routingfilename')) {
-            $options = $options->merge(['routes.filename' => $routeingfilename]);
+        if ($filename = $this->getOption('routingfilename')) {
+            $options = $options->merge(['routes.filename' => $filename]);
         }
         if ($prefix = $this->getOption('routePrefix')) {
             $options = $options->merge(['routes.prefix' => $prefix]);
@@ -111,8 +109,8 @@ class CommandArguments
         if ($excludes = $this->getOption('excepts', [])) {
             $options = $options->merge(['excludes' => $excludes]);
         }
-        /** @var  CacheableTables $tablesPool */
-        if ($options->get('cache', false) && !(is_null($tablesPool = Cache::new((string) $cachePath)->load(CacheableTables::class)))) {
+        /** @var CacheableTables $tablesPool */
+        if ($options->get('cache', false) && null !== ($tablesPool = Cache::new((string) $cachePath)->load(CacheableTables::class))) {
             $options = $options->merge(['excludes' => $tablesPool->getTables()]);
         }
         if ($namespace = $this->getOption('package')) {
@@ -141,7 +139,7 @@ class CommandArguments
             ]);
         }
         // Add model accessors' flag
-        $options = $options->merge(['models.attributes.accessors' => !boolval($this->getOption('no-model-accessors'))]);
+        $options = $options->merge(['models.attributes.accessors' => !(bool) $this->getOption('no-model-accessors')]);
 
         if ($this->getOption('htr', false)) {
             $options = $options->merge(['htr' => []]);
@@ -163,11 +161,11 @@ class CommandArguments
     }
 
     /**
-     * resolve an option matchin the provided name
-     * 
-     * @param string $name 
-     * @param mixed $default 
-     * @return mixed 
+     * resolve an option matchin the provided name.
+     *
+     * @param mixed $default
+     *
+     * @return mixed
      */
     private function getOption(string $name, $default = null)
     {

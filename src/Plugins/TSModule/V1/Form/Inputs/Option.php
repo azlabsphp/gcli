@@ -1,5 +1,16 @@
 <?php
 
+declare(strict_types=1);
+
+/*
+ * This file is part of the drewlabs namespace.
+ *
+ * (c) Sidoine Azandrew <azandrewdevelopper@gmail.com>
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
+
 namespace Drewlabs\GCli\Plugins\TSModule\V1\Form\Inputs;
 
 use Drewlabs\CodeGenerator\Helpers\Str as StrHelper;
@@ -8,7 +19,6 @@ use Drewlabs\GCli\Contracts\Property;
 
 class Option
 {
-
     /** @var string */
     private $module;
 
@@ -43,7 +53,6 @@ class Option
         $this->optionType = $optionType ?? 'select';
     }
 
-
     public function __toString(): string
     {
         $propertyName = $this->property->name();
@@ -51,8 +60,8 @@ class Option
         $isRequired = $this->property->required();
 
         $lines = [
-            "{",
-            sprintf("\tlabel: '%s',", sprintf("app.modules.%s.form.inputs.%s", $this->module, $name)),
+            '{',
+            sprintf("\tlabel: '%s',", sprintf('app.modules.%s.form.inputs.%s', $this->module, $name)),
             sprintf("\tname: '%s',", $propertyName),
             // We assume the input type to be an email input if the property name contains the word email
             sprintf("\ttype: '%s',", $this->optionType),
@@ -60,7 +69,7 @@ class Option
             "\tplaceholder: '...',",
             "\tvalue: null,",
             "\tdescription: '', // TODO: Add input description",
-            sprintf("\tindex: %s,", $this->index ? $this->index : 'undefined'),
+            sprintf("\tindex: %s,", $this->index ?: 'undefined'),
             "\tisRepeatable: false,",
             "\tcontainerClass: 'input-col-sm-12',",
             "\t//# TODO: Provide list of possible options or use `optionsConfig` property to query data from backend source",
@@ -74,17 +83,17 @@ class Option
         if ($this->property instanceof HasUniqueConstraint && $this->property->hasUniqueConstraint()) {
             $lines = array_merge($lines, [
                 "\t\t//# TODO: column requires a unique constraint, consider adding it",
-                "\t\t//unique: { fn: () => true }"
+                "\t\t//unique: { fn: () => true }",
             ]);
         }
 
         $lines = array_merge($lines, [
             "\t}",
-            "} as OptionsInputConfigInterface"
+            '} as OptionsInputConfigInterface',
         ]);
 
         return implode("\n", array_map(function ($line) {
-            return $this->indent ? sprintf("%s%s", $this->indent, $line) : $line;
+            return $this->indent ? sprintf('%s%s', $this->indent, $line) : $line;
         }, $lines));
     }
 }

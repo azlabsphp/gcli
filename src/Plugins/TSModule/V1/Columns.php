@@ -1,5 +1,16 @@
 <?php
 
+declare(strict_types=1);
+
+/*
+ * This file is part of the drewlabs namespace.
+ *
+ * (c) Sidoine Azandrew <azandrewdevelopper@gmail.com>
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
+
 namespace Drewlabs\GCli\Plugins\TSModule\V1;
 
 use Drewlabs\GCli\Contracts\Type;
@@ -22,11 +33,7 @@ class Columns
     private $detailImportPath;
 
     /**
-     * Class constructor
-     * 
-     * @param string $module
-     * @param Type $type 
-     * @param bool $camelize 
+     * Class constructor.
      */
     public function __construct(
         string $module,
@@ -50,8 +57,8 @@ class Columns
             '',
         ];
 
-        $lines[] = (string)(new DatagridColumns($this->module, $this->type, $this->camelize));
-        $lines[] = (string)(new DetailColumns($this->module, $this->type, $this->camelize));
+        $lines[] = (string) (new DatagridColumns($this->module, $this->type, $this->camelize));
+        $lines[] = (string) (new DetailColumns($this->module, $this->type, $this->camelize));
 
         return implode("\n", $lines);
     }

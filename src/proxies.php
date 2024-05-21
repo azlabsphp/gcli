@@ -13,7 +13,6 @@ declare(strict_types=1);
 
 namespace Drewlabs\GCli\Proxy;
 
-use Doctrine\DBAL\Schema\AbstractSchemaManager;
 use Drewlabs\CodeGenerator\Contracts\Stringable;
 use Drewlabs\GCli\Builders\ControllerClassBuilder;
 use Drewlabs\GCli\Builders\DataTransfertClassBuilder;
@@ -26,8 +25,8 @@ use Drewlabs\GCli\Builders\ViewModelClassBuilder;
 use Drewlabs\GCli\ComponentsScriptWriter;
 use Drewlabs\GCli\Contracts\ORMModelDefinition;
 use Drewlabs\GCli\Contracts\ScriptWriter;
-use Drewlabs\GCli\PHP\PHPScriptFile;
 use Drewlabs\GCli\ModulesIteratorFactory;
+use Drewlabs\GCli\PHP\PHPScriptFile;
 use Drewlabs\GCli\Validation\RulesFactory;
 
 /**
@@ -122,8 +121,8 @@ function PHPScript(
 
 /**
  * @deprecated
- * 
- * Provides a proxy function to the  {@link \Drewlabs\GCli\DatabaseSchemaReverseEngineeringRunner} constructor.
+ *
+ * Provides a proxy function to the  {@link \Drewlabs\GCli\DatabaseSchemaReverseEngineeringRunner} constructor
  *
  * @return ModulesIteratorFactory
  */

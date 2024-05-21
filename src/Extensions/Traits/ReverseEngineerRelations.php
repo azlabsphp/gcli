@@ -43,7 +43,6 @@ trait ReverseEngineerRelations
      * Returns the list of relationship for generated components based on foreign key entries.
      *
      * @param ForeignKeyConstraintDefinition[] $foreignKeys
-     * @param string                           $schema
      *
      * @throws \InvalidArgumentException
      *
@@ -180,9 +179,8 @@ trait ReverseEngineerRelations
     }
 
     /**
-     * @param mixed  $throughs
-     * @param mixed  $relations
-     * @param string $schema
+     * @param mixed $throughs
+     * @param mixed $relations
      *
      * @throws \InvalidArgumentException
      *
@@ -227,10 +225,12 @@ trait ReverseEngineerRelations
             return $relations;
         }
 
+        $name = RelationTypes::ONE_TO_ONE_THROUGH === $type ?
+            $through->getName() ?? Str::camelize(Pluralizer::singular(self::trimschema($through->rightTable(), $schema)), false) :
+            $through->getName() ?? Str::camelize(Pluralizer::plural(self::trimschema($through->rightTable(), $schema)), false);
+
         return self::mergearray($relations, $classpath, new ThroughRelation(
-            RelationTypes::ONE_TO_ONE_THROUGH === $type ?
-                $through->getName() ?? Str::camelize(Pluralizer::singular(self::trimschema($through->rightTable(), $schema)), false) :
-                $through->getName() ?? Str::camelize(Pluralizer::plural(self::trimschema($through->rightTable(), $schema)), false),
+            $name,
             $type,
             $rightclasspath,
             $intermediateclasspath,
@@ -244,8 +244,7 @@ trait ReverseEngineerRelations
     }
 
     /**
-     * @param mixed  $objects
-     * @param string $schema
+     * @param mixed $objects
      *
      * @throws \InvalidArgumentException
      *

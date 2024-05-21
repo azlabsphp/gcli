@@ -16,8 +16,8 @@ namespace Drewlabs\GCli\Contracts;
 interface ProvidesPropertyAccessors
 {
     /**
-     * Clone the builder removing ability to generate getters & setters
-     * 
+     * Clone the builder removing ability to generate getters & setters.
+     *
      * @return static
      */
     public function withoutAccessors();

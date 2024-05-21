@@ -16,16 +16,17 @@ namespace Drewlabs\GCli\Extensions\Console\Commands;
 use Drewlabs\CodeGenerator\Exceptions\PHPVariableException;
 use Drewlabs\Core\Helpers\Str;
 use Drewlabs\GCli\Builders\ORMModelBuilder;
-use Drewlabs\GCli\Contracts\ViewModelRulesFactory;
 use Drewlabs\GCli\Extensions\Console\ComponentCommandsHelpers;
 use Drewlabs\GCli\Helpers\ComponentBuilder;
-use Illuminate\Console\Command;
-use Illuminate\Container\Container;
-use Drewlabs\GCli\Validation\Fluent\RulesFactory;
-use Illuminate\Support\Pluralizer;
 
 use function Drewlabs\GCli\Proxy\ComponentsScriptWriter;
 use function Drewlabs\GCli\Proxy\MVCControllerBuilder;
+
+use Drewlabs\GCli\Validation\Fluent\RulesFactory;
+use Illuminate\Console\Command;
+
+use Illuminate\Container\Container;
+use Illuminate\Support\Pluralizer;
 
 /**
  * @property \Illuminate\Contracts\Foundation\Application app
@@ -34,16 +35,16 @@ class MakeControllerCommand extends Command
 {
     /** @var string */
     protected $signature = 'gcli:make:controller '
-        . '{name=TestController : Controller name}'
-        . '{--namespace= : Controller namespace}'
-        . '{--path= : Project source code path}'
-        . '{--model= : Model attached to the controller generated code}'
-        . '{--invokable : Creates an invokable controller }'
-        . '{--service= : Service class to bind to the controller definition}'
-        . '{--viewModel= : View model class to bind to the controller definition}'
-        . '{--dtoClass= : Data transfert object to bind to the controller definition}'
-        . '{--authorizable : Add policy handlers to the controller class}'
-        . '{--primaryKey=id : Set the value for the primary key used for the controller}';
+        .'{name=TestController : Controller name}'
+        .'{--namespace= : Controller namespace}'
+        .'{--path= : Project source code path}'
+        .'{--model= : Model attached to the controller generated code}'
+        .'{--invokable : Creates an invokable controller }'
+        .'{--service= : Service class to bind to the controller definition}'
+        .'{--viewModel= : View model class to bind to the controller definition}'
+        .'{--dtoClass= : Data transfert object to bind to the controller definition}'
+        .'{--authorizable : Add policy handlers to the controller class}'
+        .'{--primaryKey=id : Set the value for the primary key used for the controller}';
 
     /** @var string */
     protected $description = 'Creates a Drewlabs package MVC controller';
@@ -130,7 +131,7 @@ class MakeControllerCommand extends Command
             $viewModel = $viewModel ?? sprintf('%sViewModel', $modelName);
         }
         if ($modelComponent) {
-            $rulesFactory = new RulesFactory;
+            $rulesFactory = new RulesFactory();
             $definition = $modelComponent->getDefinition();
             $serviceClass = ComponentCommandsHelpers::createService($namespace, $basePath, $modelClassPath, $service);
             $dtoClass = ComponentCommandsHelpers::createDto(

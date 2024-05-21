@@ -1,12 +1,22 @@
 <?php
 
+declare(strict_types=1);
+
+/*
+ * This file is part of the drewlabs namespace.
+ *
+ * (c) Sidoine Azandrew <azandrewdevelopper@gmail.com>
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
+
 namespace Drewlabs\GCli\Plugins\TSModule\V1\Form\Inputs;
 
 use Drewlabs\CodeGenerator\Helpers\Str as StrHelper;
 use Drewlabs\GCli\Contracts\HasSizeProperty;
 use Drewlabs\GCli\Contracts\HasUniqueConstraint;
 use Drewlabs\GCli\Contracts\Property;
-
 
 class Str
 {
@@ -34,25 +44,24 @@ class Str
         $this->index = $index;
     }
 
-
     public function __toString(): string
     {
         $propertyName = $this->property->name();
         $name = $this->camelize ? StrHelper::camelize($propertyName) : $propertyName;
-        $isEmail = strpos($name, 'email') !== false ? true : false;
+        $isEmail = str_contains($name, 'email') ? true : false;
         $isRequired = $this->property->required();
 
         $lines = [
-            "{",
-            sprintf("\tlabel: '%s',", sprintf("app.modules.%s.form.inputs.%s", $this->module, $name)),
+            '{',
+            sprintf("\tlabel: '%s',", sprintf('app.modules.%s.form.inputs.%s', $this->module, $name)),
             sprintf("\tname: '%s',", $propertyName),
             // We assume the input type to be an email input if the property name contains the word email
-            sprintf("\ttype: '%s',", $isEmail ? 'email' : "text"),
+            sprintf("\ttype: '%s',", $isEmail ? 'email' : 'text'),
             "\tclasses: '',",
             "\tplaceholder: '...',",
             "\tvalue: null,",
             "\tdescription: '', // TODO: Add input description",
-            sprintf("\tindex: %s,", $this->index ? $this->index : 'undefined'),
+            sprintf("\tindex: %s,", $this->index ?: 'undefined'),
             "\tisRepeatable: false,",
             "\tcontainerClass: 'input-col-sm-12',",
             "\tconstraints: {",
@@ -72,18 +81,17 @@ class Str
         if ($this->property instanceof HasUniqueConstraint && $this->property->hasUniqueConstraint()) {
             $lines = array_merge($lines, [
                 "\t\t//# TODO: column requires a unique constraint, consider adding it",
-                "\t\t//unique: { fn: () => true }"
+                "\t\t//unique: { fn: () => true }",
             ]);
         }
 
         $lines = array_merge($lines, [
             "\t}",
-            "} as TextInput"
+            '} as TextInput',
         ]);
 
         return implode("\n", array_map(function ($line) {
-            return $this->indent ? sprintf("%s%s", $this->indent, $line) : $line;
+            return $this->indent ? sprintf('%s%s', $this->indent, $line) : $line;
         }, $lines));
     }
-    
 }

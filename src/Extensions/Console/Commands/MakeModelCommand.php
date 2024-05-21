@@ -14,18 +14,17 @@ declare(strict_types=1);
 namespace Drewlabs\GCli\Extensions\Console\Commands;
 
 use Drewlabs\CodeGenerator\Exceptions\PHPVariableException;
-use Drewlabs\GCli\Contracts\DtoAttributesFactory;
 use Drewlabs\GCli\Contracts\ORMModelDefinition;
 use Drewlabs\GCli\Contracts\SourceFileInterface;
-use Drewlabs\GCli\Contracts\ViewModelRulesFactory;
 use Drewlabs\GCli\Extensions\Console\ComponentCommandsHelpers;
 use Drewlabs\GCli\Helpers\ComponentBuilder;
-use Drewlabs\GCli\Validation\Fluent\RulesFactory;
-use Illuminate\Console\Command;
-use Illuminate\Container\Container;
-
 
 use function Drewlabs\GCli\Proxy\ComponentsScriptWriter;
+
+use Drewlabs\GCli\Validation\Fluent\RulesFactory;
+use Illuminate\Console\Command;
+
+use Illuminate\Container\Container;
 
 /**
  * @property \Illuminate\Contracts\Foundation\Application app
@@ -34,17 +33,17 @@ class MakeModelCommand extends Command
 {
     /** @var string */
     protected $signature = 'gcli:make:model '
-        . '{--increments : Makes the model primary key incrementable}'
-        . '{--schema= : Schema prefix to database tables}'
-        . '{--comment= Comment to be added to the model }'
-        . '{--table= : Table name to attached to the model }'
-        . '{--namespace= : Component namespace }'
-        . '{--primaryKey= : Model primary key }'
-        . '{--path= : Project source code path }'
-        . '{--columns=* : List of model table fillable columns. (column|type) }'
-        . '{--hidden=* List of hidden properties}'
-        . '{--appends=* List of properties to append to the model }'
-        . '{--all : Creates service, dto, view model and controller classes }';
+        .'{--increments : Makes the model primary key incrementable}'
+        .'{--schema= : Schema prefix to database tables}'
+        .'{--comment= Comment to be added to the model }'
+        .'{--table= : Table name to attached to the model }'
+        .'{--namespace= : Component namespace }'
+        .'{--primaryKey= : Model primary key }'
+        .'{--path= : Project source code path }'
+        .'{--columns=* : List of model table fillable columns. (column|type) }'
+        .'{--hidden=* List of hidden properties}'
+        .'{--appends=* List of properties to append to the model }'
+        .'{--all : Creates service, dto, view model and controller classes }';
 
     /** @var string */
     protected $description = 'Creates a model using Drewlabs package model definitions';
@@ -93,11 +92,10 @@ class MakeModelCommand extends Command
      * @param mixed $basePath
      *
      * @throws PHPVariableException
-     *
      */
     public static function createComponents($basePath, SourceFileInterface $component, ORMModelDefinition $definition = null, string $primaryKey = 'id')
     {
-        $rulesFactory = new RulesFactory;
+        $rulesFactory = new RulesFactory();
         $modelClassPath = sprintf('\\%s\\%s', $component->getNamespace(), $component->getName());
         $service = $service ?? sprintf('%sService', $component->getName());
         $dto = $dto ?? sprintf('%sDto', $component->getName());

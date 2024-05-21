@@ -1,5 +1,16 @@
 <?php
 
+declare(strict_types=1);
+
+/*
+ * This file is part of the drewlabs namespace.
+ *
+ * (c) Sidoine Azandrew <azandrewdevelopper@gmail.com>
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
+
 namespace Drewlabs\GCli\Plugins\TSModule\V1;
 
 use Drewlabs\CodeGenerator\Helpers\Str;
@@ -7,7 +18,6 @@ use Drewlabs\GCli\Contracts\Type;
 
 class TsModuleConfig
 {
-
     /** @var string */
     private $module;
 
@@ -17,13 +27,8 @@ class TsModuleConfig
     /** @var string */
     private $importPath;
 
-
     /**
-     * Class constructor
-     * 
-     * @param string $module
-     * @param Type $type 
-     * @param bool $camelize 
+     * Class constructor.
      */
     public function __construct(
         string $module,
@@ -34,7 +39,6 @@ class TsModuleConfig
         $this->type = $type;
         $this->importPath = $importPath;
     }
-
 
     public function __toString(): string
     {
@@ -68,7 +72,7 @@ class TsModuleConfig
             "\t\t},",
             "\t\t//excludesActions: [/*'create'*/, 'update', 'delete'] as ActionType[],",
             "\t} as DataConfigArgType;",
-            "};"
+            '};',
         ];
 
         return implode("\n", $lines);

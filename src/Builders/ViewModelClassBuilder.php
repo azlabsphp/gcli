@@ -28,7 +28,6 @@ use Drewlabs\CodeGenerator\Types\PHPTypesModifiers;
 use Drewlabs\Core\Helpers\Str;
 use Drewlabs\GCli\Contracts\ComponentBuilder as AbstractBuilder;
 use Drewlabs\GCli\Factories\ComponentPath;
-use Drewlabs\GCli\Helpers\ComponentBuilder;
 
 use function Drewlabs\GCli\Proxy\PHPScript;
 
@@ -151,7 +150,7 @@ class ViewModelClassBuilder implements AbstractBuilder
     ) {
         $this->setName($name ?
             (!Str::endsWith($name, 'ViewModel') ?
-                Str::camelize(Pluralizer::singular($name)) . 'ViewModel' :
+                Str::camelize(Pluralizer::singular($name)).'ViewModel' :
                 Str::camelize(Pluralizer::singular($name))) :
             self::DEFAULT_NAME);
         // Set the component write path
@@ -168,11 +167,11 @@ class ViewModelClassBuilder implements AbstractBuilder
         /**
          * @var string
          */
-        $path = \is_object($model) ? $model::class : strval($model);
+        $path = \is_object($model) ? $model::class : (string) $model;
         $isPath = Str::contains($path, '\\');
         $this->modelPath = $isPath ? $path : $this->modelPath;
         $this->model = $isPath ? $this->getClassNameFromPath($path) : $path;
-        $this->setName(Str::camelize(Pluralizer::singular($this->model)) . 'ViewModel');
+        $this->setName(Str::camelize(Pluralizer::singular($this->model)).'ViewModel');
 
         return $this;
     }
@@ -206,7 +205,7 @@ class ViewModelClassBuilder implements AbstractBuilder
                 'array<string,string|string[]>',
                 PHPTypesModifiers::PUBLIC,
                 'Returns a fluent validation rules'
-            )->addContents('return ' . PHPVariable('rules', null, $this->rules ?? [])->asRValue()->__toString()))
+            )->addContents('return '.PHPVariable('rules', null, $this->rules ?? [])->asRValue()->__toString()))
             ->addMethod(PHPClassMethod(
                 'messages',
                 [],
@@ -225,7 +224,7 @@ class ViewModelClassBuilder implements AbstractBuilder
                 'array<string,string|string[]>',
                 PHPTypesModifiers::PUBLIC,
                 'Returns a fluent validation rules applied during update actions'
-            )->addContents('return ' . PHPVariable('rules', null, $this->updateRules ?? [])->asRValue()->__toString()));
+            )->addContents('return '.PHPVariable('rules', null, $this->updateRules ?? [])->asRValue()->__toString()));
         }
         // Add inputs traits
         if ($this->hasInputsTraits) {
@@ -238,7 +237,7 @@ class ViewModelClassBuilder implements AbstractBuilder
                         'model_',
                         PHPTypes::STRING,
                         PHPTypesModifiers::PRIVATE,
-                        $this->model . '::class',
+                        $this->model.'::class',
                         'Model class associated with the view model'
                     )
                 );
@@ -254,7 +253,7 @@ class ViewModelClassBuilder implements AbstractBuilder
                         'dtoclass_',
                         PHPTypes::STRING,
                         PHPTypesModifiers::PRIVATE,
-                        Str::afterLast('\\', $this->dtoPath) . '::class',
+                        Str::afterLast('\\', $this->dtoPath).'::class',
                         'Data transfer class associated with the view model'
                     )
                 );
@@ -315,6 +314,7 @@ class ViewModelClassBuilder implements AbstractBuilder
                 ['$this->set($inputs)', '$this->files($files)']
             )->addMethod(PHPClassMethod('getModel', [], 'string', 'public', 'returns the model class')->addLine('return $this->model_'));
         }
+
         // Returns the builded component
         return PHPScript(
             $component->getName(),

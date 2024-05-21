@@ -1,15 +1,24 @@
 <?php
 
+declare(strict_types=1);
+
+/*
+ * This file is part of the drewlabs namespace.
+ *
+ * (c) Sidoine Azandrew <azandrewdevelopper@gmail.com>
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
+
 namespace Drewlabs\GCli\Validation\Fluent;
 
 use Drewlabs\GCli\Contracts\ORMColumnDefinition as AbstractColumn;
 use Drewlabs\GCli\Contracts\ORMModelDefinition as AbstractTable;
 use Drewlabs\GCli\Validation\RulesFactory as ValidationRulesFactory;
-use Exception;
 
 class RulesFactory implements ValidationRulesFactory
 {
-
     public function createRules(AbstractTable $table, bool $updates = false): array
     {
         return iterator_to_array((function (AbstractTable $t) use ($updates) {
@@ -19,16 +28,15 @@ class RulesFactory implements ValidationRulesFactory
         })($table));
     }
 
-     /**
-      * makes a list of rules for the column
-      * 
-      * @param string $table 
-      * @param AbstractColumn $column 
-      * @param string|null $primaryKey 
-      * @param bool $updates 
-      * @return array 
-      * @throws Exception 
-      */
+    /**
+     * makes a list of rules for the column.
+     *
+     * @param bool $updates
+     *
+     * @throws \Exception
+     *
+     * @return array
+     */
     private function makeRule(AbstractColumn $column, string $table, string $primaryKey = null, $updates = false)
     {
         $rules[] = !$column->required() ? Rules::NULLABLE : ($column->required() && $column->hasDefault() ?
@@ -55,6 +63,7 @@ class RulesFactory implements ValidationRulesFactory
         if ($column->name() === $key) {
             return Rules::SOMETIMES;
         }
+
         return null !== $key ? sprintf('%s:%s', Rules::REQUIRED_WITHOUT, $key) : Rules::REQUIRED;
     }
 }

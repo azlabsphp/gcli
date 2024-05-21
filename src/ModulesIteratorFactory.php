@@ -19,23 +19,23 @@ use Drewlabs\GCli\Contracts\ControllerBuilder;
 use Drewlabs\GCli\Contracts\SourceFileInterface;
 use Drewlabs\GCli\Factories\RouteName;
 use Drewlabs\GCli\Helpers\ComponentBuilder;
-use Generator;
-use InvalidArgumentException;
-use Drewlabs\GCli\Validation\RulesFactory;
 
 use function Drewlabs\GCli\Proxy\EloquentORMModelBuilder;
+
 use function Drewlabs\GCli\Proxy\MVCPolicyBuilder;
 use function Drewlabs\GCli\Proxy\ServiceInterfaceBuilderProxy;
+
+use Drewlabs\GCli\Validation\RulesFactory;
 
 class ModulesIteratorFactory
 {
     /**
      * @var array
      */
-    const DEFAULT_TIMESTAMP_COLUMNS = ['created_at', 'updated_at'];
+    public const DEFAULT_TIMESTAMP_COLUMNS = ['created_at', 'updated_at'];
 
     /** @var string */
-    const DEFAULT_PROJECT_NAMESPACE = 'App';
+    public const DEFAULT_PROJECT_NAMESPACE = 'App';
 
     /** @var string */
     private $directory;
@@ -49,7 +49,7 @@ class ModulesIteratorFactory
     /** @var string */
     private $domain;
 
-    /**  @var string */
+    /** @var string */
     private $schema;
 
     /** @var bool */
@@ -71,22 +71,24 @@ class ModulesIteratorFactory
         $this->namespace = $namespace ?? self::DEFAULT_PROJECT_NAMESPACE;
     }
 
-
     public function withoutAuth()
     {
         $this->auth = false;
+
         return $this;
     }
 
     public function setDomain(string $domain = null)
     {
         $this->domain = !empty($domain) ? $domain : $this->domain;
+
         return $this;
     }
 
     public function setSchema(string $value = null)
     {
         $this->schema = $value;
+
         return $this;
     }
 
@@ -96,25 +98,25 @@ class ModulesIteratorFactory
     public function withHttpHandlers()
     {
         $this->http = true;
+
         return $this;
     }
 
     public function withPolicies()
     {
         $this->policies = true;
+
         return $this;
     }
 
     /**
      * Execute a reverse engeneering flow on database tables.
-     * 
-     * @param \Traversable<\Drewlabs\GCli\Contracts\ORMModelDefinition> $traversable 
-     * @param array $foreignKeys 
-     * @param array $tablesindexes 
-     * @param array $tableNames 
-     * @return Generator<int, array, mixed, void>
-     * 
-     * @throws InvalidArgumentException 
+     *
+     * @param \Traversable<\Drewlabs\GCli\Contracts\ORMModelDefinition> $traversable
+     *
+     * @throws \InvalidArgumentException
+     *
+     * @return \Generator<int, array, mixed, void>
      */
     public function createModulesIterator($traversable, array &$foreignKeys, array &$tablesindexes, array &$tableNames)
     {
@@ -238,11 +240,8 @@ class ModulesIteratorFactory
 
     /**
      * Creates a factory method that create the controller script.
-     * 
-     * @param string|null $model 
-     * @param bool $authorizable 
-     * @param string $key 
-     * @return Closure(mixed $service = null, mixed $viewModel = null, mixed $dtoObject = null): SourceFileInterface 
+     *
+     * @return Closure(mixed $service = null, mixed $viewModel = null, mixed $dtoObject = null): SourceFileInterface
      */
     private function createControllerFactoryMethod(string $model = null, bool $authorizable = false, string $key = 'id')
     {

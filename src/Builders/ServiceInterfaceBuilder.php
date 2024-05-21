@@ -20,7 +20,6 @@ use function Drewlabs\CodeGenerator\Proxy\PHPInterface;
 use Drewlabs\Contracts\Support\Actions\ActionHandler;
 use Drewlabs\GCli\Contracts\ComponentBuilder as AbstractBuilder;
 use Drewlabs\GCli\Factories\ComponentPath;
-use Drewlabs\GCli\Helpers\ComponentBuilder;
 
 use function Drewlabs\GCli\Proxy\PHPScript;
 

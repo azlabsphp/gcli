@@ -24,13 +24,13 @@ use Drewlabs\GCli\Models\RouteController;
 class RouteDefinitions
 {
     /** @var string */
-    const ROUTE_DEFINITION_START = "\n// Drewlabs Generated MVC Route Defnitions, Please Do not delete to avoid duplicates route definitions";
+    public const ROUTE_DEFINITION_START = "\n// Drewlabs Generated MVC Route Defnitions, Please Do not delete to avoid duplicates route definitions";
 
     /** @var string */
-    const ROUTE_DEFINITION_END = "// !End Drewlabs Generated MVC Route Defnitions, Please Do not delete to avoid duplicates route definitions\n";
+    public const ROUTE_DEFINITION_END = "// !End Drewlabs Generated MVC Route Defnitions, Please Do not delete to avoid duplicates route definitions\n";
 
     /** @var array */
-    const HTTP_VERB_MAP = [
+    public const HTTP_VERB_MAP = [
         'index' => 'get',
         'show' => 'get',
         'store' => 'post',
@@ -99,7 +99,7 @@ class RouteDefinitions
             // Write the content before to the output
             $output .= $before;
             // Write route definition start
-            $output .= self::ROUTE_DEFINITION_START . \PHP_EOL;
+            $output .= self::ROUTE_DEFINITION_START.\PHP_EOL;
             // Write the existing route defintions
             $output .= $between;
             // Prepare the new routes script
@@ -116,14 +116,14 @@ class RouteDefinitions
                 }
             );
             foreach ($definitions as $key => $value) {
-                $output .= \PHP_EOL . ($groupRoutes ? "\t" : '') . "// Route definitions for $key" . \PHP_EOL;
+                $output .= \PHP_EOL.($groupRoutes ? "\t" : '')."// Route definitions for $key".\PHP_EOL;
                 $output .= implode(\PHP_EOL, $value);
-                $output .= \PHP_EOL . ($groupRoutes ? "\t" : '') . "// !End Route definitions for $key" . \PHP_EOL;
+                $output .= \PHP_EOL.($groupRoutes ? "\t" : '')."// !End Route definitions for $key".\PHP_EOL;
             }
             if ((null !== $prefix) || (null !== $middleware)) {
                 $output .= '});';
             }
-            $output .= \PHP_EOL . self::ROUTE_DEFINITION_END;
+            $output .= \PHP_EOL.self::ROUTE_DEFINITION_END;
             $output .= $after;
             $adapter->write($filename, $output);
             // Call the callback
@@ -171,7 +171,7 @@ class RouteDefinitions
             foreach ($values as $key => $value) {
                 yield is_numeric($key) ?
                     $strfn($value) :
-                    "'$key' => " . $strfn($value);
+                    "'$key' => ".$strfn($value);
             }
         };
         $output = @json_encode(
@@ -199,12 +199,12 @@ class RouteDefinitions
     private static function getRouteParts(bool $lumen, $adapter, string $filename, bool $partial = false)
     {
         if (!$adapter->exists($filename)) {
-            return !$lumen ? ['<?php' . \PHP_EOL . "\n" . 'use Illuminate\Support\Facades\Route;' . PHP_EOL, '', ''] : ['<?php' . \PHP_EOL, '', ''];
+            return !$lumen ? ['<?php'.\PHP_EOL."\n".'use Illuminate\Support\Facades\Route;'.\PHP_EOL, '', ''] : ['<?php'.\PHP_EOL, '', ''];
         }
         // Read content and locate where to write the new data
         $content = $adapter->read($filename);
         if (empty(trim($content))) {
-            return ['<?php' . \PHP_EOL, '', ''];
+            return ['<?php'.\PHP_EOL, '', ''];
         }
         // Read the generated script start and end values
         if (
@@ -234,11 +234,11 @@ class RouteDefinitions
     private static function createLaravelGroup(string $prefix = null, string $middleware = null)
     {
         $output = '';
-        if (!is_null($prefix)) {
+        if (null !== $prefix) {
             $output .= sprintf("Route::prefix('%s')", $prefix);
         }
 
-        if (!is_null($middleware)) {
+        if (null !== $middleware) {
             $output .= empty($output) ? sprintf("Route::middleware('%s')", $middleware) : sprintf("->middleware('%s')", $middleware);
         }
 
@@ -246,6 +246,6 @@ class RouteDefinitions
             return $output;
         }
 
-        return sprintf("%s->group(function() {", $output);
+        return sprintf('%s->group(function() {', $output);
     }
 }

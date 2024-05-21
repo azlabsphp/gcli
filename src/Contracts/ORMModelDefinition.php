@@ -39,8 +39,6 @@ interface ORMModelDefinition extends Type
 
     /**
      * Returns the namespace of the current model definition.
-     *
-     * @return string
      */
     public function namespace(): ?string;
 }

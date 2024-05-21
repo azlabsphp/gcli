@@ -19,9 +19,6 @@ use Drewlabs\Core\Helpers\Str;
 use Drewlabs\GCli\Builders\DataTransfertClassBuilder;
 use Drewlabs\GCli\Builders\ServiceClassBuilder;
 use Drewlabs\GCli\Builders\ViewModelClassBuilder;
-use Drewlabs\GCli\Cache\Cache;
-use Drewlabs\GCli\Cache\CacheableTables;
-use Drewlabs\GCli\Contracts\Cacheable;
 use Drewlabs\GCli\Contracts\ControllerBuilder;
 use Drewlabs\GCli\Contracts\ORMModelBuilder;
 
@@ -29,16 +26,16 @@ use Drewlabs\GCli\Contracts\SourceFileInterface;
 use Drewlabs\GCli\DBAL\T\Column;
 use Drewlabs\GCli\DBAL\T\Table;
 use Drewlabs\GCli\Exceptions\IOException;
-use Drewlabs\GCli\IO\Path;
-
-use Drewlabs\GCli\Traits\ProvidesTrimTableSchema;
-use Illuminate\Support\Pluralizer;
 
 use function Drewlabs\GCli\Proxy\DataTransfertClassBuilder;
 use function Drewlabs\GCli\Proxy\EloquentORMModelBuilder;
+
 use function Drewlabs\GCli\Proxy\MVCControllerBuilder;
 use function Drewlabs\GCli\Proxy\MVCServiceBuilder;
 use function Drewlabs\GCli\Proxy\ViewModelBuilder;
+
+use Drewlabs\GCli\Traits\ProvidesTrimTableSchema;
+use Illuminate\Support\Pluralizer;
 
 class ComponentBuilder
 {
@@ -54,7 +51,7 @@ class ComponentBuilder
      */
     public static function createModelBuilder(
         string $table,
-        ?string $schema = null,
+        string $schema = null,
         array $columns = [],
         string $namespace = 'App\\Models',
         string $primaryKey = 'id',
@@ -234,7 +231,7 @@ class ComponentBuilder
     ) {
         $component = MVCControllerBuilder($name, $namespace);
         // Add binding for primary key
-        if (!is_null($key)) {
+        if (null !== $key) {
             $component = $component->withPrimaryKey($key);
         }
         if (!$auth) {

@@ -82,9 +82,6 @@ class ThroughRelation
 
     /**
      * Creates Many through relation instance.
-     *
-     * @param string $rightlocalkey
-     * @param string $castclasspath
      */
     public function __construct(
         string $name,

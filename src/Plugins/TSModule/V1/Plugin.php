@@ -1,5 +1,16 @@
 <?php
 
+declare(strict_types=1);
+
+/*
+ * This file is part of the drewlabs namespace.
+ *
+ * (c) Sidoine Azandrew <azandrewdevelopper@gmail.com>
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
+
 namespace Drewlabs\GCli\Plugins\TSModule\V1;
 
 use Drewlabs\GCli\Contracts\Type;
@@ -13,10 +24,9 @@ class Plugin implements AbstractPlugin
     private $basePath;
 
     /**
-     * Creates TSModule source code generator plugin
-     * 
-     * @param string $basePath 
-     * @return void 
+     * Creates TSModule source code generator plugin.
+     *
+     * @return void
      */
     public function __construct(string $basePath)
     {
@@ -29,9 +39,9 @@ class Plugin implements AbstractPlugin
         $columns = new Columns($module, $type);
         $config = new TsModuleConfig($module, $type);
         $form = new Config('posts', $type);
-        Disk::new($this->basePath)->write($module ? ($module . DIRECTORY_SEPARATOR . 'types.ts') : 'types.ts', $builder->__toString());
-        Disk::new($this->basePath)->write($module ? ($module . DIRECTORY_SEPARATOR . 'columns.ts') : 'columns.ts', $columns->__toString());
-        Disk::new($this->basePath)->write($module ? ($module . DIRECTORY_SEPARATOR . 'form.ts') : 'form.ts', $form->__toString());
-        Disk::new($this->basePath)->write($module ? ($module . DIRECTORY_SEPARATOR . 'index.ts') : 'index.ts', $config->__toString());
+        Disk::new($this->basePath)->write($module ? ($module.\DIRECTORY_SEPARATOR.'types.ts') : 'types.ts', $builder->__toString());
+        Disk::new($this->basePath)->write($module ? ($module.\DIRECTORY_SEPARATOR.'columns.ts') : 'columns.ts', $columns->__toString());
+        Disk::new($this->basePath)->write($module ? ($module.\DIRECTORY_SEPARATOR.'form.ts') : 'form.ts', $form->__toString());
+        Disk::new($this->basePath)->write($module ? ($module.\DIRECTORY_SEPARATOR.'index.ts') : 'index.ts', $config->__toString());
     }
 }

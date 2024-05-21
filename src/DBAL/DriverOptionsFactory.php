@@ -1,20 +1,25 @@
 <?php
 
+declare(strict_types=1);
+
+/*
+ * This file is part of the drewlabs namespace.
+ *
+ * (c) Sidoine Azandrew <azandrewdevelopper@gmail.com>
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
+
 namespace Drewlabs\GCli\DBAL;
 
-use Closure;
 use Drewlabs\GCli\DBDriverOptions;
 use Drewlabs\GCli\Options;
 
 class DriverOptionsFactory
 {
-
     /**
-     * Creates database driver options instance
-     * 
-     * @param Options $options 
-     * @param Closure|null $resolveFn 
-     * @return DBDriverOptions 
+     * Creates database driver options instance.
      */
     public function createOptions(Options $options, \Closure $resolveFn = null): DBDriverOptions
     {
@@ -25,7 +30,7 @@ class DriverOptionsFactory
             return DBDriverOptions::new(['url' => $url])->get();
         }
         $default_driver = $resolveFn('database.default') ?? 'pdo_sqlite';
-        if (!is_null($db_driver = $options->get('driver'))) {
+        if (null !== ($db_driver = $options->get('driver'))) {
             $driver = self::hasPrefix($db_driver, 'pdo') ? $db_driver : sprintf('pdo_%s', $db_driver);
         } else {
             $driver = self::hasPrefix($default_driver, 'pdo') ? $default_driver : sprintf('pdo_%s', $default_driver);
@@ -60,6 +65,7 @@ class DriverOptionsFactory
         if (version_compare(\PHP_VERSION, '8.0.0') >= 0) {
             return str_starts_with($table, $prefix);
         }
+
         return ('' === $prefix) || (mb_substr($table, 0, mb_strlen($prefix)) === $prefix);
     }
 }

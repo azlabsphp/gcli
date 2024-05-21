@@ -26,7 +26,6 @@ use Drewlabs\GCli\Contracts\SourceFileInterface;
 use Drewlabs\GCli\Contracts\Writable;
 use Drewlabs\GCli\Extensions\Contracts\Progress;
 use Drewlabs\GCli\Extensions\Traits\ReverseEngineerRelations;
-use Drewlabs\GCli\Helpers\ComponentBuilder;
 use Drewlabs\GCli\Helpers\RouteDefinitions;
 use Drewlabs\GCli\HTr\RouteRequestBodyMap;
 use Drewlabs\GCli\Models\RouteController;
@@ -94,11 +93,8 @@ class ReverseEngineerTask
     /** @var RulesFactory */
     private $rulesFactory;
 
-
     /**
-     * Class constructor
-     * 
-     * @param RulesFactory $rulesFactory 
+     * Class constructor.
      */
     public function __construct(RulesFactory $rulesFactory)
     {
@@ -213,7 +209,7 @@ class ReverseEngineerTask
         string $subPackage = null,
         string $schema = null,
         bool $hasHttpHandlers = false,
-        bool $disableModelAccessors = true
+        bool $withoutModelAccessors = true
     ) {
         return function (
             string $routesDirectory,
@@ -236,7 +232,7 @@ class ReverseEngineerTask
             $subPackage,
             $schema,
             $hasHttpHandlers,
-            $disableModelAccessors
+            $withoutModelAccessors
         ) {
             $providesRelations = $this->provideRelations;
             $toones = $this->oneToOnes ?? [];
@@ -278,11 +274,11 @@ class ReverseEngineerTask
             // #endregion Create migration runner
             $iterator = $modulesFactory->createModulesIterator($traversable, $foreignKeys, $tablesindexes, $tableNames);
             $values = iterator_to_array($iterator);
-            //#region write tables to cache if caching is not disabled
+            // #region write tables to cache if caching is not disabled
             if (!$disableCache) {
                 Cache::new($cachePath)->dump(new CacheableTables($tableNames, $namespace, $subPackage));
             }
-            //#endregion write tables to cache if caching is not disabled
+            // #endregion write tables to cache if caching is not disabled
             /**
              * @var Progress
              */
@@ -298,6 +294,7 @@ class ReverseEngineerTask
                 $onethroughs,
                 $schema
             ) : [[], []];
+
             $requestBodyMap = new RouteRequestBodyMap();
             // #endregion Create components models relations
             $routes = iterator_to_array((static function () use (
@@ -307,7 +304,7 @@ class ReverseEngineerTask
                 $indicator,
                 $relations,
                 $pivots,
-                $disableModelAccessors,
+                $withoutModelAccessors,
                 &$onExistsCallback,
                 &$policies,
                 &$bindings,
@@ -324,7 +321,7 @@ class ReverseEngineerTask
                     }
 
                     // disable accessor generator case providesModelAccessors is false
-                    if ($modelbuilder instanceof ProvidesPropertyAccessors && $disableModelAccessors) {
+                    if ($modelbuilder instanceof ProvidesPropertyAccessors && $withoutModelAccessors) {
                         $modelbuilder = $modelbuilder->withoutAccessors();
                     }
 
@@ -333,7 +330,7 @@ class ReverseEngineerTask
 
                     // Use plugin code generator
                     /** @var \Drewlabs\GCli\Contracts\Type $type */
-                    if (!is_null($type = Arr::get($component, 'model.definition'))) {
+                    if (null !== ($type = Arr::get($component, 'model.definition'))) {
                         G::getInstance()->generate($type);
                     }
 
@@ -368,8 +365,8 @@ class ReverseEngineerTask
                                 ],
                                 true
                             ) ?
-                                'collectionOf:\\' . ltrim($_current->getCastClassPath(), '\\') :
-                                'value:\\' . ltrim($_current->getCastClassPath(), '\\');
+                                'collectionOf:\\'.ltrim($_current->getCastClassPath(), '\\') :
+                                'value:\\'.ltrim($_current->getCastClassPath(), '\\');
                         }
                         $dtoBuilder->setCamelizeProperties($camelize)->setCasts($currentDtoCasts);
                     }
@@ -445,7 +442,7 @@ class ReverseEngineerTask
                 );
 
                 // Register domain routes case the route name is not web nor api
-                if (!in_array($routingfilename, ['api', 'web', 'api.php', 'web.php'])) {
+                if (!\in_array($routingfilename, ['api', 'web', 'api.php', 'web.php'], true)) {
                     $serviceProviderBuilder = $serviceProviderBuilder->withDomainRouting($routingfilename);
                 }
                 static::writeComponentSourceCode($src, self::resolveWritable($serviceProviderBuilder), $onExistsCallback);
@@ -565,6 +562,6 @@ class ReverseEngineerTask
             return $component(...$args);
         }
 
-        throw new \RuntimeException('Unsupported type ' . (\is_object($component) && null !== $component ? $component::class : \gettype($component)));
+        throw new \RuntimeException('Unsupported type '.(\is_object($component) && null !== $component ? $component::class : \gettype($component)));
     }
 }

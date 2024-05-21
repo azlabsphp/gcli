@@ -1,5 +1,16 @@
 <?php
 
+declare(strict_types=1);
+
+/*
+ * This file is part of the drewlabs namespace.
+ *
+ * (c) Sidoine Azandrew <azandrewdevelopper@gmail.com>
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
+
 namespace Drewlabs\GCli\Plugins\TSModule\V1;
 
 use Drewlabs\CodeGenerator\Helpers\Str;
@@ -17,11 +28,7 @@ class DetailColumns
     private $camelize;
 
     /**
-     * Class constructor
-     * 
-     * @param string $module
-     * @param Type $type 
-     * @param bool $camelize 
+     * Class constructor.
      */
     public function __construct(
         string $module,
@@ -37,7 +44,7 @@ class DetailColumns
     {
         $lines = [
             '/** returns the list of detail view columns to display */',
-            'export const viewColumns: DetailColumnType[] = ['
+            'export const viewColumns: DetailColumnType[] = [',
         ];
 
         foreach ($this->type->getProperties() as $property) {
@@ -49,8 +56,8 @@ class DetailColumns
                 sprintf("\t\ttitle: 'app.modules.%s.datagrid.columns.%s',", $this->module, $label),
                 sprintf("\t\tfield: '%s',", $label),
                 "\t\t// TODO: Uncomment codes below to enable data transformation and search query",
-                in_array(strtolower($property->getRawType()), ['date', 'datetime']) ? "\t\ttransform: 'date'" : "\t\t//transform: 'uppercase',",
-                "\t},"
+                \in_array(strtolower($property->getRawType()), ['date', 'datetime'], true) ? "\t\ttransform: 'date'" : "\t\t//transform: 'uppercase',",
+                "\t},",
             ]);
         }
 

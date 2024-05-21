@@ -1,5 +1,16 @@
 <?php
 
+declare(strict_types=1);
+
+/*
+ * This file is part of the drewlabs namespace.
+ *
+ * (c) Sidoine Azandrew <azandrewdevelopper@gmail.com>
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
+
 namespace Drewlabs\GCli\Factories;
 
 use Drewlabs\CodeGenerator\Helpers\Str;
@@ -8,24 +19,22 @@ use Drewlabs\GCli\IO\Path;
 
 class ComponentPath
 {
-
     /**
-     * Creates new factory class instance
-     * 
-     * @return static 
+     * Creates new factory class instance.
+     *
+     * @return static
      */
     public static function new()
     {
-        return new static;
+        return new static();
     }
 
     /**
-     * Creates component source code path
-     * 
-     * @param string $namespace 
-     * @param string $path 
-     * @return string 
-     * @throws IOException 
+     * Creates component source code path.
+     *
+     * @throws IOException
+     *
+     * @return string
      */
     public function create(string $namespace, string $path)
     {
@@ -49,5 +58,4 @@ class ComponentPath
 
         return $path;
     }
-
 }

@@ -31,7 +31,6 @@ use Drewlabs\GCli\Contracts\ORMModelDefinition;
 use Drewlabs\GCli\Contracts\ProvidesPropertyAccessors;
 use Drewlabs\GCli\Contracts\ProvidesRelations;
 use Drewlabs\GCli\Factories\ComponentPath;
-use Drewlabs\GCli\Helpers\ComponentBuilder;
 
 use function Drewlabs\GCli\Proxy\PHPScript;
 
@@ -87,6 +86,31 @@ class ORMModelBuilder implements AbstractORMModelBuilder, AbstractBuilder, Provi
     public const CLASS_IMPLEMENTATIONS = [
         'AbstractQueryable',
         'Adaptable',
+    ];
+
+    /**
+     * A growable list of reserved keywords for which setter
+     * and getters should not be generated when generating methods
+     * for columns.
+     *
+     * @var string[]
+     */
+    public const RESERVED_KEYWORDS = [
+        'table',
+        'key',
+        'primary_key',
+        'fillable',
+        'fillables',
+        'hidden',
+        'casts',
+        'guards',
+        'attributes',
+        'created_at',
+        'updated_at',
+        'timestamp',
+        'timestamp',
+        'time_stamps',
+        'time_stamp',
     ];
 
     /**
@@ -170,31 +194,6 @@ class ORMModelBuilder implements AbstractORMModelBuilder, AbstractBuilder, Provi
      * @var bool
      */
     private $aspivot;
-
-    /**
-     * A growable list of reserved keywords for which setter
-     * and getters should not be generated when generating methods
-     * for columns.
-     * 
-     * @var string[]
-     */
-    const RESERVED_KEYWORDS = [
-        'table',
-        'key',
-        'primary_key',
-        'fillable',
-        'fillables',
-        'hidden',
-        'casts',
-        'guards',
-        'attributes',
-        'created_at',
-        'updated_at',
-        'timestamp',
-        'timestamp',
-        'time_stamps',
-        'time_stamp'
-    ];
 
     /**
      * @var false
@@ -330,6 +329,7 @@ class ORMModelBuilder implements AbstractORMModelBuilder, AbstractBuilder, Provi
     {
         $self = clone $this;
         $self->provideAccessors = false;
+
         return $self;
     }
 
@@ -354,7 +354,7 @@ class ORMModelBuilder implements AbstractORMModelBuilder, AbstractBuilder, Provi
                     PHPTypesModifiers::PUBLIC,
                     'Returns a fluent validation rules'
                 )->addContents(
-                    'return ' . PHPVariable('rules', null, $this->rules ?? [])->asRValue()->__toString()
+                    'return '.PHPVariable('rules', null, $this->rules ?? [])->asRValue()->__toString()
                 )
             );
             if (!$this->isSingleActionValidator) {
@@ -370,7 +370,7 @@ class ORMModelBuilder implements AbstractORMModelBuilder, AbstractBuilder, Provi
                             'array<string,string|string[]>',
                             PHPTypesModifiers::PUBLIC,
                             'Returns a fluent validation rules applied during update actions'
-                        )->addContents('return ' . PHPVariable('rules', null, $this->rules ?? [])->asRValue()->__toString())
+                        )->addContents('return '.PHPVariable('rules', null, $this->rules ?? [])->asRValue()->__toString())
                     );
             } else {
                 /**
@@ -692,6 +692,8 @@ class ORMModelBuilder implements AbstractORMModelBuilder, AbstractBuilder, Provi
         $returns = RelationTypes::ONE_TO_MANY === $type ? \Illuminate\Database\Eloquent\Relations\HasMany::class : \Illuminate\Database\Eloquent\Relations\HasOne::class;
         $method = RelationTypes::ONE_TO_MANY === $type ? 'hasMany' : 'hasOne';
 
+        // print_r(['1 or many' => [$model, $local, $reference, $returns, $method, $this->resolvename($relation->getName(), $methods), $methods]]);
+
         return PHPClassMethod(
             $this->resolvename($relation->getName(), $methods),
             [],
@@ -712,6 +714,8 @@ class ORMModelBuilder implements AbstractORMModelBuilder, AbstractBuilder, Provi
         $local = $relation->getLocal();
         $reference = $relation->getReference();
         $returns = \Illuminate\Database\Eloquent\Relations\BelongsTo::class;
+
+        // print_r(['belongs to' => [$model, $local, $reference, $returns, $this->resolvename($relation->getName(), $methods), $methods]]);
 
         return PHPClassMethod(
             $this->resolvename($relation->getName(), $methods),
@@ -736,6 +740,8 @@ class ORMModelBuilder implements AbstractORMModelBuilder, AbstractBuilder, Provi
         $rightforeignkey = $relation->getRightForeignKey();
         $leftlocalkey = $relation->getLeftLocalKey();
         $rightlocalkey = $relation->getRightLocalKey();
+        // print_r(['through' => [$left. $right, $leftforeignkey, $rightforeignkey, $leftlocalkey, $rightlocalkey, $this->resolvename($relation->getName(), $methods), $methods]]);
+
         $line = RelationTypes::ONE_TO_MANY_THROUGH === $relation->getType() ? "return \$this->hasManyThrough(\\$left::class, \\$right::class, " : "return \$this->hasOneThrough(\\$left::class, \\$right::class, ";
         if ($leftforeignkey) {
             $line .= "'$leftforeignkey', ";

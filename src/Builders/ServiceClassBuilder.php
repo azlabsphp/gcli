@@ -24,7 +24,6 @@ use Drewlabs\CodeGenerator\Types\PHPTypesModifiers;
 use Drewlabs\Core\Helpers\Str;
 use Drewlabs\GCli\Contracts\ComponentBuilder as AbstractBuilder;
 use Drewlabs\GCli\Factories\ComponentPath;
-use Drewlabs\GCli\Helpers\ComponentBuilder;
 
 use function Drewlabs\GCli\Proxy\PHPScript;
 

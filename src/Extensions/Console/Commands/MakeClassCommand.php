@@ -13,14 +13,16 @@ declare(strict_types=1);
 
 namespace Drewlabs\GCli\Extensions\Console\Commands;
 
+use function Drewlabs\CodeGenerator\Proxy\PHPClass;
+
 use Drewlabs\GCli\Factories\ComponentPath;
-use Drewlabs\GCli\Helpers\ComponentBuilder;
+
+use function Drewlabs\GCli\Proxy\ComponentsScriptWriter;
+
+use function Drewlabs\GCli\Proxy\PHPScript;
+
 use Illuminate\Console\Command;
 use Illuminate\Container\Container;
-
-use function Drewlabs\CodeGenerator\Proxy\PHPClass;
-use function Drewlabs\GCli\Proxy\ComponentsScriptWriter;
-use function Drewlabs\GCli\Proxy\PHPScript;
 
 /**
  * @property \Illuminate\Contracts\Foundation\Application app
@@ -29,10 +31,10 @@ class MakeClassCommand extends Command
 {
     /** @var string */
     protected $signature = 'gcli:make:class '
-        . '{--name= : Class name }'
-        . '{--namespace= : View model namespace }'
-        . '{--path= : Project source code path }'
-        . '{--final : Creates a final class }';
+        .'{--name= : Class name }'
+        .'{--namespace= : View model namespace }'
+        .'{--path= : Project source code path }'
+        .'{--final : Creates a final class }';
 
     /** @var string */
     protected $description = 'Creates a Drewlabs package MVC controller';

@@ -1,5 +1,16 @@
 <?php
 
+declare(strict_types=1);
+
+/*
+ * This file is part of the drewlabs namespace.
+ *
+ * (c) Sidoine Azandrew <azandrewdevelopper@gmail.com>
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
+
 namespace Drewlabs\GCli\Plugins\TSModule\V1;
 
 use Drewlabs\CodeGenerator\Helpers\Str;
@@ -14,10 +25,7 @@ class Types
     private $camelize;
 
     /**
-     * Class constructor
-     * 
-     * @param Type $type 
-     * @param bool $camelize 
+     * Class constructor.
      */
     public function __construct(Type $type, bool $camelize = false)
     {
@@ -32,8 +40,8 @@ class Types
         $lines = [
             'import { BuiltType, TypeOf } from \'@azlabsjs/built-type\';',
             '',
-            sprintf("/** @description %s type builder declaration */", $builtType),
-            $this->camelize ? sprintf("export const %s = BuiltType._object(", $builtType) : sprintf("export const %s = BuiltType._object({", $builtType),
+            sprintf('/** @description %s type builder declaration */', $builtType),
+            $this->camelize ? sprintf('export const %s = BuiltType._object(', $builtType) : sprintf('export const %s = BuiltType._object({', $builtType),
         ];
 
         if ($this->camelize) {
@@ -74,9 +82,9 @@ class Types
             }
         }
 
-        $lines[] = count($mappings) === 0 ? '});' : "\t},";
+        $lines[] = 0 === \count($mappings) ? '});' : "\t},";
 
-        if (count($mappings) !== 0) {
+        if (0 !== \count($mappings)) {
             $lines[] = "\t{";
             foreach ($mappings as $key => $value) {
                 $lines[] = sprintf("\t\t%s: \"%s\",", $key, $value);
@@ -88,7 +96,7 @@ class Types
         $lines = array_merge($lines, [
             '',
             sprintf('/** @description %s type declaration */', $builtType),
-            sprintf('export type %sType = TypeOf<typeof %s>;', $builtType, $builtType)
+            sprintf('export type %sType = TypeOf<typeof %s>;', $builtType, $builtType),
         ]);
 
         return implode("\n", $lines);

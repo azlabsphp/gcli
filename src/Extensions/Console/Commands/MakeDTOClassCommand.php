@@ -15,11 +15,12 @@ namespace Drewlabs\GCli\Extensions\Console\Commands;
 
 use Drewlabs\GCli\Builders\ORMModelBuilder;
 use Drewlabs\GCli\Helpers\ComponentBuilder;
-use Illuminate\Console\Command;
-use Illuminate\Container\Container;
 
 use function Drewlabs\GCli\Proxy\ComponentsScriptWriter;
 
+use Illuminate\Console\Command;
+
+use Illuminate\Container\Container;
 
 /**
  * @property \Illuminate\Contracts\Foundation\Application app

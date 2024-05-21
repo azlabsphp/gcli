@@ -11,7 +11,7 @@ declare(strict_types=1);
  * file that was distributed with this source code.
  */
 
- namespace Drewlabs\GCli\Validation\Fluent;
+namespace Drewlabs\GCli\Validation\Fluent;
 
 use Drewlabs\Core\Helpers\Str;
 use Drewlabs\GCli\Contracts\ForeignKeyConstraintDefinition;
@@ -20,19 +20,19 @@ use Drewlabs\GCli\Contracts\UniqueKeyConstraintDefinition;
 class Rules
 {
     /** @var string */
-    const REQUIRED_IF = 'required_if';
+    public const REQUIRED_IF = 'required_if';
 
     /** @var string */
-    const REQUIRED_WITHOUT = 'required_without';
+    public const REQUIRED_WITHOUT = 'required_without';
 
     /** @var string */
-    const REQUIRED = 'required';
+    public const REQUIRED = 'required';
 
     /** @var string */
-    const NULLABLE = 'nullable';
+    public const NULLABLE = 'nullable';
 
     /** @var string */
-    const SOMETIMES = 'sometimes';
+    public const SOMETIMES = 'sometimes';
 
     /** @var array */
     private const TYPE_MAPS = [
@@ -65,8 +65,9 @@ class Rules
         }
         // Handle unique rules
         if (!\is_string($definition)) {
-            throw new \Exception('$definition parameter type must be a PHP string or instance of ' . ForeignKeyConstraintDefinition::class);
+            throw new \Exception('$definition parameter type must be a PHP string or instance of '.ForeignKeyConstraintDefinition::class);
         }
+
         // Here we handle string types
         return self::basic($definition, $predicate);
     }
@@ -80,19 +81,19 @@ class Rules
     {
         $columns = $metadata->getColumns();
 
-        return !$updates ? "expr:\$this->has('$primaryKey') ? '" . sprintf(
+        return !$updates ? "expr:\$this->has('$primaryKey') ? '".sprintf(
             "unique:%s,%s,' . ",
             $metadata->getTable(),
             \is_array($columns) ? ($columns[0] ?? 'id') : ($columns ?? 'id')
-        ) . "\$this->{$primaryKey} " . sprintf(
+        )."\$this->{$primaryKey} ".sprintf(
             ": 'unique:%s,%s",
             $metadata->getTable(),
             \is_array($columns) ? ($columns[0] ?? 'id') : ($columns ?? 'id')
-        ) . "'" : "expr:'" . sprintf(
+        )."'" : "expr:'".sprintf(
             "unique:%s,%s,' . ",
             $metadata->getTable(),
             \is_array($columns) ? ($columns[0] ?? 'id') : ($columns ?? 'id')
-        ) . "\$this->{$primaryKey} ";
+        )."\$this->{$primaryKey} ";
     }
 
     /**
@@ -117,8 +118,8 @@ class Rules
                 return null !== $item;
             });
         }
-        list($part0, $part1) = [Str::before(':', $type), Str::after(':', $type)];
-        list($rule1, $rule2) = [self::TYPE_MAPS[$part0] ?? null, null];
+        [$part0, $part1] = [Str::before(':', $type), Str::after(':', $type)];
+        [$rule1, $rule2] = [self::TYPE_MAPS[$part0] ?? null, null];
         if (\in_array($rule1, ['string', 'numeric', 'integer'], true)) {
             $rule2 = "max:{$part1}";
         }

@@ -1,5 +1,16 @@
 <?php
 
+declare(strict_types=1);
+
+/*
+ * This file is part of the drewlabs namespace.
+ *
+ * (c) Sidoine Azandrew <azandrewdevelopper@gmail.com>
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
+
 namespace Drewlabs\GCli\Plugins\TSModule\V1\Form\Inputs;
 
 use Drewlabs\CodeGenerator\Helpers\Str;
@@ -31,33 +42,32 @@ class Date
         $this->index = $index;
     }
 
-
     public function __toString(): string
     {
         $propertyName = $this->property->name();
         $name = $this->camelize ? Str::camelize($propertyName) : $propertyName;
 
         $lines = [
-            "{",
-            sprintf("\tlabel: '%s',", sprintf("app.modules.%s.form.inputs.%s", $this->module, $name)),
+            '{',
+            sprintf("\tlabel: '%s',", sprintf('app.modules.%s.form.inputs.%s', $this->module, $name)),
             sprintf("\tname: '%s',", $propertyName),
             "\ttype: 'date',",
             "\tclasses: '',",
             "\tplaceholder: '...',",
             "\tvalue: null,",
             "\tdescription: '', // TODO: Add input description",
-            sprintf("\tindex: %s,", $this->index ? $this->index : 'undefined'),
+            sprintf("\tindex: %s,", $this->index ?: 'undefined'),
             "\tisRepeatable: false,",
             "\tcontainerClass: 'input-col-sm-12',",
             "\tconstraints: {",
             sprintf("\t\trequired: %s,", $this->property->required() ? 'true' : 'false'),
             "\t\tdisabled: false,",
             "\t}",
-            "} as DateInput"
+            '} as DateInput',
         ];
 
         return implode("\n", array_map(function ($line) {
-            return $this->indent ? sprintf("%s%s", $this->indent, $line) : $line;
+            return $this->indent ? sprintf('%s%s', $this->indent, $line) : $line;
         }, $lines));
     }
 }

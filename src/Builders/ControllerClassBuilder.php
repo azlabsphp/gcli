@@ -26,7 +26,6 @@ use Drewlabs\Core\Helpers\Str;
 use Drewlabs\GCli\Contracts\ControllerBuilder as AbstractBuilder;
 use Drewlabs\GCli\Factories\ComponentPath;
 use Drewlabs\GCli\Factories\RouteName;
-use Drewlabs\GCli\Helpers\ComponentBuilder;
 
 use function Drewlabs\GCli\Proxy\PHPScript;
 
@@ -138,7 +137,6 @@ class ControllerClassBuilder implements AbstractBuilder
     private $policies = false;
 
     /**
-     * 
      * @var string
      */
     private $primaryKey = 'id';
@@ -153,9 +151,7 @@ class ControllerClassBuilder implements AbstractBuilder
         string $namespace = null,
         string $path = null
     ) {
-        $this->setName($name ? (!Str::endsWith($name, 'Controller') ?
-            Str::camelize(Pluralizer::plural($name)) . 'Controller' :
-            Str::camelize(Pluralizer::plural($name))) : self::DEFAULT_NAME);
+        $this->setName($name ? (!Str::endsWith($name, 'Controller') ? Str::camelize(Pluralizer::plural($name)).'Controller' : Str::camelize(Pluralizer::plural($name))) : self::DEFAULT_NAME);
         // Set the component write path
         $this->setWritePath($path ?? self::DEFAULT_PATH);
 
@@ -238,14 +234,14 @@ class ControllerClassBuilder implements AbstractBuilder
     }
 
     /**
-     * Set the name for the primary key object
-     * 
-     * @param string $key 
-     * @return $this 
+     * Set the name for the primary key object.
+     *
+     * @return $this
      */
     public function withPrimaryKey(string $key)
     {
         $this->primaryKey = $key;
+
         return $this;
     }
 
@@ -265,9 +261,7 @@ class ControllerClassBuilder implements AbstractBuilder
     {
         // Set the route name of the controller
         $this->setRouteName($this->name());
-        /**
-         * @var Blueprint
-         */
+        /** @var Blueprint */
         $component = PHPClass($this->name())
             ->asFinal()
             ->addConstructor(
@@ -296,9 +290,7 @@ class ControllerClassBuilder implements AbstractBuilder
         // #endregion Add class paths
 
         if ($this->dtoClass_) {
-            /**
-             * @var Blueprint
-             */
+            /** @var Blueprint */
             $component = $component->addFunctionPath(self::USE_QUERY_RESULT_PROXY);
         }
         foreach ($this->classPaths_ ?? [] as $value) {
@@ -354,7 +346,7 @@ class ControllerClassBuilder implements AbstractBuilder
                     PHPTypesModifiers::PUBLIC,
                     [
                         'Handles http request action',
-                        '@Route /POST /' . $this->routeName_ . '/{id}',
+                        '@Route /POST /'.$this->routeName_.'/{id}',
                     ]
                 )
             );
@@ -381,6 +373,7 @@ class ControllerClassBuilder implements AbstractBuilder
     private function setRouteName(string $classname)
     {
         $this->routeName_ = RouteName::new()->createRouteName($classname ?? '');
+
         return $this;
     }
 
@@ -402,7 +395,7 @@ class ControllerClassBuilder implements AbstractBuilder
                 ],
                 'descriptors' => [
                     'Display or Returns a list of items',
-                    '@Route /GET /' . $this->routeName_ . '[/{$id}]',
+                    '@Route /GET /'.$this->routeName_.'[/{$id}]',
                 ],
                 'returns' => 'mixed',
                 'contents' => array_merge(
@@ -432,7 +425,7 @@ class ControllerClassBuilder implements AbstractBuilder
                         ],
                         $this->dtoClass_ ? [
                             "\tuseMapQueryResult(function (\$value)  use (\$excepts, \$properties) {",
-                            "\t\treturn \$value ? $this->dtoClass_::new(\$value)->addProperties(\$properties)->mergeHidden(array_merge(\$excepts, " . '$value->getHidden() ?? [])) : $value',
+                            "\t\treturn \$value ? $this->dtoClass_::new(\$value)->addProperties(\$properties)->mergeHidden(array_merge(\$excepts, ".'$value->getHidden() ?? [])) : $value',
                             "\t})",
                             ')',
                         ] :
@@ -449,7 +442,7 @@ class ControllerClassBuilder implements AbstractBuilder
                 ],
                 'descriptors' => [
                     'Display or Returns an item matching the specified id',
-                    '@Route /GET /' . $this->routeName_ . '/{$id}',
+                    '@Route /GET /'.$this->routeName_.'/{$id}',
                 ],
                 'returns' => 'mixed',
                 'contents' => $this->mustGenerateActionContents() ? array_merge(
@@ -469,7 +462,7 @@ class ControllerClassBuilder implements AbstractBuilder
                         '$result = $this->service->handle(',
                         "\tSelectQueryAction(\$id, \$columns),",
                         "\tfunction (\$value)  use (\$excepts, \$properties) {",
-                        "\t\treturn null !== \$value ? $this->dtoClass_::new(\$value)->addProperties(\$properties)->mergeHidden(array_merge(\$excepts, " . '$value->getHidden() ?? [])) : $value',
+                        "\t\treturn null !== \$value ? $this->dtoClass_::new(\$value)->addProperties(\$properties)->mergeHidden(array_merge(\$excepts, ".'$value->getHidden() ?? [])) : $value',
                         "\t}",
                         ')',
                     ] : ['$result = $this->service->handle(SelectQueryAction($id, $columns)'],
@@ -486,7 +479,7 @@ class ControllerClassBuilder implements AbstractBuilder
                 ]),
                 'descriptors' => [
                     'Stores a new item in the storage',
-                    '@Route /POST /' . $this->routeName_,
+                    '@Route /POST /'.$this->routeName_,
                 ],
                 'returns' => 'mixed',
                 'contents' => $this->mustGenerateActionContents() ? array_merge(
@@ -518,8 +511,8 @@ class ControllerClassBuilder implements AbstractBuilder
                         null === $this->dtoClass_ ? "\t])," : "\t]), function (\$value) use (\$$vmParamName) {",
                     ],
                     null !== $this->dtoClass_ ? [
-                        "\t\t\$properties = (new SanitizeCustomProperties(true))(" . sprintf("$%s->getColumns()", $vmParamName) . ")",
-                        "\t\treturn null !== \$value ? $this->dtoClass_::new(\$value)->addProperties(\$properties)->mergeHidden(array_merge(" . sprintf("$%s->getExcludes(), ", $vmParamName) . '$value->getHidden() ?? [])) : $value',
+                        "\t\t\$properties = (new SanitizeCustomProperties(true))(".sprintf('$%s->getColumns()', $vmParamName).')',
+                        "\t\treturn null !== \$value ? $this->dtoClass_::new(\$value)->addProperties(\$properties)->mergeHidden(array_merge(".sprintf('$%s->getExcludes(), ', $vmParamName).'$value->getHidden() ?? [])) : $value',
                         "\t});",
                     ] : ["\t)"],
                     [
@@ -537,24 +530,24 @@ class ControllerClassBuilder implements AbstractBuilder
                 ]),
                 'descriptors' => [
                     'Update the specified resource in storage.',
-                    '@Route /PUT /' . $this->routeName_ . '/{id}',
-                    '@Route /PATCH /' . $this->routeName_ . '/{id}',
+                    '@Route /PUT /'.$this->routeName_.'/{id}',
+                    '@Route /PATCH /'.$this->routeName_.'/{id}',
                 ],
                 'returns' => 'mixed',
                 'contents' => $this->mustGenerateActionContents() ? array_merge(
                     [
-                        (null !== $this->viewModelClass_) ? null : '$request = $request->merge(["' . $this->primaryKey . '" => $id])',
+                        (null !== $this->viewModelClass_) ? null : '$request = $request->merge(["'.$this->primaryKey.'" => $id])',
                         '',
                     ],
                     $this->hasAuthenticatable_ && $this->policies && (null !== $this->viewModelClass_) ? [
-                        sprintf("\$%s->authorize('update', [\$$vmParamName", $vmParamName) . ("->find(\$id), \$$vmParamName])"),
+                        sprintf("\$%s->authorize('update', [\$$vmParamName", $vmParamName).("->find(\$id), \$$vmParamName])"),
                         '',
                     ] : [],
                     null === $this->viewModelClass_ ? [
                         '$result = $this->validator->updating()->validate([], $request->all(), function () use ($id, $request) {',
                         '// After validation logic goes here...',
                     ] : [
-                        '$result = $view->merge(["' . $this->primaryKey . '" => $id])->validate($this->validator->updating(), function () use ($id, $view) {',
+                        '$result = $view->merge(["'.$this->primaryKey.'" => $id])->validate($this->validator->updating(), function () use ($id, $view) {',
                     ],
                     [
                         (null === $this->viewModelClass_) ? "\treturn \$this->service->handle(UpdateQueryAction(\$id, \$request, [" : "\treturn \$this->service->handle(UpdateQueryAction(\$id, \$view, [",
@@ -567,8 +560,8 @@ class ControllerClassBuilder implements AbstractBuilder
                         null === $this->dtoClass_ ? "\t\t])," : "\t]), function (\$value) use (\$$vmParamName) {",
                     ],
                     null !== $this->dtoClass_ ? [
-                        "\t\t\$properties = (new SanitizeCustomProperties(true))(" . sprintf("$%s->getColumns()", $vmParamName) . ")",
-                        "\t\treturn null !== \$value ? $this->dtoClass_::new(\$value)->addProperties(\$properties)->mergeHidden(array_merge(" . sprintf("$%s->getExcludes(), ", $vmParamName) . '$value->getHidden() ?? [])) : $value',
+                        "\t\t\$properties = (new SanitizeCustomProperties(true))(".sprintf('$%s->getColumns()', $vmParamName).')',
+                        "\t\treturn null !== \$value ? $this->dtoClass_::new(\$value)->addProperties(\$properties)->mergeHidden(array_merge(".sprintf('$%s->getExcludes(), ', $vmParamName).'$value->getHidden() ?? [])) : $value',
                         "\t});",
                     ] : ["\t)"],
                     [
@@ -586,11 +579,11 @@ class ControllerClassBuilder implements AbstractBuilder
                 ],
                 'descriptors' => [
                     'Remove the specified resource from storage.',
-                    '@Route /DELETE /' . $this->routeName_ . '/{id}',
+                    '@Route /DELETE /'.$this->routeName_.'/{id}',
                 ],
                 'returns' => 'mixed',
                 'contents' => $this->mustGenerateActionContents() ? [
-                    $this->hasAuthenticatable_ && $this->policies && (null !== $this->viewModelClass_) ? sprintf("\$%s->authorize('delete', [\$$vmParamName", $vmParamName) . ("->find(\$id), \$$vmParamName])") : null,
+                    $this->hasAuthenticatable_ && $this->policies && (null !== $this->viewModelClass_) ? sprintf("\$%s->authorize('delete', [\$$vmParamName", $vmParamName).("->find(\$id), \$$vmParamName])") : null,
                     '',
                     '$result = $this->service->handle(DeleteQueryAction($id))',
                     'return $this->response->create($result)',

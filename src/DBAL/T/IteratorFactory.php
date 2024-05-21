@@ -1,5 +1,16 @@
 <?php
 
+declare(strict_types=1);
+
+/*
+ * This file is part of the drewlabs namespace.
+ *
+ * (c) Sidoine Azandrew <azandrewdevelopper@gmail.com>
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
+
 namespace Drewlabs\GCli\DBAL\T;
 
 use Doctrine\DBAL\DriverManager;
@@ -21,17 +32,10 @@ class IteratorFactory
     /** @var string|null */
     private $schema;
 
-
     /**
-     * Create factory class instance
-     * 
-     * @param string $namespace
-     * @param string|null $schema 
-     * @param array $dbOptions 
-     * @param array $tables 
-     * @param array $excepts 
+     * Create factory class instance.
      */
-    public function __construct(string $namespace, ?string $schema = null, array $dbOptions, array $tables = [], array $excepts = [])
+    public function __construct(string $namespace, string $schema = null, array $dbOptions, array $tables = [], array $excepts = [])
     {
         $this->namespace = $namespace;
         $this->schema = $schema;
@@ -49,6 +53,7 @@ class IteratorFactory
     {
         $self = clone $this;
         $self->tables = $tables;
+
         return $self;
     }
 
@@ -56,6 +61,7 @@ class IteratorFactory
     {
         $self = clone $this;
         $self->excepts = $tables ?? [];
+
         return $self;
     }
 
@@ -78,6 +84,7 @@ class IteratorFactory
                 return \in_array($table->getName(), $this->tables, true);
             });
         }
+
         return new Iterator($tables, $this->namespace, $this->schema);
     }
 }

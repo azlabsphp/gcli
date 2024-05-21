@@ -32,9 +32,6 @@ class RouteController
 
     /**
      * Creates class instance.
-     *
-     * @param string $namespace
-     * @param string $classPath
      */
     public function __construct(string $name, string $namespace = null, string $classPath = null)
     {

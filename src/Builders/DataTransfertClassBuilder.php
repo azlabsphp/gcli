@@ -24,7 +24,6 @@ use Drewlabs\CodeGenerator\Types\PHPTypesModifiers;
 use Drewlabs\Core\Helpers\Str;
 use Drewlabs\GCli\Contracts\ComponentBuilder as AbstractBuilder;
 use Drewlabs\GCli\Factories\ComponentPath;
-use Drewlabs\GCli\Helpers\ComponentBuilder;
 
 use function Drewlabs\GCli\Proxy\PHPScript;
 
@@ -157,7 +156,7 @@ class DataTransfertClassBuilder implements AbstractBuilder
         if (null === $model) {
             return $this;
         }
-        $classname = \is_object($model) ? $model::class : strval($model);
+        $classname = \is_object($model) ? $model::class : (string) $model;
         $isClassPath = Str::contains($classname, '\\');
         if ($isClassPath) {
             $this->modelClassPath = $classname;

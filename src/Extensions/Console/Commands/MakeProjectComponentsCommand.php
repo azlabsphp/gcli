@@ -32,65 +32,64 @@ use Illuminate\Container\Container;
 /**
  * @property \Illuminate\Contracts\Console\Application|\Illuminate\Contracts\Foundation\Application $laravel
  * @property mixed output
- * 
- * 
- * @method bool confirm($question, $default = false)
- * @method array|string|boo|null option($key = null)
- * @method string|array choice($question, array $choices, $default = null, $attempts = null, $multiple = false)
+ *
+ * @method bool                   confirm($question, $default = false)
+ * @method array|string|boo|null  option($key = null)
+ * @method string|array           choice($question, array $choices, $default = null, $attempts = null, $multiple = false)
  * @method string|array|bool|null option(string $key)
- * @method array options()
- * @method void info($string, $verbosity = null)
- * @method void warn($string, $verbosity = null)
- * @method void error($string, $verbosity = null)
+ * @method array                  options()
+ * @method void                   info($string, $verbosity = null)
+ * @method void                   warn($string, $verbosity = null)
+ * @method void                   error($string, $verbosity = null)
  */
 class MakeProjectComponentsCommand extends Command
 {
     /** @var string[] */
-    const CAMEL_CASE_CHOICES = [
+    public const CAMEL_CASE_CHOICES = [
         'Direct (ex: Post { label, post_type_id } -> PostDto {label, post_type_id } )',
         'Camelize (ex: Post { label, post_type_id } -> PostDto {label, postTypeId } )',
     ];
 
-    const PROMPT = 'How should data transfert properties map to model attributes ?';
+    public const PROMPT = 'How should data transfert properties map to model attributes ?';
 
     /** @var string */
     protected $signature = 'gcli:make:project {--srcPath= : Path to the business logic component folder}'
-        . '{--package= : Package namespace for components}'
-        . '{--subPackage= : Subpackage will group each component part in a subfolder}'
-        . '{--connectionURL= : Database connection URL}'
-        . '{--dbname= : Database name}'
-        . '{--host= : Database host name}'
-        . '{--port= : Database host port number}'
-        . '{--user= : Database authentication user}'
-        . '{--password= : Database authentication password}'
-        . '{--driver= : Database driver name}'
-        . '{--server_version= : Database server version}'
-        . '{--charset= : Database Connection collation}'
-        . '{--unix_socket= : Unix socket to use for connections}'
-        . '{--routePrefix= : The prefix for the generated route definitions}'
-        . '{--middleware= : Middleware group defined for the routes prefix}'
-        . '{--routingfilename= : Routing filename (Default = web.php)}'
-        . '{--excepts=* : List of tables not to be included in the generated output}'
-        . '{--disableCache : Caching tables not supported}'
-        . '{--noAuth : Indicates whether project controllers supports authentication}'
-        . '{--input= : Path to options configurations file}'
-        . '{--format=json : Input file extension or format. Supported input format are ex:json|yml|yaml}'
-        . '{--schema= : Schema prefix to database tables}'
-        . '{--http : Whether to generates controllers and routes}'
-        . '{--no-model-accessors : Disable model property accessor generator }'
-        . '{--force : Force rewrite of existing classes }'
-        . '{--relations : Generates relations for model and relations casting entries for data transfer object }'
-        . '{--manytomany=* :  List of many to many relations. (ex - lefttable->middletable->righttable) }'
-        . '{--toones=* :  List of one to one relations. (ex - lefttable->righttable) }'
-        . '{--manythroughs=* :  List of many through relations. (ex - lefttable->middletable->righttable) }'
-        . '{--onethroughs=* :  List of one through relations. (ex - lefttable->middletable->righttable) }'
-        . '{--only=* : Restrict the generator to generate code only for the specified table structures }'
-        . '{--policies : Generates policies for the model }'
-        . '{--htr : Enables project generator to generates htr test files }'
-        . '{--htrDir= : Output directory for htr tests}'
-        . '{--htrHost= : Base url for htr tests}'
-        . '{--htrFormat=json : Htr output document format}'
-        . '{--plugins=* : List of plugins to use by source code generator }';
+        .'{--package= : Package namespace for components}'
+        .'{--subPackage= : Subpackage will group each component part in a subfolder}'
+        .'{--connectionURL= : Database connection URL}'
+        .'{--dbname= : Database name}'
+        .'{--host= : Database host name}'
+        .'{--port= : Database host port number}'
+        .'{--user= : Database authentication user}'
+        .'{--password= : Database authentication password}'
+        .'{--driver= : Database driver name}'
+        .'{--server_version= : Database server version}'
+        .'{--charset= : Database Connection collation}'
+        .'{--unix_socket= : Unix socket to use for connections}'
+        .'{--routePrefix= : The prefix for the generated route definitions}'
+        .'{--middleware= : Middleware group defined for the routes prefix}'
+        .'{--routingfilename= : Routing filename (Default = web.php)}'
+        .'{--excepts=* : List of tables not to be included in the generated output}'
+        .'{--disableCache : Caching tables not supported}'
+        .'{--noAuth : Indicates whether project controllers supports authentication}'
+        .'{--input= : Path to options configurations file}'
+        .'{--format=json : Input file extension or format. Supported input format are ex:json|yml|yaml}'
+        .'{--schema= : Schema prefix to database tables}'
+        .'{--http : Whether to generates controllers and routes}'
+        .'{--no-model-accessors : Disable model property accessor generator }'
+        .'{--force : Force rewrite of existing classes }'
+        .'{--relations : Generates relations for model and relations casting entries for data transfer object }'
+        .'{--manytomany=* :  List of many to many relations. (ex - lefttable->middletable->righttable) }'
+        .'{--toones=* :  List of one to one relations. (ex - lefttable->righttable) }'
+        .'{--manythroughs=* :  List of many through relations. (ex - lefttable->middletable->righttable) }'
+        .'{--onethroughs=* :  List of one through relations. (ex - lefttable->middletable->righttable) }'
+        .'{--only=* : Restrict the generator to generate code only for the specified table structures }'
+        .'{--policies : Generates policies for the model }'
+        .'{--htr : Enables project generator to generates htr test files }'
+        .'{--htrDir= : Output directory for htr tests}'
+        .'{--htrHost= : Base url for htr tests}'
+        .'{--htrFormat=json : Htr output document format}'
+        .'{--plugins=* : List of plugins to use by source code generator }';
 
     /** @var string */
     protected $description = 'Reverse engineer database table to a full mvc components definitions';
@@ -127,7 +126,7 @@ class MakeProjectComponentsCommand extends Command
     public function handle()
     {
         $lumen = drewlabs_code_generator_is_running_lumen_app(Container::getInstance());
-        //#region local variables initialization
+        // #region local variables initialization
         $noAuth = (bool) $this->option('noAuth');
         $http = (bool) $this->option('http');
         $commandoptions = $this->mergeCamelizeOption($this->choice(static::PROMPT, self::CAMEL_CASE_CHOICES, 0), $this->options() ?? []);
@@ -142,16 +141,16 @@ class MakeProjectComponentsCommand extends Command
         $includes = $options->get('includes', []);
         $tableNamespace = sprintf('%s\\%s', $namespace, ltrim(sprintf('%s%s', $domain ? "$domain\\" : '', 'Models')));
         $schema = $options->get('schema');
-        //#endregion local variables initialization
+        // #endregion local variables initialization
 
         // Register ts-module plugin only if it's passed as argument
-        if (in_array('ts-module', $options->get('plugins'))) {
+        if (\in_array('ts-module', $options->get('plugins'), true)) {
             // We register the Ts-Module plugin
             G::getInstance()->addPlugin('ts-module', new Plugin($this->laravel->publicPath('assets/lib')));
         }
 
-        $task = (new ReverseEngineerTask(new RulesFactory))
-            ->setCamelize(boolval($options->get('models.attributes.camelize', false)))
+        $task = (new ReverseEngineerTask(new RulesFactory()))
+            ->setCamelize((bool) $options->get('models.attributes.camelize', false))
             ->withRelations($options->get('models.relations.provides', false) ?? false)
             ->setToOnesRelations($options->get('models.relations.one-to-one', []))
             ->setManyToManyRelations($options->get('models.relations.many-to-many', []))
@@ -159,15 +158,14 @@ class MakeProjectComponentsCommand extends Command
             ->setManyThroughRelations($options->get('models.relations.one-to-many-though', []));
         $task = $policies ? $task->withPolicies() : $task;
 
-
-        //#region Load database tables
-        $factory = new DriverOptionsFactory;
+        // #region Load database tables
+        $factory = new DriverOptionsFactory();
         $dbOptions = $factory->createOptions($options, static function ($key, $default = null) {
             return config($key, $default);
         });
         $factory = new IteratorFactory($tableNamespace, $schema, $dbOptions->get(), $includes, $excludes);
         $iterator = $factory->createIterator();
-        //#endregion Load database tables
+        // #endregion Load database tables
 
         $task->run(
             $iterator,
@@ -182,7 +180,7 @@ class MakeProjectComponentsCommand extends Command
             $domain,
             $schema,
             $http,
-            $options->get('models.attributes.accessors', true)
+            !$options->get('models.attributes.accessors', true)
         )(
             $this->laravel->basePath('routes'),
             $this->cachePath,
@@ -190,6 +188,7 @@ class MakeProjectComponentsCommand extends Command
             // Creates the progress indicator
             function ($values) {
                 $this->info("Started reverse engineering process...\n");
+
                 return new ProgressBar($this->output->createProgressBar(\count($values)));
             },
             function (string $message = null) {
@@ -200,7 +199,8 @@ class MakeProjectComponentsCommand extends Command
                 if ($this->option('force')) {
                     return true;
                 }
-                return $this->confirm(sprintf('Override existing class at %s? ', $options->get('path')) . \DIRECTORY_SEPARATOR . $writable->getPath());
+
+                return $this->confirm(sprintf('Override existing class at %s? ', $options->get('path')).\DIRECTORY_SEPARATOR.$writable->getPath());
             },
             function (array $routes, RouteRequestBodyMap $map, string $prefix = null) use ($options) {
                 if ((bool) $options->get('htr')) {
@@ -208,7 +208,7 @@ class MakeProjectComponentsCommand extends Command
                         $factory = new RouteProjectFactory($route, $map, $prefix, $options->get('htr.host', 'http://127.0.0.1:8000'));
                         $project = $factory->create();
                         $format = $options->get('htr.format', 'json');
-                        Disk::new($this->laravel->basePath($options->get('htr.directory') ?? 'htr'))->write($factory->getRouteName() . '.' . $format, $project->compile($format));
+                        Disk::new($this->laravel->basePath($options->get('htr.directory') ?? 'htr'))->write($factory->getRouteName().'.'.$format, $project->compile($format));
                     }
                 }
             }

@@ -27,8 +27,6 @@ trait HasNameAttribute
 
     /**
      * Returns the component name property value.
-     *
-     * @return string
      */
     public function name(): ?string
     {

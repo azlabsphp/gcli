@@ -25,7 +25,6 @@ use Drewlabs\CodeGenerator\Types\PHPTypesModifiers;
 
 use Drewlabs\GCli\Contracts\ComponentBuilder as AbstractBuilder;
 use Drewlabs\GCli\Factories\ComponentPath;
-use Drewlabs\GCli\Helpers\ComponentBuilder;
 
 use function Drewlabs\GCli\Proxy\PHPScript;
 
@@ -63,8 +62,8 @@ class ServiceProviderBuilder implements AbstractBuilder
     private $bindings = [];
 
     /**
-     * Domain route file path
-     * 
+     * Domain route file path.
+     *
      * @var string
      */
     private $routeFilePath;
@@ -92,15 +91,15 @@ class ServiceProviderBuilder implements AbstractBuilder
     }
 
     /**
-     * Enable domain routing regitar for the policy class
-     * 
-     * @param string $filename 
-     * @return static 
+     * Enable domain routing regitar for the policy class.
+     *
+     * @return static
      */
     public function withDomainRouting(string $filename)
     {
         $self = clone $this;
         $self->routeFilePath = $filename;
+
         return $self;
     }
 
@@ -131,12 +130,12 @@ class ServiceProviderBuilder implements AbstractBuilder
 
         $registerMethod = PHPClassMethod('register', [], 'void', PHPTypesModifiers::PUBLIC, ['Register application services.'])
         ->addContents(implode(\PHP_EOL, array_map(static function ($binding) use ($values) {
-            return '$this->app->bind(' . $binding . '::class, ' . $values[$binding] . '::class);';
+            return '$this->app->bind('.$binding.'::class, '.$values[$binding].'::class);';
         }, array_keys($values))));
         if ($this->routeFilePath) {
-            $routeFilePath = Str::endsWith($this->routeFilePath, '.php') ? $this->routeFilePath : ($this->routeFilePath.".php");
-            $registerMethod = $registerMethod->addLine(implode(PHP_EOL, [
-                "",
+            $routeFilePath = Str::endsWith($this->routeFilePath, '.php') ? $this->routeFilePath : ($this->routeFilePath.'.php');
+            $registerMethod = $registerMethod->addLine(implode(\PHP_EOL, [
+                '',
                 "\t\t// Register domain routes",
                 "\t\t// Comment the lines below to remove domain level routes registar",
                 "\t\t\$this->booted(function() {",
@@ -145,7 +144,7 @@ class ServiceProviderBuilder implements AbstractBuilder
                 "\t\t\t\t//->namespace(\$this->namespace) //uncomment the line to provide controllers namespace",
                 "\t\t\t\t->group(\$this->app->basePath('routes/$routeFilePath'));",
                 "\t\t});",
-                ""
+                '',
             ]));
         }
         $component = $component->addMethod($registerMethod);

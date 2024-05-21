@@ -50,7 +50,7 @@ class RouteRequestBody
                     'name' => $current,
                     'value' => '',
                     'type' => 'text',
-                    'required' => in_array('nullable', $post[$current] ?? []) ? false : true
+                    'required' => \in_array('nullable', $post[$current] ?? [], true) ? false : true,
                 ];
 
                 return $carry;
@@ -66,7 +66,7 @@ class RouteRequestBody
                     'name' => $current,
                     'value' => '',
                     'type' => 'text',
-                    'required' => in_array('nullable', $put[$current] ?? []) ? false : true
+                    'required' => \in_array('nullable', $put[$current] ?? [], true) ? false : true,
                 ];
 
                 return $carry;

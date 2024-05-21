@@ -1,5 +1,16 @@
 <?php
 
+declare(strict_types=1);
+
+/*
+ * This file is part of the drewlabs namespace.
+ *
+ * (c) Sidoine Azandrew <azandrewdevelopper@gmail.com>
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
+
 namespace Drewlabs\GCli\Plugins\TSModule\V1;
 
 use Drewlabs\CodeGenerator\Helpers\Str;
@@ -17,11 +28,7 @@ class DatagridColumns
     private $camelize;
 
     /**
-     * Class constructor
-     * 
-     * @param string $module
-     * @param Type $type 
-     * @param bool $camelize 
+     * Class constructor.
      */
     public function __construct(
         string $module,
@@ -37,7 +44,7 @@ class DatagridColumns
     {
         $lines = [
             '/** returns the list of datagrid columns to display */',
-            'export const gridColumns: SearchableGridColumnType[] = ['
+            'export const gridColumns: SearchableGridColumnType[] = [',
         ];
 
         foreach ($this->type->getProperties() as $property) {
@@ -49,13 +56,13 @@ class DatagridColumns
                 sprintf("\t\tlabel: '%s',", $label),
                 sprintf("\t\tfield: '%s',", $propertyName),
                 "\t\tsortable: false,",
-                in_array(strtolower($property->getRawType()), ['date', 'datetime']) ? "\t\ttransform: 'date'" : "\t\t//transform: 'uppercase',",
+                \in_array(strtolower($property->getRawType()), ['date', 'datetime'], true) ? "\t\ttransform: 'date'" : "\t\t//transform: 'uppercase',",
                 "\t\t// TODO: Uncomment codes below to enable search query",
                 "\t\t//searcheable: true,",
                 "\t\t//search: {",
                 "\t\t\t//flexible: true,",
                 "\t\t//}",
-                "\t},"
+                "\t},",
             ]);
         }
 
@@ -64,5 +71,4 @@ class DatagridColumns
 
         return implode("\n", $lines);
     }
-
 }

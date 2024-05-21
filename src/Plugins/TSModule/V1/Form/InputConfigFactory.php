@@ -1,5 +1,16 @@
 <?php
 
+declare(strict_types=1);
+
+/*
+ * This file is part of the drewlabs namespace.
+ *
+ * (c) Sidoine Azandrew <azandrewdevelopper@gmail.com>
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
+
 namespace Drewlabs\GCli\Plugins\TSModule\V1\Form;
 
 use Drewlabs\GCli\Contracts\HasExistConstraint;
@@ -19,10 +30,7 @@ class InputConfigFactory
     private $camelize;
 
     /**
-     * Class constructor
-     * 
-     * @param string $module 
-     * @param bool $camelize 
+     * Class constructor.
      */
     public function __construct(string $module, bool $camelize = false)
     {
@@ -37,33 +45,33 @@ class InputConfigFactory
         }
 
         $factories = [
-            'date' => function (string $module, Property $property, bool $camelize) use ($indent, $index) {
+            'date' => static function (string $module, Property $property, bool $camelize) use ($indent, $index) {
                 return new Date($module, $property, $camelize, $indent, $index);
             },
-            'datetime' => function (string $module, Property $property, bool $camelize) use ($indent, $index) {
+            'datetime' => static function (string $module, Property $property, bool $camelize) use ($indent, $index) {
                 return new Date($module, $property, $camelize, $indent, $index);
             },
-            'float' => function (string $module, Property $property, bool $camelize) use ($indent, $index) {
+            'float' => static function (string $module, Property $property, bool $camelize) use ($indent, $index) {
                 return new Number($module, $property, $camelize, $indent, $index);
             },
-            'int' => function (string $module, Property $property, bool $camelize) use ($indent, $index) {
+            'int' => static function (string $module, Property $property, bool $camelize) use ($indent, $index) {
                 return new Number($module, $property, $camelize, $indent, $index);
             },
-            'integer' => function (string $module, Property $property, bool $camelize) use ($indent, $index) {
+            'integer' => static function (string $module, Property $property, bool $camelize) use ($indent, $index) {
                 return new Number($module, $property, $camelize, $indent, $index);
             },
-            'decimal' => function (string $module, Property $property, bool $camelize) use ($indent, $index) {
+            'decimal' => static function (string $module, Property $property, bool $camelize) use ($indent, $index) {
                 return new Number($module, $property, $camelize, $indent, $index);
             },
-            'string' => function (string $module, Property $property, bool $camelize) use ($indent, $index) {
+            'string' => static function (string $module, Property $property, bool $camelize) use ($indent, $index) {
                 return new Str($module, $property, $camelize, $indent, $index);
             },
-            'text' => function (string $module, Property $property, bool $camelize) use ($indent, $index) {
+            'text' => static function (string $module, Property $property, bool $camelize) use ($indent, $index) {
                 return new Textarea($module, $property, $camelize, $indent, $index);
             },
         ];
 
-        $fn = $factories[strtolower($property->getRawType())] ?? function () {
+        $fn = $factories[strtolower($property->getRawType())] ?? static function () {
             return null;
         };
 
