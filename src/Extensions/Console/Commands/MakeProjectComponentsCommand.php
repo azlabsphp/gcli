@@ -141,16 +141,17 @@ class MakeProjectComponentsCommand extends Command
         $includes = $options->get('includes', []);
         $tableNamespace = sprintf('%s\\%s', $namespace, ltrim(sprintf('%s%s', $domain ? "$domain\\" : '', 'Models')));
         $schema = $options->get('schema');
+        $camelize = boolval($options->get('models.attributes.camelize', false));
         // #endregion local variables initialization
 
         // Register ts-module plugin only if it's passed as argument
         if (\in_array('ts-module', $options->get('plugins'), true)) {
             // We register the Ts-Module plugin
-            G::getInstance()->addPlugin('ts-module', new Plugin($this->laravel->publicPath('assets/lib')));
+            G::getInstance()->addPlugin('ts-module', new Plugin($this->laravel->publicPath('assets/lib'), $camelize));
         }
 
         $task = (new ReverseEngineerTask(new RulesFactory()))
-            ->setCamelize((bool) $options->get('models.attributes.camelize', false))
+            ->setCamelize($camelize)
             ->withRelations($options->get('models.relations.provides', false) ?? false)
             ->setToOnesRelations($options->get('models.relations.one-to-one', []))
             ->setManyToManyRelations($options->get('models.relations.many-to-many', []))
