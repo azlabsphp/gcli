@@ -13,7 +13,8 @@ declare(strict_types=1);
 
 namespace Drewlabs\GCli;
 
-class BasicRelation
+/** @internal */
+class DirectRelation
 {
     /**
      * relation method name.

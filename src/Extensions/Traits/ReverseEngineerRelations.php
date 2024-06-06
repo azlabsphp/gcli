@@ -15,7 +15,7 @@ namespace Drewlabs\GCli\Extensions\Traits;
 
 use Drewlabs\Core\Helpers\Arr;
 use Drewlabs\Core\Helpers\Str;
-use Drewlabs\GCli\BasicRelation;
+use Drewlabs\GCli\DirectRelation;
 use Drewlabs\GCli\Contracts\ForeignKeyConstraintDefinition;
 use Drewlabs\GCli\RelationTypes;
 use Drewlabs\GCli\ThroughRelation;
@@ -119,7 +119,7 @@ trait ReverseEngineerRelations
                                 $relations,
                                 $foreignclasspath,
                                 // If the relation name is provided in the one to one configuration, we use it, else we fallback to column name or table name
-                                new BasicRelation(
+                                new DirectRelation(
                                     Str::camelize(
                                         !is_null($oneResult) ? ($oneResult->getName() ?? Pluralizer::singular(self::trimschema($table, $schema))) : (!is_null($oneToManyResult) ? $oneToManyResult->getName() : Pluralizer::plural(self::trimschema($table, $schema))),
                                         false
@@ -132,7 +132,7 @@ trait ReverseEngineerRelations
                                 )
                             ),
                             $modelclasspath,
-                            new BasicRelation(
+                            new DirectRelation(
                                 Str::camelize(Pluralizer::singular(self::trimidsuffix($localcolumn)), false),
                                 $foreignclasspath,
                                 $foreigncolum,

@@ -184,7 +184,7 @@ class ORMModelBuilder implements AbstractORMModelBuilder, AbstractBuilder, Provi
     /**
      * List of model relations to provide.
      *
-     * @var (\Drewlabs\GCli\BasicRelation|\Drewlabs\GCli\ThroughRelationTables)[]
+     * @var (\Drewlabs\GCli\DirectRelation|\Drewlabs\GCli\ThroughRelationTables)[]
      */
     private $relations;
 
@@ -684,7 +684,7 @@ class ORMModelBuilder implements AbstractORMModelBuilder, AbstractBuilder, Provi
      *
      * @return CallableInterface
      */
-    private function createOneOrManyMethodTemplate(\Drewlabs\GCli\BasicRelation $relation, string $type, array $methods)
+    private function createOneOrManyMethodTemplate(\Drewlabs\GCli\DirectRelation $relation, string $type, array $methods)
     {
         $model = $relation->getModel();
         $local = $relation->getLocal();
@@ -708,7 +708,7 @@ class ORMModelBuilder implements AbstractORMModelBuilder, AbstractBuilder, Provi
      *
      * @return CallableInterface
      */
-    private function createBelongsToTemplate(\Drewlabs\GCli\BasicRelation $relation, array $methods)
+    private function createBelongsToTemplate(\Drewlabs\GCli\DirectRelation $relation, array $methods)
     {
         $model = $relation->getModel();
         $local = $relation->getLocal();
