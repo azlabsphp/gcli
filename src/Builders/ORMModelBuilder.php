@@ -179,7 +179,7 @@ class ORMModelBuilder implements AbstractORMModelBuilder, AbstractBuilder, Provi
     /**
      * @var ORMModelDefinition
      */
-    private $defintion;
+    private $definition;
 
     /**
      * List of model relations to provide.
@@ -563,7 +563,7 @@ class ORMModelBuilder implements AbstractORMModelBuilder, AbstractBuilder, Provi
      */
     public function setDefinition(ORMModelDefinition $value)
     {
-        $this->defintion = $value;
+        $this->definition = $value;
     }
 
     /**
@@ -571,7 +571,7 @@ class ORMModelBuilder implements AbstractORMModelBuilder, AbstractBuilder, Provi
      */
     public function getDefinition()
     {
-        return $this->defintion;
+        return $this->definition;
     }
 
     /**
