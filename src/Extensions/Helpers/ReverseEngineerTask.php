@@ -43,44 +43,31 @@ class ReverseEngineerTask
 {
     use ReverseEngineerRelations;
 
-    /**
-     * @var string[]
-     */
+    /** @var string[] */
     private $exceptions = [];
 
-    /**
-     * @var string[]
-     */
+    /** @var string[] */
     private $tables = [];
 
-    /**
-     * @var bool
-     */
+    /** @var bool */
     private $camelize = false;
 
-    /**
-     * @var string[]
-     */
+    /** @var string[] */
     private $oneThroughs = [];
 
-    /**
-     * @var string[]
-     */
+    /** @var string[] */
     private $manyThroughs = [];
 
-    /**
-     * @var string[]
-     */
+    /** @var string[] */
     private $oneToOnes = [];
 
-    /**
-     * @var string[]
-     */
+    /** @var string[] */
     private $manyToMany = [];
 
-    /**
-     * @var bool
-     */
+    /** @var string[] */
+    private $oneToMany = [];
+
+    /** @var bool */
     private $provideRelations = false;
 
     /**
@@ -167,6 +154,14 @@ class ReverseEngineerTask
         return $this;
     }
 
+
+    public function setOneToManyRelations(array $values = [])
+    {
+        $this->oneToMany = $values;
+
+        return $this;
+    }
+
     /**
      * Set a property that insure model relations are generated.
      *
@@ -239,6 +234,7 @@ class ReverseEngineerTask
             $manytomany = $this->manyToMany ?? [];
             $onethroughs = $this->oneThroughs ?? [];
             $manythroughs = $this->manyThroughs ?? [];
+            $oneToMany = $this->oneToMany ?? [];
             $camelize = $this->camelize;
             $policies = [];
             $message = [];
@@ -290,6 +286,7 @@ class ReverseEngineerTask
                 $foreignKeys,
                 $manytomany,
                 $toones,
+                $oneToMany,
                 $manythroughs,
                 $onethroughs,
                 $schema

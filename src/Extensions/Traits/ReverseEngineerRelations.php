@@ -20,7 +20,7 @@ use Drewlabs\GCli\Contracts\ForeignKeyConstraintDefinition;
 use Drewlabs\GCli\RelationTypes;
 use Drewlabs\GCli\ThroughRelation;
 use Drewlabs\GCli\ThroughRelationTables;
-use Drewlabs\GCli\ToOneRelationTables;
+use Drewlabs\GCli\DirectRelationTables;
 use Drewlabs\GCli\Traits\ProvidesTrimTableSchema;
 use Illuminate\Support\Pluralizer;
 
@@ -52,27 +52,28 @@ trait ReverseEngineerRelations
         array $values,
         array $tablesindexes,
         array $foreignKeys,
-        array $manytomany,
+        array $manyToMany,
         array $toones,
-        array $manythroughs = [],
-        array $onethroughs = [],
+        array $oneToMany,
+        array $manyThroughs = [],
+        array $oneThroughs = [],
         string $schema = null
     ) {
 
         $relations = [];
         $pivots = [];
-        /**
-         * @var ThroughRelationTables[]
-         */
-        $manytomany = self::projectToMany($foreignKeys, $manytomany);
-        /**
-         * @var ToOneRelationTables[]
-         */
+        /** @var ThroughRelationTables[] $manyToMany */
+        $manyToMany = self::projectToMany($foreignKeys, $manyToMany);
+        /** @var DirectRelationTables[] $ones */
         $ones = array_map(static function ($current) {
-            return ToOneRelationTables::create($current);
+            return DirectRelationTables::create($current);
         }, $toones ?? []);
-        $manythroughs = self::projectTrhough($foreignKeys, $manythroughs);
-        $onethroughs = self::projectTrhough($foreignKeys, $onethroughs);
+        /** @var DirectRelationTables[] $oneToMany */
+        $oneToMany = array_map(static function ($current) {
+            return DirectRelationTables::create($current);
+        }, $oneToMany ?? []);
+        $manyThroughs = self::projectTrhough($foreignKeys, $manyThroughs);
+        $oneThroughs = self::projectTrhough($foreignKeys, $oneThroughs);
         foreach ($values as $component) {
             if ($table = Arr::get($component, 'table')) {
                 foreach ($foreignKeys as $foreign) {
@@ -104,27 +105,30 @@ trait ReverseEngineerRelations
                             continue;
                         }
                         // Checks if the current table exists in the list of one - to - one relation
-                        /**
-                         * @var ToOneRelationTables $current
-                         */
-                        $oneresult = array_values(array_filter($ones, static function (ToOneRelationTables $currrent) use ($foreigntable, $table) {
+                        $oneResult = static::find($ones, static function (DirectRelationTables $currrent) use ($foreigntable, $table) {
                             return ($currrent->leftTable() === $foreigntable) && ($currrent->rightTable() === $table);
-                        }));
+                        });
+                        if ($oneResult === null) {
+                            /** @var DirectRelationTables */
+                            $oneToManyResult = static::find($oneToMany, static function (DirectRelationTables $currrent) use ($foreigntable, $table) {
+                                return ($currrent->leftTable() === $foreigntable) && ($currrent->rightTable() === $table);
+                            });
+                        }
                         $relations = self::mergearray(
                             self::mergearray(
                                 $relations,
                                 $foreignclasspath,
+                                // If the relation name is provided in the one to one configuration, we use it, else we fallback to column name or table name
                                 new BasicRelation(
-                                    Str::camelize(!empty($oneresult) ?
-                                        // If the relation name is provided in the one to one configuration, we use it, else we
-                                        // fallback to column name or table name
-                                        ($oneresult[0]->getName() ?? Pluralizer::singular(self::trimschema($table, $schema))) :
-                                        Pluralizer::plural(self::trimschema($table, $schema)), false),
+                                    Str::camelize(
+                                        !is_null($oneResult) ? ($oneResult->getName() ?? Pluralizer::singular(self::trimschema($table, $schema))) : (!is_null($oneToManyResult) ? $oneToManyResult->getName() : Pluralizer::plural(self::trimschema($table, $schema))),
+                                        false
+                                    ),
                                     $modelclasspath,
                                     $foreigncolum,
                                     $localcolumn,
-                                    !empty($oneresult) ? RelationTypes::ONE_TO_ONE : RelationTypes::ONE_TO_MANY,
-                                    ($_dtobuilder = Arr::get($component, 'dto.class')) ? $_dtobuilder->getClassPath() : null
+                                    !is_null($oneResult) ? RelationTypes::ONE_TO_ONE : RelationTypes::ONE_TO_MANY,
+                                    ($dtoBuilder = Arr::get($component, 'dto.class')) ? $dtoBuilder->getClassPath() : null
                                 )
                             ),
                             $modelclasspath,
@@ -134,14 +138,14 @@ trait ReverseEngineerRelations
                                 $foreigncolum,
                                 $localcolumn,
                                 RelationTypes::MANY_TO_ONE,
-                                ($_dtobuilder = Arr::get($foreingcomponent, 'dto.class')) ? $_dtobuilder->getClassPath() : null
+                                ($dtoBuilder = Arr::get($foreingcomponent, 'dto.class')) ? $dtoBuilder->getClassPath() : null
                             )
                         );
                     }
                 }
                 // #region many to many relations
                 $relations = self::appendManyToMany(
-                    $manytomany,
+                    $manyToMany,
                     $table,
                     $values,
                     Arr::get($component, 'model.classPath'),
@@ -152,7 +156,7 @@ trait ReverseEngineerRelations
                 // #endregion many to many relations
                 // #region append to 1 -> many right relation
                 $relations = self::appendToRightRelation(
-                    $manythroughs,
+                    $manyThroughs,
                     RelationTypes::ONE_TO_MANY_THROUGH,
                     $table,
                     $values,
@@ -163,7 +167,7 @@ trait ReverseEngineerRelations
                 // #endregion append to 1 -> many right relation
                 // #region append to 1 -> 1 right relation
                 $relations = self::appendToRightRelation(
-                    $onethroughs,
+                    $oneThroughs,
                     RelationTypes::ONE_TO_ONE_THROUGH,
                     $table,
                     $values,
@@ -374,5 +378,29 @@ trait ReverseEngineerRelations
         $list[$key] = [...(\array_key_exists($key, $list) ? $list[$key] ?? [] : []), ...$args];
 
         return $list;
+    }
+
+
+    /**
+     * Find the first element in the array returns true for the predicate
+     * 
+     * @psalm-template T
+     * @template T
+     * 
+     * @param T[] $values 
+     * @param callable $predicate
+     * 
+     * @return T|null
+     */
+    private static function find(array $values, callable $predicate)
+    {
+        $result = null;
+        foreach ($values as $key => $value) {
+            if ($predicate($value, $key)) {
+                $result = $value;
+                break;
+            }
+        }
+        return $result;
     }
 }

@@ -153,6 +153,7 @@ class MakeProjectComponentsCommand extends Command
             ->setCamelize((bool) $options->get('models.attributes.camelize', false))
             ->withRelations($options->get('models.relations.provides', false) ?? false)
             ->setToOnesRelations($options->get('models.relations.one-to-one', []))
+            ->setOneToManyRelations($options->get('models.relations.one-to-many', []))
             ->setManyToManyRelations($options->get('models.relations.many-to-many', []))
             ->setOnThroughRelations($options->get('models.relations.one-to-one-though', []))
             ->setManyThroughRelations($options->get('models.relations.one-to-many-though', []));
