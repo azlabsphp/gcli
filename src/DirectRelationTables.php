@@ -13,7 +13,8 @@ declare(strict_types=1);
 
 namespace Drewlabs\GCli;
 
-class ToOneRelationTables
+/** @internal */
+class DirectRelationTables
 {
     /**
      * Table at the left hand side of the relation.
@@ -24,14 +25,11 @@ class ToOneRelationTables
 
     /**
      * Table at the right hand side of the relation.
-     *
      * @var string
      */
     private $right;
 
-    /**
-     * @var string
-     */
+    /** @var string */
     private $name;
 
     /**
@@ -112,10 +110,11 @@ class ToOneRelationTables
     {
         $parts = explode('->', $value);
         if (2 !== \count($parts)) {
-            throw new \InvalidArgumentException('one-to-one relation incorrectly formed, (ex: left_table->right_table)');
+            throw new \InvalidArgumentException('1->1 or 1->* relation incorrectly formed, (ex: left_table->right_table)');
         }
         $this->left = $parts[0];
-        $this->right = !str_contains($parts[1] ?? '', ':') ? $parts[1] : explode(':', $parts[1])[0];
-        $this->name = !str_contains($parts[1] ?? '', ':') ? null : (($name = explode(':', $parts[1])[1]) ? $name : null);
+        list($right, $name) = array_pad(explode(':', $parts[1]), 2, null);
+        $this->right = $right;
+        $this->name = $name;
     }
 }
