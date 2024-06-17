@@ -53,7 +53,7 @@ class DatagridColumns
             $lines = array_merge($lines, [
                 "\t{",
                 sprintf("\t\ttitle: 'app.modules.%s.datagrid.columns.%s',", $this->module, $label),
-                sprintf("\t\tlabel: '%s',", $label),
+                sprintf("\t\property: '%s',", $label),
                 sprintf("\t\tfield: '%s',", $propertyName),
                 "\t\tsortable: false,",
                 \in_array(strtolower($property->getRawType()), ['date', 'datetime'], true) ? "\t\ttransform: 'date'" : "\t\t//transform: 'uppercase',",
