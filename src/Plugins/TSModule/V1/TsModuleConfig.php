@@ -24,20 +24,15 @@ class TsModuleConfig
     /** @var Type */
     private $type;
 
-    /** @var string */
-    private $importPath;
-
     /**
      * Class constructor.
      */
     public function __construct(
         string $module,
         Type $type,
-        string $importPath = '../components/data'
     ) {
         $this->module = $module;
         $this->type = $type;
-        $this->importPath = $importPath;
     }
 
     public function __toString(): string
@@ -48,7 +43,8 @@ class TsModuleConfig
             '// import { environment } from \'src/environments/environment\';',
             sprintf('import { %s } from \'./types\';', $builtType),
             'import { form } from \'./form\';',
-            sprintf('import { DataConfigArgType } from \'%s\';', $this->importPath),
+            // TODO: Add support for data config type import path to use the as `DataConfigArgType`
+            // sprintf('import { DataConfigArgType } from \'%s\';', $this->importPath),
             'import { gridColumns, viewColumns } from \'./columns\';',
             'import { Injector } from \'@angular/core\';',
             'import { Observable } from \'rxjs\';',
@@ -71,7 +67,7 @@ class TsModuleConfig
             "\t\t\t//detail: translateColumns(viewColumns),",
             "\t\t},",
             "\t\t//excludesActions: [/*'create'*/, 'update', 'delete'] as ActionType[],",
-            "\t} as DataConfigArgType;",
+            "\t};",
             '};',
         ];
 

@@ -40,11 +40,12 @@ class DetailColumns
         $this->camelize = $camelize;
     }
 
+
     public function __toString(): string
     {
         $lines = [
             '/** returns the list of detail view columns to display */',
-            'export const viewColumns: DetailColumnType[] = [',
+            'export const viewColumns: GridDetailColumnType[] = [',
         ];
 
         foreach ($this->type->getProperties() as $property) {

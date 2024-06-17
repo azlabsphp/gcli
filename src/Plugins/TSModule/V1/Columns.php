@@ -29,9 +29,6 @@ class Columns
     /** @var string */
     private $gridImportPath;
 
-    /** @var string */
-    private $detailImportPath;
-
     /**
      * Class constructor.
      */
@@ -39,21 +36,18 @@ class Columns
         string $module,
         Type $type,
         bool $camelize = false,
-        string $gridImportPath = '../components/data',
-        string $detailImportPath = '../components/datagrid'
+        string $gridImportPath = '@azlabsjs/ngx-clr-smart-grid'
     ) {
         $this->module = $module;
         $this->type = $type;
         $this->camelize = $camelize;
         $this->gridImportPath = $gridImportPath;
-        $this->detailImportPath = $detailImportPath;
     }
 
     public function __toString()
     {
         $lines = [
-            sprintf('import { DetailColumnType } from \'%s\';', $this->detailImportPath ?? '../components/data'),
-            sprintf('import { SearchableGridColumnType } from \'%s\';', $this->gridImportPath ?? '../components/datagrid'),
+            sprintf('import { GridDetailColumnType, SearchableGridColumnType } from \'%s\';', $this->gridImportPath ?? '@azlabsjs/ngx-clr-smart-grid'),
             '',
         ];
 

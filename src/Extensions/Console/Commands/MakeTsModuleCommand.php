@@ -38,21 +38,23 @@ class MakeTsModuleCommand extends Command
 {
     /** @var string */
     protected $signature = 'gcli:make:ts '
-        .'{--srcPath= : Path to the business logic component folder}'
-        .'{--connectionURL= : Database connection URL}'
-        .'{--dbname= : Database name}'
-        .'{--host= : Database host name}'
-        .'{--port= : Database host port number}'
-        .'{--user= : Database authentication user}'
-        .'{--password= : Database authentication password}'
-        .'{--driver= : Database driver name}'
-        .'{--server_version= : Database server version}'
-        .'{--charset= : Database Connection collation}'
-        .'{--unix_socket= : Unix socket to use for connections}'
-        .'{--excepts=* : List of tables not to be included in the generated output}'
-        .'{--schema= : Database tables schema prefix}'
-        .'{--camelize : Rename table columns into their camel case corresponding value}'
-        .'{--force : Force rewrite of existing classes}';
+        . '{--srcPath= : Path to the business logic component folder}'
+        . '{--connectionURL= : Database connection URL}'
+        . '{--dbname= : Database name}'
+        . '{--host= : Database host name}'
+        . '{--port= : Database host port number}'
+        . '{--user= : Database authentication user}'
+        . '{--password= : Database authentication password}'
+        . '{--driver= : Database driver name}'
+        . '{--server_version= : Database server version}'
+        . '{--charset= : Database Connection collation}'
+        . '{--unix_socket= : Unix socket to use for connections}'
+        . '{--tables=* : List of tables not to be included in the generated output}'
+        . '{--excepts=* : List of tables not to be excluded in the generated output}'
+        . '{--schema= : Database tables schema prefix}'
+        . '{--camelize : Rename table columns into their camel case corresponding value}'
+        . '{--output= : Directory where source code should be written}'
+        . '{--force : Force rewrite of existing classes}';
 
     /** @var string */
     protected $description = 'Generates Typescript built-type component from database tables';
@@ -80,7 +82,7 @@ class MakeTsModuleCommand extends Command
         $excludes = array_merge($options->get('excludes', []) ?? [], ['migrations']);
         $tables = $options->get('tables', []);
         $factory = new DriverOptionsFactory();
-        $plugin = new Plugin($this->laravel->publicPath('assets/lib'), boolval($this->option('camelize')));
+        $plugin = new Plugin($options->get('output') ?? $this->laravel->publicPath('assets/lib'), boolval($this->option('camelize')));
         $dbOptions = $factory->createOptions($options, static function ($key, $default = null) {
             return config($key, $default);
         });
