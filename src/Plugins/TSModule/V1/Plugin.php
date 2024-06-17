@@ -56,9 +56,10 @@ class Plugin implements AbstractPlugin
         $columns = new Columns($module, $type, $this->camelize);
         $config = new TsModuleConfig($module, $type);
         $form = new Config('posts', $type);
-        Disk::new($this->basePath)->write($module ? ($module . \DIRECTORY_SEPARATOR . 'types.ts') : 'types.ts', $builder->__toString());
-        Disk::new($this->basePath)->write($module ? ($module . \DIRECTORY_SEPARATOR . 'columns.ts') : 'columns.ts', $columns->__toString());
-        Disk::new($this->basePath)->write($module ? ($module . \DIRECTORY_SEPARATOR . 'form.ts') : 'form.ts', $form->__toString());
-        Disk::new($this->basePath)->write($module ? ($module . \DIRECTORY_SEPARATOR . 'index.ts') : 'index.ts', $config->__toString());
+        $directory  = $module ? str_replace('_', '-', $module) : $module;
+        Disk::new($this->basePath)->write($directory ? ($directory . \DIRECTORY_SEPARATOR . 'types.ts') : 'types.ts', $builder->__toString());
+        Disk::new($this->basePath)->write($directory ? ($directory . \DIRECTORY_SEPARATOR . 'columns.ts') : 'columns.ts', $columns->__toString());
+        Disk::new($this->basePath)->write($directory ? ($directory . \DIRECTORY_SEPARATOR . 'form.ts') : 'form.ts', $form->__toString());
+        Disk::new($this->basePath)->write($directory ? ($directory . \DIRECTORY_SEPARATOR . 'index.ts') : 'index.ts', $config->__toString());
     }
 }
