@@ -157,6 +157,11 @@ class CommandArguments
             $options = $options->merge(['htr.format' => $htrFormat]);
         }
 
+        // Typescript module
+        if ($this->getOption('ts-camelize')) {
+            $options = $options->merge(['ts.camelize' => true]);
+        }
+
         return $options;
     }
 

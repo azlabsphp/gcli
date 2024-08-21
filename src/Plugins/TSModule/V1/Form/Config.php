@@ -22,7 +22,7 @@ class Config
     /** @var Type */
     private $type;
 
-    /** @var string */
+    /** @var string|null */
     private $module;
 
     /** @var bool */
@@ -31,10 +31,10 @@ class Config
     /**
      * Class constructor.
      */
-    public function __construct(string $module, Type $type, bool $camelize = false)
+    public function __construct(Type $type, ?string $module = null, bool $camelize = false)
     {
-        $this->module = $module;
         $this->type = $type;
+        $this->module = $module;
         $this->camelize = $camelize;
     }
 
@@ -67,14 +67,12 @@ class Config
 
         $importedInputs = array_unique($importedInputs);
         $lines = [
-            '// import { environment } from \'src/environments/environment\';',
             sprintf("import { FormConfigInterface %s } from '@azlabsjs/smart-form-core';", 0 !== \count($importedInputs) ? sprintf(', %s', implode(', ', $importedInputs)) : ''),
             '',
             '/** Exported module form configuration */',
             'export const form = {',
             "\t//id: ,",
-            sprintf("\ttitle: 'app.modules.%s.form.title',", $this->module),
-            sprintf("\t//endpointURL: environment.api.endpoints.%s,", $this->module),
+            $this->module ? sprintf("\ttitle: 'app.modules.%s.form.title',", $this->module) : sprintf("\ttitle: 'title',"),
             "\tmethod: 'POST',",
             // TODO: Add form inputs generator implementation
             "\tcontrolConfigs: [",
@@ -85,6 +83,13 @@ class Config
         ];
 
         $lines[] = '} as FormConfigInterface;';
+
+        $lines[] = '';
+
+        $lines[] = '/** Exported form factory function */';
+        $lines[] = 'export function createFormConfig(url: string, method: string = \'POST\') {';
+        $lines[] = "\treturn {...form, endpointURL: url, method} as FormConfigInterface;";
+        $lines[] = '}';
 
         return implode("\n", $lines);
     }

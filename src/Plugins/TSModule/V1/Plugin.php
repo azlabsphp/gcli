@@ -53,9 +53,9 @@ class Plugin implements AbstractPlugin
     public function generate(Type $type, string $module = null): void
     {
         $builder = new Types($type, $this->camelize);
-        $columns = new Columns($module, $type, $this->camelize);
-        $config = new TsModuleConfig($module, $type);
-        $form = new Config('posts', $type);
+        $columns = new Columns($type, $module, $this->camelize);
+        $config = new TsModuleConfig($type, $module);
+        $form = new Config($type, $module, false);
         $directory  = $module ? str_replace('_', '-', $module) : $module;
         Disk::new($this->basePath)->write($directory ? ($directory . \DIRECTORY_SEPARATOR . 'types.ts') : 'types.ts', $builder->__toString());
         Disk::new($this->basePath)->write($directory ? ($directory . \DIRECTORY_SEPARATOR . 'columns.ts') : 'columns.ts', $columns->__toString());

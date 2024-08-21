@@ -73,12 +73,12 @@ class Types
             $selected = $builtTypes[strtolower($value->getRawType())] ?? 'BuiltType._str()';
             if ($this->camelize) {
                 $tmpName = $name;
-                $name = Str::camelize($value->name(), false);
-                $mappings[$name] = $tmpName;
+                if (($name = Str::camelize($name, false)) !== $tmpName) {
+                    $mappings[$name] = $tmpName;
+                }
                 $lines[] = sprintf("\t\t%s: %s%s", $name, $selected, $value->required() ? ',' : '.nullish(),');
             } else {
                 $lines[] = sprintf("\t%s: %s%s", $name, $selected, $value->required() ? ',' : '.nullish(),');
-
             }
         }
 

@@ -17,7 +17,7 @@ use Drewlabs\GCli\Contracts\Type;
 
 class Columns
 {
-    /** @var string */
+    /** @var string|null */
     private $module;
 
     /** @var Type */
@@ -33,8 +33,8 @@ class Columns
      * Class constructor.
      */
     public function __construct(
-        string $module,
         Type $type,
+        ?string $module = null,
         bool $camelize = false,
         string $gridImportPath = '@azlabsjs/ngx-clr-smart-grid'
     ) {
@@ -51,8 +51,8 @@ class Columns
             '',
         ];
 
-        $lines[] = (string) (new DatagridColumns($this->module, $this->type, $this->camelize));
-        $lines[] = (string) (new DetailColumns($this->module, $this->type, $this->camelize));
+        $lines[] = (string) (new DatagridColumns($this->type, $this->camelize, $this->module));
+        $lines[] = (string) (new DetailColumns($this->type, $this->camelize, $this->module));
 
         return implode("\n", $lines);
     }

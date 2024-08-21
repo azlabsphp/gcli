@@ -18,7 +18,7 @@ use Drewlabs\GCli\Contracts\Type;
 
 class DatagridColumns
 {
-    /** @var string */
+    /** @var string|null */
     private $module;
 
     /** @var Type */
@@ -31,13 +31,13 @@ class DatagridColumns
      * Class constructor.
      */
     public function __construct(
-        string $module,
         Type $type,
-        bool $camelize = false
+        bool $camelize = false,
+        ?string $module = null
     ) {
-        $this->module = $module;
         $this->type = $type;
         $this->camelize = $camelize;
+        $this->module = $module;
     }
 
     public function __toString(): string
@@ -52,7 +52,7 @@ class DatagridColumns
             $label = $this->camelize ? Str::camelize($propertyName, false) : $propertyName;
             $lines = array_merge($lines, [
                 "\t{",
-                sprintf("\t\ttitle: 'app.modules.%s.datagrid.columns.%s',", $this->module, $label),
+                $this->module ? sprintf("\t\ttitle: 'app.modules.%s.columns.%s',", $this->module, $label) : sprintf("\t\ttitle: '%s',", $label),
                 sprintf("\t\tproperty: '%s',", $label),
                 sprintf("\t\tfield: '%s',", $propertyName),
                 "\t\tsortable: false,",

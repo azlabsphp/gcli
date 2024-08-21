@@ -23,7 +23,7 @@ use Drewlabs\GCli\Plugins\TSModule\V1\Form\Inputs\Textarea;
 
 class InputConfigFactory
 {
-    /** @var string */
+    /** @var string|null */
     private $module;
 
     /** @var bool */
@@ -32,7 +32,7 @@ class InputConfigFactory
     /**
      * Class constructor.
      */
-    public function __construct(string $module, bool $camelize = false)
+    public function __construct(string $module = null, bool $camelize = false)
     {
         $this->module = $module;
         $this->camelize = $camelize;
@@ -41,33 +41,33 @@ class InputConfigFactory
     public function createInputConfig(Property $property, string $indent = "\t", int $index = null)
     {
         if ($property instanceof HasExistConstraint && $property->hasExistContraint()) {
-            return new Option($this->module, $property, $this->camelize, $indent, $index, 'select');
+            return new Option($property, $this->module, $this->camelize, $indent, $index, 'select');
         }
 
         $factories = [
-            'date' => static function (string $module, Property $property, bool $camelize) use ($indent, $index) {
-                return new Date($module, $property, $camelize, $indent, $index);
+            'date' => static function (Property $property, string $module = null, bool $camelize = false) use ($indent, $index) {
+                return new Date($property, $module, $camelize, $indent, $index);
             },
-            'datetime' => static function (string $module, Property $property, bool $camelize) use ($indent, $index) {
-                return new Date($module, $property, $camelize, $indent, $index);
+            'datetime' => static function (Property $property, string $module = null, bool $camelize = false) use ($indent, $index) {
+                return new Date($property, $module, $camelize, $indent, $index);
             },
-            'float' => static function (string $module, Property $property, bool $camelize) use ($indent, $index) {
-                return new Number($module, $property, $camelize, $indent, $index);
+            'float' => static function (Property $property, string $module = null, bool $camelize = false) use ($indent, $index) {
+                return new Number($property, $module, $camelize, $indent, $index);
             },
-            'int' => static function (string $module, Property $property, bool $camelize) use ($indent, $index) {
-                return new Number($module, $property, $camelize, $indent, $index);
+            'int' => static function (Property $property, string $module = null, bool $camelize = false) use ($indent, $index) {
+                return new Number($property, $module, $camelize, $indent, $index);
             },
-            'integer' => static function (string $module, Property $property, bool $camelize) use ($indent, $index) {
-                return new Number($module, $property, $camelize, $indent, $index);
+            'integer' => static function (Property $property, string $module = null, bool $camelize = false) use ($indent, $index) {
+                return new Number($property, $module, $camelize, $indent, $index);
             },
-            'decimal' => static function (string $module, Property $property, bool $camelize) use ($indent, $index) {
-                return new Number($module, $property, $camelize, $indent, $index);
+            'decimal' => static function (Property $property, string $module = null, bool $camelize = false) use ($indent, $index) {
+                return new Number($property, $module, $camelize, $indent, $index);
             },
-            'string' => static function (string $module, Property $property, bool $camelize) use ($indent, $index) {
-                return new Str($module, $property, $camelize, $indent, $index);
+            'string' => static function (Property $property, string $module = null, bool $camelize = false) use ($indent, $index) {
+                return new Str($property, $module, $camelize, $indent, $index);
             },
-            'text' => static function (string $module, Property $property, bool $camelize) use ($indent, $index) {
-                return new Textarea($module, $property, $camelize, $indent, $index);
+            'text' => static function (Property $property, string $module = null, bool $camelize = false) use ($indent, $index) {
+                return new Textarea($property, $module, $camelize, $indent, $index);
             },
         ];
 
@@ -75,6 +75,6 @@ class InputConfigFactory
             return null;
         };
 
-        return $fn($this->module, $property, $this->camelize);
+        return $fn($property, $this->module, $this->camelize);
     }
 }

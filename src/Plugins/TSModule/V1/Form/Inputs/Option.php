@@ -19,7 +19,7 @@ use Drewlabs\GCli\Contracts\Property;
 
 class Option
 {
-    /** @var string */
+    /** @var string|null */
     private $module;
 
     /** @var Property */
@@ -38,8 +38,8 @@ class Option
     private $optionType;
 
     public function __construct(
-        string $module,
         Property $property,
+        ?string $module = null,
         bool $camelize = false,
         string $indent = "\t",
         int $index = null,
@@ -61,7 +61,7 @@ class Option
 
         $lines = [
             '{',
-            sprintf("\tlabel: '%s',", sprintf('app.modules.%s.form.inputs.%s', $this->module, $name)),
+            $this->module ? sprintf("\tlabel: '%s',", sprintf('app.modules.%s.columns.%s', $this->module, $name)) : sprintf("\tlabel: '%s',", $name),
             sprintf("\tname: '%s',", $propertyName),
             // We assume the input type to be an email input if the property name contains the word email
             sprintf("\ttype: '%s',", $this->optionType),

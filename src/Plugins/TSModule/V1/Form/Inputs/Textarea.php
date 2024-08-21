@@ -20,7 +20,7 @@ use Drewlabs\GCli\Contracts\Property;
 
 class Textarea
 {
-    /** @var string */
+    /** @var string|null */
     private $module;
 
     /** @var Property */
@@ -35,8 +35,13 @@ class Textarea
     /** @var int */
     private $index;
 
-    public function __construct(string $module, Property $property, bool $camelize = false, string $indent = "\t", int $index = null)
-    {
+    public function __construct(
+        Property $property,
+        ?string $module = null,
+        bool $camelize = false,
+        string $indent = "\t",
+        int $index = null
+    ) {
         $this->module = $module;
         $this->property = $property;
         $this->camelize = $camelize;
@@ -52,7 +57,7 @@ class Textarea
 
         $lines = [
             '{',
-            sprintf("\tlabel: '%s',", sprintf('app.modules.%s.form.inputs.%s', $this->module, $name)),
+            $this->module ? sprintf("\tlabel: '%s',", sprintf('app.modules.%s.columns.%s', $this->module, $name)) : sprintf("\tlabel: '%s',", $name),
             sprintf("\tname: '%s',", $propertyName),
             "\ttype: 'textarea',",
             "\tclasses: '',",

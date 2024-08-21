@@ -18,7 +18,7 @@ use Drewlabs\GCli\Contracts\Type;
 
 class DetailColumns
 {
-    /** @var string */
+    /** @var string|null */
     private $module;
 
     /** @var Type */
@@ -31,13 +31,13 @@ class DetailColumns
      * Class constructor.
      */
     public function __construct(
-        string $module,
         Type $type,
-        bool $camelize = false
+        bool $camelize = false,
+        ?string $module = null
     ) {
-        $this->module = $module;
         $this->type = $type;
         $this->camelize = $camelize;
+        $this->module = $module;
     }
 
 
@@ -53,8 +53,8 @@ class DetailColumns
             $label = $this->camelize ? Str::camelize($propertyName, false) : $propertyName;
             $lines = array_merge($lines, [
                 "\t{",
-                "\t\ttitleTransform: ['translate', 'uppercase'],",
-                sprintf("\t\ttitle: 'app.modules.%s.datagrid.columns.%s',", $this->module, $label),
+                "\t\ttitleTransform: ['text', 'uppercase'],",
+                $this->module ? sprintf("\t\ttitle: 'app.modules.%s.columns.%s',", $this->module, $label) : sprintf("\t\ttitle: '%s',", $label),
                 sprintf("\t\tproperty: '%s',", $label),
                 "\t\t// TODO: Uncomment codes below to enable data transformation and search query",
                 \in_array(strtolower($property->getRawType()), ['date', 'datetime'], true) ? "\t\ttransform: 'date'" : "\t\t//transform: 'uppercase',",
