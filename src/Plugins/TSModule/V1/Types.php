@@ -14,6 +14,8 @@ declare(strict_types=1);
 namespace Drewlabs\GCli\Plugins\TSModule\V1;
 
 use Drewlabs\CodeGenerator\Helpers\Str;
+use Drewlabs\GCli\Contracts\HasModuleMetadata;
+use Drewlabs\GCli\Contracts\HasRelations;
 use Drewlabs\GCli\Contracts\Type;
 
 class Types
@@ -70,16 +72,39 @@ class Types
 
         foreach ($this->type->getProperties() as $value) {
             $name = $value->name();
+            $tmpName = $name;
             $selected = $builtTypes[strtolower($value->getRawType())] ?? 'BuiltType._str()';
-            if ($this->camelize) {
+            if ($this->camelize && (($name = Str::camelize($name, false)) !== $tmpName)) {
+                $mappings[$name] = $tmpName;
+            }
+            $lines[] = sprintf("\t\t%s: %s%s", $name, $selected, $value->required() ? ',' : '.nullish(),');
+        }
+
+        if ($this->type instanceof HasRelations) {
+            $imports = [];
+            $names = [];
+            foreach ($this->type->getRelations() as $value) {
+                if (!($value instanceof HasModuleMetadata)) {
+                    continue;
+                }
+                $name = $value->getName();
+                if (isset($names[$name])) {
+                    $names[$name] += 1;
+                }
                 $tmpName = $name;
-                if (($name = Str::camelize($name, false)) !== $tmpName) {
+                $typeName = sprintf('%s', $value->to());
+                $import = sprintf('import { %s } from \'../%s\';', $typeName, str_replace('_', '-', $value->getModuleName() ?? ''));
+                if (!in_array($import, $imports)) {
+                    $imports[] = $import;
+                }
+                $type = $value->multi() ? sprintf('BuiltType._array(%s).nullish(),', $typeName) : sprintf('%s.nullish(),', $typeName);
+                if ($this->camelize && (($name = Str::camelize($name, false)) !== $tmpName)) {
                     $mappings[$name] = $tmpName;
                 }
-                $lines[] = sprintf("\t\t%s: %s%s", $name, $selected, $value->required() ? ',' : '.nullish(),');
-            } else {
-                $lines[] = sprintf("\t%s: %s%s", $name, $selected, $value->required() ? ',' : '.nullish(),');
+                $lines[] = sprintf("\t\t%s: %s", isset($names[$name]) ? sprintf("%s_%d", $name, intval($names[$name])) : $name, $type);
+                $names[$name] = 0;
             }
+            array_unshift($lines, ...$imports);
         }
 
         $lines[] = 0 === \count($mappings) ? '});' : "\t},";

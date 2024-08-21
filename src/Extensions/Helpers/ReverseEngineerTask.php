@@ -262,29 +262,30 @@ class ReverseEngineerTask
                 $modulesFactory = $modulesFactory->withoutAuth();
             }
 
-            /** @var string[] */
-            $tableNames = [];
+            // /** @var string[] */
+            // $tableNames = [];
+            // /** @var array<string,int> */
+            // $tablesindexes = [];
+
             /** @var ForeignKeyConstraintDefinition[] */
             $foreignKeys = [];
-            /** @var array<string,int> */
-            $tablesindexes = [];
 
             // #endregion Create migration runner
-            $iterator = $modulesFactory->createModulesIterator($traversable, $foreignKeys, $tablesindexes, $tableNames);
+            $iterator = $modulesFactory->createModulesIterator($traversable, $foreignKeys /*,$tablesindexes, $tableNames*/);
             $values = iterator_to_array($iterator);
+
             // #region write tables to cache if caching is not disabled
             if (!$disableCache) {
-                Cache::new($cachePath)->dump(new CacheableTables($tableNames, $namespace, $subPackage));
+                Cache::new($cachePath)->dump(new CacheableTables(array_keys($values), $namespace, $subPackage));
             }
             // #endregion write tables to cache if caching is not disabled
-            /**
-             * @var Progress
-             */
+            /** @var Progress */
             $indicator = $onStartCallback($values);
+
             // #region Create components models relations
             [$relations, $pivots] = $providesRelations ? self::resolveRelations(
                 $values,
-                $tablesindexes,
+                // $tablesindexes,
                 $foreignKeys,
                 $manytomany,
                 $toones,
@@ -309,7 +310,7 @@ class ReverseEngineerTask
                 &$bindings,
                 &$requestBodyMap
             ) {
-                foreach ($values as $component) {
+                foreach ($values as $moduleName  => $component) {
                     // #region Write model source code
                     $modelbuilder = Arr::get($component, 'model.class');
                     if (($modelbuilder instanceof HasRelations) && \is_array($componentrelations = $relations[Arr::get($component, 'model.classPath')] ?? [])) {
@@ -330,9 +331,7 @@ class ReverseEngineerTask
                     // Use plugin code generator
                     /** @var \Drewlabs\GCli\Contracts\Type $type */
                     if (null !== ($type = Arr::get($component, 'model.definition'))) {
-                        $type = $modelbuilder instanceof HasRelations && $type instanceof HasRelations ? $type->withRelations(array_map(function ($value) use ($type) {
-                            return $type instanceof HasModuleMetadata && !empty($name = $type->getModuleName()) ? $value->withModuleName($name) : $value;
-                        }, $modelbuilder->getRelations())) : $type;
+                        $type = $modelbuilder instanceof HasRelations && $type instanceof HasRelations ? $type->withRelations($modelbuilder->getRelations()) : $type;
                         G::getInstance()->generate($type);
                     }
 

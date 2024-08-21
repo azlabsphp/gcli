@@ -14,8 +14,12 @@ declare(strict_types=1);
 namespace Drewlabs\GCli\Plugins\TSModule\V1\Form;
 
 use Drewlabs\GCli\Contracts\HasExistConstraint;
+use Drewlabs\GCli\Contracts\HasModuleMetadata;
+use Drewlabs\GCli\Contracts\HasRelations;
 use Drewlabs\GCli\Contracts\Property;
+use Drewlabs\GCli\Contracts\ReversibleRelation;
 use Drewlabs\GCli\Contracts\Type;
+use Drewlabs\GCli\Plugins\TSModule\V1\Form\Inputs\Group;
 
 class Config
 {
@@ -52,6 +56,7 @@ class Config
             'decimal' => 'NumberInput',
             'string' => 'TextInput',
             'text' => 'TextAreaInput',
+            'group' => 'InputGroup'
         ];
         $values = array_map(function (Property $property) use (&$importedInputs, $factories) {
             $factory = new InputConfigFactory($this->module, $this->camelize);
@@ -65,9 +70,45 @@ class Config
             return $factory->createInputConfig($property, "\t\t");
         }, $this->type->getProperties());
 
+        $groups = [];
+        $groupsImports = [];
+        if ($this->type instanceof HasRelations) {
+            $names = [];
+            foreach ($this->type->getRelations() as $value) {
+                if (!($value instanceof HasModuleMetadata)) {
+                    continue;
+                }
+
+                if ($value instanceof ReversibleRelation && $value->isInverse()) {
+                    continue;
+                }
+                $name = $value->getName();
+                if (isset($names[$name])) {
+                    $names[$name] += 1;
+                }
+
+                $inputConfig = $value->getModuleName() ? sprintf('%sInputConfigs', lcfirst($value->getModuleName())) : 'inputConfigs';
+                $import = sprintf('import { %s } from \'../%s\';', $inputConfig, str_replace('_', '-', $value->getModuleName() ?? ''));
+                if (!in_array($import, $groupsImports)) {
+                    $groupsImports[] = $import;
+                }
+
+                $inputName = isset($names[$name]) ? sprintf("%s_%d", $name, intval($names[$name])) : $name;
+                $group = new Group($inputName, $inputConfig, false, $value->multi(), $this->module, false, "\t\t");
+                $groups[] = $group;
+
+                $names[$name] = 0;
+            }
+        }
+        if (!empty($groups)) {
+            $values = array_merge($values, $groups);
+            $importedInputs[] = 'InputGroup';
+        }
+
         $importedInputs = array_unique($importedInputs);
         $lines = [
             sprintf("import { FormConfigInterface %s } from '@azlabsjs/smart-form-core';", 0 !== \count($importedInputs) ? sprintf(', %s', implode(', ', $importedInputs)) : ''),
+            ...$groupsImports,
             '',
             '/** Exported module form configuration */',
             'export const form = {',
@@ -81,7 +122,6 @@ class Config
             })),
             "\t]",
         ];
-
         $lines[] = '} as FormConfigInterface;';
 
         $lines[] = '';
@@ -90,6 +130,10 @@ class Config
         $lines[] = 'export function createFormConfig(url: string, method: string = \'POST\') {';
         $lines[] = "\treturn {...form, endpointURL: url, method} as FormConfigInterface;";
         $lines[] = '}';
+
+        $lines[] = '';
+        $lines[] = '/** Exported inputs configurations */';
+        $lines[] = sprintf('export const %s = form.controlConfigs', $this->module ? sprintf('%sInputConfigs', lcfirst($this->module)) : 'inputConfigs');
 
         return implode("\n", $lines);
     }

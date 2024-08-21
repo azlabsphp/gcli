@@ -15,9 +15,9 @@ declare(strict_types=1);
 namespace Drewlabs\GCli\DBAL\R;
 
 use Drewlabs\Core\Helpers\Str;
-use Drewlabs\GCli\Contracts\Relation;
+use Drewlabs\GCli\Contracts\ReversibleRelation;
 
-class Basic implements Relation
+class Basic implements ReversibleRelation
 {
     /**
      * relation method name.
@@ -64,8 +64,19 @@ class Basic implements Relation
     /** @var string */
     private $module;
 
+    /** @var bool */
+    private $isInverse = false;
+
     /**
      * Creates an instance of relation class.
+     * 
+     * @param string $name 
+     * @param string $model 
+     * @param string $reference 
+     * @param string $local 
+     * @param string $type 
+     * @param string|null $castclasspath 
+     * @return void 
      */
     public function __construct(
         string $name,
@@ -83,6 +94,30 @@ class Basic implements Relation
         $this->castclasspath = $castclasspath;
     }
 
+    public function isInverse(): bool
+    {
+        return $this->isInverse;
+    }
+
+    /**
+     * Creates a basic relation instance setting the reverse flag to true
+     * 
+     * @param string $name 
+     * @param string $model 
+     * @param string $reference 
+     * @param string $local 
+     * @param string $type 
+     * @param string|null $castclasspath
+     * 
+     * @return static 
+     */
+    public static function reverse(...$args)
+    {
+        $self = new static(...$args);
+        $self->isInverse = true;
+
+        return $self;
+    }
 
     public function withModuleName(string $name)
     {

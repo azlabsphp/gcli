@@ -63,8 +63,8 @@ class TsModuleConfig
             '};',
             '',
             '// Exported types declarations',
-            'export { form, createFormConfig } from \'./form\';',
-            sprintf('export { %s, %sType, %s as _Type } from \'./types\';', $builtType, $builtType, $builtType),
+            'export * from \'./form\';',
+            sprintf('export * from \'./types\';', $builtType, $builtType),
         ];
 
         return implode("\n", $lines);

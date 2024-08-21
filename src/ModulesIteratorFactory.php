@@ -116,9 +116,9 @@ class ModulesIteratorFactory
      *
      * @throws \InvalidArgumentException
      *
-     * @return \Generator<int, array, mixed, void>
+     * @return \Generator
      */
-    public function createModulesIterator($traversable, array &$foreignKeys, array &$tablesindexes, array &$tableNames)
+    public function createModulesIterator($traversable, array &$foreignKeys, /*array &$tablesindexes, array &$tableNames*/)
     {
         // We apply filters to only generate code for tables that
         // passes the filters
@@ -126,8 +126,8 @@ class ModulesIteratorFactory
         foreach ($traversable as $value) {
             ++$index;
             $tableName = $value->table();
-            $tableNames[] = $tableName;
-            $tablesindexes[$tableName] = $index - 1;
+            // $tableNames[] = $tableName;
+            // $tablesindexes[$tableName] = $index - 1;
             // for column foreign constraint push the constraint to the foreign key array
             foreach ($value->columns() as $column) {
                 if ($constraint = $column->foreignConstraint()) {
@@ -233,8 +233,7 @@ class ModulesIteratorFactory
                 ];
             }
 
-            // Yield the components container
-            yield $components;
+            yield $tableName => $components;
         }
     }
 
