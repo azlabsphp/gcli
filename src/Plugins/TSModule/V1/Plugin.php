@@ -50,16 +50,22 @@ class Plugin implements AbstractPlugin
         return $self;
     }
 
+
+    public function getWritePath(string $name, string $module = null)
+    {
+        $directory  = $module ? str_replace('_', '-', $module) : $module;
+        return $directory ? ($directory . \DIRECTORY_SEPARATOR . $name) : $name;
+    }
+
     public function generate(Type $type, string $module = null): void
     {
         $builder = new Types($type, $this->camelize);
         $columns = new Columns($type, $module, $this->camelize);
         $config = new TsModuleConfig($type, $module);
         $form = new Config($type, $module, false);
-        $directory  = $module ? str_replace('_', '-', $module) : $module;
-        Disk::new($this->basePath)->write($directory ? ($directory . \DIRECTORY_SEPARATOR . 'types.ts') : 'types.ts', $builder->__toString());
-        Disk::new($this->basePath)->write($directory ? ($directory . \DIRECTORY_SEPARATOR . 'columns.ts') : 'columns.ts', $columns->__toString());
-        Disk::new($this->basePath)->write($directory ? ($directory . \DIRECTORY_SEPARATOR . 'form.ts') : 'form.ts', $form->__toString());
-        Disk::new($this->basePath)->write($directory ? ($directory . \DIRECTORY_SEPARATOR . 'index.ts') : 'index.ts', $config->__toString());
+        Disk::new($this->basePath)->write($this->getWritePath('types.ts', $module), $builder->__toString());
+        Disk::new($this->basePath)->write($this->getWritePath('columns.ts', $module), $columns->__toString());
+        Disk::new($this->basePath)->write($this->getWritePath('form.ts', $module), $form->__toString());
+        Disk::new($this->basePath)->write($this->getWritePath('index.ts', $module), $config->__toString());
     }
 }

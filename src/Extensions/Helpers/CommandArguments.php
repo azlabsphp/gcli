@@ -92,15 +92,19 @@ class CommandArguments
             $result = 'json' === $this->getOption('format') ? Options::json($path) : Options::yaml($path);
             $options = $options->merge($result->all());
         }
+        
         if ($filename = $this->getOption('routingfilename')) {
             $options = $options->merge(['routes.filename' => $filename]);
         }
+
         if ($prefix = $this->getOption('routePrefix')) {
             $options = $options->merge(['routes.prefix' => $prefix]);
         }
+
         if ($middleware = $this->getOption('middleware')) {
             $options = $options->merge(['routes.middleware' => $middleware]);
         }
+
         if ($tables = $this->getOption('only', [])) {
             $options = $options->merge(['includes' => $tables]);
         }
@@ -108,10 +112,12 @@ class CommandArguments
         if ($excludes = $this->getOption('excepts', [])) {
             $options = $options->merge(['excludes' => $excludes]);
         }
-        /** @var CacheableTables $tablesPool */
-        if ($options->get('cache', false) && null !== ($tablesPool = Cache::new((string) $cachePath)->load(CacheableTables::class))) {
-            $options = $options->merge(['excludes' => $tablesPool->getTables()]);
+
+        /** @var CacheableTables $pool */
+        if ($options->get('cache', false) && null !== ($pool = Cache::new((string) $cachePath)->load(CacheableTables::class))) {
+            $options = $options->merge(['excludes' => $pool->getTables()]);
         }
+
         if ($namespace = $this->getOption('package')) {
             $options = $options->merge(['namespace.default' => $namespace]);
         }

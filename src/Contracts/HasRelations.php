@@ -13,19 +13,20 @@ declare(strict_types=1);
 
 namespace Drewlabs\GCli\Contracts;
 
-interface ProvidesRelations
+interface HasRelations
 {
     /**
      * Set the list realtions to be provideded.
      *
-     * @return self|ORMModelBuilder
+     * @return self|mixed
      */
-    public function provideRelations(array $relations = []);
+    public function withRelations(array $relations = []);
+
 
     /**
-     * Makes the model a pivot model.
-     *
-     * @return self|ORMModelBuilder
+     * Returns the list of relations of the current instance
+     * 
+     * @return Relation[] 
      */
-    public function asPivot();
+    public function getRelations(): array;
 }

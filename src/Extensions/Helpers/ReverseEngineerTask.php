@@ -20,10 +20,13 @@ use Drewlabs\GCli\Cache\CacheableTables;
 use Drewlabs\GCli\ComponentsScriptWriter as ComponentsScriptWriterClass;
 use Drewlabs\GCli\Contracts\ComponentBuilder as AbstractBuilder;
 use Drewlabs\GCli\Contracts\ForeignKeyConstraintDefinition;
+use Drewlabs\GCli\Contracts\HasModuleMetadata;
+use Drewlabs\GCli\Contracts\Pivotable;
 use Drewlabs\GCli\Contracts\ProvidesPropertyAccessors;
-use Drewlabs\GCli\Contracts\ProvidesRelations;
+use Drewlabs\GCli\Contracts\HasRelations;
 use Drewlabs\GCli\Contracts\SourceFileInterface;
 use Drewlabs\GCli\Contracts\Writable;
+use Drewlabs\GCli\DBAL\R\Types;
 use Drewlabs\GCli\Extensions\Contracts\Progress;
 use Drewlabs\GCli\Extensions\Traits\ReverseEngineerRelations;
 use Drewlabs\GCli\Helpers\RouteDefinitions;
@@ -36,7 +39,6 @@ use function Drewlabs\GCli\Proxy\ComponentsScriptWriter;
 
 use function Drewlabs\GCli\Proxy\MVCServiceProviderBuilder;
 
-use Drewlabs\GCli\RelationTypes;
 use Drewlabs\GCli\Validation\RulesFactory;
 
 class ReverseEngineerTask
@@ -310,9 +312,9 @@ class ReverseEngineerTask
                 foreach ($values as $component) {
                     // #region Write model source code
                     $modelbuilder = Arr::get($component, 'model.class');
-                    if (($modelbuilder instanceof ProvidesRelations) && \is_array($componentrelations = $relations[Arr::get($component, 'model.classPath')] ?? [])) {
-                        $modelbuilder = $modelbuilder->provideRelations($componentrelations);
-                        if (\in_array(Arr::get($component, 'table'), $pivots, true)) {
+                    if (($modelbuilder instanceof HasRelations) && \is_array($componentrelations = $relations[Arr::get($component, 'model.classPath')] ?? [])) {
+                        $modelbuilder = $modelbuilder->withRelations($componentrelations);
+                        if ($modelbuilder instanceof Pivotable && \in_array(Arr::get($component, 'table'), $pivots, true)) {
                             $modelbuilder = $modelbuilder->asPivot();
                         }
                     }
@@ -328,6 +330,9 @@ class ReverseEngineerTask
                     // Use plugin code generator
                     /** @var \Drewlabs\GCli\Contracts\Type $type */
                     if (null !== ($type = Arr::get($component, 'model.definition'))) {
+                        $type = $modelbuilder instanceof HasRelations && $type instanceof HasRelations ? $type->withRelations(array_map(function ($value) use ($type) {
+                            return $type instanceof HasModuleMetadata && !empty($name = $type->getModuleName()) ? $value->withModuleName($name) : $value;
+                        }, $modelbuilder->getRelations())) : $type;
                         G::getInstance()->generate($type);
                     }
 
@@ -336,6 +341,7 @@ class ReverseEngineerTask
                     if ($dtoBuilder = Arr::get($component, 'dto.class')) {
                         $viewmodelbuilder = $viewmodelbuilder->setDTOClassPath($dtoBuilder->getClassPath());
                     }
+
                     $viewmodelSourceCode = self::resolveWritable($viewmodelbuilder);
                     static::writeComponentSourceCode(Arr::get($component, 'viewModel.path'), $viewmodelSourceCode, $onExistsCallback);
                     // #endregion Write view model source code
@@ -356,14 +362,14 @@ class ReverseEngineerTask
                             $currentDtoCasts[$_current->getName()] = \in_array(
                                 $_current->getType(),
                                 [
-                                    RelationTypes::ONE_TO_MANY,
-                                    RelationTypes::MANY_TO_MANY,
-                                    RelationTypes::ONE_TO_MANY_THROUGH,
+                                    Types::ONE_TO_MANY,
+                                    Types::MANY_TO_MANY,
+                                    Types::ONE_TO_MANY_THROUGH,
                                 ],
                                 true
                             ) ?
-                                'collectionOf:\\'.ltrim($_current->getCastClassPath(), '\\') :
-                                'value:\\'.ltrim($_current->getCastClassPath(), '\\');
+                                'collectionOf:\\' . ltrim($_current->getCastClassPath(), '\\') :
+                                'value:\\' . ltrim($_current->getCastClassPath(), '\\');
                         }
                         $dtoBuilder->setCamelizeProperties($camelize)->setCasts($currentDtoCasts);
                     }
@@ -559,6 +565,6 @@ class ReverseEngineerTask
             return $component(...$args);
         }
 
-        throw new \RuntimeException('Unsupported type '.(\is_object($component) && null !== $component ? $component::class : \gettype($component)));
+        throw new \RuntimeException('Unsupported type ' . (\is_object($component) && null !== $component ? $component::class : \gettype($component)));
     }
 }

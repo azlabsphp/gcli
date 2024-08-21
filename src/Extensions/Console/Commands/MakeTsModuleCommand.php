@@ -13,7 +13,7 @@ declare(strict_types=1);
 
 namespace Drewlabs\GCli\Extensions\Console\Commands;
 
-use Drewlabs\GCli\Contracts\ProvidesModuleMetadata;
+use Drewlabs\GCli\Contracts\HasModuleMetadata;
 use Drewlabs\GCli\DBAL\DriverOptionsFactory;
 use Drewlabs\GCli\DBAL\T\IteratorFactory;
 use Drewlabs\GCli\Extensions\ProgressBar;
@@ -94,7 +94,7 @@ class MakeTsModuleCommand extends Command
         $progress->start();
         /** @var \Traversable<\Drewlabs\GCli\Contracts\ORMModelDefinition> $values */
         foreach ($values as $value) {
-            $plugin->generate($value, $value instanceof ProvidesModuleMetadata ? $value->getModuleName() : null);
+            $plugin->generate($value, $value instanceof HasModuleMetadata ? $value->getModuleName() : null);
             $progress->advance();
         }
         $progress->finish();

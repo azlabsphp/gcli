@@ -1,5 +1,6 @@
 <?php
 
+
 declare(strict_types=1);
 
 /*
@@ -11,9 +12,12 @@ declare(strict_types=1);
  * file that was distributed with this source code.
  */
 
-namespace Drewlabs\GCli;
+namespace Drewlabs\GCli\DBAL\R;
 
-class ThroughRelation
+use Drewlabs\Core\Helpers\Str;
+use Drewlabs\GCli\Contracts\Relation;
+
+class Through implements Relation
 {
     /**
      * relation method name.
@@ -80,6 +84,9 @@ class ThroughRelation
      */
     private $castclasspath;
 
+    /** @var string */
+    private $module;
+
     /**
      * Creates Many through relation instance.
      */
@@ -107,6 +114,28 @@ class ThroughRelation
         $this->castclasspath = $castclasspath;
     }
 
+    
+    public function withModuleName(string $name)
+    {
+        $this->module = $name;
+        return $this;
+    }
+
+    public function getModuleName(): ?string
+    {
+        return $this->module;
+    }
+
+    public function to(): string
+    {
+        return strpos($this->left, '\\') !== false ? Str::afterLast('\\', $this->left) : $this->left;
+    }
+
+    public function multi(): bool
+    {
+        return in_array($this->type, [Types::MANY_TO_MANY, Types::ONE_TO_MANY, Types::ONE_TO_MANY_THROUGH]);
+    }
+
     /**
      * Returns the string representation of the relation.
      *
@@ -122,7 +151,7 @@ class ThroughRelation
      *
      * @return string
      */
-    public function getName()
+    public function getName(): string
     {
         return $this->name;
     }

@@ -13,10 +13,13 @@ declare(strict_types=1);
 
 namespace Drewlabs\GCli\Contracts;
 
-interface ProvidesModuleMetadata
+
+interface Pivotable
 {
     /**
-     * returns the module name of the current object.
+     * Makes the model a pivot model.
+     *
+     * @return self|mixed
      */
-    public function getModuleName(): string;
+    public function asPivot();
 }

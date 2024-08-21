@@ -15,10 +15,12 @@ namespace Drewlabs\GCli\DBAL\T;
 
 use Drewlabs\GCli\Contracts\ORMColumnDefinition;
 use Drewlabs\GCli\Contracts\ORMModelDefinition as ModelDefinition;
-use Drewlabs\GCli\Contracts\ProvidesModuleMetadata;
+use Drewlabs\GCli\Contracts\HasModuleMetadata;
+use Drewlabs\GCli\Contracts\HasRelations;
+use Drewlabs\GCli\Contracts\Relation;
 
 /** @internal */
-class Table implements ModelDefinition, ProvidesModuleMetadata
+class Table implements ModelDefinition, HasModuleMetadata, HasRelations
 {
     /** @var string */
     private $primaryKey;
@@ -44,6 +46,9 @@ class Table implements ModelDefinition, ProvidesModuleMetadata
     /** @var string */
     private $module;
 
+    /** @var Relation[] */
+    private $relations;
+
     /**
      * Creates class instance.
      *
@@ -58,7 +63,8 @@ class Table implements ModelDefinition, ProvidesModuleMetadata
         bool $increments,
         string $namespace = null,
         string $module = null,
-        string $comment = null
+        string $comment = null,
+        array $relations = []
     ) {
         $this->primaryKey = $primaryKey;
         $this->name = $name;
@@ -68,11 +74,31 @@ class Table implements ModelDefinition, ProvidesModuleMetadata
         $this->namespace = $namespace;
         $this->comment = $comment;
         $this->module = $module;
+        $this->relations = $relations ?? [];
     }
 
-    public function getModuleName(): string
+    public function withModuleName(string $name)
+    {
+        $self = clone $this;
+        $self->module = $name;
+        return $self;
+    }
+    
+    public function getModuleName(): ?string
     {
         return $this->module ?? $this->table();
+    }
+
+    public function withRelations(array $relations = [])
+    {
+        $self = clone $this;
+        $self->relations = $relations;
+        return $self;
+    }
+
+    public function getRelations(): array
+    {
+        return $this->relations;
     }
 
     public function getProperties(): array

@@ -61,6 +61,10 @@ class TsModuleConfig
             "\t\t//excludesActions: [/*'create',*/ 'update', 'delete'] as ActionType[],",
             "\t};",
             '};',
+            '',
+            '// Exported types declarations',
+            'export { form, createFormConfig } from \'./form\';',
+            sprintf('export { %s, %sType, %s as _Type } from \'./types\';', $builtType, $builtType, $builtType),
         ];
 
         return implode("\n", $lines);

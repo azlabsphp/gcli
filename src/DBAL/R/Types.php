@@ -1,5 +1,6 @@
 <?php
 
+
 declare(strict_types=1);
 
 /*
@@ -11,9 +12,9 @@ declare(strict_types=1);
  * file that was distributed with this source code.
  */
 
-namespace Drewlabs\GCli;
+namespace Drewlabs\GCli\DBAL\R;
 
-class RelationTypes
+final class Types
 {
     /**
      * Defines a 1 -> many relation.

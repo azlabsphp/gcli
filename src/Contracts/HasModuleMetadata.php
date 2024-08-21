@@ -13,17 +13,21 @@ declare(strict_types=1);
 
 namespace Drewlabs\GCli\Contracts;
 
-interface Type
+interface HasModuleMetadata
 {
     /**
-     * returns the type name.
+     * Set the module information on the current relation
+     * 
+     * @param string $name
+     *  
+     * @return static 
      */
-    public function name(): string;
+    public function withModuleName(string $name);
 
-    /**
-     * returns the list of type properties.
-     *
-     * @return Property[]
+    /** 
+     * returns the module name of the current object.
+     * 
+     * @return string
      */
-    public function getProperties(): array;
+    public function getModuleName(): ?string;
 }

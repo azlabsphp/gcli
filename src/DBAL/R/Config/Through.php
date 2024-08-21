@@ -1,5 +1,6 @@
 <?php
 
+
 declare(strict_types=1);
 
 /*
@@ -11,10 +12,11 @@ declare(strict_types=1);
  * file that was distributed with this source code.
  */
 
-namespace Drewlabs\GCli;
+namespace Drewlabs\GCli\DBAL\R\Config;
 
-class ThroughRelationTables
+class Through
 {
+
     /**
      * Table at the left hand side of the relation.
      *
@@ -93,13 +95,11 @@ class ThroughRelationTables
      *
      * @throws \ReflectionException
      *
-     * @return self
+     * @return static
      */
     public static function create(string $value)
     {
-        /**
-         * @var self
-         */
+        /** @var self */
         $object = (new \ReflectionClass(__CLASS__))->newInstanceWithoutConstructor();
         $object->setTables($value);
 

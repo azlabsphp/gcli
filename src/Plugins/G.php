@@ -13,7 +13,7 @@ declare(strict_types=1);
 
 namespace Drewlabs\GCli\Plugins;
 
-use Drewlabs\GCli\Contracts\ProvidesModuleMetadata;
+use Drewlabs\GCli\Contracts\HasModuleMetadata;
 use Drewlabs\GCli\Contracts\Type;
 
 // Plugins files generator class implementation
@@ -71,7 +71,7 @@ class G
         $types = \is_array($types) ? $types : [$types];
         foreach ($this->plugins as $plugin) {
             foreach ($types as $value) {
-                $plugin->generate($value, $value instanceof ProvidesModuleMetadata ? $value->getModuleName() : null);
+                $plugin->generate($value, $value instanceof HasModuleMetadata ? $value->getModuleName() : null);
             }
         }
     }

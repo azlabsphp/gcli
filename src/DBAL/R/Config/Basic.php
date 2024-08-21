@@ -1,5 +1,6 @@
 <?php
 
+
 declare(strict_types=1);
 
 /*
@@ -11,25 +12,29 @@ declare(strict_types=1);
  * file that was distributed with this source code.
  */
 
-namespace Drewlabs\GCli;
+namespace Drewlabs\GCli\DBAL\R\Config;
 
-/** @internal */
-class DirectRelationTables
+class Basic
 {
     /**
-     * Table at the left hand side of the relation.
+     * table at the left hand side of the relation.
      *
      * @var string
      */
     private $left;
 
     /**
-     * Table at the right hand side of the relation.
+     * table at the right hand side of the relation.
+     * 
      * @var string
      */
     private $right;
 
-    /** @var string */
+    /**
+     * basic relation name
+     * 
+     * @var string
+     */
     private $name;
 
     /**
@@ -58,13 +63,11 @@ class DirectRelationTables
      *
      * @throws \ReflectionException
      *
-     * @return string
+     * @return static
      */
     public static function create(string $value)
     {
-        /**
-         * @var self
-         */
+        /** @var self */
         $object = (new \ReflectionClass(__CLASS__))->newInstanceWithoutConstructor();
         $object->setTables($value);
 

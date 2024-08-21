@@ -28,20 +28,27 @@ use Drewlabs\GCli\Contracts\ComponentBuilder as AbstractBuilder;
 use Drewlabs\GCli\Contracts\EloquentORMModelBuilder as AbstractORMModelBuilder;
 use Drewlabs\GCli\Contracts\ORMColumnDefinition;
 use Drewlabs\GCli\Contracts\ORMModelDefinition;
+use Drewlabs\GCli\Contracts\Pivotable;
 use Drewlabs\GCli\Contracts\ProvidesPropertyAccessors;
-use Drewlabs\GCli\Contracts\ProvidesRelations;
+use Drewlabs\GCli\Contracts\HasRelations;
+use Drewlabs\GCli\DBAL\R\Through;
+use Drewlabs\GCli\DBAL\R\Types;
 use Drewlabs\GCli\Factories\ComponentPath;
 
 use function Drewlabs\GCli\Proxy\PHPScript;
 
-use Drewlabs\GCli\RelationTypes;
 use Drewlabs\GCli\Traits\HasNamespaceAttribute;
 use Drewlabs\GCli\Traits\ProvidesTrimTableSchema;
 use Drewlabs\GCli\Traits\ViewModelBuilder;
 use Illuminate\Database\Eloquent\Model as EloquentModel;
 use Illuminate\Support\Pluralizer;
 
-class ORMModelBuilder implements AbstractORMModelBuilder, AbstractBuilder, ProvidesRelations, ProvidesPropertyAccessors
+class ORMModelBuilder implements
+    AbstractORMModelBuilder,
+    AbstractBuilder,
+    HasRelations,
+    ProvidesPropertyAccessors,
+    Pivotable
 {
     use HasNamespaceAttribute;
     use ProvidesTrimTableSchema;
@@ -184,7 +191,7 @@ class ORMModelBuilder implements AbstractORMModelBuilder, AbstractBuilder, Provi
     /**
      * List of model relations to provide.
      *
-     * @var (\Drewlabs\GCli\DirectRelation|\Drewlabs\GCli\ThroughRelationTables)[]
+     * @var (\Drewlabs\GCli\DBAL\R\Basic|\Drewlabs\GCli\DBAL\R\Through)[]
      */
     private $relations;
 
@@ -311,11 +318,16 @@ class ORMModelBuilder implements AbstractORMModelBuilder, AbstractBuilder, Provi
         return $this->addInputsTraits();
     }
 
-    public function provideRelations(array $relations = [])
+    public function withRelations(array $relations = [])
     {
         $this->relations = $relations;
 
         return $this;
+    }
+
+    public function getRelations(): array
+    {
+        return $this->relations ?? [];
     }
 
     public function asPivot()
@@ -354,7 +366,7 @@ class ORMModelBuilder implements AbstractORMModelBuilder, AbstractBuilder, Provi
                     PHPTypesModifiers::PUBLIC,
                     'Returns a fluent validation rules'
                 )->addContents(
-                    'return '.PHPVariable('rules', null, $this->rules ?? [])->asRValue()->__toString()
+                    'return ' . PHPVariable('rules', null, $this->rules ?? [])->asRValue()->__toString()
                 )
             );
             if (!$this->isSingleActionValidator) {
@@ -370,7 +382,7 @@ class ORMModelBuilder implements AbstractORMModelBuilder, AbstractBuilder, Provi
                             'array<string,string|string[]>',
                             PHPTypesModifiers::PUBLIC,
                             'Returns a fluent validation rules applied during update actions'
-                        )->addContents('return '.PHPVariable('rules', null, $this->rules ?? [])->asRValue()->__toString())
+                        )->addContents('return ' . PHPVariable('rules', null, $this->rules ?? [])->asRValue()->__toString())
                     );
             } else {
                 /**
@@ -645,27 +657,25 @@ class ORMModelBuilder implements AbstractORMModelBuilder, AbstractBuilder, Provi
                 $methods[$method] = ($method[$method] ?? 0 + 1);
             }
             $type = $relation->getType();
-            if (RelationTypes::ONE_TO_MANY === $type || RelationTypes::ONE_TO_ONE === $type) {
+            if (Types::ONE_TO_MANY === $type || Types::ONE_TO_ONE === $type) {
                 $component = $component->addMethod($this->createOneOrManyMethodTemplate($relation, $type, $methods));
                 $this->relationMethods[] = $relation->getName();
                 continue;
             }
-            if (RelationTypes::MANY_TO_ONE === $type) {
+            if (Types::MANY_TO_ONE === $type) {
                 $component = $component->addMethod($this->createBelongsToTemplate($relation, $methods));
                 $this->relationMethods[] = $relation->getName();
                 continue;
             }
-            if (RelationTypes::MANY_TO_MANY === $type && $relation instanceof \Drewlabs\GCli\ThroughRelation) {
-                /**
-                 * @var BluePrint
-                 */
+            if (Types::MANY_TO_MANY === $type && $relation instanceof Through) {
+                /** @var BluePrint */
                 $component = $component->addMethod($this->createManyToManyRelationTemplate($relation, $methods));
                 $this->relationMethods[] = $relation->getName();
                 continue;
             }
             if (
-                \in_array($type, [RelationTypes::ONE_TO_MANY_THROUGH, RelationTypes::ONE_TO_ONE_THROUGH], true)
-                && $relation instanceof \Drewlabs\GCli\ThroughRelation
+                \in_array($type, [Types::ONE_TO_MANY_THROUGH, Types::ONE_TO_ONE_THROUGH], true)
+                && $relation instanceof Through
             ) {
                 /**
                  * @var BluePrint
@@ -684,13 +694,13 @@ class ORMModelBuilder implements AbstractORMModelBuilder, AbstractBuilder, Provi
      *
      * @return CallableInterface
      */
-    private function createOneOrManyMethodTemplate(\Drewlabs\GCli\DirectRelation $relation, string $type, array $methods)
+    private function createOneOrManyMethodTemplate(\Drewlabs\GCli\DBAL\R\Basic $relation, string $type, array $methods)
     {
         $model = $relation->getModel();
         $local = $relation->getLocal();
         $reference = $relation->getReference();
-        $returns = RelationTypes::ONE_TO_MANY === $type ? \Illuminate\Database\Eloquent\Relations\HasMany::class : \Illuminate\Database\Eloquent\Relations\HasOne::class;
-        $method = RelationTypes::ONE_TO_MANY === $type ? 'hasMany' : 'hasOne';
+        $returns = Types::ONE_TO_MANY === $type ? \Illuminate\Database\Eloquent\Relations\HasMany::class : \Illuminate\Database\Eloquent\Relations\HasOne::class;
+        $method = Types::ONE_TO_MANY === $type ? 'hasMany' : 'hasOne';
 
         // print_r(['1 or many' => [$model, $local, $reference, $returns, $method, $this->resolvename($relation->getName(), $methods), $methods]]);
 
@@ -699,7 +709,7 @@ class ORMModelBuilder implements AbstractORMModelBuilder, AbstractBuilder, Provi
             [],
             $returns,
             'public',
-            RelationTypes::ONE_TO_MANY === $type ? 'returns an eloquent `has many` relation' : 'returns an eloquent `has one` relation'
+            Types::ONE_TO_MANY === $type ? 'returns an eloquent `has many` relation' : 'returns an eloquent `has one` relation'
         )->addLine("return \$this->$method(\\$model::class, '$local', '$reference')");
     }
 
@@ -708,7 +718,7 @@ class ORMModelBuilder implements AbstractORMModelBuilder, AbstractBuilder, Provi
      *
      * @return CallableInterface
      */
-    private function createBelongsToTemplate(\Drewlabs\GCli\DirectRelation $relation, array $methods)
+    private function createBelongsToTemplate(\Drewlabs\GCli\DBAL\R\Basic $relation, array $methods)
     {
         $model = $relation->getModel();
         $local = $relation->getLocal();
@@ -731,9 +741,9 @@ class ORMModelBuilder implements AbstractORMModelBuilder, AbstractBuilder, Provi
      *
      * @return CallableInterface
      */
-    private function createThroughRelationTemplate(\Drewlabs\GCli\ThroughRelation $relation, array $methods)
+    private function createThroughRelationTemplate(\Drewlabs\GCli\DBAL\R\Through $relation, array $methods)
     {
-        $returns = RelationTypes::ONE_TO_MANY_THROUGH === $relation->getType() ? \Illuminate\Database\Eloquent\Relations\HasManyThrough::class : \Illuminate\Database\Eloquent\Relations\HasOneThrough::class;
+        $returns = Types::ONE_TO_MANY_THROUGH === $relation->getType() ? \Illuminate\Database\Eloquent\Relations\HasManyThrough::class : \Illuminate\Database\Eloquent\Relations\HasOneThrough::class;
         $left = $relation->getLeftTable();
         $right = $relation->getRightTable();
         $leftforeignkey = $relation->getLeftForeignKey();
@@ -742,7 +752,7 @@ class ORMModelBuilder implements AbstractORMModelBuilder, AbstractBuilder, Provi
         $rightlocalkey = $relation->getRightLocalKey();
         // print_r(['through' => [$left. $right, $leftforeignkey, $rightforeignkey, $leftlocalkey, $rightlocalkey, $this->resolvename($relation->getName(), $methods), $methods]]);
 
-        $line = RelationTypes::ONE_TO_MANY_THROUGH === $relation->getType() ? "return \$this->hasManyThrough(\\$left::class, \\$right::class, " : "return \$this->hasOneThrough(\\$left::class, \\$right::class, ";
+        $line = Types::ONE_TO_MANY_THROUGH === $relation->getType() ? "return \$this->hasManyThrough(\\$left::class, \\$right::class, " : "return \$this->hasOneThrough(\\$left::class, \\$right::class, ";
         if ($leftforeignkey) {
             $line .= "'$leftforeignkey', ";
         }
@@ -771,7 +781,7 @@ class ORMModelBuilder implements AbstractORMModelBuilder, AbstractBuilder, Provi
      *
      * @return CallableInterface
      */
-    private function createManyToManyRelationTemplate(\Drewlabs\GCli\ThroughRelation $relation, array $methods)
+    private function createManyToManyRelationTemplate(\Drewlabs\GCli\DBAL\R\Through $relation, array $methods)
     {
         $returns = \Illuminate\Database\Eloquent\Relations\BelongsToMany::class;
         $left = $relation->getLeftTable();

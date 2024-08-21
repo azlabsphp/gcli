@@ -1,5 +1,6 @@
 <?php
 
+
 declare(strict_types=1);
 
 /*
@@ -11,10 +12,12 @@ declare(strict_types=1);
  * file that was distributed with this source code.
  */
 
-namespace Drewlabs\GCli;
+namespace Drewlabs\GCli\DBAL\R;
 
-/** @internal */
-class DirectRelation
+use Drewlabs\Core\Helpers\Str;
+use Drewlabs\GCli\Contracts\Relation;
+
+class Basic implements Relation
 {
     /**
      * relation method name.
@@ -58,6 +61,9 @@ class DirectRelation
      */
     private $castclasspath;
 
+    /** @var string */
+    private $module;
+
     /**
      * Creates an instance of relation class.
      */
@@ -66,15 +72,37 @@ class DirectRelation
         string $model,
         string $reference,
         string $local,
-        string $type = RelationTypes::ONE_TO_MANY,
+        string $type = Types::ONE_TO_MANY,
         string $castclasspath = null
     ) {
         $this->name = $name;
         $this->model = $model;
         $this->reference = $reference;
         $this->local = $local;
-        $this->type = $type ?? RelationTypes::ONE_TO_MANY;
+        $this->type = $type ?? Types::ONE_TO_MANY;
         $this->castclasspath = $castclasspath;
+    }
+
+
+    public function withModuleName(string $name)
+    {
+        $this->module = $name;
+        return $this;
+    }
+
+    public function getModuleName(): ?string
+    {
+        return $this->module;
+    }
+
+    public function multi(): bool
+    {
+        return in_array($this->type, [Types::MANY_TO_MANY, Types::ONE_TO_MANY, Types::ONE_TO_MANY_THROUGH]);
+    }
+
+    public function to(): string
+    {
+        return strpos($this->model, '\\') !== false ? Str::afterLast('\\', $this->model) : $this->model;
     }
 
     public function __toString()
@@ -82,12 +110,8 @@ class DirectRelation
         return sprintf('%s', $this->getType());
     }
 
-    /**
-     * name property getter method.
-     *
-     * @return string
-     */
-    public function getName()
+
+    public function getName(): string
     {
         return $this->name;
     }
