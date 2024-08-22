@@ -16,7 +16,7 @@ namespace Drewlabs\GCli\Extensions\Console\Commands;
 use Drewlabs\CodeGenerator\Exceptions\PHPVariableException;
 use Drewlabs\GCli\Contracts\ORMModelDefinition;
 use Drewlabs\GCli\Contracts\SourceFileInterface;
-use Drewlabs\GCli\Extensions\Console\ComponentCommandsHelpers;
+use Drewlabs\GCli\Extensions\Console\CommandsHelpers;
 use Drewlabs\GCli\Helpers\ComponentBuilder;
 
 use function Drewlabs\GCli\Proxy\ComponentsScriptWriter;
@@ -100,8 +100,8 @@ class MakeModelCommand extends Command
         $service = $service ?? sprintf('%sService', $component->getName());
         $dto = $dto ?? sprintf('%sDto', $component->getName());
         $viewModel = $viewModel ?? sprintf('%sViewModel', $component->getName());
-        $serviceClass = ComponentCommandsHelpers::createService($component->getNamespace(), $basePath, $modelClassPath, $service);
-        $dtoClass = ComponentCommandsHelpers::createDto(
+        $serviceClass = CommandsHelpers::createService($component->getNamespace(), $basePath, $modelClassPath, $service);
+        $dtoClass = CommandsHelpers::createDto(
             $component->getNamespace(),
             $basePath,
             $modelClassPath,
@@ -112,7 +112,7 @@ class MakeModelCommand extends Command
                 }
             })($definition))
         );
-        $viewModelClass = ComponentCommandsHelpers::createViewModel(
+        $viewModelClass = CommandsHelpers::createViewModel(
             $component->getNamespace(),
             $basePath,
             $modelClassPath,
@@ -127,7 +127,7 @@ class MakeModelCommand extends Command
                 $viewModelClass,
                 $dtoClass,
                 null,
-                sprintf('\\%s\\Http\\Controllers', ComponentCommandsHelpers::getBaseNamespace($component->getNamespace()) ?? 'App'),
+                sprintf('\\%s\\Http\\Controllers', CommandsHelpers::getBaseNamespace($component->getNamespace()) ?? 'App'),
                 true,
                 false,
                 $primaryKey

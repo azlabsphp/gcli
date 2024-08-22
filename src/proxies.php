@@ -22,9 +22,8 @@ use Drewlabs\GCli\Builders\ServiceClassBuilder;
 use Drewlabs\GCli\Builders\ServiceInterfaceBuilder;
 use Drewlabs\GCli\Builders\ServiceProviderBuilder;
 use Drewlabs\GCli\Builders\ViewModelClassBuilder;
-use Drewlabs\GCli\ComponentsScriptWriter;
+use Drewlabs\GCli\IO\ScriptWriter;
 use Drewlabs\GCli\Contracts\ORMModelDefinition;
-use Drewlabs\GCli\Contracts\ScriptWriter;
 use Drewlabs\GCli\ModulesIteratorFactory;
 use Drewlabs\GCli\PHP\PHPScriptFile;
 use Drewlabs\GCli\Validation\RulesFactory;
@@ -32,11 +31,11 @@ use Drewlabs\GCli\Validation\RulesFactory;
 /**
  * Provides a proxy function to the {@link ScriptWriter} constructor.
  *
- * @return ScriptWriter
+ * @return \Drewlabs\GCli\Contracts\ScriptWriter
  */
 function ComponentsScriptWriter(string $srcPath)
 {
-    return new ComponentsScriptWriter($srcPath);
+    return new ScriptWriter($srcPath);
 }
 
 /**
@@ -117,18 +116,6 @@ function PHPScript(
     string $extension = 'php'
 ) {
     return new PHPScriptFile($name, $content, $path, $extension);
-}
-
-/**
- * @deprecated
- *
- * Provides a proxy function to the  {@link \Drewlabs\GCli\DatabaseSchemaReverseEngineeringRunner} constructor
- *
- * @return ModulesIteratorFactory
- */
-function DatabaseSchemaReverseEngineeringRunner(RulesFactory $factory, string $directory, ?string $namespace = 'App')
-{
-    return new ModulesIteratorFactory($factory, $directory, $namespace);
 }
 
 /**

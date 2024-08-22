@@ -13,16 +13,15 @@ declare(strict_types=1);
 
 namespace Drewlabs\GCli\Extensions\Traits;
 
-use Drewlabs\Core\Helpers\Arr;
 use Drewlabs\Core\Helpers\Str;
 use Drewlabs\GCli\DBAL\R\Basic;
-use Drewlabs\GCli\Contracts\ForeignKeyConstraintDefinition;
 use Drewlabs\GCli\DBAL\R\Config\Basic as BasicConfig;
 use Drewlabs\GCli\DBAL\R\Config\Through as ThroughConfig;
 use Drewlabs\GCli\DBAL\R\Through;
 use Drewlabs\GCli\DBAL\R\Types;
 use Drewlabs\GCli\Traits\ProvidesTrimTableSchema;
 use Illuminate\Support\Pluralizer;
+use InvalidArgumentException;
 
 trait ReverseEngineerRelations
 {
@@ -39,18 +38,23 @@ trait ReverseEngineerRelations
             substr($column ?? '', 0, \strlen($column ?? '') - \strlen('_id')) : $column;
     }
 
+
     /**
      * Returns the list of relationship for generated components based on foreign key entries.
-     *
-     * @param ForeignKeyConstraintDefinition[] $foreignKeys
-     *
-     * @throws \InvalidArgumentException
-     *
-     * @return array
+     * 
+     * @param array<string,\Drewlabs\GCli\Config> $values 
+     * @param array $foreignKeys 
+     * @param array $manyToMany 
+     * @param array $toones 
+     * @param array $oneToMany 
+     * @param array $manyThroughs 
+     * @param array $oneThroughs 
+     * @param string|null $schema 
+     * @return array 
+     * @throws InvalidArgumentException 
      */
     private static function resolveRelations(
         array $values,
-        // array $tablesindexes,
         array $foreignKeys,
         array $manyToMany,
         array $toones,
@@ -71,130 +75,118 @@ trait ReverseEngineerRelations
         $manyThroughs = self::projectTrhough($foreignKeys, $manyThroughs);
         $oneThroughs = self::projectTrhough($foreignKeys, $oneThroughs);
 
-        foreach ($values as $component) {
-            if ($table = Arr::get($component, 'table')) {
-                foreach ($foreignKeys as $foreign) {
-                    $foreigncolums = $foreign->getForeignColumns();
-                    if (empty($foreigncolums) || \count($foreigncolums ?? []) > 1) {
+        foreach ($values as $table => $component) {
+            foreach ($foreignKeys as $foreign) {
+                $foreigncolums = $foreign->getForeignColumns();
+                if (is_null($localcolumn = ($foreign->localColumns() ?? [])[0] ?? null)) {
+                    continue;
+                }
+                if (is_null($foreigncolum = $foreigncolums[0] ?? null)) {
+                    continue;
+                }
+                if ($table === $foreign->getLocalTableName()) {
+                    $foreigntable = $foreign->getForeignTableName();
+                    if (is_null($foreigntable)) {
                         continue;
                     }
-                    $foreigncolum = $foreigncolums[0];
-                    $localcolumn = ($foreign->localColumns() ?? [])[0] ?? null;
-                    if (is_null($localcolumn)) {
+                    if (is_null(($foreingcomponent = $values[$foreigntable]) ?? null)) {
                         continue;
                     }
-                    if (is_null($foreigncolum)) {
-                        continue;
-                    }
-                    if ($table === $foreign->getLocalTableName()) {
-                        $foreigntable = $foreign->getForeignTableName();
-                        if (is_null($foreigntable)) {
-                            continue;
-                        }
 
-                        if (is_null(($foreingcomponent = $values[$foreigntable]) ?? null)) {
-                            continue;
-                        }
-
-                        if (is_null($foreignclasspath = Arr::get($foreingcomponent, 'model.classPath'))) {
-                            continue;
-                        }
-
-                        if (is_null($modelclasspath = Arr::get($component, 'model.classPath'))) {
-                            continue;
-                        }
-
-                        // Checks if the current table exists in the list of one - to - one relation
-                        $isToMany = false;
-                        $result = static::find($ones, static function (BasicConfig $currrent) use ($foreigntable, $table) {
+                    // Checks if the current table exists in the list of one - to - one relation
+                    $isToMany = false;
+                    $result = static::find($ones, static function (BasicConfig $currrent) use ($foreigntable, $table) {
+                        return ($currrent->leftTable() === $foreigntable) && ($currrent->rightTable() === $table);
+                    });
+                    if (is_null($result)) {
+                        $result = static::find($oneToMany, static function (BasicConfig $currrent) use ($foreigntable, $table) {
                             return ($currrent->leftTable() === $foreigntable) && ($currrent->rightTable() === $table);
                         });
-                        if (is_null($result)) {
-                            $result = static::find($oneToMany, static function (BasicConfig $currrent) use ($foreigntable, $table) {
-                                return ($currrent->leftTable() === $foreigntable) && ($currrent->rightTable() === $table);
-                            });
-                            $isToMany = !is_null($result) ? true : $isToMany;
-                        }
-
-                        $basic = new Basic(
-                            Str::camelize(!$isToMany ? ($result ? $result->getName() : Pluralizer::singular(self::trimschema($table, $schema))) : ($result ? $result->getName() : Pluralizer::plural(self::trimschema($table, $schema))), false),
-                            $modelclasspath,
-                            $foreigncolum,
-                            $localcolumn,
-                            !$isToMany ? Types::ONE_TO_ONE : Types::ONE_TO_MANY,
-                            ($dtoBuilder = Arr::get($component, 'dto.class')) ? $dtoBuilder->getClassPath() : null
-                        );
-
-                        $reverse = Basic::reverse(
-                            Str::camelize(Pluralizer::singular(self::trimidsuffix($localcolumn)), false),
-                            $foreignclasspath,
-                            $foreigncolum,
-                            $localcolumn,
-                            Types::MANY_TO_ONE,
-                            ($dtoBuilder = Arr::get($foreingcomponent, 'dto.class')) ? $dtoBuilder->getClassPath() : null
-                        );
-
-                        $leftTable = $values[$foreigntable];
-                        $rightTable = $values[$table];
-
-                        if (!is_null($rightDefinition = Arr::get($rightTable ?? [], 'model.definition'))) {
-                            $basic = $basic->withModuleName($rightDefinition->getModuleName());
-                        }
-
-                        if (!is_null($leftDefinition = Arr::get($leftTable ?? [], 'model.definition'))) {
-                            $reverse = $reverse->withModuleName($leftDefinition->getModuleName());
-                        }
-
-                        $relations = self::mergearray(self::mergearray($relations, $foreignclasspath, $basic), $modelclasspath, $reverse);
+                        $isToMany = !is_null($result) ? true : $isToMany;
                     }
-                }
-                // #region many to many relations
-                $relations = self::appendManyToMany(
-                    $manyToMany,
-                    $table,
-                    $values,
-                    Arr::get($component, 'model.classPath'),
-                    $relations,
-                    $pivots,
-                    $schema
-                );
-                // #endregion many to many relations
-                // #region append to 1 -> many right relation
-                $relations = self::appendToRightRelation(
-                    $manyThroughs,
-                    Types::ONE_TO_MANY_THROUGH,
-                    $table,
-                    $values,
-                    Arr::get($component, 'model.classPath'),
-                    $relations,
-                    $schema
-                );
-                // #endregion append to 1 -> many right relation
 
-                // #region append to 1 -> 1 right relation
-                $relations = self::appendToRightRelation(
-                    $oneThroughs,
-                    Types::ONE_TO_ONE_THROUGH,
-                    $table,
-                    $values,
-                    Arr::get($component, 'model.classPath'),
-                    $relations,
-                    $schema
-                );
-                // #endregion append to 1 -> 1 right relation
+                    $basic = new Basic(
+                        Str::camelize(!$isToMany ? ($result ? $result->getName() : Pluralizer::singular(self::trimschema($table, $schema))) : ($result ? $result->getName() : Pluralizer::plural(self::trimschema($table, $schema))), false),
+                        $component->getTableConfig()->getClassPath(),
+                        $foreigncolum,
+                        $localcolumn,
+                        !$isToMany ? Types::ONE_TO_ONE : Types::ONE_TO_MANY,
+                        $component->getTableDtoConfig()->getClassPath()
+                    );
+
+                    $reverse = Basic::reverse(
+                        Str::camelize(Pluralizer::singular(self::trimidsuffix($localcolumn)), false),
+                        $foreingcomponent->getTableConfig()->getClassPath(),
+                        $foreigncolum,
+                        $localcolumn,
+                        Types::MANY_TO_ONE,
+                        $foreingcomponent->getTableDtoConfig()->getClassPath()
+                    );
+
+                    $leftTable = $values[$foreigntable];
+                    $rightTable = $values[$table];
+
+                    if (!is_null($rightDefinition = $rightTable->getType())) {
+                        $basic = $basic->withModuleName($rightDefinition->getModuleName());
+                    }
+
+                    if (!is_null($leftDefinition = $leftTable->getType())) {
+                        $reverse = $reverse->withModuleName($leftDefinition->getModuleName());
+                    }
+
+                    $relations = self::mergearray(self::mergearray($relations, $foreingcomponent->getTableConfig()->getClassPath(), $basic), $component->getTableConfig()->getClassPath(), $reverse);
+                }
             }
+            // #region many to many relations
+            $relations = self::appendManyToMany(
+                $manyToMany,
+                $table,
+                $values,
+                $component->getTableConfig()->getClassPath(),
+                $relations,
+                $pivots,
+                $schema
+            );
+            // #endregion many to many relations
+            // #region append to 1 -> many right relation
+            $relations = self::appendToRightRelation(
+                $manyThroughs,
+                Types::ONE_TO_MANY_THROUGH,
+                $table,
+                $values,
+                $component->getTableConfig()->getClassPath(),
+                $relations,
+                $schema
+            );
+            // #endregion append to 1 -> many right relation
+
+            // #region append to 1 -> 1 right relation
+            $relations = self::appendToRightRelation(
+                $oneThroughs,
+                Types::ONE_TO_ONE_THROUGH,
+                $table,
+                $values,
+                $component->getTableConfig()->getClassPath(),
+                $relations,
+                $schema
+            );
+            // #endregion append to 1 -> 1 right relation
         }
 
         return [$relations, array_unique($pivots)];
     }
 
     /**
-     * @param mixed $throughs
-     * @param mixed $relations
-     *
-     * @throws \InvalidArgumentException
-     *
-     * @return mixed
+     * 
+     * @param mixed $throughs 
+     * @param string $type 
+     * @param string $table 
+     * @param array<string,\Drewlabs\GCli\Config> $values 
+     * @param string $classpath 
+     * @param mixed $relations 
+     * @param string|null $schema 
+     * @return mixed 
+     * @throws InvalidArgumentException 
      */
     private static function appendToRightRelation(
         $throughs,
@@ -216,18 +208,15 @@ trait ReverseEngineerRelations
         if (null === $through) {
             return $relations;
         }
-        $intermediate = array_values(array_filter($values, static function ($c) use ($through) {
-            return Arr::get($c, 'table', null) === $through->intermediateTable();
-        }));
-        $right = array_values(!empty($intermediate) ? array_filter($values, static function ($c) use ($through) {
-            return Arr::get($c, 'table', null) === $through->rightTable();
-        }) : []);
+        $intermediate = $values[$through->intermediateTable()] ?? null;
+        $right = $values[$through->rightTable()] ?? null;
 
         if (
-            empty($intermediate) || empty($right)
-            || is_null($rightDefinition = Arr::get($right[0] ??  [], 'model.definition'))
-            || is_null($rightclasspath = Arr::get($right[0] ?? [], 'model.classPath'))
-            || is_null($intermediateclasspath = Arr::get($intermediate[0], 'model.classPath'))
+            is_null($intermediate)
+            || is_null($right)
+            || is_null($rightDefinition = $right->getType())
+            || is_null($rightclasspath = $right->getTableConfig()->getClassPath())
+            || is_null($intermediateclasspath = $intermediate->getTableConfig()->getClassPath())
         ) {
             return $relations;
         }
@@ -246,19 +235,25 @@ trait ReverseEngineerRelations
             $through->getRightForeignKey(),
             $through->getLeftLocalkey(),
             $through->getRightLocalkey(),
-            ($dtobuilder = Arr::get($right[0], 'dto.class')) ? $dtobuilder->getClassPath() : null
+            $right->getTableDtoConfig()->getClassPath()
         );
+
         $through = $through->withModuleName($rightDefinition->getModuleName());
 
         return self::mergearray($relations, $classpath, $through);
     }
 
     /**
-     * @param mixed $objects
-     *
-     * @throws \InvalidArgumentException
-     *
-     * @return array
+     * 
+     * @param mixed $objects 
+     * @param string $table 
+     * @param array<string,\Drewlabs\GCli\Config> $values 
+     * @param string $classpath 
+     * @param array $relations 
+     * @param array &$pivots 
+     * @param string|null $schema 
+     * @return array 
+     * @throws InvalidArgumentException 
      */
     private static function appendManyToMany(
         $objects,
@@ -280,22 +275,16 @@ trait ReverseEngineerRelations
         if (null === $match) {
             return $relations;
         }
-        $intermediate = array_values(array_filter($values, static function ($c) use ($match) {
-            return Arr::get($c, 'table', null) === $match->intermediateTable();
-        }));
+        $intermediate = $values[$match->intermediateTable()] ?? null;
+        $right = $values[$match->rightTable()];
 
-        $right = array_values(!empty($intermediate) ? array_filter($values, static function ($c) use ($match) {
-            return Arr::get($c, 'table', null) === $match->rightTable();
-        }) : []);
-
-        if (empty($intermediate) || empty($right)) {
-            return $relations;
-        }
         if (
-            is_null($rightclasspath = Arr::get($right[0] ?? [], 'model.classPath'))
-            || is_null($rightDefinition = Arr::get($right[0] ??  [], 'model.definition'))
-            || is_null($throughclasspath = Arr::get($intermediate[0] ?? [], 'model.classPath'))
-            || is_null($throughtable = Arr::get($intermediate[0] ?? [], 'table'))
+            is_null($intermediate)
+            || is_null($right)
+            || is_null($rightclasspath = $right->getTableConfig()->getClassPath())
+            || is_null($rightDefinition = $right->getType())
+            || is_null($throughclasspath = $intermediate->getTableConfig()->getClassPath())
+            || is_null($throughtable = $intermediate->getTableConfig()->getTable())
         ) {
             return $relations;
         }
@@ -310,7 +299,7 @@ trait ReverseEngineerRelations
             $match->getRightForeignKey(),
             $match->getLeftLocalkey(),
             $match->getRightLocalkey(),
-            ($dtobuilder = Arr::get($right[0], 'dto.class')) ? $dtobuilder->getClassPath() : null
+            $right->getTableDtoConfig()->getClassPath()
         );
         $through = $through->withModuleName($rightDefinition->getModuleName());
 

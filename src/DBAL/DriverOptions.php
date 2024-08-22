@@ -11,9 +11,9 @@ declare(strict_types=1);
  * file that was distributed with this source code.
  */
 
-namespace Drewlabs\GCli;
+namespace Drewlabs\GCli\DBAL;
 
-class DBDriverOptions
+class DriverOptions
 {
     /** @var array */
     private $options;
@@ -31,7 +31,7 @@ class DBDriverOptions
     /**
      * Creates a database driver options instance.
      *
-     * @return DBDriverOptions
+     * @return DriverOptions
      */
     public static function new(array $options = [])
     {

@@ -11,16 +11,15 @@ declare(strict_types=1);
  * file that was distributed with this source code.
  */
 
-namespace Drewlabs\GCli\Extensions\Helpers;
+namespace Drewlabs\GCli\Console;
 
 use Drewlabs\Core\Helpers\Arr as HelpersArr;
 use Drewlabs\GCli\Cache\Cache;
 use Drewlabs\GCli\Cache\CacheableTables;
 use Drewlabs\GCli\Exceptions\IOException;
 use Drewlabs\GCli\IO\Path;
-use Drewlabs\GCli\Options;
 
-class CommandArguments
+class Arguments
 {
     /** @var string[] */
     public const SHOULD_RESOLVE = [
@@ -92,7 +91,7 @@ class CommandArguments
             $result = 'json' === $this->getOption('format') ? Options::json($path) : Options::yaml($path);
             $options = $options->merge($result->all());
         }
-        
+
         if ($filename = $this->getOption('routingfilename')) {
             $options = $options->merge(['routes.filename' => $filename]);
         }

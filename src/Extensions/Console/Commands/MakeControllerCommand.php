@@ -16,7 +16,7 @@ namespace Drewlabs\GCli\Extensions\Console\Commands;
 use Drewlabs\CodeGenerator\Exceptions\PHPVariableException;
 use Drewlabs\Core\Helpers\Str;
 use Drewlabs\GCli\Builders\ORMModelBuilder;
-use Drewlabs\GCli\Extensions\Console\ComponentCommandsHelpers;
+use Drewlabs\GCli\Extensions\Console\CommandsHelpers;
 use Drewlabs\GCli\Helpers\ComponentBuilder;
 
 use function Drewlabs\GCli\Proxy\ComponentsScriptWriter;
@@ -116,7 +116,7 @@ class MakeControllerCommand extends Command
         $modelClassPath = $model;
         $modelComponent = null;
         $modelName = Str::contains($modelClassPath, '\\') ? Str::afterLast('\\', $modelClassPath) : $modelClassPath;
-        $modelNamespace = sprintf('\\%s\\Models', ComponentCommandsHelpers::getBaseNamespace($namespace) ?? 'App');
+        $modelNamespace = sprintf('\\%s\\Models', CommandsHelpers::getBaseNamespace($namespace) ?? 'App');
         if (null !== $model && !class_exists($model) && !class_exists(ORMModelBuilder::defaultClassPath($model))) {
             $modelComponent = ComponentBuilder::createModelBuilder(
                 $pluralizer($modelName),
@@ -133,8 +133,8 @@ class MakeControllerCommand extends Command
         if ($modelComponent) {
             $rulesFactory = new RulesFactory();
             $definition = $modelComponent->getDefinition();
-            $serviceClass = ComponentCommandsHelpers::createService($namespace, $basePath, $modelClassPath, $service);
-            $dtoClass = ComponentCommandsHelpers::createDto(
+            $serviceClass = CommandsHelpers::createService($namespace, $basePath, $modelClassPath, $service);
+            $dtoClass = CommandsHelpers::createDto(
                 $namespace,
                 $basePath,
                 $modelClassPath,
@@ -145,7 +145,7 @@ class MakeControllerCommand extends Command
                     }
                 })($definition))
             );
-            $viewModelClass = ComponentCommandsHelpers::createViewModel(
+            $viewModelClass = CommandsHelpers::createViewModel(
                 $namespace,
                 $basePath,
                 $modelClassPath,
@@ -154,9 +154,9 @@ class MakeControllerCommand extends Command
                 $rulesFactory->createRules($definition, true)
             );
         } else {
-            $serviceClass = sprintf('%s\\%s', sprintf('\\%s\\Services', ComponentCommandsHelpers::getBaseNamespace($namespace) ?? 'App'), "{$modelName}Service");
-            $dtoClass = sprintf('%s\\%s', sprintf('\\%s\\Dto', ComponentCommandsHelpers::getBaseNamespace($namespace) ?? 'App'), "{$modelName}Dto");
-            $viewModelClass = sprintf('%s\\%s', sprintf('\\%s\\Http\\ViewModels', ComponentCommandsHelpers::getBaseNamespace($namespace) ?? 'App'), "{$modelName}ViewModel");
+            $serviceClass = sprintf('%s\\%s', sprintf('\\%s\\Services', CommandsHelpers::getBaseNamespace($namespace) ?? 'App'), "{$modelName}Service");
+            $dtoClass = sprintf('%s\\%s', sprintf('\\%s\\Dto', CommandsHelpers::getBaseNamespace($namespace) ?? 'App'), "{$modelName}Dto");
+            $viewModelClass = sprintf('%s\\%s', sprintf('\\%s\\Http\\ViewModels', CommandsHelpers::getBaseNamespace($namespace) ?? 'App'), "{$modelName}ViewModel");
         }
         ComponentsScriptWriter($basePath)->write(
             ComponentBuilder::buildController(

@@ -14,15 +14,13 @@ declare(strict_types=1);
 namespace Drewlabs\GCli\Extensions\Helpers;
 
 use Closure;
-use Drewlabs\Core\Helpers\Arr;
 use Drewlabs\GCli\Cache\Cache;
 use Drewlabs\GCli\Cache\CacheableTables;
-use Drewlabs\GCli\ComponentsScriptWriter as ComponentsScriptWriterClass;
+use Drewlabs\GCli\ScriptWriter as ComponentsScriptWriterClass;
 use Drewlabs\GCli\Contracts\ComponentBuilder as AbstractBuilder;
 use Drewlabs\GCli\Contracts\ForeignKeyConstraintDefinition;
 use Drewlabs\GCli\Contracts\Pivotable;
 use Drewlabs\GCli\Contracts\ProvidesPropertyAccessors;
-use Drewlabs\GCli\Contracts\HasRelations;
 use Drewlabs\GCli\Contracts\SourceFileInterface;
 use Drewlabs\GCli\Contracts\Writable;
 use Drewlabs\GCli\DBAL\R\Types;
@@ -30,15 +28,13 @@ use Drewlabs\GCli\Extensions\Contracts\Progress;
 use Drewlabs\GCli\Extensions\Traits\ReverseEngineerRelations;
 use Drewlabs\GCli\Helpers\RouteDefinitions;
 use Drewlabs\GCli\HTr\RouteRequestBodyMap;
+use Drewlabs\GCli\Iterators\ConfigIterator;
 use Drewlabs\GCli\Models\RouteController;
-use Drewlabs\GCli\ModulesIteratorFactory;
 use Drewlabs\GCli\Plugins\G;
+use Drewlabs\GCli\Validation\RulesFactory;
 
 use function Drewlabs\GCli\Proxy\ComponentsScriptWriter;
-
 use function Drewlabs\GCli\Proxy\MVCServiceProviderBuilder;
-
-use Drewlabs\GCli\Validation\RulesFactory;
 
 class ReverseEngineerTask
 {
@@ -231,6 +227,7 @@ class ReverseEngineerTask
             $withoutModelAccessors
         ) {
             $providesRelations = $this->provideRelations;
+            $supportPolicies = $this->policies;
             $toones = $this->oneToOnes ?? [];
             $manytomany = $this->manyToMany ?? [];
             $onethroughs = $this->oneThroughs ?? [];
@@ -247,39 +244,34 @@ class ReverseEngineerTask
 
             // Execute the runner
             // # Create the migrations runner
-            $modulesFactory = new ModulesIteratorFactory($this->rulesFactory, $src, $namespace);
-            $modulesFactory = $modulesFactory->setDomain($subPackage)->setSchema($schema);
+            $factory = ConfigIterator::new($traversable)
+                ->withValidationFactory($this->rulesFactory)
+                ->inDirectory($src)
+                ->inNamespace($namespace)
+                ->setDomain($subPackage)
+                ->setSchema($schema);
+
             if ($hasHttpHandlers) {
-                $modulesFactory = $modulesFactory->withHttpHandlers();
+                $factory = $factory->withHttpHandlers();
             }
 
             if ($this->policies) {
-                $modulesFactory = $modulesFactory->withPolicies();
+                $factory = $factory->withPolicies();
             }
 
             if ($noAuth) {
-                $modulesFactory = $modulesFactory->withoutAuth();
+                $factory = $factory->withoutAuth();
             }
 
             /** @var ForeignKeyConstraintDefinition[] */
             $foreignKeys = [];
-
             // #endregion Create migration runner
-            $iterator = $modulesFactory->createModulesIterator($traversable, $foreignKeys);
+            $iterator = $factory->getIterator($foreignKeys);
+            /** @var \Drewlabs\GCli\Config[] */
             $values = iterator_to_array($iterator);
 
-            // #region write tables to cache if caching is not disabled
-            if (!$disableCache) {
-                Cache::new($cachePath)->dump(new CacheableTables(array_keys($values), $namespace, $subPackage));
-            }
-            // #endregion write tables to cache if caching is not disabled
-            /** @var Progress */
-            $indicator = $onStartCallback($values);
-
-            // #region Create components models relations
             [$relations, $pivots] = $providesRelations ? self::resolveRelations(
                 $values,
-                // $tablesindexes,
                 $foreignKeys,
                 $manytomany,
                 $toones,
@@ -289,6 +281,16 @@ class ReverseEngineerTask
                 $schema
             ) : [[], []];
 
+            // #region write tables to cache if caching is not disabled
+            if (!$disableCache) {
+                Cache::new($cachePath)->dump(new CacheableTables(array_keys($values), $namespace, $subPackage));
+            }
+            // #endregion write tables to cache if caching is not disabled
+            /** @var Progress */
+            $indicator = $onStartCallback($values);
+
+
+            // #region Create components models relations
             $requestBodyMap = new RouteRequestBodyMap();
             // #endregion Create components models relations
             $routes = iterator_to_array((static function () use (
@@ -302,54 +304,60 @@ class ReverseEngineerTask
                 &$onExistsCallback,
                 &$policies,
                 &$bindings,
-                &$requestBodyMap
+                &$requestBodyMap,
+                $hasHttpHandlers,
+                $supportPolicies
             ) {
                 foreach ($values as $moduleName  => $component) {
                     // #region Write model source code
-                    $modelbuilder = Arr::get($component, 'model.class');
-                    if (($modelbuilder instanceof HasRelations) && \is_array($componentrelations = $relations[Arr::get($component, 'model.classPath')] ?? [])) {
-                        $modelbuilder = $modelbuilder->withRelations($componentrelations);
-                        if ($modelbuilder instanceof Pivotable && \in_array(Arr::get($component, 'table'), $pivots, true)) {
-                            $modelbuilder = $modelbuilder->asPivot();
-                        }
+                    $tableConfig = $component->getTableConfig();
+                    $componentrelations = $relations[$tableConfig->getClassPath()] ?? [];
+                    if (\is_array($componentrelations)) {
+                        /** @var \Drewlabs\GCli\Config */
+                        $component = $component->withRelations($componentrelations);
+                    }
+
+                    if ($tableConfig instanceof Pivotable && \in_array($component->getTableConfig()->getTable(), $pivots, true)) {
+                        $tableConfig = $tableConfig->asPivot();
                     }
 
                     // disable accessor generator case providesModelAccessors is false
-                    if ($modelbuilder instanceof ProvidesPropertyAccessors && $withoutModelAccessors) {
-                        $modelbuilder = $modelbuilder->withoutAccessors();
+                    if ($tableConfig instanceof ProvidesPropertyAccessors && $withoutModelAccessors) {
+                        $tableConfig = $tableConfig->withoutAccessors();
                     }
 
-                    static::writeComponentSourceCode(Arr::get($component, 'model.path'), self::resolveWritable($modelbuilder), $onExistsCallback);
+                    static::writeComponentSourceCode($tableConfig->getPath(), self::resolveWritable($tableConfig->getBuilder()), $onExistsCallback);
                     // #endregion Write model source code
 
                     // Use plugin code generator
                     /** @var \Drewlabs\GCli\Contracts\Type $type */
-                    if (null !== ($type = Arr::get($component, 'model.definition'))) {
-                        $type = $modelbuilder instanceof HasRelations && $type instanceof HasRelations ? $type->withRelations($modelbuilder->getRelations()) : $type;
+                    if (null !== ($type = $component->getType())) {
                         G::getInstance()->generate($type);
                     }
 
                     // #region Write view model source code
-                    $viewmodelbuilder = Arr::get($component, 'viewModel.class');
-                    if ($dtoBuilder = Arr::get($component, 'dto.class')) {
-                        $viewmodelbuilder = $viewmodelbuilder->setDTOClassPath($dtoBuilder->getClassPath());
+                    $tableViewConfig = $component->getTableViewConfig();
+                    if ($tableDtoConfig = $component->getTableDtoConfig()) {
+                        $tableViewConfig = $tableViewConfig->setDtoClassPath($tableDtoConfig->getClassPath());
                     }
 
-                    $viewmodelSourceCode = self::resolveWritable($viewmodelbuilder);
-                    static::writeComponentSourceCode(Arr::get($component, 'viewModel.path'), $viewmodelSourceCode, $onExistsCallback);
+                    $viewmodelSourceCode = self::resolveWritable($tableViewConfig->getBuilder());
+                    static::writeComponentSourceCode($tableViewConfig->getPath(), $viewmodelSourceCode, $onExistsCallback);
                     // #endregion Write view model source code
 
                     // #region Write service source code
-                    $serviceSourceCode = self::resolveWritable(Arr::get($component, 'service.class'));
-                    if ((null !== ($serviceType = Arr::get($component, 'service.type.class'))) && $serviceTypeSourceCode = self::resolveWritable($serviceType)) {
-                        static::writeComponentSourceCode(Arr::get($component, 'service.type.path'), $serviceTypeSourceCode, $onExistsCallback);
+                    $tableServiceConfig = $component->getTableServiceConfig();
+                    $serviceSourceCode = self::resolveWritable($tableServiceConfig->getBuilder());
+                    if ((null !== ($serviceType = $tableServiceConfig->getContract())) && $serviceTypeSourceCode = self::resolveWritable($serviceType->getBuilder())) {
+                        static::writeComponentSourceCode($serviceType->getPath(), $serviceTypeSourceCode, $onExistsCallback);
                     }
-                    static::writeComponentSourceCode(Arr::get($component, 'service.path'), $serviceSourceCode, $onExistsCallback);
+                    static::writeComponentSourceCode($tableServiceConfig->getPath(), $serviceSourceCode, $onExistsCallback);
                     $bindings[$serviceTypeSourceCode->getClassPath()] = sprintf("\%s", $serviceSourceCode->getClassPath());
                     // #endregion Write service source code
 
                     // #region Write DTO Component source code
-                    if (\is_array($componentrelations) && method_exists($dtoBuilder, 'setCasts')) {
+                    $tableDtoConfig = $component->getTableDtoConfig();
+                    if (\is_array($componentrelations)) {
                         $currentDtoCasts = [];
                         foreach ($componentrelations as $_current) {
                             $currentDtoCasts[$_current->getName()] = \in_array(
@@ -364,16 +372,17 @@ class ReverseEngineerTask
                                 'collectionOf:\\' . ltrim($_current->getCastClassPath(), '\\') :
                                 'value:\\' . ltrim($_current->getCastClassPath(), '\\');
                         }
-                        $dtoBuilder->setCamelizeProperties($camelize)->setCasts($currentDtoCasts);
+                        $tableDtoConfig = $tableDtoConfig->camelizeProperties($camelize)->setCasts($currentDtoCasts);
                     }
-                    $dtoSourceCode = self::resolveWritable($dtoBuilder);
-                    static::writeComponentSourceCode(Arr::get($component, 'dto.path'), $dtoSourceCode, $onExistsCallback);
+                    $dtoSourceCode = self::resolveWritable($tableDtoConfig->getBuilder());
+                    static::writeComponentSourceCode($tableDtoConfig->getPath(), $dtoSourceCode, $onExistsCallback);
                     // #endregion Write DTO Component source code
 
-                    if (null !== $controller = Arr::get($component, 'controller')) {
+                    if ($hasHttpHandlers) {
+                        $controllerConfig = $component->getTableControllerConfig();
                         // Call the controller factory builder function with the required parameters
                         $controllersource = self::resolveWritable(
-                            Arr::get($controller, 'class'),
+                            $controllerConfig->getBuilder(),
                             [
                                 $serviceSourceCode->getClassPath(),
                                 $serviceTypeSourceCode->getClassPath(),
@@ -381,26 +390,24 @@ class ReverseEngineerTask
                             $viewmodelSourceCode->getClassPath(),
                             $dtoSourceCode->getClassPath()
                         );
-                        $name = \is_callable($nameBuilder = Arr::get($controller, 'route.nameBuilder')) ? $nameBuilder($controllersource) : Arr::get($controller, 'route.name');
-                        $classPath = \is_callable($classPathBuilder = Arr::get($controller, 'route.classPathBuilder')) ? $classPathBuilder($controllersource) : Arr::get($controller, 'route.classPath');
-                        static::writeComponentSourceCode(Arr::get($controller, 'path'), $controllersource, $onExistsCallback);
+                        $name = $controllerConfig->getRouteNameBuilder()($controllersource);
+                        $classPath = $controllerConfig->getClassPathBuilder()($controllersource);
+                        static::writeComponentSourceCode($controllerConfig->getPath(), $controllersource, $onExistsCallback);
                         $routeController = new RouteController($name, $subPackage, $classPath);
                         $requestBodyMap->put(
                             $name,
-                            $viewmodelbuilder->getRules(),
-                            $viewmodelbuilder->getUpdateRules(),
+                            $tableViewConfig->getRules(),
+                            $tableViewConfig->getUpdateRules(),
                             array_map(static function ($current) {
                                 return sprintf('%s (%s)', $current->getName(), (string) $current);
                             }, \is_array($componentrelations) ? $componentrelations : [$componentrelations])
                         );
                         yield $name => $routeController;
                     }
-                    if (null !== ($policy = Arr::get($component, 'policy'))) {
-                        $policyBuilder = Arr::get($policy, 'class');
-                        if ($policyBuilder) {
-                            static::writeComponentSourceCode(Arr::get($policy, 'path'), self::resolveWritable($policyBuilder), $onExistsCallback);
-                            $policies[sprintf("\%s", Arr::get($component, 'model.classPath'))] = sprintf("\%s", Arr::get($component, 'policy.classPath'));
-                        }
+                    if ($supportPolicies) {
+                        $policyConfig = $component->getTablePolicyConfig();
+                        static::writeComponentSourceCode($policyConfig->getPath(), self::resolveWritable($policyConfig->getBuilder()), $onExistsCallback);
+                        $policies[sprintf("\%s", $tableConfig->getClassPath())] = sprintf("\%s", $policyConfig->getClassPath());
                     }
                     $indicator->advance();
                 }

@@ -20,7 +20,7 @@ use Drewlabs\GCli\Helpers\ComponentBuilder;
 
 use function Drewlabs\GCli\Proxy\ComponentsScriptWriter;
 
-class ComponentCommandsHelpers
+class CommandsHelpers
 {
     /**
      * @throws UnableToRetrieveMetadataException

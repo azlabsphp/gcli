@@ -20,7 +20,7 @@ interface HasRelations
      *
      * @return self|mixed
      */
-    public function withRelations(array $relations = []);
+    public function withRelations(array $relations);
 
 
     /**

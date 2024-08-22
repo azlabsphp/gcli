@@ -11,13 +11,12 @@ declare(strict_types=1);
  * file that was distributed with this source code.
  */
 
-namespace Drewlabs\GCli;
+namespace Drewlabs\GCli\IO;
 
-use Drewlabs\GCli\Contracts\ScriptWriter;
+use Drewlabs\GCli\Contracts\ScriptWriter as AbstractScriptWriter;
 use Drewlabs\GCli\Contracts\Writable;
-use Drewlabs\GCli\IO\Disk;
 
-class ComponentsScriptWriter implements ScriptWriter
+class ScriptWriter implements AbstractScriptWriter
 {
     /**
      * The base location of the generated scripts.

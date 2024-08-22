@@ -13,10 +13,10 @@ declare(strict_types=1);
 
 namespace Drewlabs\GCli\Extensions\Console\Commands;
 
+use Drewlabs\GCli\Console\Arguments;
 use Drewlabs\GCli\Contracts\Writable;
 use Drewlabs\GCli\DBAL\DriverOptionsFactory;
 use Drewlabs\GCli\DBAL\T\IteratorFactory;
-use Drewlabs\GCli\Extensions\Helpers\CommandArguments;
 use Drewlabs\GCli\Extensions\Helpers\ReverseEngineerTask;
 use Drewlabs\GCli\Extensions\ProgressBar;
 use Drewlabs\GCli\HTr\RouteProjectFactory;
@@ -132,7 +132,7 @@ class MakeProjectComponentsCommand extends Command
         $http = (bool) $this->option('http');
         $commandoptions = $this->mergeCamelizeOption($this->choice(static::PROMPT, self::CAMEL_CASE_CHOICES, 0), $this->options() ?? []);
         $commandoptions = array_merge($commandoptions, []);
-        $commandargs = new CommandArguments($commandoptions);
+        $commandargs = new Arguments($commandoptions);
         $options = $commandargs->providesoptions($this->cachePath, $this->laravel->basePath($this->option('srcPath') ?? 'app'));
         $policies = $options->get('policies') ?? false;
         $namespace = $options->get('namespace.default') ?? 'App';

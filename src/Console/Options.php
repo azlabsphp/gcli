@@ -11,7 +11,7 @@ declare(strict_types=1);
  * file that was distributed with this source code.
  */
 
-namespace Drewlabs\GCli;
+namespace Drewlabs\GCli\Console;
 
 use Drewlabs\Core\Helpers\Arr;
 use Drewlabs\GCli\Exceptions\IOException;

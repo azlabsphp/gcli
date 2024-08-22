@@ -13,21 +13,25 @@ declare(strict_types=1);
 
 namespace Drewlabs\GCli\DBAL;
 
-use Drewlabs\GCli\DBDriverOptions;
-use Drewlabs\GCli\Options;
+use Closure;
+use Drewlabs\GCli\Console\Options;
 
 class DriverOptionsFactory
 {
     /**
      * Creates database driver options instance.
+     * 
+     * @param Options $options 
+     * @param Closure|null $resolveFn 
+     * @return DriverOptions 
      */
-    public function createOptions(Options $options, \Closure $resolveFn = null): DBDriverOptions
+    public function createOptions(Options $options, \Closure $resolveFn = null): DriverOptions
     {
         $resolveFn = $resolveFn ?? static function ($_, $default = null) {
             return $default;
         };
         if (null !== ($url = $options->get('connectionURL'))) {
-            return DBDriverOptions::new(['url' => $url])->get();
+            return DriverOptions::new(['url' => $url])->get();
         }
         $default_driver = $resolveFn('database.default') ?? 'pdo_sqlite';
         if (null !== ($db_driver = $options->get('driver'))) {
@@ -43,7 +47,7 @@ class DriverOptionsFactory
         $charset = $options->get('charset') ?? ('pdo_mysql' === $driver ? 'utf8mb4' : ('pdo_sqlite' === $driver ? null : 'utf8'));
         $server_version = $options->get('server_version') ?? null;
 
-        return DBDriverOptions::new([
+        return DriverOptions::new([
             'dbname' => $database,
             'host' => 'pdo_sqlite' === $driver ? null : $host ?? '127.0.0.1',
             'port' => 'pdo_sqlite' === $driver ? null : $port ?? 3306,
@@ -57,8 +61,11 @@ class DriverOptionsFactory
 
     /**
      * Checks if the table has a schema prefix.
-     *
-     * @return bool
+     * 
+     * @param string $table 
+     * @param string $prefix
+     * 
+     * @return bool 
      */
     private static function hasPrefix(string $table, string $prefix)
     {

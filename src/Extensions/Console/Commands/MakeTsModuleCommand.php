@@ -13,11 +13,11 @@ declare(strict_types=1);
 
 namespace Drewlabs\GCli\Extensions\Console\Commands;
 
+use Drewlabs\GCli\Console\Options;
 use Drewlabs\GCli\Contracts\HasModuleMetadata;
 use Drewlabs\GCli\DBAL\DriverOptionsFactory;
 use Drewlabs\GCli\DBAL\T\IteratorFactory;
 use Drewlabs\GCli\Extensions\ProgressBar;
-use Drewlabs\GCli\Options;
 use Drewlabs\GCli\Plugins\TSModule\V1\Plugin;
 use Illuminate\Console\Command;
 
@@ -94,6 +94,7 @@ class MakeTsModuleCommand extends Command
         $progress->start();
         /** @var \Traversable<\Drewlabs\GCli\Contracts\ORMModelDefinition> $values */
         foreach ($values as $value) {
+            // $type = $modelbuilder instanceof HasRelations && $type instanceof HasRelations ? $type->withRelations($modelbuilder->getRelations()) : $type;
             $plugin->generate($value, $value instanceof HasModuleMetadata ? $value->getModuleName() : null);
             $progress->advance();
         }
