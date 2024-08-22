@@ -20,7 +20,6 @@ use Drewlabs\GCli\Cache\CacheableTables;
 use Drewlabs\GCli\ComponentsScriptWriter as ComponentsScriptWriterClass;
 use Drewlabs\GCli\Contracts\ComponentBuilder as AbstractBuilder;
 use Drewlabs\GCli\Contracts\ForeignKeyConstraintDefinition;
-use Drewlabs\GCli\Contracts\HasModuleMetadata;
 use Drewlabs\GCli\Contracts\Pivotable;
 use Drewlabs\GCli\Contracts\ProvidesPropertyAccessors;
 use Drewlabs\GCli\Contracts\HasRelations;
@@ -262,16 +261,11 @@ class ReverseEngineerTask
                 $modulesFactory = $modulesFactory->withoutAuth();
             }
 
-            // /** @var string[] */
-            // $tableNames = [];
-            // /** @var array<string,int> */
-            // $tablesindexes = [];
-
             /** @var ForeignKeyConstraintDefinition[] */
             $foreignKeys = [];
 
             // #endregion Create migration runner
-            $iterator = $modulesFactory->createModulesIterator($traversable, $foreignKeys /*,$tablesindexes, $tableNames*/);
+            $iterator = $modulesFactory->createModulesIterator($traversable, $foreignKeys);
             $values = iterator_to_array($iterator);
 
             // #region write tables to cache if caching is not disabled
