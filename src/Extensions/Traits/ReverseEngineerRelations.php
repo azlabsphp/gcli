@@ -185,7 +185,6 @@ trait ReverseEngineerRelations
             }
         }
 
-        print_r($relations);
         return [$relations, array_unique($pivots)];
     }
 

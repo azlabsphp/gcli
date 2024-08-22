@@ -702,8 +702,6 @@ class ORMModelBuilder implements
         $returns = Types::ONE_TO_MANY === $type ? \Illuminate\Database\Eloquent\Relations\HasMany::class : \Illuminate\Database\Eloquent\Relations\HasOne::class;
         $method = Types::ONE_TO_MANY === $type ? 'hasMany' : 'hasOne';
 
-        // print_r(['1 or many' => [$model, $local, $reference, $returns, $method, $this->resolvename($relation->getName(), $methods), $methods]]);
-
         return PHPClassMethod(
             $this->resolvename($relation->getName(), $methods),
             [],
@@ -724,8 +722,6 @@ class ORMModelBuilder implements
         $local = $relation->getLocal();
         $reference = $relation->getReference();
         $returns = \Illuminate\Database\Eloquent\Relations\BelongsTo::class;
-
-        // print_r(['belongs to' => [$model, $local, $reference, $returns, $this->resolvename($relation->getName(), $methods), $methods]]);
 
         return PHPClassMethod(
             $this->resolvename($relation->getName(), $methods),
@@ -750,7 +746,6 @@ class ORMModelBuilder implements
         $rightforeignkey = $relation->getRightForeignKey();
         $leftlocalkey = $relation->getLeftLocalKey();
         $rightlocalkey = $relation->getRightLocalKey();
-        // print_r(['through' => [$left. $right, $leftforeignkey, $rightforeignkey, $leftlocalkey, $rightlocalkey, $this->resolvename($relation->getName(), $methods), $methods]]);
 
         $line = Types::ONE_TO_MANY_THROUGH === $relation->getType() ? "return \$this->hasManyThrough(\\$left::class, \\$right::class, " : "return \$this->hasOneThrough(\\$left::class, \\$right::class, ";
         if ($leftforeignkey) {
