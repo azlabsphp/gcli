@@ -14,11 +14,12 @@ declare(strict_types=1);
 namespace Drewlabs\GCli\Extensions\Console\Commands;
 
 use Drewlabs\GCli\Console\Options;
+use Drewlabs\GCli\Console\ProgressBar;
 use Drewlabs\GCli\Contracts\HasModuleMetadata;
 use Drewlabs\GCli\DBAL\DriverOptionsFactory;
 use Drewlabs\GCli\DBAL\T\IteratorFactory;
-use Drewlabs\GCli\Extensions\ProgressBar;
 use Drewlabs\GCli\Plugins\TSModule\V1\Plugin;
+use Drewlabs\GCli\SQLDBCollector;
 use Illuminate\Console\Command;
 
 /**
@@ -54,6 +55,11 @@ class MakeTsModuleCommand extends Command
         . '{--schema= : Database tables schema prefix}'
         . '{--camelize : Rename table columns into their camel case corresponding value}'
         . '{--output= : Directory where source code should be written}'
+        . '{--manytomany=* :  List of * -> * relations. (ex - lefttable->middletable->righttable:name) }'
+        . '{--toones=* :  List of 1 -> 1 relations. (ex - lefttable->righttable:name) }'
+        . '{--manythroughs=* :  List of 1 -> t -> * relations. (ex - lefttable->middletable->righttable:name) }'
+        . '{--onethroughs=* :  List of 1 -> t -> 1 relations. (ex - lefttable->middletable->righttable:name) }'
+        . '{--onetomany=* :  List of 1 -> * relations. (ex - lefttable->righttable:name) }'
         . '{--force : Force rewrite of existing classes}';
 
     /** @var string */
@@ -81,25 +87,62 @@ class MakeTsModuleCommand extends Command
         $options = new Options($this->options() ?? []);
         $excludes = array_merge($options->get('excludes', []) ?? [], ['migrations']);
         $tables = $options->get('tables', []);
-        $factory = new DriverOptionsFactory();
         $plugin = new Plugin($options->get('output') ?? $this->laravel->publicPath('assets/lib'), boolval($this->option('camelize')));
-        $dbOptions = $factory->createOptions($options, static function ($key, $default = null) {
+
+        // #region Load database tables
+        $toones = $this->flatten($options->get('toones', []));
+        $manytomany = $this->flatten($options->get('manytomany', []));
+        $onethroughs = $this->flatten($options->get('onethroughs', []));
+        $manythroughs = $this->flatten($options->get('manythroughs', []));
+        $oneToMany = $this->flatten($options->get('onetomany', []));
+        $collector = SQLDBCollector::new(
+            $manytomany,
+            $toones,
+            $oneToMany,
+            $manythroughs,
+            $onethroughs,
+            $options->get('schema')
+        )->withRelations();
+
+        $dbOptions = DriverOptionsFactory::new()->createOptions($options, static function ($key, $default = null) {
             return config($key, $default);
         });
         $factory = new IteratorFactory('App', $options->get('schema'), $dbOptions->get(), $tables, $excludes);
-        $values = iterator_to_array($factory->createIterator()->getIterator());
-        $progress = new ProgressBar($this->output->createProgressBar(\count($values)));
+        $dbConfig = $collector->collect($factory->createIterator());
+        // #endregion Load database tables
+
+        $progress = new ProgressBar($this->output->createProgressBar(\count($dbConfig->getTables())));
 
         $this->info('Creating typescript module files, please wait...');
         $progress->start();
-        /** @var \Traversable<\Drewlabs\GCli\Contracts\ORMModelDefinition> $values */
-        foreach ($values as $value) {
-            // $type = $modelbuilder instanceof HasRelations && $type instanceof HasRelations ? $type->withRelations($modelbuilder->getRelations()) : $type;
-            $plugin->generate($value, $value instanceof HasModuleMetadata ? $value->getModuleName() : null);
+
+        foreach ($dbConfig->getTables() as $value) {
+            $plugin->generate($value->getType(), $value instanceof HasModuleMetadata ? $value->getModuleName() : null);
             $progress->advance();
         }
         $progress->finish();
 
-        $this->info("\nTask completed. Thank U for using the gcli:make:ts utility 😉.");
+        $this->info("\nTask completed. Thank U for using the gcli:make:ts utility!😉.");
+    }
+
+    /**
+     * Creates a generator of flatten array.
+     *
+     * @return array
+     */
+    private function flatten(array $composed): array
+    {
+        return iterator_to_array((function () use ($composed) {
+            foreach ($composed as $relation) {
+                if (str_contains((string) $relation, ',')) {
+                    $values = explode(',', (string) $relation);
+                    foreach ($values as $part) {
+                        yield $part;
+                    }
+                    continue;
+                }
+                yield $relation;
+            }
+        })());
     }
 }

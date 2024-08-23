@@ -11,35 +11,30 @@ declare(strict_types=1);
  * file that was distributed with this source code.
  */
 
-namespace Drewlabs\GCli\Extensions;
+namespace Drewlabs\GCli\Console;
 
-use Drewlabs\GCli\Extensions\Contracts\Progress;
-use Symfony\Component\Console\Helper\ProgressBar as BaseProgressBar;
+use Drewlabs\GCli\Console\Contracts\Progress;
 
-final class ProgressBar implements Progress
+final class FakeProgress implements Progress
 {
     /**
-     * @var ProgressBar
+     * @var int
      */
-    private $bar;
-
-    public function __construct(BaseProgressBar $bar)
-    {
-        $this->bar = $bar;
-    }
+    private $steps = 0;
 
     public function start(): void
     {
-        $this->bar->start();
+        printf('Progress started!');
     }
 
     public function advance(): void
     {
-        $this->bar->advance();
+        ++$this->steps;
+        printf('-');
     }
 
     public function finish(): void
     {
-        $this->bar->finish();
+        printf("\nProgress completed!\n");
     }
 }

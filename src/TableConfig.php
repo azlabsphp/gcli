@@ -17,6 +17,7 @@ use Drewlabs\Core\Helpers\Arr;
 use Drewlabs\GCli\Contracts\ORMModelDefinition as Type;
 use Drewlabs\GCli\Contracts\ForeignKeyConstraintDefinition as AbstractForeignConstraint;
 use Drewlabs\GCli\Contracts\EloquentORMModelBuilder as Builder;
+use Drewlabs\GCli\Contracts\HasModuleMetadata;
 use Drewlabs\GCli\Contracts\HasRelations;
 use Drewlabs\GCli\Contracts\Pivotable;
 use Drewlabs\GCli\Contracts\ProvidesPropertyAccessors;
@@ -92,12 +93,15 @@ final class TableConfig implements
     {
         $self = clone $this;
 
-        if ($this->def instanceof HasRelations) {
-            $this->def = $this->def->withRelations($values);
+        if ($self->def instanceof HasRelations) {
+            $self->def = $self->def->withRelations($values);
         }
-        if ($this->builder instanceof HasRelations) {
-            $this->builder = $this->builder->withRelations($values);
+
+        if ($self->builder instanceof HasRelations) {
+            $self->builder = $self->builder->withRelations($values);
         }
+
+        $self->relations = $values;
 
         return $self;
     }
@@ -105,9 +109,9 @@ final class TableConfig implements
     /**
      * returns the definition property value
      * 
-     * @return Type 
+     * @return Type&HasModuleMetadata
      */
-    public function getType(): Type
+    public function getType(): Type&HasModuleMetadata
     {
         return $this->def;
     }

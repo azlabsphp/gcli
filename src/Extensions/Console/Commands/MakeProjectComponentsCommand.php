@@ -14,17 +14,18 @@ declare(strict_types=1);
 namespace Drewlabs\GCli\Extensions\Console\Commands;
 
 use Drewlabs\GCli\Console\Arguments;
+use Drewlabs\GCli\Console\ProgressBar;
 use Drewlabs\GCli\Contracts\Writable;
 use Drewlabs\GCli\DBAL\DriverOptionsFactory;
 use Drewlabs\GCli\DBAL\T\IteratorFactory;
-use Drewlabs\GCli\Extensions\Helpers\ReverseEngineerTask;
-use Drewlabs\GCli\Extensions\ProgressBar;
+use Drewlabs\GCli\Extensions\Helpers\Task;
 use Drewlabs\GCli\HTr\RouteProjectFactory;
 use Drewlabs\GCli\HTr\RouteRequestBodyMap;
 use Drewlabs\GCli\IO\Disk;
 use Drewlabs\GCli\IO\Path;
 use Drewlabs\GCli\Plugins\G;
 use Drewlabs\GCli\Plugins\TSModule\V1\Plugin;
+use Drewlabs\GCli\SQLDBCollector;
 use Drewlabs\GCli\Validation\Fluent\RulesFactory;
 use Illuminate\Console\Command;
 use Illuminate\Container\Container;
@@ -79,10 +80,11 @@ class MakeProjectComponentsCommand extends Command
         . '{--no-model-accessors : Disable model property accessor generator }'
         . '{--force : Force rewrite of existing classes }'
         . '{--relations : Generates relations for model and relations casting entries for data transfer object }'
-        . '{--manytomany=* :  List of many to many relations. (ex - lefttable->middletable->righttable) }'
-        . '{--toones=* :  List of one to one relations. (ex - lefttable->righttable) }'
-        . '{--manythroughs=* :  List of many through relations. (ex - lefttable->middletable->righttable) }'
-        . '{--onethroughs=* :  List of one through relations. (ex - lefttable->middletable->righttable) }'
+        . '{--manytomany=* :  List of * -> * relations. (ex - lefttable->middletable->righttable:name) }'
+        . '{--toones=* :  List of 1 -> 1 relations. (ex - lefttable->righttable:name) }'
+        . '{--manythroughs=* :  List of 1 -> t -> * relations. (ex - lefttable->middletable->righttable:name) }'
+        . '{--onethroughs=* :  List of 1 -> t -> 1 relations. (ex - lefttable->middletable->righttable:name) }'
+        . '{--onetomany=* :  List of 1 -> * relations. (ex - lefttable->righttable:name) }'
         . '{--only=* : Restrict the generator to generate code only for the specified table structures }'
         . '{--policies : Generates policies for the model }'
         . '{--htr : Enables project generator to generates htr test files }'
@@ -151,37 +153,58 @@ class MakeProjectComponentsCommand extends Command
             G::getInstance()->addPlugin('ts-module', new Plugin($this->laravel->publicPath('assets/lib'), boolval($options->get('ts.camelize'))));
         }
 
-        $task = (new ReverseEngineerTask(new RulesFactory()))
-            ->setCamelize($camelize)
-            ->withRelations($options->get('models.relations.provides', false) ?? false)
-            ->setToOnesRelations($options->get('models.relations.one-to-one', []))
-            ->setOneToManyRelations($options->get('models.relations.one-to-many', []))
-            ->setManyToManyRelations($options->get('models.relations.many-to-many', []))
-            ->setOnThroughRelations($options->get('models.relations.one-to-one-though', []))
-            ->setManyThroughRelations($options->get('models.relations.one-to-many-though', []));
-        $task = $policies ? $task->withPolicies() : $task;
-
         // #region Load database tables
-        $factory = new DriverOptionsFactory();
-        $dbOptions = $factory->createOptions($options, static function ($key, $default = null) {
+        $providesRelations = $options->get('models.relations.provides', false) ?? false;
+        $toones = $options->get('models.relations.one-to-one', []);
+        $manytomany = $options->get('models.relations.many-to-many', []);
+        $onethroughs = $options->get('models.relations.one-to-one-through', []);
+        $manythroughs = $options->get('models.relations.one-to-many-through', []);
+        $oneToMany = $options->get('models.relations.one-to-many', []);
+        $collector = SQLDBCollector::new(
+            $manytomany,
+            $toones,
+            $oneToMany,
+            $manythroughs,
+            $onethroughs,
+            $schema
+        )
+            ->inDirectory($options->get('path'))
+            ->withValidationFactory(new RulesFactory)
+            ->inNamespace($namespace)
+            ->setDomain($domain);
+
+        if ($providesRelations) {
+            $collector = $collector->withRelations();
+        }
+        if ($http) {
+            $collector = $collector->withHttpHandlers();
+        }
+        if ($policies) {
+            $collector = $collector->withPolicies();
+        }
+        if ($noAuth) {
+            $collector = $collector->withoutAuth();
+        }
+        $dbOptions = DriverOptionsFactory::new()->createOptions($options, static function ($key, $default = null) {
             return config($key, $default);
         });
         $factory = new IteratorFactory($tableNamespace, $schema, $dbOptions->get(), $includes, $excludes);
-        $iterator = $factory->createIterator();
+        $dbConfig = $collector->collect($factory->createIterator());
         // #endregion Load database tables
 
+        $task = (new Task())->setCamelize($camelize);
+        $task = $policies ? $task->withPolicies() : $task;
+
         $task->run(
-            $iterator,
+            $dbConfig,
             $options->get('path'),
             $options->get('routes.filename', 'web.php'),
             $options->get('routes.prefix'),
             $options->get('routes.middleware'),
             $lumen,
             $disableCache,
-            $noAuth,
             $namespace,
             $domain,
-            $schema,
             $http,
             !$options->get('models.attributes.accessors', true)
         )(
@@ -195,7 +218,7 @@ class MakeProjectComponentsCommand extends Command
                 return new ProgressBar($this->output->createProgressBar(\count($values)));
             },
             function (string $message = null) {
-                $this->info("\nReverse engineering completed successfully!\n");
+                $this->info("\nReverse engineering completed successfully. Thanks for using gcli:make:project utility!😉\n");
                 $this->warn($message ?? '');
             },
             function (Writable $writable) use ($options) {

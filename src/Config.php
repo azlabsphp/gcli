@@ -16,6 +16,7 @@ namespace Drewlabs\GCli;
 use Drewlabs\GCli\Contracts\HasModuleMetadata;
 use Drewlabs\GCli\Contracts\HasRelations;
 use Drewlabs\GCli\Contracts\ORMModelDefinition as Type;
+use Drewlabs\GCli\Contracts\Relation;
 use Drewlabs\GCli\Validation\RulesFactory;
 
 class Config implements HasRelations
@@ -23,8 +24,8 @@ class Config implements HasRelations
     /** @var string */
     const DEFAULT_PROJECT_NAMESPACE = 'App';
 
-    /** @var Type */
-    private $def;
+    // /** @var Type */
+    // private $def;
 
     /** @var TableConfig */
     private $table;
@@ -48,19 +49,22 @@ class Config implements HasRelations
      * Class constructor
      * 
      * @param Type $def 
-     * @param RulesFactory $factory 
      * @param string $domain 
      * @param string|null $directory 
      * @param string|null $namespace 
      * @param string|null $schema 
+     * @param RulesFactory|null $factory 
+     * @param bool $isHTTP 
+     * @param bool $authenticate 
+     * @param bool $authorize 
      */
     public function __construct(
         Type $def,
-        RulesFactory $factory,
-        string $domain,
+        string $domain = null,
         string $directory = null,
         string $namespace = null,
         string $schema = null,
+        RulesFactory $factory = null,
         bool $isHTTP = false,
         bool $authenticate = false,
         bool $authorize = false,
@@ -68,22 +72,21 @@ class Config implements HasRelations
         $domain = $domain;
         $directory = $directory ?? 'app';
         $namespace = $namespace ?? self::DEFAULT_PROJECT_NAMESPACE;
-        $this->def = $def;
 
         $this->table = new TableConfig(
-            $this->def,
+            $def,
             $directory,
             $domain,
             $schema
         );
 
         $this->view = new TableViewConfig(
-            $factory,
-            $this->def,
+            $def,
             $this->table->getClassPath(),
             $directory,
             $domain,
             $namespace,
+            $factory,
             $isHTTP
         );
         $this->service = new TableServiceConfig(
@@ -98,14 +101,14 @@ class Config implements HasRelations
             $directory,
             $domain,
             $namespace,
-            $this->def->primaryKey() ?? 'id',
+            $def->primaryKey() ?? 'id',
             $authenticate,
             $authorize,
         );
 
         $this->dto = new TableDtoConfig(
             $this->table->getClassPath(),
-            $this->def->columns(),
+            $def->columns(),
             $directory,
             $domain,
             $namespace,
@@ -124,11 +127,11 @@ class Config implements HasRelations
      * Class factory constructo
      * 
      * @param Type $def 
-     * @param RulesFactory $factory 
      * @param string $domain 
      * @param string|null $directory 
      * @param string|null $namespace 
      * @param string|null $schema 
+     * @param RulesFactory $factory 
      * @param bool $isHTTP 
      * @param bool $authenticate 
      * @param bool $authorize 
@@ -136,26 +139,49 @@ class Config implements HasRelations
      */
     public static function new(
         Type $def,
-        RulesFactory $factory,
         string $domain,
         string $directory = null,
         string $namespace = null,
         string $schema = null,
+        RulesFactory $factory,
         bool $isHTTP = false,
         bool $authenticate = false,
         bool $authorize = false,
     ) {
         return new static(
             $def,
-            $factory,
             $domain,
             $directory,
             $namespace,
             $schema,
+            $factory,
             $isHTTP,
             $authenticate,
             $authorize
         );
+    }
+
+    /**
+     * returns the definition property value
+     * 
+     * @return Type&HasModuleMetadata
+     */
+    public function getType(): Type&HasModuleMetadata
+    {
+        return $this->table->getType();
+    }
+
+    /**
+     * Add a new relation on the relations stack
+     * 
+     * @param Relation $value 
+     * @return void 
+     */
+    public function addRelation(Relation $value): void
+    {
+        $values = $this->table->getRelations();
+        $values[] = $value;
+        $this->table = $this->table->withRelations($values);
     }
 
     public function withRelations(array $relations)
@@ -167,16 +193,6 @@ class Config implements HasRelations
     public function getRelations(): array
     {
         return $this->table->getRelations();
-    }
-
-    /**
-     * returns the definition property value
-     * 
-     * @return Type&HasModuleMetadata
-     */
-    public function getType(): Type&HasModuleMetadata
-    {
-        return $this->def;
     }
 
     /**

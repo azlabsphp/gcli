@@ -31,29 +31,29 @@ final class TableViewConfig
     /**
      * Class constructor
      * 
-     * @param RulesFactory $factory 
      * @param Type $def 
      * @param string $directory 
      * @param string|null $domain 
      * @param string $namespace 
      * @param string $model 
+     * @param RulesFactory|null $factory 
      * @param bool $isHTTP 
      * @return void 
      * @throws InvalidArgumentException 
      */
     public function __construct(
-        RulesFactory $factory,
         Type $def,
         string $model,
         string $directory,
         string $domain = null,
         string $namespace = 'App',
+        RulesFactory $factory = null,
         bool $isHTTP = false
     ) {
         $this->builder = ComponentBuilder::createViewModelBuilder(
             false,
-            $factory->createRules($def),
-            $factory->createRules($def, true),
+            $factory ? $factory->createRules($def) : [],
+            $factory ? $factory->createRules($def, true) : [],
             null,
             sprintf('%s\\%s', $namespace ?? 'App', sprintf('%s%s', $domain ? "$domain\\" : '', 'ViewModels')),
             null,

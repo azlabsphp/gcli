@@ -156,12 +156,7 @@ class Through implements Relation
         return $this->name;
     }
 
-    /**
-     * type property getter method.
-     *
-     * @return string
-     */
-    public function getType()
+    public function getType(): string
     {
         return $this->type;
     }

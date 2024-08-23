@@ -22,14 +22,11 @@ trait ProvidesTrimTableSchema
      */
     public static function trimschema(string $table, string $schema = null)
     {
-        if (null === $schema) {
-            return $table;
-        }
-
-        return self::prefixed($table, $schema.'_') ?
-            substr($table ?? '', \strlen(sprintf('%s_', $schema))) : (self::prefixed($table, $schema) ?
-                substr($table ?? '', \strlen(sprintf('%s', $schema))) :
-                $table);
+        return is_null($schema) ?
+            $table : (self::prefixed($table, $schema . '_') ?
+                substr($table ?? '', \strlen(sprintf('%s_', $schema))) : (self::prefixed($table, $schema) ?
+                    substr($table ?? '', \strlen(sprintf('%s', $schema))) :
+                    $table));
     }
 
     /**

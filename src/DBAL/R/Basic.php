@@ -181,12 +181,8 @@ class Basic implements ReversibleRelation
         return $this->local;
     }
 
-    /**
-     * type property getter method.
-     *
-     * @return string
-     */
-    public function getType()
+
+    public function getType(): string
     {
         return $this->type;
     }

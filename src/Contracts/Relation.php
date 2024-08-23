@@ -15,6 +15,14 @@ namespace Drewlabs\GCli\Contracts;
 
 interface Relation extends HasModuleMetadata
 {
+
+    /**
+     * returns the type of the relation
+     * 
+     * @return string 
+     */
+    public function getType(): string;
+
     /**
      * Get relation name.
      *

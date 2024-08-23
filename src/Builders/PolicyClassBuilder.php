@@ -89,7 +89,7 @@ class PolicyClassBuilder implements AbstractBuilder
         string $namespace = null,
         string $path = null
     ) {
-        $this->setName($name ? (!Str::endsWith($name, 'Policy') ? Str::camelize($name).'Policy' : Str::camelize($name)) : self::__NAME__);
+        $this->setName($name ? (!Str::endsWith($name, 'Policy') ? Str::camelize($name) . 'Policy' : Str::camelize($name)) : self::__NAME__);
         // Set the component write path
         $this->setWritePath($path ?? self::__PATH__);
 
@@ -99,17 +99,19 @@ class PolicyClassBuilder implements AbstractBuilder
 
     public function withModel(string $classPath)
     {
-        $self = clone $this;
         if (empty($classPath)) {
-            return $self;
+            return $this;
         }
+
+        $self = clone $this;
+
         if (str_contains($classPath, '\\')) {
             $self->model = array_reverse(explode('\\', $classPath))[0];
             $self->classPaths[$classPath] = $classPath;
         } else {
             $self->model = $classPath;
         }
-        $self->setName(Str::camelize($self->model).'Policy');
+        $self->setName(Str::camelize($self->model) . 'Policy');
 
         return $self;
     }
@@ -121,10 +123,11 @@ class PolicyClassBuilder implements AbstractBuilder
      */
     public function withViewModel(string $classPath)
     {
-        $self = clone $this;
         if (empty($classPath)) {
-            return $self;
+            return $this;
         }
+
+        $self = clone $this;
         if (str_contains($classPath, '\\')) {
             $self->viewModel = array_reverse(explode('\\', $classPath))[0];
             $self->classPaths[$classPath] = $classPath;

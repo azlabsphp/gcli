@@ -18,6 +18,17 @@ use Drewlabs\GCli\Console\Options;
 
 class DriverOptionsFactory
 {
+
+    /**
+     * Creates new class instance
+     * 
+     * @return static 
+     */
+    public static function new()
+    {
+        return new static;
+    }
+
     /**
      * Creates database driver options instance.
      * 

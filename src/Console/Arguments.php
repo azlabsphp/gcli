@@ -139,8 +139,8 @@ class Arguments
                 'models.relations.one-to-one' => iterator_to_array($this->flatten($this->getOption('toones', []))),
                 'models.relations.one-to-many' => iterator_to_array($this->flatten($this->getOption('onetomany', []))),
                 'models.relations.many-to-many' => iterator_to_array($this->flatten($this->getOption('manytomany', []))),
-                'models.relations.one-to-one-though' => iterator_to_array($this->flatten($this->getOption('onethroughs', []))),
-                'models.relations.one-to-many-though' => iterator_to_array($this->flatten($this->getOption('manythroughs', []))),
+                'models.relations.one-to-one-through' => iterator_to_array($this->flatten($this->getOption('onethroughs', []))),
+                'models.relations.one-to-many-through' => iterator_to_array($this->flatten($this->getOption('manythroughs', []))),
             ]);
         }
         // Add model accessors' flag

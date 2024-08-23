@@ -20,7 +20,10 @@ use Drewlabs\GCli\Contracts\HasRelations;
 use Drewlabs\GCli\Contracts\Relation;
 
 /** @internal */
-class Table implements ModelDefinition, HasModuleMetadata, HasRelations
+class Table implements
+    ModelDefinition,
+    HasModuleMetadata,
+    HasRelations
 {
     /** @var string */
     private $primaryKey;
@@ -83,7 +86,7 @@ class Table implements ModelDefinition, HasModuleMetadata, HasRelations
         $self->module = $name;
         return $self;
     }
-    
+
     public function getModuleName(): ?string
     {
         return $this->module ?? $this->table();
