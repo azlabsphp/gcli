@@ -53,8 +53,8 @@ class Types
 
         /** Database or PHP type to built-type library mapping declaration */
         $builtTypes = [
-            'string' => 'BuiltType._str()',
-            'text' => 'BuiltType._str()',
+            'string' => 'BuiltType._str({ coerce: true })',
+            'text' => 'BuiltType._str({ coerce: true })',
             'date' => 'BuiltType._date({ coerce: true })',
             'datetime' => 'BuiltType._date({ coerce: true })',
             'int' => 'BuiltType._num({ coerce: true })',
@@ -75,7 +75,7 @@ class Types
         foreach ($this->type->getProperties() as $value) {
             $name = $value->name();
             $tmpName = $name;
-            $selected = $builtTypes[strtolower($value->getRawType())] ?? 'BuiltType._str()';
+            $selected = $builtTypes[strtolower($value->getRawType())] ?? 'BuiltType._str({ coerce: true })';
             if ($this->camelize && (($name = Str::camelize($name, false)) !== $tmpName)) {
                 $mappings[$name] = $tmpName;
             }
