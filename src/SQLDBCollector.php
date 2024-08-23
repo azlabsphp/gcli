@@ -347,10 +347,10 @@ final class SQLDBCollector
                         return ($currrent->leftTable() === $foreignTable) && ($currrent->rightTable() === $table);
                     });
                     if (is_null($result)) {
+                        $isToMany = true;
                         $result = $this->find($oneToMany, static function (BasicConfig $currrent) use ($foreignTable, $table) {
                             return ($currrent->leftTable() === $foreignTable) && ($currrent->rightTable() === $table);
                         });
-                        $isToMany = !is_null($result) ? true : $isToMany;
                     }
 
                     $basic = new Basic(
