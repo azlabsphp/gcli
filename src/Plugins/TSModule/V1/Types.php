@@ -16,6 +16,7 @@ namespace Drewlabs\GCli\Plugins\TSModule\V1;
 use Drewlabs\CodeGenerator\Helpers\Str;
 use Drewlabs\GCli\Contracts\HasModuleMetadata;
 use Drewlabs\GCli\Contracts\HasRelations;
+use Drewlabs\GCli\Contracts\ReversibleRelation;
 use Drewlabs\GCli\Contracts\Type;
 
 class Types
@@ -69,6 +70,7 @@ class Types
 
         /** Property mapping for camel case property declaration */
         $mappings = [];
+        $defaultProperties = [];
 
         foreach ($this->type->getProperties() as $value) {
             $name = $value->name();
@@ -77,6 +79,7 @@ class Types
             if ($this->camelize && (($name = Str::camelize($name, false)) !== $tmpName)) {
                 $mappings[$name] = $tmpName;
             }
+            $defaultProperties[] = $name;
             $lines[] = sprintf("\t\t%s: %s%s", $name, $selected, $value->required() ? ',' : '.nullish(),');
         }
 
@@ -87,6 +90,11 @@ class Types
                 if (!($value instanceof HasModuleMetadata)) {
                     continue;
                 }
+
+                if ($value instanceof ReversibleRelation && $value->isInverse()) {
+                    continue;
+                }
+
                 $name = $value->getName();
                 if (isset($names[$name])) {
                     $names[$name] += 1;
@@ -101,7 +109,10 @@ class Types
                 if ($this->camelize && (($name = Str::camelize($name, false)) !== $tmpName)) {
                     $mappings[$name] = $tmpName;
                 }
-                $lines[] = sprintf("\t\t%s: %s", isset($names[$name]) ? sprintf("%s_%d", $name, intval($names[$name])) : $name, $type);
+                if (in_array($name, $defaultProperties)) {
+                    $lines[] = '//#TODO: Fix property name to avoid duplicate keys on the object';
+                }
+                $lines[] = sprintf("\t\t%s%s: %s", in_array($name, $defaultProperties) ? '//' : '', isset($names[$name]) ? sprintf("%s_%d", $name, intval($names[$name])) : $name, $type);
                 $names[$name] = 0;
             }
             array_unshift($lines, ...$imports);

@@ -13,6 +13,7 @@ declare(strict_types=1);
 
 namespace Drewlabs\GCli\Plugins\TSModule\V1\Form;
 
+use Drewlabs\Core\Helpers\Str;
 use Drewlabs\GCli\Contracts\HasExistConstraint;
 use Drewlabs\GCli\Contracts\HasModuleMetadata;
 use Drewlabs\GCli\Contracts\HasRelations;
@@ -87,7 +88,7 @@ class Config
                     $names[$name] += 1;
                 }
 
-                $inputConfig = $value->getModuleName() ? sprintf('%sInputConfigs', lcfirst($value->getModuleName())) : 'inputConfigs';
+                $inputConfig = $value->getModuleName() ? sprintf('%sInputConfigs', lcfirst(Str::camelize($value->getModuleName(), false))) : 'inputConfigs';
                 $import = sprintf('import { %s } from \'../%s\';', $inputConfig, str_replace('_', '-', $value->getModuleName() ?? ''));
                 if (!in_array($import, $groupsImports)) {
                     $groupsImports[] = $import;
@@ -133,7 +134,7 @@ class Config
 
         $lines[] = '';
         $lines[] = '/** Exported inputs configurations */';
-        $lines[] = sprintf('export const %s = form.controlConfigs', $this->module ? sprintf('%sInputConfigs', lcfirst($this->module)) : 'inputConfigs');
+        $lines[] = sprintf('export const %s = form.controlConfigs', $this->module ? sprintf('%sInputConfigs', lcfirst(Str::camelize($this->module, false))) : 'inputConfigs');
 
         return implode("\n", $lines);
     }

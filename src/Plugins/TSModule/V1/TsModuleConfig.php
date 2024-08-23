@@ -18,8 +18,6 @@ use Drewlabs\GCli\Contracts\Type;
 
 class TsModuleConfig
 {
-    /** @var string|null */
-    private $name;
 
     /** @var Type */
     private $type;
@@ -27,12 +25,9 @@ class TsModuleConfig
     /**
      * Class constructor.
      */
-    public function __construct(
-        Type $type,
-        ?string $name = null
-    ) {
+    public function __construct(Type $type)
+    {
         $this->type = $type;
-        $this->name = $name;
     }
 
     public function __toString(): string

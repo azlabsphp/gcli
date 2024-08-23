@@ -117,7 +117,8 @@ class MakeTsModuleCommand extends Command
         $progress->start();
 
         foreach ($dbConfig->getTables() as $value) {
-            $plugin->generate($value->getType(), $value instanceof HasModuleMetadata ? $value->getModuleName() : null);
+            $tableType = $value->getType();
+            $plugin->generate($tableType, $tableType instanceof HasModuleMetadata ? $tableType->getModuleName() : null);
             $progress->advance();
         }
         $progress->finish();
