@@ -28,7 +28,7 @@ class CacheableRoutes implements Cacheable
     /**
      * Creates class instance.
      */
-    public function __construct(array $routes, string $namespace = null)
+    public function __construct(array $routes, ?string $namespace = null)
     {
         $this->routes = $routes;
         $this->namespace = $namespace;

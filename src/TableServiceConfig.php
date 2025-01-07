@@ -13,9 +13,9 @@ declare(strict_types=1);
 
 namespace Drewlabs\GCli;
 
-use Drewlabs\GCli\Builders\ServiceInterfaceBuilder;
-use Drewlabs\GCli\Builders\ServiceClassBuilder as Builder;
-use Drewlabs\GCli\Helpers\ComponentBuilder;
+use Drewlabs\GCli\Plugins\Laravel\ServiceInterfaceBuilder;
+use Drewlabs\GCli\Plugins\Laravel\ServiceClassBuilder as Builder;
+use Drewlabs\GCli\Plugins\Laravel\Facade;
 use Drewlabs\GCli\Contracts\ORMModelDefinition as Type;
 
 final class TableServiceConfig
@@ -41,7 +41,7 @@ final class TableServiceConfig
     public function __construct(
         string $model,
         string $directory,
-        string $domain = null,
+        ?string $domain = null,
         string $namespace = 'App'
     ) {
         $typeBuilder = new ServiceInterfaceBuilder(
@@ -49,7 +49,7 @@ final class TableServiceConfig
             sprintf('%s\\%s', $namespace ?? 'App', sprintf('%s%s', $domain ? "$domain\\" : '', 'Contracts'))
         );
 
-        $this->builder = ComponentBuilder::createServiceBuilder(
+        $this->builder = Facade::createServiceBuilder(
             true,
             null,
             sprintf('%s\\%s', $namespace ?? 'App', sprintf('%s%s', $domain ? "$domain\\" : '', 'Services')),

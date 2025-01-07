@@ -3,14 +3,14 @@
     "description": "Generates classes, services, models and controller's components or entire project source code from databse structure",
     "type": "library",
     "require-dev": {
-        "phpunit/phpunit": "^9.5|^10.0",
-        "illuminate/database": "8.0|^9.0|^10.0|^11.0",
-        "doctrine/dbal": "^2.0|^3.3|^4.0",
-        "drewlabs/php-value": "^0.2.5|^0.3",
-        "drewlabs/laravel-query": "^0.2.2|^0.3",
-        "drewlabs/laravel-http": "^0.2.2|^0.3",
+        "doctrine/dbal": "^4.0",
         "drewlabs/contracts": "^0.2.5|^0.3",
-        "drewlabs/validation": "^0.2.6|^0.3"
+        "drewlabs/laravel-http": "^0.2.2|^0.3",
+        "drewlabs/laravel-query": "^0.2.2|^0.3",
+        "drewlabs/php-value": "^0.2.5|^0.3",
+        "drewlabs/validation": "^0.2.6|^0.3",
+        "illuminate/database": "8.0|^9.0|^10.0|^11.0",
+        "phpunit/phpunit": "^9.5|^10.0"
     },
     "license": "MIT",
     "autoload": {
@@ -41,9 +41,9 @@
     "minimum-stability": "stable",
     "prefer-stable": true,
     "require": {
-        "php": "^7.2|^8.0",
-        "drewlabs/code-generator": "^0.2.10",
-        "drewlabs/core-helpers": "^0.2.2|^0.3",
+        "php": ">=7.2",
+        "drewlabs/code-generator": "^0.3.10",
+        "drewlabs/core-helpers": "^0.3",
         "drewlabs/htr": "^0.2.0"
     },
     "extra": {

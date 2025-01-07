@@ -1,0 +1,262 @@
+<?php
+
+declare(strict_types=1);
+
+/*
+ * This file is part of the drewlabs namespace.
+ *
+ * (c) Sidoine Azandrew <azandrewdevelopper@gmail.com>
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
+
+namespace Drewlabs\GCli\Plugins\Laravel\Console\Commands;
+
+use Drewlabs\GCli\Console\Arguments;
+use Drewlabs\GCli\Console\ProgressBar;
+use Drewlabs\GCli\Contracts\Writable;
+use Drewlabs\GCli\DBAL\DriverOptionsFactory;
+use Drewlabs\GCli\DBAL\T\IteratorFactory;
+use Drewlabs\GCli\HTr\RouteProjectFactory;
+use Drewlabs\GCli\HTr\RouteRequestBodyMap;
+use Drewlabs\GCli\IO\Disk;
+use Drewlabs\GCli\IO\Path;
+use Drewlabs\GCli\Plugins\G;
+use Drewlabs\GCli\Plugins\Laravel\Console\Task;
+use Drewlabs\GCli\Plugins\TSModule\V1\Plugin;
+use Drewlabs\GCli\SQLDBCollector;
+use Drewlabs\GCli\Plugins\Laravel\Validation\RulesFactory;
+use Illuminate\Console\Command;
+use Illuminate\Container\Container;
+
+/**
+ * @property \Illuminate\Contracts\Console\Application|\Illuminate\Contracts\Foundation\Application $laravel
+ * @property mixed output
+ *
+ * @method bool                   confirm($question, $default = false)
+ * @method array|string|boo|null  option($key = null)
+ * @method string|array           choice($question, array $choices, $default = null, $attempts = null, $multiple = false)
+ * @method string|array|bool|null option(string $key)
+ * @method array                  options()
+ * @method void                   info($string, $verbosity = null)
+ * @method void                   warn($string, $verbosity = null)
+ * @method void                   error($string, $verbosity = null)
+ */
+class MakeProjectComponentsCommand extends Command
+{
+    /** @var string[] */
+    public const CAMEL_CASE_CHOICES = [
+        'Direct (ex: Post { label, post_type_id } -> PostDto {label, post_type_id } )',
+        'Camelize (ex: Post { label, post_type_id } -> PostDto {label, postTypeId } )',
+    ];
+
+    public const PROMPT = 'How should data transfert properties map to model attributes ?';
+
+    /** @var string */
+    protected $signature = 'gcli:make:project {--srcPath= : Path to the business logic component folder}'
+        . '{--package= : Package namespace for components}'
+        . '{--subPackage= : Subpackage will group each component part in a subfolder}'
+        . '{--connectionURL= : Database connection URL}'
+        . '{--dbname= : Database name}'
+        . '{--host= : Database host name}'
+        . '{--port= : Database host port number}'
+        . '{--user= : Database authentication user}'
+        . '{--password= : Database authentication password}'
+        . '{--driver= : Database driver name}'
+        . '{--server_version= : Database server version}'
+        . '{--charset= : Database Connection collation}'
+        . '{--unix_socket= : Unix socket to use for connections}'
+        . '{--routePrefix= : The prefix for the generated route definitions}'
+        . '{--middleware= : Middleware group defined for the routes prefix}'
+        . '{--routingfilename= : Routing filename (Default = web.php)}'
+        . '{--excepts=* : List of tables not to be included in the generated output}'
+        . '{--disableCache : Caching tables not supported}'
+        . '{--noAuth : Indicates whether project controllers supports authentication}'
+        . '{--input= : Path to options configurations file}'
+        . '{--format=json : Input file extension or format. Supported input format are ex:json|yml|yaml}'
+        . '{--schema= : Schema prefix to database tables}'
+        . '{--http : Whether to generates controllers and routes}'
+        . '{--no-model-accessors : Disable model property accessor generator }'
+        . '{--force : Force rewrite of existing classes }'
+        . '{--relations : Generates relations for model and relations casting entries for data transfer object }'
+        . '{--manytomany=* :  List of * -> * relations. (ex - lefttable->middletable->righttable:name) }'
+        . '{--toones=* :  List of 1 -> 1 relations. (ex - lefttable->righttable:name) }'
+        . '{--manythroughs=* :  List of 1 -> t -> * relations. (ex - lefttable->middletable->righttable:name) }'
+        . '{--onethroughs=* :  List of 1 -> t -> 1 relations. (ex - lefttable->middletable->righttable:name) }'
+        . '{--onetomany=* :  List of 1 -> * relations. (ex - lefttable->righttable:name) }'
+        . '{--only=* : Restrict the generator to generate code only for the specified table structures }'
+        . '{--policies : Generates policies for the model }'
+        . '{--htr : Enables project generator to generates htr test files }'
+        . '{--htrDir= : Output directory for htr tests}'
+        . '{--htrHost= : Base url for htr tests}'
+        . '{--htrFormat=json : Htr output document format}'
+        . '{--plugins=* : List of plugins to use by source code generator }'
+        . '{--ts-camelize : Boolean flag of whether ts module output should be camelized }';
+
+    /** @var string */
+    protected $description = 'Reverse engineer database table to a full mvc components definitions';
+
+    /**
+     * @var string
+     */
+    private $cachePath;
+
+    /** @var string */
+    private $routesCachePath;
+
+    /**
+     * Creates laravel command instance.
+     *
+     * @throws \Exception
+     */
+    public function __construct()
+    {
+        parent::__construct();
+        // Initialize the cache path
+        $basepath = rtrim(Path::new(drewlabs_component_generator_cache_path())->normalize()->__toString(), \DIRECTORY_SEPARATOR);
+        $this->cachePath = sprintf('%s%s%s', $basepath, \DIRECTORY_SEPARATOR, '__components__.dump');
+        $this->routesCachePath = sprintf('%s%s%s', $basepath, \DIRECTORY_SEPARATOR, '__routes__.dump');
+    }
+
+    /**
+     * Handle drewlabs:mvc:create command execution.
+     *
+     * @throws \Exception
+     *
+     * @return void
+     */
+    public function handle()
+    {
+        $lumen = drewlabs_code_generator_is_running_lumen_app(Container::getInstance());
+        // #region local variables initialization
+        $noAuth = (bool) $this->option('noAuth');
+        $http = (bool) $this->option('http');
+        $commandoptions = $this->mergeCamelizeOption($this->choice(static::PROMPT, self::CAMEL_CASE_CHOICES, 0), $this->options() ?? []);
+        $commandoptions = array_merge($commandoptions, []);
+        $commandargs = new Arguments($commandoptions);
+        $options = $commandargs->providesoptions($this->cachePath, $this->laravel->basePath($this->option('srcPath') ?? 'app'));
+        $policies = $options->get('policies') ?? false;
+        $namespace = $options->get('namespace.default') ?? 'App';
+        $domain = $options->get('namespace.domain');
+        $disableCache = !$options->get('cache', false);
+        $excludes = array_merge($options->get('excludes', []) ?? [], ['migrations']);
+        $includes = $options->get('includes', []);
+        $tableNamespace = sprintf('%s\\%s', $namespace, ltrim(sprintf('%s%s', $domain ? "$domain\\" : '', 'Models')));
+        $schema = $options->get('schema');
+        $camelize = boolval($options->get('models.attributes.camelize', false));
+        // #endregion local variables initialization
+
+        // Register ts-module plugin only if it's passed as argument
+        if (\in_array('ts-module', $options->get('plugins'), true)) {
+            // We register the Ts-Module plugin
+            G::getInstance()->addPlugin('ts-module', new Plugin($this->laravel->publicPath('assets/lib'), boolval($options->get('ts.camelize'))));
+        }
+
+        // #region Load database tables
+        $providesRelations = $options->get('models.relations.provides', false) ?? false;
+        $toones = $options->get('models.relations.one-to-one', []);
+        $manytomany = $options->get('models.relations.many-to-many', []);
+        $onethroughs = $options->get('models.relations.one-to-one-through', []);
+        $manythroughs = $options->get('models.relations.one-to-many-through', []);
+        $oneToMany = $options->get('models.relations.one-to-many', []);
+        $collector = SQLDBCollector::new(
+            $manytomany,
+            $toones,
+            $oneToMany,
+            $manythroughs,
+            $onethroughs,
+            $schema
+        )
+            ->inDirectory($options->get('path'))
+            ->withValidationFactory(new RulesFactory)
+            ->inNamespace($namespace)
+            ->setDomain($domain);
+
+        if ($providesRelations) {
+            $collector = $collector->withRelations();
+        }
+        if ($http) {
+            $collector = $collector->withHttpHandlers();
+        }
+        if ($policies) {
+            $collector = $collector->withPolicies();
+        }
+        if ($noAuth) {
+            $collector = $collector->withoutAuth();
+        }
+        $dbOptions = DriverOptionsFactory::new()->createOptions($options, static function ($key, $default = null) {
+            return config($key, $default);
+        });
+        $factory = new IteratorFactory($tableNamespace, $schema, $dbOptions->get(), $includes, $excludes);
+        $dbConfig = $collector->collect($factory->createIterator());
+        // #endregion Load database tables
+
+        $task = (new Task())->setCamelize($camelize);
+        $task = $policies ? $task->withPolicies() : $task;
+
+        $task->run(
+            $dbConfig,
+            $options->get('path'),
+            $options->get('routes.filename', 'web.php'),
+            $options->get('routes.prefix'),
+            $options->get('routes.middleware'),
+            $lumen,
+            $disableCache,
+            $namespace,
+            $domain,
+            $http,
+            !$options->get('models.attributes.accessors', true)
+        )(
+            $this->laravel->basePath('routes'),
+            $this->cachePath,
+            $this->routesCachePath,
+            // Creates the progress indicator
+            function ($values) {
+                $this->info("Started reverse engineering process...\n");
+
+                return new ProgressBar($this->output->createProgressBar(\count($values)));
+            },
+            function (?string $message = null) {
+                $this->info("\nReverse engineering completed successfully. Thanks for using gcli:make:project utility!😉\n");
+                $this->warn($message ?? '');
+            },
+            function (Writable $writable) use ($options) {
+                if ($this->option('force')) {
+                    return true;
+                }
+
+                return $this->confirm(sprintf('Override existing class at %s? ', $options->get('path')) . \DIRECTORY_SEPARATOR . $writable->getPath());
+            },
+            function (array $routes, RouteRequestBodyMap $map, ?string $prefix = null) use ($options) {
+                if ((bool) $options->get('htr')) {
+                    foreach ($routes as $route) {
+                        $factory = new RouteProjectFactory($route, $map, $prefix, $options->get('htr.host', 'http://127.0.0.1:8000'));
+                        $project = $factory->create();
+                        $format = $options->get('htr.format', 'json');
+                        Disk::new($this->laravel->basePath($options->get('htr.directory') ?? 'htr'))->write($factory->getRouteName() . '.' . $format, $project->compile($format));
+                    }
+                }
+            }
+        );
+    }
+
+    /**
+     * update $options parameters with based on user choice value.
+     *
+     * @param mixed $choice
+     *
+     * @return array
+     */
+    private function mergeCamelizeOption($choice, array $options)
+    {
+        if ($choice === self::CAMEL_CASE_CHOICES[0]) {
+            return array_merge($options, ['camelize' => false]);
+        }
+        if ($choice === self::CAMEL_CASE_CHOICES[1]) {
+            return array_merge($options, ['camelize' => true]);
+        }
+
+        return $options;
+    }
+}

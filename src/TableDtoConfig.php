@@ -14,9 +14,9 @@ declare(strict_types=1);
 namespace Drewlabs\GCli;
 
 
-use Drewlabs\GCli\Builders\DataTransfertClassBuilder as Builder;
+use Drewlabs\GCli\Plugins\Laravel\DataTransfertClassBuilder as Builder;
 use Drewlabs\GCli\Contracts\ORMColumnDefinition as Column;
-use Drewlabs\GCli\Helpers\ComponentBuilder;
+use Drewlabs\GCli\Plugins\Laravel\Facade;
 use InvalidArgumentException;
 
 final class TableDtoConfig
@@ -43,10 +43,10 @@ final class TableDtoConfig
         string $model,
         array $columns,
         string $directory,
-        string $domain = null,
+        ?string $domain = null,
         string $namespace = 'App',
     ) {
-        $builder = ComponentBuilder::createDtoBuilder(
+        $builder = Facade::createDtoBuilder(
             iterator_to_array((static function () use ($columns) {
                 foreach ($columns as $column) {
                     yield $column->name() => $column->type();

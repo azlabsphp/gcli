@@ -15,10 +15,10 @@ namespace Drewlabs\GCli;
 
 use Drewlabs\Core\Helpers\Str;
 use Drewlabs\GCli\Config;
-use Drewlabs\GCli\Validation\RulesFactory;
+use Drewlabs\GCli\Contracts\RulesFactory;
 use Traversable;
 use Drewlabs\GCli\Contracts\ORMModelDefinition;
-use Drewlabs\GCli\Traits\ProvidesTrimTableSchema;
+use Drewlabs\GCli\DBAL\ProvidesTrimTableSchema;
 use Drewlabs\GCli\DBAL\R\Basic;
 use Drewlabs\GCli\DBAL\R\Through;
 use Drewlabs\GCli\DBAL\R\Config\Basic as BasicConfig;
@@ -91,7 +91,7 @@ final class SQLDBCollector
         array $oneToMany = [],
         array $manyThroughs = [],
         array $oneThroughs = [],
-        string $schema = null
+        ?string $schema = null
     ) {
         $this->manyThroughs = $manyThroughs;
         $this->oneThroughs = $oneThroughs;
@@ -119,7 +119,7 @@ final class SQLDBCollector
         array $oneToMany = [],
         array $manyThroughs = [],
         array $oneThroughs = [],
-        string $schema = null
+        ?string $schema = null
     ) {
         return new static(
             $manyToMany,
@@ -189,7 +189,7 @@ final class SQLDBCollector
      * 
      * @return static 
      */
-    public function setDomain(string $domain = null)
+    public function setDomain(?string $domain = null)
     {
         $this->domain = !empty($domain) ? $domain : $this->domain;
         return $this;
@@ -202,7 +202,7 @@ final class SQLDBCollector
      * 
      * @return static 
      */
-    public function useSchema(string $value = null)
+    public function useSchema(?string $value = null)
     {
         $this->schema = $value;
         return $this;
@@ -311,7 +311,7 @@ final class SQLDBCollector
      * @return array 
      * @throws InvalidArgumentException 
      */
-    private function provideRelations(array $values, array $foreignKeys, string $schema = null)
+    private function provideRelations(array $values, array $foreignKeys, ?string $schema = null)
     {
         $pivots = [];
         $manyToMany = $this->projectToMany($foreignKeys, $this->manyToMany);
@@ -419,7 +419,7 @@ final class SQLDBCollector
         string $type,
         string $table,
         array $values,
-        string $schema = null
+        ?string $schema = null
     ) {
 
         $result = array_values(array_filter($items, static function (ThroughConfig $currrent) use ($table) {
@@ -479,7 +479,7 @@ final class SQLDBCollector
         string $table,
         array $values,
         array &$pivots,
-        string $schema = null
+        ?string $schema = null
     ) {
         // #region Many To Many relations
         $result = array_values(array_filter($items, static function (ThroughConfig $currrent) use ($table) {

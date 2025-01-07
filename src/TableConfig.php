@@ -58,7 +58,7 @@ final class TableConfig implements
      * @param string|null $schema 
      * @return void 
      */
-    public function __construct(Type $def, string $directory, string $domain = null, string $schema = null)
+    public function __construct(Type $def, string $directory, ?string $domain = null, ?string $schema = null)
     {
         $this->def = $def;
         foreach ($this->def->columns() as $column) {

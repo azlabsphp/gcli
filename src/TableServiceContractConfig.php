@@ -14,7 +14,7 @@ declare(strict_types=1);
 namespace Drewlabs\GCli;
 
 
-use Drewlabs\GCli\Builders\ServiceInterfaceBuilder as Builder;
+use Drewlabs\GCli\Plugins\Laravel\ServiceInterfaceBuilder as Builder;
 
 final class TableServiceContractConfig
 {

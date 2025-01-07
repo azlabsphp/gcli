@@ -13,44 +13,33 @@ declare(strict_types=1);
 
 namespace Drewlabs\GCli\HTr;
 
-use Drewlabs\GCli\Models\RouteController;
+use Drewlabs\GCli\RouteControllerConfig;
 use Drewlabs\Htr\Env;
 use Drewlabs\Htr\Exceptions\AssertionException;
 use Drewlabs\Htr\Project;
 
 class RouteProjectFactory
 {
-    /**
-     * @var RouteController
-     */
+    /** @var RouteControllerConfig */
     private $route;
 
-    /**
-     * @var string
-     */
+    /** @var string */
     private $baseUrl;
 
-    /**
-     * route prefix property.
-     *
-     * @var string
-     */
+    /** @var string */
     private $prefix;
 
-    /**
-     * @var RouteRequestBodyMap
-     */
+    /** @var RouteRequestBodyMap */
     private $map;
 
     /**
      * Create class instance.
      *
-     * @return void
      */
     public function __construct(
-        RouteController $route,
+        RouteControllerConfig $route,
         RouteRequestBodyMap $map,
-        string $prefix = null,
+        ?string $prefix = null,
         string $baseUrl = 'http://127.0.0.1:8000'
     ) {
         $this->route = $route;

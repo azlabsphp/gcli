@@ -13,10 +13,10 @@ declare(strict_types=1);
 
 namespace Drewlabs\GCli;
 
-use Drewlabs\GCli\Helpers\ComponentBuilder;
+use Drewlabs\GCli\Plugins\Laravel\Facade;
 use Drewlabs\GCli\Contracts\ORMModelDefinition as Type;
-use Drewlabs\GCli\Validation\RulesFactory;
-use Drewlabs\GCli\Builders\ViewModelClassBuilder as Builder;
+use Drewlabs\GCli\Contracts\RulesFactory;
+use Drewlabs\GCli\Plugins\Laravel\ViewModelClassBuilder as Builder;
 use InvalidArgumentException;
 
 final class TableViewConfig
@@ -45,12 +45,12 @@ final class TableViewConfig
         Type $def,
         string $model,
         string $directory,
-        string $domain = null,
+        ?string $domain = null,
         string $namespace = 'App',
-        RulesFactory $factory = null,
+        ?RulesFactory $factory = null,
         bool $isHTTP = false
     ) {
-        $this->builder = ComponentBuilder::createViewModelBuilder(
+        $this->builder = Facade::createViewModelBuilder(
             false,
             $factory ? $factory->createRules($def) : [],
             $factory ? $factory->createRules($def, true) : [],

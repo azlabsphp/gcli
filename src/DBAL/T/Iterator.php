@@ -15,7 +15,7 @@ namespace Drewlabs\GCli\DBAL\T;
 
 use Drewlabs\CodeGenerator\Helpers\Str;
 use Drewlabs\Core\Helpers\Functional;
-use Drewlabs\GCli\Traits\ProvidesTrimTableSchema;
+use Drewlabs\GCli\DBAL\ProvidesTrimTableSchema;
 use Illuminate\Support\Pluralizer;
 
 final class Iterator implements \IteratorAggregate

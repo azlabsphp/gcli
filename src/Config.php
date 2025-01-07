@@ -17,7 +17,7 @@ use Drewlabs\GCli\Contracts\HasModuleMetadata;
 use Drewlabs\GCli\Contracts\HasRelations;
 use Drewlabs\GCli\Contracts\ORMModelDefinition as Type;
 use Drewlabs\GCli\Contracts\Relation;
-use Drewlabs\GCli\Validation\RulesFactory;
+use Drewlabs\GCli\Contracts\RulesFactory;
 
 class Config implements HasRelations
 {
@@ -60,11 +60,11 @@ class Config implements HasRelations
      */
     public function __construct(
         Type $def,
-        string $domain = null,
-        string $directory = null,
-        string $namespace = null,
-        string $schema = null,
-        RulesFactory $factory = null,
+        ?string $domain = null,
+        ?string $directory = null,
+        ?string $namespace = null,
+        ?string $schema = null,
+        ?RulesFactory $factory = null,
         bool $isHTTP = false,
         bool $authenticate = false,
         bool $authorize = false,
@@ -140,9 +140,9 @@ class Config implements HasRelations
     public static function new(
         Type $def,
         string $domain,
-        string $directory = null,
-        string $namespace = null,
-        string $schema = null,
+        ?string $directory = null,
+        ?string $namespace = null,
+        ?string $schema = null,
         RulesFactory $factory,
         bool $isHTTP = false,
         bool $authenticate = false,

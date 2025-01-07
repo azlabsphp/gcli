@@ -15,7 +15,7 @@ namespace Drewlabs\GCli;
 
 use Drewlabs\GCli\Contracts\SourceFileInterface;
 use Drewlabs\GCli\Factories\RouteName;
-use Drewlabs\GCli\Helpers\ComponentBuilder;
+use Drewlabs\GCli\Plugins\Laravel\Facade;
 use Drewlabs\GCli\Contracts\ControllerBuilder  as Builder;
 
 final class TableControllerConfig
@@ -41,7 +41,7 @@ final class TableControllerConfig
     public function __construct(
         string $model,
         string $directory,
-        string $domain = null,
+        ?string $domain = null,
         string $namespace = 'App',
         string $primaryKey = 'id',
         bool $authenticate = false,
@@ -93,15 +93,15 @@ final class TableControllerConfig
      * @return Closure(mixed $service = null, mixed $viewModel = null, mixed $dtoObject = null): SourceFileInterface
      */
     private function createBuilder(
-        string $model = null,
+        ?string $model = null,
         string $namespace = 'App',
-        string $domain = null,
+        ?string $domain = null,
         bool $authenticate = false,
         bool $authorizable = false,
         string $key = 'id'
     ) {
         return function ($service = null, $view = null, $dto = null) use ($model, $authenticate, $authorizable, $key, $namespace, $domain) {
-            return ComponentBuilder::buildController(
+            return Facade::buildController(
                 $model,
                 $service ?? null,
                 $view ?? null,
