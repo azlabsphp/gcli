@@ -11,10 +11,9 @@ declare(strict_types=1);
  * file that was distributed with this source code.
  */
 
-namespace Drewlabs\GCli;
+namespace Drewlabs\GCli\Plugins\Laravel;
 
 use Drewlabs\Core\Helpers\Str;
-use Drewlabs\GCli\Config;
 use Drewlabs\GCli\Contracts\RulesFactory;
 use Traversable;
 use Drewlabs\GCli\Contracts\ORMModelDefinition;
@@ -355,20 +354,20 @@ final class SQLDBCollector
 
                     $basic = new Basic(
                         Str::camelize(!$isToMany ? ($result ? $result->getName() : Pluralizer::singular(self::trimschema($table, $this->schema))) : ($result ? $result->getName() : Pluralizer::plural(self::trimschema($table, $schema))), false),
-                        $tableConfig->getTableConfig()->getClassPath(),
+                        $tableConfig->getModelConfig()->getClassPath(),
                         $foreignColumn,
                         $localColumn,
                         !$isToMany ? Types::ONE_TO_ONE : Types::ONE_TO_MANY,
-                        $tableConfig->getTableDtoConfig()->getClassPath()
+                        $tableConfig->getDtoConfig()->getClassPath()
                     );
 
                     $reverse = Basic::reverse(
                         Str::camelize(Pluralizer::singular($this->trimidsuffix($localColumn)), false),
-                        $foreignTableConfig->getTableConfig()->getClassPath(),
+                        $foreignTableConfig->getModelConfig()->getClassPath(),
                         $foreignColumn,
                         $localColumn,
                         Types::MANY_TO_ONE,
-                        $foreignTableConfig->getTableDtoConfig()->getClassPath()
+                        $foreignTableConfig->getDtoConfig()->getClassPath()
                     );
 
                     $leftTable = $values[$foreignTable];

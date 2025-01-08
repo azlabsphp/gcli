@@ -13,13 +13,19 @@ declare(strict_types=1);
 
 namespace Drewlabs\GCli\Contracts;
 
-
-interface Pivotable
+interface ViewModelBuilder extends ComponentBuilder
 {
     /**
-     * Makes the model a pivot model.
+     * returns the list of rules during create action.
      *
-     * @return static
+     * @return array
      */
-    public function asPivot();
+    public function getRules(): array;
+
+    /**
+     * returns list of rules during update action.
+     *
+     * @return array
+     */
+    public function getUpdateRules(): array;
 }

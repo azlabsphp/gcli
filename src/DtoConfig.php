@@ -14,12 +14,9 @@ declare(strict_types=1);
 namespace Drewlabs\GCli;
 
 
-use Drewlabs\GCli\Plugins\Laravel\DataTransfertClassBuilder as Builder;
-use Drewlabs\GCli\Contracts\ORMColumnDefinition as Column;
-use Drewlabs\GCli\Plugins\Laravel\Facade;
-use InvalidArgumentException;
+use Drewlabs\GCli\Contracts\DtoBuilder as Builder;
 
-final class TableDtoConfig
+final class DtoConfig
 {
 
     /** @var Builder */
@@ -31,32 +28,16 @@ final class TableDtoConfig
     /**
      * Class constructor
      * 
-     * @param Column[] $columns 
-     * @param string $model 
+     * @param Builder $builder 
      * @param string $directory 
-     * @param string|null $domain 
-     * @param string $namespace 
-     * @return void 
-     * @throws InvalidArgumentException 
+     * @param string|null $domain
+     * 
      */
     public function __construct(
-        string $model,
-        array $columns,
+        Builder $builder,
         string $directory,
-        ?string $domain = null,
-        string $namespace = 'App',
+        ?string $domain = null
     ) {
-        $builder = Facade::createDtoBuilder(
-            iterator_to_array((static function () use ($columns) {
-                foreach ($columns as $column) {
-                    yield $column->name() => $column->type();
-                }
-            })()),
-            [],
-            null,
-            sprintf('%s\\%s', $namespace ?? 'App', sprintf('%s%s', $domain ? "$domain\\" : '', 'Dto')),
-            $model
-        );
         $this->path = implode(\DIRECTORY_SEPARATOR, [$directory, sprintf('%s', $domain ? "$domain/" : '')]);
         $this->builder = $builder;
     }

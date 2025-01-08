@@ -24,10 +24,10 @@ use Drewlabs\GCli\Contracts\ProvidesPropertyAccessors;
 use Drewlabs\GCli\Contracts\SourceFileInterface;
 use Drewlabs\GCli\Contracts\Writable;
 use Drewlabs\GCli\DBAL\R\Types;
-use Drewlabs\GCli\DBConfig;
 use Drewlabs\GCli\HTr\RouteRequestBodyMap;
 use Drewlabs\GCli\RouteControllerConfig;
 use Drewlabs\GCli\Plugins\G;
+use Drewlabs\GCli\Plugins\Laravel\DBConfig;
 use Drewlabs\GCli\Plugins\Laravel\Routes;
 
 use function Drewlabs\GCli\Proxy\ComponentsScriptWriter;
@@ -156,10 +156,10 @@ class Task
             ) {
                 foreach ($values as $component) {
                     // #region Write model source code
-                    $tableConfig = $component->getTableConfig();
+                    $tableConfig = $component->getModelConfig();
                     $relations = $component->getRelations();
 
-                    if ($tableConfig instanceof Pivotable && \in_array($component->getTableConfig()->getTable(), $pivots, true)) {
+                    if ($tableConfig instanceof Pivotable && \in_array($component->getModelConfig()->getTable(), $pivots, true)) {
                         $tableConfig = $tableConfig->asPivot();
                     }
 
@@ -178,8 +178,8 @@ class Task
                     }
 
                     // #region Write view model source code
-                    $tableViewConfig = $component->getTableViewConfig();
-                    if ($tableDtoConfig = $component->getTableDtoConfig()) {
+                    $tableViewConfig = $component->getViewModelConfig();
+                    if ($tableDtoConfig = $component->getDtoConfig()) {
                         $tableViewConfig = $tableViewConfig->setDtoClassPath($tableDtoConfig->getClassPath());
                     }
 
@@ -188,7 +188,7 @@ class Task
                     // #endregion Write view model source code
 
                     // #region Write service source code
-                    $tableServiceConfig = $component->getTableServiceConfig();
+                    $tableServiceConfig = $component->getServiceConfig();
                     $serviceSourceCode = self::resolveWritable($tableServiceConfig->getBuilder());
                     if ((null !== ($serviceType = $tableServiceConfig->getContract())) && $serviceTypeSourceCode = self::resolveWritable($serviceType->getBuilder())) {
                         static::writeComponentSourceCode($serviceType->getPath(), $serviceTypeSourceCode, $onExistsCallback);
@@ -198,7 +198,7 @@ class Task
                     // #endregion Write service source code
 
                     // #region Write DTO Component source code
-                    $tableDtoConfig = $component->getTableDtoConfig();
+                    $tableDtoConfig = $component->getDtoConfig();
                     $currentDtoCasts = [];
                     foreach ($relations as $_current) {
                         $currentDtoCasts[$_current->getName()] = \in_array(
@@ -215,7 +215,7 @@ class Task
                     // #endregion Write DTO Component source code
 
                     if ($hasHttpHandlers) {
-                        $controllerConfig = $component->getTableControllerConfig();
+                        $controllerConfig = $component->getControllerConfig();
                         // Call the controller factory builder function with the required parameters
                         $controllersource = self::resolveWritable(
                             $controllerConfig->getBuilder(),
@@ -241,7 +241,7 @@ class Task
                         yield $name => $routeController;
                     }
                     if ($supportPolicies) {
-                        $policyConfig = $component->getTablePolicyConfig();
+                        $policyConfig = $component->getPolicyConfig();
                         static::writeComponentSourceCode($policyConfig->getPath(), self::resolveWritable($policyConfig->getBuilder()), $onExistsCallback);
                         $policies[sprintf("\%s", $tableConfig->getClassPath())] = sprintf("\%s", $policyConfig->getClassPath());
                     }

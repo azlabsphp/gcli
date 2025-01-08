@@ -11,11 +11,10 @@ declare(strict_types=1);
  * file that was distributed with this source code.
  */
 
-namespace Drewlabs\GCli;
+ namespace Drewlabs\GCli\Plugins\Laravel;
 
 use Drewlabs\GCli\Contracts\ForeignKeyConstraintDefinition as ForeignKey;
 use Drewlabs\GCli\Contracts\UniqueKeyConstraintDefinition as UniqueKey;
-use Drewlabs\GCli\Config;
 
 class DBConfig
 {

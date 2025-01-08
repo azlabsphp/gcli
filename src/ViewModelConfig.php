@@ -13,36 +13,46 @@ declare(strict_types=1);
 
 namespace Drewlabs\GCli;
 
-use Drewlabs\GCli\Plugins\Laravel\PolicyClassBuilder as Builder;
+use Drewlabs\GCli\Contracts\ViewModelBuilder as Builder;
 
-final class TablePolicyConfig
+final class ViewModelConfig
 {
+
     /** @var Builder */
     private $builder;
 
     /** @var string */
     private $path;
 
+
     /**
-     * Class constructor
+     * Class instance initializer
      * 
-     * @param Column[] $columns 
-     * @param string $model 
+     * @param Builder $builder 
      * @param string $directory 
-     * @param string|null $domain 
-     * @param string $namespace 
+     * @param null|string $domain 
      * @return void 
-     * @throws InvalidArgumentException 
      */
     public function __construct(
-        string $model,
-        string $tableView,
+        Builder $builder,
         string $directory,
-        string $domain = null,
-        string $namespace = 'App',
+        ?string $domain = null,
     ) {
-        $this->builder = (new Builder(null, sprintf('%s\\%s', $namespace ?? 'App', sprintf('%s%s', $domain ? "$domain\\" : '', 'Policies'))))->withModel($model)->withViewModel($tableView);
+        $this->builder = $builder;
         $this->path = implode(\DIRECTORY_SEPARATOR, [$directory, sprintf('%s', $domain ? "$domain/" : '')]);
+    }
+
+    /**
+     * set the class path on the builder instance
+     * 
+     * @param string $path 
+     * 
+     * @return ViewModelConfig 
+     */
+    public function setDtoClassPath(string $path): self
+    {
+        $this->builder = $this->builder->setDtoClassPath($path);
+        return $this;
     }
 
     /**
@@ -75,5 +85,26 @@ final class TablePolicyConfig
     public function getPath(): string
     {
         return $this->path;
+    }
+
+
+    /**
+     * facade to builder `getRules` method
+     * 
+     * @return array 
+     */
+    public function getRules(): array
+    {
+        return $this->builder->getRules();
+    }
+
+    /**
+     * facade to builder `getUpdateRules` method
+     * 
+     * @return array 
+     */
+    public function getUpdateRules(): array
+    {
+        return $this->builder->getUpdateRules() ?? [];
     }
 }

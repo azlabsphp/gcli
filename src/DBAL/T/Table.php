@@ -64,9 +64,9 @@ class Table implements
         string $table,
         array $columns,
         bool $increments,
-        string $namespace = null,
-        string $module = null,
-        string $comment = null,
+        ?string $namespace = null,
+        ?string $module = null,
+        ?string $comment = null,
         array $relations = []
     ) {
         $this->primaryKey = $primaryKey;

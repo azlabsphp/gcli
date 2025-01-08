@@ -52,12 +52,7 @@ trait ViewModelBuilder
         return $this;
     }
 
-    /**
-     * returns the list of rules during create action.
-     *
-     * @return array
-     */
-    public function getRules()
+    public function getRules(): array
     {
         return $this->rules ?? [];
     }
@@ -71,12 +66,7 @@ trait ViewModelBuilder
         return $this;
     }
 
-    /**
-     * returns list of rules during update action.
-     *
-     * @return array
-     */
-    public function getUpdateRules()
+    public function getUpdateRules(): array
     {
         return $this->updateRules ?? [];
     }

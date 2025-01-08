@@ -22,7 +22,7 @@ use function Drewlabs\CodeGenerator\Proxy\PHPFunctionParameter;
 
 use Drewlabs\CodeGenerator\Types\PHPTypesModifiers;
 use Drewlabs\Core\Helpers\Str;
-use Drewlabs\GCli\Contracts\ComponentBuilder as AbstractBuilder;
+use Drewlabs\GCli\Contracts\DtoBuilder as AbstractBuilder;
 use Drewlabs\GCli\Factories\ComponentPath;
 
 use function Drewlabs\GCli\Proxy\PHPScript;
@@ -121,9 +121,9 @@ class DataTransfertClassBuilder implements AbstractBuilder
      */
     public function __construct(
         array $json_attributes = [],
-        string $name = null,
-        string $namespace = null,
-        string $path = null
+        ?string $name = null,
+        ?string $namespace = null,
+        ?string $path = null
     ) {
         $this->setName($name ? (!Str::endsWith($name, 'Dto') ?
             Str::camelize(Pluralizer::singular($name)).'Dto' :
@@ -179,11 +179,6 @@ class DataTransfertClassBuilder implements AbstractBuilder
         return $this;
     }
 
-    /**
-     * Set the list of hidden properties.
-     *
-     * @return self
-     */
     public function setHidden(array $properties = [])
     {
         $this->excepts = $properties ?? [];
@@ -208,11 +203,7 @@ class DataTransfertClassBuilder implements AbstractBuilder
         return $this;
     }
 
-    /**
-     * Set the cast attributes.
-     *
-     * @return self
-     */
+
     public function setCasts(array $casts = [])
     {
         if (!empty($casts)) {
@@ -222,11 +213,7 @@ class DataTransfertClassBuilder implements AbstractBuilder
         return $this;
     }
 
-    /**
-     * Configure support of camel case transformation for the current instance.
-     *
-     * @return self
-     */
+
     public function setCamelizeProperties(bool $value)
     {
         $this->camelize = $value;

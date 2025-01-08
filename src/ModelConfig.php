@@ -13,7 +13,6 @@ declare(strict_types=1);
 
 namespace Drewlabs\GCli;
 
-use Drewlabs\Core\Helpers\Arr;
 use Drewlabs\GCli\Contracts\ORMModelDefinition as Type;
 use Drewlabs\GCli\Contracts\ForeignKeyConstraintDefinition as AbstractForeignConstraint;
 use Drewlabs\GCli\Contracts\EloquentORMModelBuilder as Builder;
@@ -23,9 +22,8 @@ use Drewlabs\GCli\Contracts\Pivotable;
 use Drewlabs\GCli\Contracts\ProvidesPropertyAccessors;
 use Drewlabs\GCli\Contracts\Relation;
 
-use function Drewlabs\GCli\Proxy\EloquentORMModelBuilder;
 
-final class TableConfig implements
+final class ModelConfig implements
     HasRelations,
     Pivotable,
     ProvidesPropertyAccessors
@@ -52,25 +50,22 @@ final class TableConfig implements
     /**
      * Class constructor
      * 
-     * @param Type $def 
+     * @param Type $def
+     * @param Builder $builder
      * @param string $directory 
      * @param string|null $domain 
-     * @param string|null $schema 
      * @return void 
      */
-    public function __construct(Type $def, string $directory, ?string $domain = null, ?string $schema = null)
+    public function __construct(Type $def, Builder $builder , string $directory, ?string $domain = null)
     {
         $this->def = $def;
+        $this->builder = $builder;
+        $this->path = implode(\DIRECTORY_SEPARATOR, [$directory, sprintf('%s', $domain ? "$domain/" : '')]);
         foreach ($this->def->columns() as $column) {
             if ($constraint = $column->foreignConstraint()) {
                 $this->foreignKeys[] = $constraint;
             }
         }
-        $timestamps = Arr::containsAll(array_map(static function ($column) {
-            return $column->name();
-        }, $columns ?? []), static::DEFAULT_TIMESTAMP_COLUMNS);
-        $this->builder = EloquentORMModelBuilder($this->def, $schema)->hasTimestamps($timestamps);
-        $this->path = implode(\DIRECTORY_SEPARATOR, [$directory, sprintf('%s', $domain ? "$domain/" : '')]);
     }
 
     public function withoutAccessors()

@@ -13,12 +13,10 @@ declare(strict_types=1);
 
 namespace Drewlabs\GCli;
 
+use Drewlabs\GCli\Contracts\ComponentBuilder as Builder;
 
-use Drewlabs\GCli\Plugins\Laravel\ServiceInterfaceBuilder as Builder;
-
-final class TableServiceContractConfig
+final class PolicyConfig
 {
-
     /** @var Builder */
     private $builder;
 
@@ -27,17 +25,17 @@ final class TableServiceContractConfig
 
 
     /**
-     * Class constructor
+     * Class instance initializer
      * 
      * @param Builder $builder 
      * @param string $directory 
-     * @param string|null $domain 
+     * @param null|string $domain 
      * @return void 
      */
     public function __construct(
         Builder $builder,
         string $directory,
-        string $domain = null
+        ?string $domain = null
     ) {
         $this->builder = $builder;
         $this->path = implode(\DIRECTORY_SEPARATOR, [$directory, sprintf('%s', $domain ? "$domain/" : '')]);

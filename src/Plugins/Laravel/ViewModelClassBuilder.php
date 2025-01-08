@@ -26,7 +26,7 @@ use Drewlabs\CodeGenerator\Types\PHPTypes;
 use Drewlabs\CodeGenerator\Types\PHPTypesModifiers;
 
 use Drewlabs\Core\Helpers\Str;
-use Drewlabs\GCli\Contracts\ComponentBuilder as AbstractBuilder;
+use Drewlabs\GCli\Contracts\ViewModelBuilder as AbstractBuilder;
 use Drewlabs\GCli\Factories\ComponentPath;
 
 use function Drewlabs\GCli\Proxy\PHPScript;
@@ -144,9 +144,9 @@ class ViewModelClassBuilder implements AbstractBuilder
      * @return void
      */
     public function __construct(
-        string $name = null,
-        string $namespace = null,
-        string $path = null
+        ?string $name = null,
+        ?string $namespace = null,
+        ?string $path = null
     ) {
         $this->setName($name ?
             (!Str::endsWith($name, 'ViewModel') ?
@@ -183,7 +183,7 @@ class ViewModelClassBuilder implements AbstractBuilder
         return $this;
     }
 
-    public function setDTOClassPath(string $path)
+    public function setDtoClassPath(string $path)
     {
         $this->dtoPath = $path;
 
@@ -323,7 +323,7 @@ class ViewModelClassBuilder implements AbstractBuilder
         )->setNamespace($component->getNamespace());
     }
 
-    public static function defaultClassPath(string $classname = null)
+    public static function defaultClassPath(?string $classname = null)
     {
         $classname = $classname ?? 'Test';
         if (Str::contains($classname, '\\')) {
