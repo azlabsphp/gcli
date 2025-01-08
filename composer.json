@@ -3,7 +3,7 @@
     "description": "Generates classes, services, models and controller's components or entire project source code from databse structure",
     "type": "library",
     "require-dev": {
-        "doctrine/dbal": "^4.0",
+        "doctrine/dbal": "^3.0|^4.0",
         "drewlabs/contracts": "^0.2.5|^0.3",
         "drewlabs/laravel-http": "^0.2.2|^0.3",
         "drewlabs/laravel-query": "^0.2.2|^0.3",
