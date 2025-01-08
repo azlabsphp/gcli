@@ -142,7 +142,7 @@ function ServiceInterfaceBuilderProxy(?string $name = null, ?string $namespace =
  *
  * @return ServiceProviderBuilder
  */
-function MVCServiceProviderBuilder(array $policies = [], array $bindings = [], ?string $namespace = null, ?string $path = null, string $name = null)
+function MVCServiceProviderBuilder(array $policies = [], array $bindings = [], ?string $namespace = null, ?string $path = null, ?string $name = null)
 {
     return new ServiceProviderBuilder($policies, $bindings, $namespace, $path, $name);
 }
