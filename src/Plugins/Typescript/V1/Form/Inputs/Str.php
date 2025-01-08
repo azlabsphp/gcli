@@ -11,13 +11,14 @@ declare(strict_types=1);
  * file that was distributed with this source code.
  */
 
-namespace Drewlabs\GCli\Plugins\TSModule\V1\Form\Inputs;
+namespace Drewlabs\GCli\Plugins\Typescript\V1\Form\Inputs;
 
 use Drewlabs\CodeGenerator\Helpers\Str as StrHelper;
+use Drewlabs\GCli\Contracts\HasSizeProperty;
 use Drewlabs\GCli\Contracts\HasUniqueConstraint;
 use Drewlabs\GCli\Contracts\Property;
 
-class Option
+class Str
 {
     /** @var string|null */
     private $module;
@@ -34,29 +35,25 @@ class Option
     /** @var int */
     private $index;
 
-    /** @var string */
-    private $optionType;
-
     public function __construct(
         Property $property,
         ?string $module = null,
         bool $camelize = false,
         string $indent = "\t",
-        int $index = null,
-        string $optionType = 'select'
+        ?int $index = null
     ) {
         $this->module = $module;
         $this->property = $property;
         $this->camelize = $camelize;
         $this->indent = $indent ?? '';
         $this->index = $index;
-        $this->optionType = $optionType ?? 'select';
     }
 
     public function __toString(): string
     {
         $propertyName = $this->property->name();
         $name = $this->camelize ? StrHelper::camelize($propertyName) : $propertyName;
+        $isEmail = str_contains($name, 'email') ? true : false;
         $isRequired = $this->property->required();
 
         $lines = [
@@ -64,7 +61,7 @@ class Option
             $this->module ? sprintf("\tlabel: '%s',", sprintf('app.modules.%s.columns.%s', $this->module, $name)) : sprintf("\tlabel: '%s',", $name),
             sprintf("\tname: '%s',", $propertyName),
             // We assume the input type to be an email input if the property name contains the word email
-            sprintf("\ttype: '%s',", $this->optionType),
+            sprintf("\ttype: '%s',", $isEmail ? 'email' : 'text'),
             "\tclasses: '',",
             "\tplaceholder: '...',",
             "\tvalue: null,",
@@ -72,13 +69,19 @@ class Option
             sprintf("\tindex: %s,", $this->index ?: 'undefined'),
             "\tisRepeatable: false,",
             "\tcontainerClass: 'input-col-sm-12',",
-            "\t//# TODO: Provide list of possible options or use `optionsConfig` property to query data from backend source",
-            "\t options: [],",
-            "\t//optionsConfig: { source: { resource: 'http://localhost'}},",
             "\tconstraints: {",
             sprintf("\t\trequired: %s,", $isRequired ? 'true' : 'false'),
             "\t\tdisabled: false,",
+            sprintf("\t\temail: %s,", $isEmail ? 'true' : 'false'),
         ];
+
+        if ($isRequired) {
+            $lines[] = "\t\tmin: 1,";
+        }
+
+        if ($this->property instanceof HasSizeProperty && $this->property->hasSize()) {
+            $lines[] = sprintf("\t\tmax: %s", $this->property->getSize());
+        }
 
         if ($this->property instanceof HasUniqueConstraint && $this->property->hasUniqueConstraint()) {
             $lines = array_merge($lines, [
@@ -89,7 +92,7 @@ class Option
 
         $lines = array_merge($lines, [
             "\t}",
-            '} as OptionsInputConfigInterface',
+            '} as TextInput',
         ]);
 
         return implode("\n", array_map(function ($line) {

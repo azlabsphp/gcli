@@ -11,12 +11,12 @@ declare(strict_types=1);
  * file that was distributed with this source code.
  */
 
-namespace Drewlabs\GCli\Plugins\TSModule\V1;
+namespace Drewlabs\GCli\Plugins\Typescript\V1;
 
 use Drewlabs\GCli\Contracts\Type;
 use Drewlabs\GCli\IO\Disk;
 use Drewlabs\GCli\Plugins\Plugin as AbstractPlugin;
-use Drewlabs\GCli\Plugins\TSModule\V1\Form\Config;
+use Drewlabs\GCli\Plugins\Typescript\V1\Form\Config;
 
 class Plugin implements AbstractPlugin
 {
@@ -61,7 +61,7 @@ class Plugin implements AbstractPlugin
     {
         $builder = new Types($type, $this->camelize);
         $columns = new Columns($type, $module, $this->camelize);
-        $config = new TsModuleConfig($type, $module);
+        $config = new Config($type, $module);
         $form = new Config($type, $module, false);
         Disk::new($this->basePath)->write($this->getWritePath('types.ts', $module), $builder->__toString());
         Disk::new($this->basePath)->write($this->getWritePath('columns.ts', $module), $columns->__toString());

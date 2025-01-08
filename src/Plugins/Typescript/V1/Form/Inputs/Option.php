@@ -11,23 +11,19 @@ declare(strict_types=1);
  * file that was distributed with this source code.
  */
 
-namespace Drewlabs\GCli\Plugins\TSModule\V1\Form\Inputs;
+namespace Drewlabs\GCli\Plugins\Typescript\V1\Form\Inputs;
 
 use Drewlabs\CodeGenerator\Helpers\Str as StrHelper;
+use Drewlabs\GCli\Contracts\HasUniqueConstraint;
+use Drewlabs\GCli\Contracts\Property;
 
-class Group
+class Option
 {
     /** @var string|null */
     private $module;
 
-    /** @var string */
-    private $name;
-
-    /** @var bool */
-    private $required;
-
-    /** @var bool */
-    private $repeatable;
+    /** @var Property */
+    private $property;
 
     /** @var bool */
     private $camelize;
@@ -39,55 +35,61 @@ class Group
     private $index;
 
     /** @var string */
-    private $valueProperty;
+    private $optionType;
 
     public function __construct(
-        string $name,
-        string $valueProperty,
-        bool $required = false,
-        bool $repeatable = false,
+        Property $property,
         ?string $module = null,
         bool $camelize = false,
         string $indent = "\t",
-        int $index = null
+        ?int $index = null,
+        string $optionType = 'select'
     ) {
         $this->module = $module;
-        $this->required = $required;
-        $this->repeatable = $repeatable;
-        $this->name = $name;
-        $this->valueProperty = $valueProperty;
+        $this->property = $property;
         $this->camelize = $camelize;
         $this->indent = $indent ?? '';
         $this->index = $index;
+        $this->optionType = $optionType ?? 'select';
     }
 
     public function __toString(): string
     {
-        $propertyName = $this->name;
+        $propertyName = $this->property->name();
         $name = $this->camelize ? StrHelper::camelize($propertyName) : $propertyName;
-        $isRequired = $this->required;
+        $isRequired = $this->property->required();
 
         $lines = [
             '{',
             $this->module ? sprintf("\tlabel: '%s',", sprintf('app.modules.%s.columns.%s', $this->module, $name)) : sprintf("\tlabel: '%s',", $name),
             sprintf("\tname: '%s',", $propertyName),
-            "\ttype: 'control_group',",
-            "\tclasses: 'controls-header table',",
+            // We assume the input type to be an email input if the property name contains the word email
+            sprintf("\ttype: '%s',", $this->optionType),
+            "\tclasses: '',",
             "\tplaceholder: '...',",
             "\tvalue: null,",
             "\tdescription: '', // TODO: Add input description",
             sprintf("\tindex: %s,", $this->index ?: 'undefined'),
-            sprintf("\tisRepeatable: %s,", $this->repeatable ? 'true' : 'false'),
+            "\tisRepeatable: false,",
             "\tcontainerClass: 'input-col-sm-12',",
-            sprintf("\tchildren: %s,", $this->valueProperty),
+            "\t//# TODO: Provide list of possible options or use `optionsConfig` property to query data from backend source",
+            "\t options: [],",
+            "\t//optionsConfig: { source: { resource: 'http://localhost'}},",
             "\tconstraints: {",
             sprintf("\t\trequired: %s,", $isRequired ? 'true' : 'false'),
             "\t\tdisabled: false,",
         ];
 
+        if ($this->property instanceof HasUniqueConstraint && $this->property->hasUniqueConstraint()) {
+            $lines = array_merge($lines, [
+                "\t\t//# TODO: column requires a unique constraint, consider adding it",
+                "\t\t//unique: { fn: () => true }",
+            ]);
+        }
+
         $lines = array_merge($lines, [
             "\t}",
-            '} as InputGroup',
+            '} as OptionsInputConfigInterface',
         ]);
 
         return implode("\n", array_map(function ($line) {

@@ -11,7 +11,7 @@ declare(strict_types=1);
  * file that was distributed with this source code.
  */
 
-namespace Drewlabs\GCli\Plugins\TSModule\V1;
+namespace Drewlabs\GCli\Plugins\Typescript\V1;
 
 use Drewlabs\CodeGenerator\Helpers\Str;
 use Drewlabs\GCli\Contracts\HasModuleMetadata;

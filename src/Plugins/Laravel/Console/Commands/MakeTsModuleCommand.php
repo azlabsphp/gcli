@@ -19,7 +19,7 @@ use Drewlabs\GCli\Contracts\HasModuleMetadata;
 use Drewlabs\GCli\DBAL\DriverOptionsFactory;
 use Drewlabs\GCli\DBAL\T\IteratorFactory;
 use Drewlabs\GCli\Plugins\Laravel\SQLDBCollector;
-use Drewlabs\GCli\Plugins\TSModule\V1\Plugin;
+use Drewlabs\GCli\Plugins\Typescript\V1\Plugin;
 use Illuminate\Console\Command;
 
 /**
@@ -64,16 +64,6 @@ class MakeTsModuleCommand extends Command
 
     /** @var string */
     protected $description = 'Generates Typescript built-type component from database tables';
-
-    /**
-     * Creates laravel command instance.
-     *
-     * @throws \Exception
-     */
-    public function __construct()
-    {
-        parent::__construct();
-    }
 
     /**
      * Handle command execution.

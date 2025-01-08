@@ -11,7 +11,7 @@ declare(strict_types=1);
  * file that was distributed with this source code.
  */
 
-namespace Drewlabs\GCli\Plugins\TSModule\V1\Form;
+namespace Drewlabs\GCli\Plugins\Typescript\V1\Form;
 
 use Drewlabs\Core\Helpers\Str;
 use Drewlabs\GCli\Contracts\HasExistConstraint;
@@ -20,7 +20,7 @@ use Drewlabs\GCli\Contracts\HasRelations;
 use Drewlabs\GCli\Contracts\Property;
 use Drewlabs\GCli\Contracts\ReversibleRelation;
 use Drewlabs\GCli\Contracts\Type;
-use Drewlabs\GCli\Plugins\TSModule\V1\Form\Inputs\Group;
+use Drewlabs\GCli\Plugins\Typescript\V1\Form\Inputs\Group;
 
 class Config
 {

@@ -11,12 +11,14 @@ declare(strict_types=1);
  * file that was distributed with this source code.
  */
 
-namespace Drewlabs\GCli\Plugins\TSModule\V1\Form\Inputs;
+namespace Drewlabs\GCli\Plugins\Typescript\V1\Form\Inputs;
 
-use Drewlabs\CodeGenerator\Helpers\Str;
+use Drewlabs\CodeGenerator\Helpers\Str as StrHelper;
+use Drewlabs\GCli\Contracts\HasSizeProperty;
+use Drewlabs\GCli\Contracts\HasUniqueConstraint;
 use Drewlabs\GCli\Contracts\Property;
 
-class Date
+class Textarea
 {
     /** @var string|null */
     private $module;
@@ -38,7 +40,7 @@ class Date
         ?string $module = null,
         bool $camelize = false,
         string $indent = "\t",
-        int $index = null
+        ?int $index = null
     ) {
         $this->module = $module;
         $this->property = $property;
@@ -50,13 +52,14 @@ class Date
     public function __toString(): string
     {
         $propertyName = $this->property->name();
-        $name = $this->camelize ? Str::camelize($propertyName) : $propertyName;
+        $name = $this->camelize ? StrHelper::camelize($propertyName) : $propertyName;
+        $isRequired = $this->property->required();
 
         $lines = [
             '{',
             $this->module ? sprintf("\tlabel: '%s',", sprintf('app.modules.%s.columns.%s', $this->module, $name)) : sprintf("\tlabel: '%s',", $name),
             sprintf("\tname: '%s',", $propertyName),
-            "\ttype: 'date',",
+            "\ttype: 'textarea',",
             "\tclasses: '',",
             "\tplaceholder: '...',",
             "\tvalue: null,",
@@ -65,11 +68,29 @@ class Date
             "\tisRepeatable: false,",
             "\tcontainerClass: 'input-col-sm-12',",
             "\tconstraints: {",
-            sprintf("\t\trequired: %s,", $this->property->required() ? 'true' : 'false'),
+            sprintf("\t\trequired: %s,", $isRequired ? 'true' : 'false'),
             "\t\tdisabled: false,",
-            "\t}",
-            '} as DateInput',
         ];
+
+        if ($isRequired) {
+            $lines[] = "\t\tmin: 1,";
+        }
+
+        if ($this->property instanceof HasSizeProperty && $this->property->hasSize()) {
+            $lines[] = sprintf("\t\tmax: %s", $this->property->getSize());
+        }
+
+        if ($this->property instanceof HasUniqueConstraint && $this->property->hasUniqueConstraint()) {
+            $lines = array_merge($lines, [
+                "\t\t//# TODO: column requires a unique constraint, consider adding it",
+                "\t\t//unique: { fn: () => true }",
+            ]);
+        }
+
+        $lines = array_merge($lines, [
+            "\t}",
+            '} as TextAreaInput',
+        ]);
 
         return implode("\n", array_map(function ($line) {
             return $this->indent ? sprintf('%s%s', $this->indent, $line) : $line;

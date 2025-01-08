@@ -25,7 +25,7 @@ use Drewlabs\GCli\IO\Path;
 use Drewlabs\GCli\Plugins\G;
 use Drewlabs\GCli\Plugins\Laravel\Console\Task;
 use Drewlabs\GCli\Plugins\Laravel\SQLDBCollector;
-use Drewlabs\GCli\Plugins\TSModule\V1\Plugin;
+use Drewlabs\GCli\Plugins\Typescript\V1\Plugin;
 use Drewlabs\GCli\Plugins\Laravel\Validation\RulesFactory;
 use Illuminate\Console\Command;
 use Illuminate\Container\Container;

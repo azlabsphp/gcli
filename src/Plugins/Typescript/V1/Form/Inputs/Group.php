@@ -11,20 +11,23 @@ declare(strict_types=1);
  * file that was distributed with this source code.
  */
 
-namespace Drewlabs\GCli\Plugins\TSModule\V1\Form\Inputs;
+namespace Drewlabs\GCli\Plugins\Typescript\V1\Form\Inputs;
 
 use Drewlabs\CodeGenerator\Helpers\Str as StrHelper;
-use Drewlabs\GCli\Contracts\HasSizeProperty;
-use Drewlabs\GCli\Contracts\HasUniqueConstraint;
-use Drewlabs\GCli\Contracts\Property;
 
-class Str
+class Group
 {
     /** @var string|null */
     private $module;
 
-    /** @var Property */
-    private $property;
+    /** @var string */
+    private $name;
+
+    /** @var bool */
+    private $required;
+
+    /** @var bool */
+    private $repeatable;
 
     /** @var bool */
     private $camelize;
@@ -35,15 +38,24 @@ class Str
     /** @var int */
     private $index;
 
+    /** @var string */
+    private $valueProperty;
+
     public function __construct(
-        Property $property,
+        string $name,
+        string $valueProperty,
+        bool $required = false,
+        bool $repeatable = false,
         ?string $module = null,
         bool $camelize = false,
         string $indent = "\t",
-        int $index = null
+        ?int $index = null
     ) {
         $this->module = $module;
-        $this->property = $property;
+        $this->required = $required;
+        $this->repeatable = $repeatable;
+        $this->name = $name;
+        $this->valueProperty = $valueProperty;
         $this->camelize = $camelize;
         $this->indent = $indent ?? '';
         $this->index = $index;
@@ -51,48 +63,31 @@ class Str
 
     public function __toString(): string
     {
-        $propertyName = $this->property->name();
+        $propertyName = $this->name;
         $name = $this->camelize ? StrHelper::camelize($propertyName) : $propertyName;
-        $isEmail = str_contains($name, 'email') ? true : false;
-        $isRequired = $this->property->required();
+        $isRequired = $this->required;
 
         $lines = [
             '{',
             $this->module ? sprintf("\tlabel: '%s',", sprintf('app.modules.%s.columns.%s', $this->module, $name)) : sprintf("\tlabel: '%s',", $name),
             sprintf("\tname: '%s',", $propertyName),
-            // We assume the input type to be an email input if the property name contains the word email
-            sprintf("\ttype: '%s',", $isEmail ? 'email' : 'text'),
-            "\tclasses: '',",
+            "\ttype: 'control_group',",
+            "\tclasses: 'controls-header table',",
             "\tplaceholder: '...',",
             "\tvalue: null,",
             "\tdescription: '', // TODO: Add input description",
             sprintf("\tindex: %s,", $this->index ?: 'undefined'),
-            "\tisRepeatable: false,",
+            sprintf("\tisRepeatable: %s,", $this->repeatable ? 'true' : 'false'),
             "\tcontainerClass: 'input-col-sm-12',",
+            sprintf("\tchildren: %s,", $this->valueProperty),
             "\tconstraints: {",
             sprintf("\t\trequired: %s,", $isRequired ? 'true' : 'false'),
             "\t\tdisabled: false,",
-            sprintf("\t\temail: %s,", $isEmail ? 'true' : 'false'),
         ];
-
-        if ($isRequired) {
-            $lines[] = "\t\tmin: 1,";
-        }
-
-        if ($this->property instanceof HasSizeProperty && $this->property->hasSize()) {
-            $lines[] = sprintf("\t\tmax: %s", $this->property->getSize());
-        }
-
-        if ($this->property instanceof HasUniqueConstraint && $this->property->hasUniqueConstraint()) {
-            $lines = array_merge($lines, [
-                "\t\t//# TODO: column requires a unique constraint, consider adding it",
-                "\t\t//unique: { fn: () => true }",
-            ]);
-        }
 
         $lines = array_merge($lines, [
             "\t}",
-            '} as TextInput',
+            '} as InputGroup',
         ]);
 
         return implode("\n", array_map(function ($line) {

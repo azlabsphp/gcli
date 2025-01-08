@@ -49,7 +49,7 @@
     "extra": {
         "laravel": {
             "providers": [
-                "Drewlabs\\GCli\\Extensions\\Providers\\ServiceProvider"
+                "Drewlabs\\GCli\\Plugins\\Laravel\\ServiceProvider"
             ]
         }
     },

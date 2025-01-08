@@ -11,7 +11,7 @@ declare(strict_types=1);
  * file that was distributed with this source code.
  */
 
-namespace Drewlabs\GCli\Plugins\TSModule\V1\Form\Inputs;
+namespace Drewlabs\GCli\Plugins\Typescript\V1\Form\Inputs;
 
 use Drewlabs\CodeGenerator\Helpers\Str;
 use Drewlabs\GCli\Contracts\HasSizeProperty;
@@ -40,7 +40,7 @@ class Number
         ?string $module = null,
         bool $camelize = false,
         string $indent = "\t",
-        int $index = null
+        ?int $index = null
     ) {
         $this->module = $module;
         $this->property = $property;
