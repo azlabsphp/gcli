@@ -435,8 +435,8 @@ final class SQLDBCollector
             is_null($intermediate)
             || is_null($right)
             || is_null($rightDefinition = $right->getType())
-            || is_null($rightclasspath = $right->getTableConfig()->getClassPath())
-            || is_null($intermediateclasspath = $intermediate->getTableConfig()->getClassPath())
+            || is_null($rightclasspath = $right->getModelConfig()->getClassPath())
+            || is_null($intermediateclasspath = $intermediate->getModelConfig()->getClassPath())
         ) {
             return null;
         }
@@ -455,7 +455,7 @@ final class SQLDBCollector
             $through->getRightForeignKey(),
             $through->getLeftLocalkey(),
             $through->getRightLocalkey(),
-            $right->getTableDtoConfig()->getClassPath()
+            $right->getDtoConfig()->getClassPath()
         );
 
         return $through->withModuleName($rightDefinition->getModuleName());
@@ -494,10 +494,10 @@ final class SQLDBCollector
         if (
             is_null($intermediate)
             || is_null($right)
-            || is_null($rightclasspath = $right->getTableConfig()->getClassPath())
+            || is_null($rightclasspath = $right->getModelConfig()->getClassPath())
             || is_null($rightDefinition = $right->getType())
-            || is_null($throughclasspath = $intermediate->getTableConfig()->getClassPath())
-            || is_null($throughtable = $intermediate->getTableConfig()->getTable())
+            || is_null($throughclasspath = $intermediate->getModelConfig()->getClassPath())
+            || is_null($throughtable = $intermediate->getModelConfig()->getTable())
         ) {
             return null;
         }
@@ -512,7 +512,7 @@ final class SQLDBCollector
             $match->getRightForeignKey(),
             $match->getLeftLocalkey(),
             $match->getRightLocalkey(),
-            $right->getTableDtoConfig()->getClassPath()
+            $right->getDtoConfig()->getClassPath()
         );
 
         return $through->withModuleName($rightDefinition->getModuleName());

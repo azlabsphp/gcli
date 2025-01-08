@@ -15,9 +15,16 @@ namespace Drewlabs\GCli\Exceptions;
 
 class BuildErrorException extends \Exception
 {
-    public function __construct(string $clazz)
+    /**
+     * Exception class instance initializer
+     * 
+     * @param string $blueprint
+     * 
+     * @return void 
+     */
+    public function __construct(string $blueprint)
     {
-        $message = "Error while building component using $clazz: Component was not builded before serialization";
+        $message = "Error while building component using $blueprint: Component was not builded before serialization";
         parent::__construct($message);
     }
 }

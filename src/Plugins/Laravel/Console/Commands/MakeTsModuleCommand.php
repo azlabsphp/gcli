@@ -18,8 +18,8 @@ use Drewlabs\GCli\Console\ProgressBar;
 use Drewlabs\GCli\Contracts\HasModuleMetadata;
 use Drewlabs\GCli\DBAL\DriverOptionsFactory;
 use Drewlabs\GCli\DBAL\T\IteratorFactory;
+use Drewlabs\GCli\Plugins\Laravel\SQLDBCollector;
 use Drewlabs\GCli\Plugins\TSModule\V1\Plugin;
-use Drewlabs\GCli\SQLDBCollector;
 use Illuminate\Console\Command;
 
 /**
