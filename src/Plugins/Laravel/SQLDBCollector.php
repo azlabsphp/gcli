@@ -336,7 +336,7 @@ final class SQLDBCollector
                     if (is_null($foreignTable)) {
                         continue;
                     }
-                    if (is_null(($foreignTableConfig = $values[$foreignTable]) ?? null)) {
+                    if (is_null($foreignTableConfig = $values[$foreignTable] ?? null)) {
                         continue;
                     }
 
