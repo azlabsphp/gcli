@@ -13,22 +13,17 @@ declare(strict_types=1);
 
 namespace Drewlabs\GCli;
 
-use Drewlabs\GCli\Contracts\ORMModelDefinition as Type;
-use Drewlabs\GCli\Contracts\ForeignKeyConstraintDefinition as AbstractForeignConstraint;
 use Drewlabs\GCli\Contracts\EloquentORMModelBuilder as Builder;
+use Drewlabs\GCli\Contracts\ForeignKeyConstraintDefinition as AbstractForeignConstraint;
 use Drewlabs\GCli\Contracts\HasModuleMetadata;
 use Drewlabs\GCli\Contracts\HasRelations;
+use Drewlabs\GCli\Contracts\ORMModelDefinition as Type;
 use Drewlabs\GCli\Contracts\Pivotable;
 use Drewlabs\GCli\Contracts\ProvidesPropertyAccessors;
 use Drewlabs\GCli\Contracts\Relation;
 
-
-final class ModelConfig implements
-    HasRelations,
-    Pivotable,
-    ProvidesPropertyAccessors
+final class ModelConfig implements HasRelations, Pivotable, ProvidesPropertyAccessors
 {
-
     /** @var array */
     const DEFAULT_TIMESTAMP_COLUMNS = ['created_at', 'updated_at'];
 
@@ -48,15 +43,11 @@ final class ModelConfig implements
     private $relations;
 
     /**
-     * Class constructor
-     * 
-     * @param Type $def
-     * @param Builder $builder
-     * @param string $directory 
-     * @param string|null $domain 
-     * @return void 
+     * Class constructor.
+     *
+     * @return void
      */
-    public function __construct(Type $def, Builder $builder , string $directory, ?string $domain = null)
+    public function __construct(Type $def, Builder $builder, string $directory, ?string $domain = null)
     {
         $this->def = $def;
         $this->builder = $builder;
@@ -73,6 +64,7 @@ final class ModelConfig implements
         if ($this->builder instanceof ProvidesPropertyAccessors) {
             $this->builder = $this->builder->withoutAccessors();
         }
+
         return $this;
     }
 
@@ -81,6 +73,7 @@ final class ModelConfig implements
         if ($this->builder instanceof Pivotable) {
             $this->builder = $this->builder->asPivot();
         }
+
         return $this;
     }
 
@@ -102,9 +95,7 @@ final class ModelConfig implements
     }
 
     /**
-     * returns the definition property value
-     * 
-     * @return Type&HasModuleMetadata
+     * returns the definition property value.
      */
     public function getType(): Type&HasModuleMetadata
     {
@@ -122,9 +113,7 @@ final class ModelConfig implements
     }
 
     /**
-     * returns the list of table foreign key constraints
-     * 
-     * @return array 
+     * returns the list of table foreign key constraints.
      */
     public function getForeignKeys(): array
     {
@@ -132,31 +121,23 @@ final class ModelConfig implements
     }
 
     /**
-     * return the class path of the model
-     * 
-     * @return string 
+     * return the class path of the model.
      */
     public function getClassPath(): string
     {
         return $this->builder->getClassPath();
     }
 
-
     /**
-     * return the builder instance
-     * 
-     * @return Builder 
+     * return the builder instance.
      */
     public function getBuilder(): Builder
     {
         return $this->builder;
     }
 
-
     /**
-     * return the path where instance source code must be generated
-     * 
-     * @return string 
+     * return the path where instance source code must be generated.
      */
     public function getPath(): string
     {

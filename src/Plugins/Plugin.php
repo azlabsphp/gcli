@@ -23,5 +23,5 @@ interface Plugin
      *
      * @param string module
      */
-    public function generate(Type $type, string $module = null): void;
+    public function generate(Type $type, ?string $module = null): void;
 }

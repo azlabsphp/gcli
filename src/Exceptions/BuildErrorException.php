@@ -16,11 +16,9 @@ namespace Drewlabs\GCli\Exceptions;
 class BuildErrorException extends \Exception
 {
     /**
-     * Exception class instance initializer
-     * 
-     * @param string $blueprint
-     * 
-     * @return void 
+     * Exception class instance initializer.
+     *
+     * @return void
      */
     public function __construct(string $blueprint)
     {

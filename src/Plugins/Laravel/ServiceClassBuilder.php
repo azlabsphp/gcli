@@ -25,10 +25,12 @@ use Drewlabs\Core\Helpers\Str;
 use Drewlabs\GCli\Contracts\ComponentBuilder as AbstractBuilder;
 use Drewlabs\GCli\Factories\ComponentPath;
 
+use Drewlabs\GCli\Plugins\Laravel\Traits\HasNamespaceAttribute;
+
+use Drewlabs\GCli\Plugins\Laravel\Traits\ProvidesContracts;
+
 use function Drewlabs\GCli\Proxy\PHPScript;
 
-use Drewlabs\GCli\Plugins\Laravel\Traits\HasNamespaceAttribute;
-use Drewlabs\GCli\Plugins\Laravel\Traits\ProvidesContracts;
 use Illuminate\Support\Pluralizer;
 
 class ServiceClassBuilder implements AbstractBuilder
@@ -148,7 +150,7 @@ class ServiceClassBuilder implements AbstractBuilder
         $component = PHPClass($this->name());
         foreach (static::CLASS_FUNCTION_PATHS as $functionPath) {
             /**
-             * @var BluePrint|PHPClass
+             * @var Blueprint|PHPClass
              */
             $component = $component->addFunctionPath($functionPath);
         }

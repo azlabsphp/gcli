@@ -4,7 +4,7 @@ namespace Drewlabs\GCli\Factories;
 
 use Drewlabs\CodeGenerator\Helpers\Str;
 
-class RouteName
+final class RouteName
 {
 
     /**

@@ -129,7 +129,7 @@ class Arguments
             $options = $options->merge(['schema' => $schema]);
         }
 
-        if (null !== ($camelize = (bool) $this->getOption('camelize-attributes', $this->getOption('camelize'), false))) {
+        if (null !== ($camelize = (bool) $this->getOption('camelize-attributes', $this->getOption('camelize') ?? false))) {
             $options = $options->merge(['models.attributes.camelize' => $camelize]);
         }
 

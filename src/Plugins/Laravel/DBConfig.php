@@ -11,15 +11,14 @@ declare(strict_types=1);
  * file that was distributed with this source code.
  */
 
- namespace Drewlabs\GCli\Plugins\Laravel;
+namespace Drewlabs\GCli\Plugins\Laravel;
 
 use Drewlabs\GCli\Contracts\ForeignKeyConstraintDefinition as ForeignKey;
 use Drewlabs\GCli\Contracts\UniqueKeyConstraintDefinition as UniqueKey;
 
 class DBConfig
 {
-
-    /** @var Config[]  */
+    /** @var Config[] */
     private $tables;
 
     /** @var ForeignKey[] */
@@ -32,13 +31,9 @@ class DBConfig
     private $pivots;
 
     /**
-     * DBConfig class constructor
-     * 
-     * @param array $tables 
-     * @param array $foreignKeys 
-     * @param array $uniqueKeys 
-     * @param array $pivots 
-     * @return void 
+     * DBConfig class constructor.
+     *
+     * @return void
      */
     public function __construct(array $tables, array $foreignKeys = [], array $uniqueKeys = [], array $pivots = [])
     {
@@ -48,11 +43,10 @@ class DBConfig
         $this->pivots = $pivots;
     }
 
-
     /**
-     * returns an iterator of selected database tables
-     * 
-     * @return \Traversable<Config> 
+     * returns an iterator of selected database tables.
+     *
+     * @return \Traversable<Config>
      */
     public function getTablesIterator()
     {
@@ -60,9 +54,9 @@ class DBConfig
     }
 
     /**
-     * returns an array of selected database table configurations
-     * 
-     * @return Config[] 
+     * returns an array of selected database table configurations.
+     *
+     * @return Config[]
      */
     public function getTables(): array
     {
@@ -70,9 +64,9 @@ class DBConfig
     }
 
     /**
-     * returns array of selected database foreign keys
-     * 
-     * @return ForeignKey[] 
+     * returns array of selected database foreign keys.
+     *
+     * @return ForeignKey[]
      */
     public function getForeignKeys(): array
     {
@@ -80,9 +74,9 @@ class DBConfig
     }
 
     /**
-     * returns array of selected database unique keys
-     * 
-     * @return UniqueKey[] 
+     * returns array of selected database unique keys.
+     *
+     * @return UniqueKey[]
      */
     public function getUniqueKeys(): array
     {
@@ -90,9 +84,9 @@ class DBConfig
     }
 
     /**
-     * returns an array of tables that are pivotable
-     * 
-     * @return string[] 
+     * returns an array of tables that are pivotable.
+     *
+     * @return string[]
      */
     public function getPivots(): array
     {

@@ -16,18 +16,14 @@ namespace Drewlabs\GCli\Contracts;
 interface HasModuleMetadata
 {
     /**
-     * Set the module information on the current relation
-     * 
-     * @param string $name
-     *  
-     * @return static 
+     * Set the module information on the current relation.
+     *
+     * @return static
      */
     public function withModuleName(string $name);
 
-    /** 
+    /**
      * returns the module name of the current object.
-     * 
-     * @return string
      */
     public function getModuleName(): ?string;
 }

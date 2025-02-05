@@ -13,27 +13,24 @@ declare(strict_types=1);
 
 namespace Drewlabs\GCli\Plugins\Laravel;
 
+use Drewlabs\Core\Helpers\Arr;
+use Drewlabs\GCli\Contracts\ComponentBuilder;
+use Drewlabs\GCli\Contracts\EloquentORMModelBuilder;
 use Drewlabs\GCli\Contracts\HasModuleMetadata;
 use Drewlabs\GCli\Contracts\HasRelations;
 use Drewlabs\GCli\Contracts\ORMModelDefinition as Type;
 use Drewlabs\GCli\Contracts\Relation;
 use Drewlabs\GCli\Contracts\RulesFactory;
-use Drewlabs\Core\Helpers\Arr;
-use Drewlabs\GCli\Contracts\ComponentBuilder;
-use Drewlabs\GCli\Contracts\EloquentORMModelBuilder;
 use Drewlabs\GCli\ControllerConfig;
 use Drewlabs\GCli\DtoConfig;
 use Drewlabs\GCli\ModelConfig;
-use Drewlabs\GCli\Plugins\Laravel\Facade;
-use Drewlabs\GCli\Plugins\Laravel\PolicyClassBuilder;
-use Drewlabs\GCli\Plugins\Laravel\ServiceClassBuilder;
-use Drewlabs\GCli\Plugins\Laravel\ServiceInterfaceBuilder;
 use Drewlabs\GCli\PolicyConfig;
-use Drewlabs\GCli\ServiceConfig;
-use Drewlabs\GCli\ViewModelConfig;
-use InvalidArgumentException;
 
 use function Drewlabs\GCli\Proxy\EloquentORMModelBuilder;
+
+use Drewlabs\GCli\ServiceConfig;
+
+use Drewlabs\GCli\ViewModelConfig;
 
 class Config implements HasRelations
 {
@@ -65,19 +62,9 @@ class Config implements HasRelations
     private $policy;
 
     /**
-     * Class constructor
-     * 
-     * @param Type $def 
-     * @param string $domain 
-     * @param string|null $directory 
-     * @param string|null $namespace 
-     * @param string|null $schema 
-     * @param RulesFactory|null $factory 
-     * @param bool $isHTTP 
-     * @param bool $authenticate 
-     * @param bool $authorize 
+     * Class constructor.
      */
-    public function __construct(
+    final public function __construct(
         Type $def,
         ?string $domain = null,
         ?string $directory = null,
@@ -161,25 +148,16 @@ class Config implements HasRelations
     }
 
     /**
-     * Class factory constructo
-     * 
-     * @param Type $def 
-     * @param string $domain 
-     * @param string|null $directory 
-     * @param string|null $namespace 
-     * @param string|null $schema 
-     * @param RulesFactory $factory 
-     * @param bool $isHTTP 
-     * @param bool $authenticate 
-     * @param bool $authorize 
-     * @return static 
+     * Class factory constructo.
+     *
+     * @return static
      */
     public static function new(
         Type $def,
         string $domain,
-        ?string $directory = null,
-        ?string $namespace = null,
-        ?string $schema = null,
+        ?string $directory,
+        ?string $namespace,
+        ?string $schema,
         RulesFactory $factory,
         bool $isHTTP = false,
         bool $authenticate = false,
@@ -199,9 +177,7 @@ class Config implements HasRelations
     }
 
     /**
-     * returns the definition property value
-     * 
-     * @return Type&HasModuleMetadata
+     * returns the definition property value.
      */
     public function getType(): Type&HasModuleMetadata
     {
@@ -209,11 +185,7 @@ class Config implements HasRelations
     }
 
     /**
-     * Add a new relation on the relations stack
-     * 
-     * @param Relation $value
-     * 
-     * @return void 
+     * Add a new relation on the relations stack.
      */
     public function addRelation(Relation $value): void
     {
@@ -223,22 +195,21 @@ class Config implements HasRelations
     }
 
     /**
-     * Append a list of relations to the existing config relations
-     * 
-     * @param array $relations
-     * 
-     * @return HasRelations|mixed 
+     * Append a list of relations to the existing config relations.
+     *
+     * @return HasRelations|mixed
      */
     public function withRelations(array $relations)
     {
         $this->table = $this->table->withRelations($relations);
+
         return $this;
     }
 
     /**
-     * Get the list of configured relations
-     * 
-     * @return \Drewlabs\GCli\Contracts\Relation[] 
+     * Get the list of configured relations.
+     *
+     * @return \Drewlabs\GCli\Contracts\Relation[]
      */
     public function getRelations(): array
     {
@@ -246,9 +217,7 @@ class Config implements HasRelations
     }
 
     /**
-     * return model class source code configuration
-     * 
-     * @return ModelConfig 
+     * return model class source code configuration.
      */
     public function getModelConfig(): ModelConfig
     {
@@ -256,9 +225,7 @@ class Config implements HasRelations
     }
 
     /**
-     * returns view model class source code configuration
-     * 
-     * @return ViewModelConfig 
+     * returns view model class source code configuration.
      */
     public function getViewModelConfig(): ViewModelConfig
     {
@@ -266,9 +233,7 @@ class Config implements HasRelations
     }
 
     /**
-     * returns service class source code configuration
-     * 
-     * @return ServiceConfig 
+     * returns service class source code configuration.
      */
     public function getServiceConfig(): ServiceConfig
     {
@@ -276,9 +241,7 @@ class Config implements HasRelations
     }
 
     /**
-     * returns controller class source code configuration
-     * 
-     * @return ControllerConfig 
+     * returns controller class source code configuration.
      */
     public function getControllerConfig(): ControllerConfig
     {
@@ -286,9 +249,7 @@ class Config implements HasRelations
     }
 
     /**
-     * return dto class source code configuration
-     * 
-     * @return DtoConfig 
+     * return dto class source code configuration.
      */
     public function getDtoConfig(): DtoConfig
     {
@@ -296,9 +257,7 @@ class Config implements HasRelations
     }
 
     /**
-     * returns the policy class source code configuration
-     * 
-     * @return PolicyConfig 
+     * returns the policy class source code configuration.
      */
     public function getPolicyConfig(): PolicyConfig
     {
@@ -306,11 +265,9 @@ class Config implements HasRelations
     }
 
     /**
-     * Return a model builder instance based on type definition and schema
-     * 
-     * @param Type $def 
-     * @param null|string $schema 
-     * @return EloquentORMModelBuilder 
+     * Return a model builder instance based on type definition and schema.
+     *
+     * @return EloquentORMModelBuilder
      */
     private function getModelBuilder(Type $def, ?string $schema = null)
     {
@@ -318,10 +275,9 @@ class Config implements HasRelations
             return $column->name();
         }, $def->columns() ?? []);
         $timestamps = Arr::containsAll($names, static::DEFAULT_TIMESTAMP_COLUMNS);
+
         return EloquentORMModelBuilder($def, $schema)->hasTimestamps($timestamps);
     }
-
-
 
     /**
      * Creates a factory method that create the controller script.
@@ -336,7 +292,7 @@ class Config implements HasRelations
         bool $authorizable = false,
         string $key = 'id'
     ) {
-        return function ($service = null, $view = null, $dto = null) use ($model, $authenticate, $authorizable, $key, $namespace, $domain) {
+        return static function ($service = null, $view = null, $dto = null) use ($model, $authenticate, $authorizable, $key, $namespace, $domain) {
             return Facade::buildController(
                 $model,
                 $service ?? null,
@@ -351,14 +307,10 @@ class Config implements HasRelations
         };
     }
 
-
     /**
-     * Returns an instance of service contract builder
-     * 
-     * @param string $model 
-     * @param null|string $domain 
-     * @param null|string $namespace 
-     * @return ServiceInterfaceBuilder 
+     * Returns an instance of service contract builder.
+     *
+     * @return ServiceInterfaceBuilder
      */
     private function getServiceContractBuilder(string $model, ?string $domain = null, ?string $namespace = null)
     {
@@ -369,14 +321,11 @@ class Config implements HasRelations
     }
 
     /**
-     * Return service component type builder
-     * 
-     * @param ComponentBuilder $contractBuilder
-     * @param string $model 
-     * @param null|string $domain 
-     * @param null|string $namespace 
-     * @return ServiceClassBuilder 
-     * @throws InvalidArgumentException 
+     * Return service component type builder.
+     *
+     * @throws \InvalidArgumentException
+     *
+     * @return ServiceClassBuilder
      */
     private function getServiceBuilder(ComponentBuilder $contractBuilder, string $model, ?string $domain = null, ?string $namespace = null)
     {

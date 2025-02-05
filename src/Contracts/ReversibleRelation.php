@@ -13,16 +13,11 @@ declare(strict_types=1);
 
 namespace Drewlabs\GCli\Contracts;
 
-
 interface ReversibleRelation extends Relation
 {
-
-
     /**
-     * returns a boolean flag which indicates if the relation is 
-     * a * -> relation or not
-     * 
-     * @return bool 
+     * returns a boolean flag which indicates if the relation is
+     * a * -> relation or not.
      */
     public function isInverse(): bool;
 }

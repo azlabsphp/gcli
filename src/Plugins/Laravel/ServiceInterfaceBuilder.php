@@ -21,9 +21,9 @@ use Drewlabs\Contracts\Support\Actions\ActionHandler;
 use Drewlabs\GCli\Contracts\ComponentBuilder as AbstractBuilder;
 use Drewlabs\GCli\Factories\ComponentPath;
 
-use function Drewlabs\GCli\Proxy\PHPScript;
-
 use Drewlabs\GCli\Plugins\Laravel\Traits\HasNamespaceAttribute;
+
+use function Drewlabs\GCli\Proxy\PHPScript;
 
 class ServiceInterfaceBuilder implements AbstractBuilder
 {
@@ -69,9 +69,9 @@ class ServiceInterfaceBuilder implements AbstractBuilder
      * @return void
      */
     public function __construct(
-        string $name = null,
-        string $namespace = null,
-        string $path = null
+        ?string $name = null,
+        ?string $namespace = null,
+        ?string $path = null
     ) {
         $this->setName($name ? (!Str::endsWith($name, 'Interface') ? Str::camelize($name).'Interface' : Str::camelize($name)) : self::__NAME__);
         // Set the component write path

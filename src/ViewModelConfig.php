@@ -17,21 +17,16 @@ use Drewlabs\GCli\Contracts\ViewModelBuilder as Builder;
 
 final class ViewModelConfig
 {
-
     /** @var Builder */
     private $builder;
 
     /** @var string */
     private $path;
 
-
     /**
-     * Class instance initializer
-     * 
-     * @param Builder $builder 
-     * @param string $directory 
-     * @param null|string $domain 
-     * @return void 
+     * Class instance initializer.
+     *
+     * @return void
      */
     public function __construct(
         Builder $builder,
@@ -43,55 +38,41 @@ final class ViewModelConfig
     }
 
     /**
-     * set the class path on the builder instance
-     * 
-     * @param string $path 
-     * 
-     * @return ViewModelConfig 
+     * set the class path on the builder instance.
      */
     public function setDtoClassPath(string $path): self
     {
         $this->builder = $this->builder->setDtoClassPath($path);
+
         return $this;
     }
 
     /**
-     * return the class path of the model
-     * 
-     * @return string 
+     * return the class path of the model.
      */
     public function getClassPath(): string
     {
         return $this->builder->getClassPath();
     }
 
-
     /**
-     * return the builder instance
-     * 
-     * @return Builder 
+     * return the builder instance.
      */
     public function getBuilder(): Builder
     {
         return $this->builder;
     }
 
-
     /**
-     * return the path where instance source code must be generated
-     * 
-     * @return string 
+     * return the path where instance source code must be generated.
      */
     public function getPath(): string
     {
         return $this->path;
     }
 
-
     /**
-     * facade to builder `getRules` method
-     * 
-     * @return array 
+     * facade to builder `getRules` method.
      */
     public function getRules(): array
     {
@@ -99,9 +80,7 @@ final class ViewModelConfig
     }
 
     /**
-     * facade to builder `getUpdateRules` method
-     * 
-     * @return array 
+     * facade to builder `getUpdateRules` method.
      */
     public function getUpdateRules(): array
     {

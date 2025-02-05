@@ -13,12 +13,10 @@ declare(strict_types=1);
 
 namespace Drewlabs\GCli;
 
-
 use Drewlabs\GCli\Contracts\DtoBuilder as Builder;
 
 final class DtoConfig
 {
-
     /** @var Builder */
     private $builder;
 
@@ -26,12 +24,7 @@ final class DtoConfig
     private $path;
 
     /**
-     * Class constructor
-     * 
-     * @param Builder $builder 
-     * @param string $directory 
-     * @param string|null $domain
-     * 
+     * Class constructor.
      */
     public function __construct(
         Builder $builder,
@@ -43,31 +36,23 @@ final class DtoConfig
     }
 
     /**
-     * return the class path of the model
-     * 
-     * @return string 
+     * return the class path of the model.
      */
     public function getClassPath(): string
     {
         return $this->builder->getClassPath();
     }
 
-
     /**
-     * return the builder instance
-     * 
-     * @return Builder 
+     * return the builder instance.
      */
     public function getBuilder(): Builder
     {
         return $this->builder;
     }
 
-
     /**
-     * return the path where instance source code must be generated
-     * 
-     * @return string 
+     * return the path where instance source code must be generated.
      */
     public function getPath(): string
     {
@@ -75,10 +60,8 @@ final class DtoConfig
     }
 
     /**
-     * facade to `builder` setCasts
-     * 
-     * @param array $casts
-     *  
+     * facade to `builder` setCasts.
+     *
      * @return static
      */
     public function setCasts(array $casts)
@@ -91,13 +74,14 @@ final class DtoConfig
     }
 
     /**
-     * facade to `builder` setCamelizeProperties
-     * 
-     * @return static 
+     * facade to `builder` setCamelizeProperties.
+     *
+     * @return static
      */
     public function camelizeProperties(bool $value)
     {
         $this->builder = $this->builder->setCamelizeProperties($value);
+
         return $this;
     }
 }

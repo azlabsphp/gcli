@@ -26,9 +26,9 @@ use Drewlabs\CodeGenerator\Types\PHPTypesModifiers;
 use Drewlabs\GCli\Contracts\ComponentBuilder as AbstractBuilder;
 use Drewlabs\GCli\Factories\ComponentPath;
 
-use function Drewlabs\GCli\Proxy\PHPScript;
-
 use Drewlabs\GCli\Plugins\Laravel\Traits\HasNamespaceAttribute;
+
+use function Drewlabs\GCli\Proxy\PHPScript;
 
 class ServiceProviderBuilder implements AbstractBuilder
 {
@@ -76,7 +76,7 @@ class ServiceProviderBuilder implements AbstractBuilder
      *
      * @return void
      */
-    public function __construct(array $policies = [], array $bindings = [], string $namespace = null, string $path = null, string $name = null)
+    public function __construct(array $policies = [], array $bindings = [], ?string $namespace = null, ?string $path = null, ?string $name = null)
     {
         $this->setName($name ?? self::__NAME__);
 

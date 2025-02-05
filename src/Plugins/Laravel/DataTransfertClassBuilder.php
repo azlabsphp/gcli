@@ -25,9 +25,10 @@ use Drewlabs\Core\Helpers\Str;
 use Drewlabs\GCli\Contracts\DtoBuilder as AbstractBuilder;
 use Drewlabs\GCli\Factories\ComponentPath;
 
+use Drewlabs\GCli\Plugins\Laravel\Traits\HasNamespaceAttribute;
+
 use function Drewlabs\GCli\Proxy\PHPScript;
 
-use Drewlabs\GCli\Plugins\Laravel\Traits\HasNamespaceAttribute;
 use Illuminate\Support\Pluralizer;
 
 class DataTransfertClassBuilder implements AbstractBuilder
@@ -203,7 +204,6 @@ class DataTransfertClassBuilder implements AbstractBuilder
         return $this;
     }
 
-
     public function setCasts(array $casts = [])
     {
         if (!empty($casts)) {
@@ -212,7 +212,6 @@ class DataTransfertClassBuilder implements AbstractBuilder
 
         return $this;
     }
-
 
     public function setCamelizeProperties(bool $value)
     {
@@ -224,7 +223,7 @@ class DataTransfertClassBuilder implements AbstractBuilder
     public function build()
     {
         /**
-         * @var BluePrint
+         * @var Blueprint
          */
         $component = PHPClass($this->name())
             ->addComment(
@@ -324,7 +323,7 @@ class DataTransfertClassBuilder implements AbstractBuilder
         )->setNamespace($component->getNamespace());
     }
 
-    public static function defaultClassPath(string $classname = null)
+    public static function defaultClassPath(?string $classname = null)
     {
         $classname = $classname ?? 'Test';
         if (Str::contains($classname, '\\')) {

@@ -57,7 +57,7 @@ class Config
             'decimal' => 'NumberInput',
             'string' => 'TextInput',
             'text' => 'TextAreaInput',
-            'group' => 'InputGroup'
+            'group' => 'InputGroup',
         ];
         $values = array_map(function (Property $property) use (&$importedInputs, $factories) {
             $factory = new InputConfigFactory($this->module, $this->camelize);
@@ -85,16 +85,16 @@ class Config
                 }
                 $name = $value->getName();
                 if (isset($names[$name])) {
-                    $names[$name] += 1;
+                    ++$names[$name];
                 }
 
                 $inputConfig = $value->getModuleName() ? sprintf('%sInputConfigs', lcfirst(Str::camelize($value->getModuleName(), false))) : 'inputConfigs';
                 $import = sprintf('import { %s } from \'../%s\';', $inputConfig, str_replace('_', '-', $value->getModuleName() ?? ''));
-                if (!in_array($import, $groupsImports)) {
+                if (!\in_array($import, $groupsImports, true)) {
                     $groupsImports[] = $import;
                 }
 
-                $inputName = isset($names[$name]) ? sprintf("%s_%d", $name, intval($names[$name])) : $name;
+                $inputName = isset($names[$name]) ? sprintf('%s_%d', $name, (int) $names[$name]) : $name;
                 $group = new Group($inputName, $inputConfig, false, $value->multi(), $this->module, false, "\t\t");
                 $groups[] = $group;
 
@@ -114,7 +114,7 @@ class Config
             '/** Exported module form configuration */',
             'export const form = {',
             "\t//id: ,",
-            $this->module ? sprintf("\ttitle: 'app.modules.%s.form.title',", $this->module) : sprintf("\ttitle: 'title',"),
+            $this->module ? sprintf("\ttitle: 'app.modules.%s.form.title',", $this->module) : "\ttitle: 'title',",
             "\tmethod: 'POST',",
             // TODO: Add form inputs generator implementation
             "\tcontrolConfigs: [",

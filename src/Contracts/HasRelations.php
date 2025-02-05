@@ -23,9 +23,9 @@ interface HasRelations
     public function withRelations(array $relations);
 
     /**
-     * Returns the list of relations of the current instance
-     * 
-     * @return Relation[] 
+     * Returns the list of relations of the current instance.
+     *
+     * @return Relation[]
      */
     public function getRelations(): array;
 }

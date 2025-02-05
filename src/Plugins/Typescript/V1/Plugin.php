@@ -23,7 +23,6 @@ class Plugin implements AbstractPlugin
     /** @var string */
     private $basePath;
 
-
     /** @var bool */
     private $camelize = false;
 
@@ -39,25 +38,26 @@ class Plugin implements AbstractPlugin
     }
 
     /**
-     * Add support for camel case modifier
-     * 
-     * @return static 
+     * Add support for camel case modifier.
+     *
+     * @return static
      */
     public function withCamelCase()
     {
         $self = clone $this;
         $self->camelize = true;
+
         return $self;
     }
 
-
-    public function getWritePath(string $name, string $module = null)
+    public function getWritePath(string $name, ?string $module = null)
     {
-        $directory  = $module ? str_replace('_', '-', $module) : $module;
-        return $directory ? ($directory . \DIRECTORY_SEPARATOR . $name) : $name;
+        $directory = $module ? str_replace('_', '-', $module) : $module;
+
+        return $directory ? ($directory.\DIRECTORY_SEPARATOR.$name) : $name;
     }
 
-    public function generate(Type $type, string $module = null): void
+    public function generate(Type $type, ?string $module = null): void
     {
         $builder = new Types($type, $this->camelize);
         $columns = new Columns($type, $module, $this->camelize);

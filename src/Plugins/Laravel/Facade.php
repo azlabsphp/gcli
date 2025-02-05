@@ -16,25 +16,24 @@ namespace Drewlabs\GCli\Plugins\Laravel;
 use Drewlabs\CodeGenerator\Exceptions\PHPVariableException;
 use Drewlabs\Core\Helpers\Arr;
 use Drewlabs\Core\Helpers\Str;
-use Drewlabs\GCli\Plugins\Laravel\DataTransfertClassBuilder;
-use Drewlabs\GCli\Plugins\Laravel\ServiceClassBuilder;
-use Drewlabs\GCli\Plugins\Laravel\ViewModelClassBuilder;
 use Drewlabs\GCli\Contracts\ControllerBuilder;
 use Drewlabs\GCli\Contracts\ORMModelBuilder;
 
 use Drewlabs\GCli\Contracts\SourceFileInterface;
+use Drewlabs\GCli\DBAL\ProvidesTrimTableSchema;
 use Drewlabs\GCli\DBAL\T\Column;
 use Drewlabs\GCli\DBAL\T\Table;
+
 use Drewlabs\GCli\Exceptions\IOException;
 
 use function Drewlabs\GCli\Proxy\DataTransfertClassBuilder;
-use function Drewlabs\GCli\Proxy\EloquentORMModelBuilder;
 
+use function Drewlabs\GCli\Proxy\EloquentORMModelBuilder;
 use function Drewlabs\GCli\Proxy\MVCControllerBuilder;
 use function Drewlabs\GCli\Proxy\MVCServiceBuilder;
+
 use function Drewlabs\GCli\Proxy\ViewModelBuilder;
 
-use Drewlabs\GCli\DBAL\ProvidesTrimTableSchema;
 use Illuminate\Support\Pluralizer;
 
 class Facade

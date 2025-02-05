@@ -17,7 +17,7 @@ use Drewlabs\CodeGenerator\Helpers\Str;
 use Drewlabs\GCli\Exceptions\IOException;
 use Drewlabs\GCli\IO\Path;
 
-class ComponentPath
+final class ComponentPath
 {
     /**
      * Creates new factory class instance.

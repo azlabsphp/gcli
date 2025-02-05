@@ -34,7 +34,6 @@ class RouteProjectFactory
 
     /**
      * Create class instance.
-     *
      */
     public function __construct(
         RouteControllerConfig $route,

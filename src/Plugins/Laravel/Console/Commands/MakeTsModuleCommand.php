@@ -39,28 +39,28 @@ class MakeTsModuleCommand extends Command
 {
     /** @var string */
     protected $signature = 'gcli:make:ts '
-        . '{--srcPath= : Path to the business logic component folder}'
-        . '{--connectionURL= : Database connection URL}'
-        . '{--dbname= : Database name}'
-        . '{--host= : Database host name}'
-        . '{--port= : Database host port number}'
-        . '{--user= : Database authentication user}'
-        . '{--password= : Database authentication password}'
-        . '{--driver= : Database driver name}'
-        . '{--server_version= : Database server version}'
-        . '{--charset= : Database Connection collation}'
-        . '{--unix_socket= : Unix socket to use for connections}'
-        . '{--tables=* : List of tables not to be included in the generated output}'
-        . '{--excepts=* : List of tables not to be excluded in the generated output}'
-        . '{--schema= : Database tables schema prefix}'
-        . '{--camelize : Rename table columns into their camel case corresponding value}'
-        . '{--output= : Directory where source code should be written}'
-        . '{--manytomany=* :  List of * -> * relations. (ex - lefttable->middletable->righttable:name) }'
-        . '{--toones=* :  List of 1 -> 1 relations. (ex - lefttable->righttable:name) }'
-        . '{--manythroughs=* :  List of 1 -> t -> * relations. (ex - lefttable->middletable->righttable:name) }'
-        . '{--onethroughs=* :  List of 1 -> t -> 1 relations. (ex - lefttable->middletable->righttable:name) }'
-        . '{--onetomany=* :  List of 1 -> * relations. (ex - lefttable->righttable:name) }'
-        . '{--force : Force rewrite of existing classes}';
+        .'{--srcPath= : Path to the business logic component folder}'
+        .'{--connectionURL= : Database connection URL}'
+        .'{--dbname= : Database name}'
+        .'{--host= : Database host name}'
+        .'{--port= : Database host port number}'
+        .'{--user= : Database authentication user}'
+        .'{--password= : Database authentication password}'
+        .'{--driver= : Database driver name}'
+        .'{--server_version= : Database server version}'
+        .'{--charset= : Database Connection collation}'
+        .'{--unix_socket= : Unix socket to use for connections}'
+        .'{--tables=* : List of tables not to be included in the generated output}'
+        .'{--excepts=* : List of tables not to be excluded in the generated output}'
+        .'{--schema= : Database tables schema prefix}'
+        .'{--camelize : Rename table columns into their camel case corresponding value}'
+        .'{--output= : Directory where source code should be written}'
+        .'{--manytomany=* :  List of * -> * relations. (ex - lefttable->middletable->righttable:name) }'
+        .'{--toones=* :  List of 1 -> 1 relations. (ex - lefttable->righttable:name) }'
+        .'{--manythroughs=* :  List of 1 -> t -> * relations. (ex - lefttable->middletable->righttable:name) }'
+        .'{--onethroughs=* :  List of 1 -> t -> 1 relations. (ex - lefttable->middletable->righttable:name) }'
+        .'{--onetomany=* :  List of 1 -> * relations. (ex - lefttable->righttable:name) }'
+        .'{--force : Force rewrite of existing classes}';
 
     /** @var string */
     protected $description = 'Generates Typescript built-type component from database tables';
@@ -77,7 +77,7 @@ class MakeTsModuleCommand extends Command
         $options = new Options($this->options() ?? []);
         $excludes = array_merge($options->get('excludes', []) ?? [], ['migrations']);
         $tables = $options->get('tables', []);
-        $plugin = new Plugin($options->get('output') ?? $this->laravel->publicPath('assets/lib'), boolval($this->option('camelize')));
+        $plugin = new Plugin($options->get('output') ?? $this->laravel->publicPath('assets/lib'), (bool) $this->option('camelize'));
 
         // #region Load database tables
         $toones = $this->flatten($options->get('toones', []));
@@ -118,12 +118,10 @@ class MakeTsModuleCommand extends Command
 
     /**
      * Creates a generator of flatten array.
-     *
-     * @return array
      */
     private function flatten(array $composed): array
     {
-        return iterator_to_array((function () use ($composed) {
+        return iterator_to_array((static function () use ($composed) {
             foreach ($composed as $relation) {
                 if (str_contains((string) $relation, ',')) {
                     $values = explode(',', (string) $relation);

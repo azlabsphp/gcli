@@ -17,7 +17,6 @@ use Closure;
 use Drewlabs\GCli\Cache\Cache;
 use Drewlabs\GCli\Cache\CacheableTables;
 use Drewlabs\GCli\Console\Contracts\Progress;
-use Drewlabs\GCli\ScriptWriter as ComponentsScriptWriterClass;
 use Drewlabs\GCli\Contracts\ComponentBuilder as AbstractBuilder;
 use Drewlabs\GCli\Contracts\Pivotable;
 use Drewlabs\GCli\Contracts\ProvidesPropertyAccessors;
@@ -25,7 +24,6 @@ use Drewlabs\GCli\Contracts\SourceFileInterface;
 use Drewlabs\GCli\Contracts\Writable;
 use Drewlabs\GCli\DBAL\R\Types;
 use Drewlabs\GCli\HTr\RouteRequestBodyMap;
-use Drewlabs\GCli\RouteControllerConfig;
 use Drewlabs\GCli\Plugins\G;
 use Drewlabs\GCli\Plugins\Laravel\DBConfig;
 use Drewlabs\GCli\Plugins\Laravel\Routes;
@@ -33,9 +31,11 @@ use Drewlabs\GCli\Plugins\Laravel\Routes;
 use function Drewlabs\GCli\Proxy\ComponentsScriptWriter;
 use function Drewlabs\GCli\Proxy\MVCServiceProviderBuilder;
 
+use Drewlabs\GCli\RouteControllerConfig;
+use Drewlabs\GCli\ScriptWriter as ComponentsScriptWriterClass;
+
 class Task
 {
-
     /** @var bool */
     private $camelize = false;
 
@@ -45,7 +45,9 @@ class Task
     /**
      * Class constructor.
      */
-    public function __construct() {}
+    public function __construct()
+    {
+    }
 
     /**
      * By default from version 2.7.x model attribute attibutes are no more
@@ -136,7 +138,6 @@ class Task
             /** @var Progress */
             $indicator = $onStartCallback($values);
 
-
             // #region Create components models relations
             $requestBodyMap = new RouteRequestBodyMap();
             // #endregion Create components models relations
@@ -206,8 +207,8 @@ class Task
                             [Types::ONE_TO_MANY, Types::MANY_TO_MANY, Types::ONE_TO_MANY_THROUGH],
                             true
                         ) ?
-                            'collectionOf:\\' . ltrim($_current->getCastClassPath(), '\\') :
-                            'value:\\' . ltrim($_current->getCastClassPath(), '\\');
+                            'collectionOf:\\'.ltrim($_current->getCastClassPath(), '\\') :
+                            'value:\\'.ltrim($_current->getCastClassPath(), '\\');
                     }
                     $tableDtoConfig = $tableDtoConfig->camelizeProperties($camelize)->setCasts($currentDtoCasts);
                     $dtoSourceCode = self::resolveWritable($tableDtoConfig->getBuilder());
@@ -402,6 +403,6 @@ class Task
             return $component(...$args);
         }
 
-        throw new \RuntimeException('Unsupported type ' . (\is_object($component) && null !== $component ? $component::class : \gettype($component)));
+        throw new \RuntimeException('Unsupported type '.(\is_object($component) && null !== $component ? $component::class : \gettype($component)));
     }
 }

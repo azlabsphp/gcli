@@ -1,6 +1,5 @@
 <?php
 
-
 declare(strict_types=1);
 
 /*
@@ -16,7 +15,6 @@ namespace Drewlabs\GCli\DBAL\R\Config;
 
 class Through
 {
-
     /**
      * Table at the left hand side of the relation.
      *

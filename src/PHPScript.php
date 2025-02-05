@@ -38,7 +38,7 @@ EOT;
      */
     private $strictType = false;
 
-    /**  @var string[] */
+    /** @var string[] */
     private $headers;
 
     /** @var NamespaceComponent|Stringable */
@@ -50,10 +50,10 @@ EOT;
     /** @var string */
     private $extension;
 
-    /**  @var string */
+    /** @var string */
     private $name;
 
-    /** @var null|string */
+    /** @var string|null */
     private $namespace;
 
     public function __construct(

@@ -45,7 +45,7 @@ class Cache
     }
 
     /**
-     * @param object|array $value
+     * @param Cacheable $value
      *
      * @return mixed
      */
@@ -61,7 +61,7 @@ class Cache
      *
      * @throws \Exception
      *
-     * @return Cacheable
+     * @return mixed
      */
     public function load($type)
     {

@@ -18,7 +18,6 @@ use Drewlabs\GCli\Contracts\Type;
 
 class Config
 {
-
     /** @var Type */
     private $type;
 
@@ -61,7 +60,7 @@ class Config
             '',
             '// Exported types declarations',
             'export * from \'./form\';',
-            sprintf('export * from \'./types\';', $builtType, $builtType),
+            sprintf('export * from \'./types\';'),
         ];
 
         return implode("\n", $lines);

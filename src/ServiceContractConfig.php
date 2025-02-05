@@ -13,26 +13,20 @@ declare(strict_types=1);
 
 namespace Drewlabs\GCli;
 
-
 use Drewlabs\GCli\Contracts\ComponentBuilder as Builder;
 
 final class ServiceContractConfig
 {
-
     /** @var Builder */
     private $builder;
 
     /** @var string */
     private $path;
 
-
     /**
-     * Class constructor
-     * 
-     * @param Builder $builder 
-     * @param string $directory 
-     * @param string|null $domain 
-     * @return void 
+     * Class constructor.
+     *
+     * @return void
      */
     public function __construct(
         Builder $builder,
@@ -44,31 +38,23 @@ final class ServiceContractConfig
     }
 
     /**
-     * return the class path of the model
-     * 
-     * @return string 
+     * return the class path of the model.
      */
     public function getClassPath(): string
     {
         return $this->builder->getClassPath();
     }
 
-
     /**
-     * return the builder instance
-     * 
-     * @return Builder 
+     * return the builder instance.
      */
     public function getBuilder(): Builder
     {
         return $this->builder;
     }
 
-
     /**
-     * return the path where instance source code must be generated
-     * 
-     * @return string 
+     * return the path where instance source code must be generated.
      */
     public function getPath(): string
     {

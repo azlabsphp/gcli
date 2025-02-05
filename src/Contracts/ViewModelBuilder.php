@@ -17,15 +17,11 @@ interface ViewModelBuilder extends ComponentBuilder
 {
     /**
      * returns the list of rules during create action.
-     *
-     * @return array
      */
     public function getRules(): array;
 
     /**
      * returns list of rules during update action.
-     *
-     * @return array
      */
     public function getUpdateRules(): array;
 }

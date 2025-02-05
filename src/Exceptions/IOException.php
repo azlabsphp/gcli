@@ -15,7 +15,7 @@ namespace Drewlabs\GCli\Exceptions;
 
 use Exception;
 
-class IOException extends \Exception
+final class IOException extends \Exception
 {
     /**
      * @var string

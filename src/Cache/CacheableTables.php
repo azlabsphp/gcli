@@ -24,7 +24,7 @@ class CacheableTables implements AbstractCacheable
     /**
      * Creates class instance.
      *
-     * @param iterable $tables
+     * @param array $tables
      */
     public function __construct(array $tables = [], ?string $namespace = null, ?string $subNamespace = null)
     {

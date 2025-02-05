@@ -19,9 +19,10 @@ use Drewlabs\GCli\Contracts\SourceFileInterface;
 use Drewlabs\GCli\Plugins\Laravel\Console\CommandsHelpers;
 use Drewlabs\GCli\Plugins\Laravel\Facade;
 
+use Drewlabs\GCli\Plugins\Laravel\Validation\RulesFactory;
+
 use function Drewlabs\GCli\Proxy\ComponentsScriptWriter;
 
-use Drewlabs\GCli\Plugins\Laravel\Validation\RulesFactory;
 use Illuminate\Console\Command;
 
 use Illuminate\Container\Container;
@@ -50,21 +51,22 @@ class MakeModelCommand extends Command
 
     public function __construct()
     {
-        $this->app = ($this->getLaravel() ?? Container::getInstance());
+        $this->laravel = ($this->getLaravel() ?? Container::getInstance());
         parent::__construct();
     }
 
     public function handle()
     {
         if (null === ($table = $this->option('table') ?? null)) {
-            return $this->error('Model generator requires at least the table name');
+            $this->error('Model generator requires at least the table name');
+            return;
         }
         // Parameters initialization
         $primaryKey = $this->option('primaryKey') ?? 'id';
         $increments = $this->option('increments') ?? false;
         $namespace = $this->option('namespace') ?? '\\App\\Models';
         $columns = $this->option('columns') ?? [];
-        $basePath = $this->app->basePath($this->option('path') ?? 'app');
+        $basePath = $this->laravel->basePath($this->option('path') ?? 'app');
         $schema = $this->option('schema') ?? null;
         // # End of parameters initialization
         $builder = Facade::createModelBuilder(

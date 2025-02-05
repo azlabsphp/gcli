@@ -13,17 +13,14 @@ declare(strict_types=1);
 
 namespace Drewlabs\GCli\DBAL\T;
 
-use Drewlabs\GCli\Contracts\ORMColumnDefinition;
-use Drewlabs\GCli\Contracts\ORMModelDefinition as ModelDefinition;
 use Drewlabs\GCli\Contracts\HasModuleMetadata;
 use Drewlabs\GCli\Contracts\HasRelations;
+use Drewlabs\GCli\Contracts\ORMColumnDefinition;
+use Drewlabs\GCli\Contracts\ORMModelDefinition as ModelDefinition;
 use Drewlabs\GCli\Contracts\Relation;
 
 /** @internal */
-class Table implements
-    ModelDefinition,
-    HasModuleMetadata,
-    HasRelations
+class Table implements ModelDefinition, HasModuleMetadata, HasRelations
 {
     /** @var string */
     private $primaryKey;
@@ -84,6 +81,7 @@ class Table implements
     {
         $self = clone $this;
         $self->module = $name;
+
         return $self;
     }
 
@@ -96,6 +94,7 @@ class Table implements
     {
         $self = clone $this;
         $self->relations = $relations;
+
         return $self;
     }
 

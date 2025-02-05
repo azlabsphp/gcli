@@ -11,18 +11,18 @@ declare(strict_types=1);
  * file that was distributed with this source code.
  */
 
- namespace Drewlabs\GCli\Plugins\Laravel\Traits;
+namespace Drewlabs\GCli\Plugins\Laravel\Traits;
 
 trait HasNameAttribute
 {
-    /**
-     * @var string
-     */
-    private $name_;
+    /**  @var string */
+    private $name;
 
     public function setName(string $value)
     {
-        $this->name_ = $value;
+        $this->name = $value;
+
+        return $this;
     }
 
     /**
@@ -30,6 +30,6 @@ trait HasNameAttribute
      */
     public function name(): ?string
     {
-        return $this->name_;
+        return $this->name;
     }
 }

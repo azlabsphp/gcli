@@ -13,28 +13,22 @@ declare(strict_types=1);
 
 namespace Drewlabs\GCli\DBAL;
 
-use Closure;
 use Drewlabs\GCli\Console\Options;
 
 final class DriverOptionsFactory
 {
-
     /**
-     * Creates new class instance
-     * 
-     * @return static 
+     * Creates new class instance.
+     *
+     * @return static
      */
     public static function new()
     {
-        return new static;
+        return new static();
     }
 
     /**
      * Creates database driver options instance.
-     * 
-     * @param Options $options 
-     * @param Closure|null $resolveFn 
-     * @return DriverOptions 
      */
     public function createOptions(Options $options, ?\Closure $resolveFn = null): DriverOptions
     {
@@ -42,7 +36,7 @@ final class DriverOptionsFactory
             return $default;
         };
         if (null !== ($url = $options->get('connectionURL'))) {
-            return DriverOptions::new(['url' => $url])->get();
+            return DriverOptions::new(['url' => $url]);
         }
         $default_driver = $resolveFn('database.default') ?? 'pdo_sqlite';
         if (null !== ($db_driver = $options->get('driver'))) {
@@ -72,11 +66,8 @@ final class DriverOptionsFactory
 
     /**
      * Checks if the table has a schema prefix.
-     * 
-     * @param string $table 
-     * @param string $prefix
-     * 
-     * @return bool 
+     *
+     * @return bool
      */
     private static function hasPrefix(string $table, string $prefix)
     {

@@ -13,8 +13,8 @@ declare(strict_types=1);
 
 namespace Drewlabs\GCli\Plugins\Laravel\Console\Commands;
 
-use Drewlabs\GCli\Plugins\Laravel\ORMModelBuilder;
 use Drewlabs\GCli\Plugins\Laravel\Facade;
+use Drewlabs\GCli\Plugins\Laravel\ORMModelBuilder;
 
 use function Drewlabs\GCli\Proxy\ComponentsScriptWriter;
 
@@ -40,7 +40,7 @@ class MakeServiceCommand extends Command
 
     public function __construct()
     {
-        $this->app = ($this->getLaravel() ?? Container::getInstance());
+        $this->laravel = ($this->getLaravel() ?? Container::getInstance());
         parent::__construct();
     }
 
@@ -53,7 +53,7 @@ class MakeServiceCommand extends Command
             ORMModelBuilder::defaultClassPath($this->option('model')) :
             null;
         $namespace = $this->option('namespace') ?? '\\App\\Services';
-        $basePath = $this->app->basePath($this->option('path') ?? 'app');
+        $basePath = $this->laravel->basePath($this->option('path') ?? 'app');
         // # End of parameters initialization
         ComponentsScriptWriter($basePath)->write(
             Facade::buildServiceDefinition(

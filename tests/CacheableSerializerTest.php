@@ -13,8 +13,6 @@ declare(strict_types=1);
 
 namespace Drewlabs\GCli\Tests;
 
-use function Drewlabs\Filesystem\Proxy\Path;
-
 use Drewlabs\GCli\Cache\Cache;
 
 use Drewlabs\GCli\Cache\CacheableTables;
@@ -23,7 +21,7 @@ class CacheableSerializerTest extends TestCase
 {
     public function getPath()
     {
-        return realpath(__DIR__ . '/../.cache') . (DIRECTORY_SEPARATOR . 'dump');
+        return realpath(__DIR__.'/../.cache').(\DIRECTORY_SEPARATOR.'dump');
     }
 
     public function testDumpMethod()

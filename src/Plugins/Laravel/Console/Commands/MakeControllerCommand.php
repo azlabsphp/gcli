@@ -15,14 +15,16 @@ namespace Drewlabs\GCli\Plugins\Laravel\Console\Commands;
 
 use Drewlabs\CodeGenerator\Exceptions\PHPVariableException;
 use Drewlabs\Core\Helpers\Str;
-use Drewlabs\GCli\Plugins\Laravel\ORMModelBuilder;
 use Drewlabs\GCli\Plugins\Laravel\Console\CommandsHelpers;
 use Drewlabs\GCli\Plugins\Laravel\Facade;
-
-use function Drewlabs\GCli\Proxy\ComponentsScriptWriter;
-use function Drewlabs\GCli\Proxy\MVCControllerBuilder;
+use Drewlabs\GCli\Plugins\Laravel\ORMModelBuilder;
 
 use Drewlabs\GCli\Plugins\Laravel\Validation\RulesFactory;
+
+use function Drewlabs\GCli\Proxy\ComponentsScriptWriter;
+
+use function Drewlabs\GCli\Proxy\MVCControllerBuilder;
+
 use Illuminate\Console\Command;
 
 use Illuminate\Container\Container;
@@ -52,7 +54,7 @@ class MakeControllerCommand extends Command
     public function __construct()
     {
         parent::__construct();
-        $this->app = ($this->getLaravel() ?? Container::getInstance());
+        $this->laravel = ($this->getLaravel() ?? Container::getInstance());
     }
 
     public function handle()
@@ -60,7 +62,7 @@ class MakeControllerCommand extends Command
         $name = $this->argument('name') ?? null;
         $model = $this->option('model') ? ORMModelBuilder::defaultClassPath($this->option('model')) : null;
         $namespace = $this->option('namespace') ?? '\\App\\Http\\Controllers';
-        $basePath = $this->app->basePath($this->option('path') ?? 'app');
+        $basePath = $this->laravel->basePath($this->option('path') ?? 'app');
         $service = $this->option('service') ?? null;
         $viewModel = $this->option('viewModel') ?? null;
         $dto = $this->option('dtoClass') ?? null;

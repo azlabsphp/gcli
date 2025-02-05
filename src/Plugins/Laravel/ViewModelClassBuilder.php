@@ -29,10 +29,12 @@ use Drewlabs\Core\Helpers\Str;
 use Drewlabs\GCli\Contracts\ViewModelBuilder as AbstractBuilder;
 use Drewlabs\GCli\Factories\ComponentPath;
 
+use Drewlabs\GCli\Plugins\Laravel\Traits\HasNamespaceAttribute;
+
+use Drewlabs\GCli\Plugins\Laravel\Traits\ViewModelBuilder;
+
 use function Drewlabs\GCli\Proxy\PHPScript;
 
-use Drewlabs\GCli\Plugins\Laravel\Traits\HasNamespaceAttribute;
-use Drewlabs\GCli\Plugins\Laravel\Traits\ViewModelBuilder;
 use Illuminate\Support\Pluralizer;
 
 class ViewModelClassBuilder implements AbstractBuilder
@@ -193,7 +195,7 @@ class ViewModelClassBuilder implements AbstractBuilder
     public function build()
     {
         /**
-         * @var BluePrint|PHPClass
+         * @var Blueprint|PHPClass
          */
         $component = PHPClass($this->name())
             ->asFinal()
@@ -216,7 +218,7 @@ class ViewModelClassBuilder implements AbstractBuilder
 
         if (!$this->isSingleActionValidator) {
             /**
-             * @var BluePrint|PHPClass
+             * @var Blueprint|PHPClass
              */
             $component = $component->addMethod(PHPClassMethod(
                 'updateRules',

@@ -23,7 +23,7 @@ class UniqueKeyConstraint
     /**
      * Class constructor.
      */
-    public function __construct(array $indexes)
+    final public function __construct(array $indexes)
     {
         $this->indexes = $indexes;
     }

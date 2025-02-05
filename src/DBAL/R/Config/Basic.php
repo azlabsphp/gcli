@@ -1,6 +1,5 @@
 <?php
 
-
 declare(strict_types=1);
 
 /*
@@ -25,14 +24,14 @@ class Basic
 
     /**
      * table at the right hand side of the relation.
-     * 
+     *
      * @var string
      */
     private $right;
 
     /**
-     * basic relation name
-     * 
+     * basic relation name.
+     *
      * @var string
      */
     private $name;
@@ -116,7 +115,7 @@ class Basic
             throw new \InvalidArgumentException('1->1 or 1->* relation incorrectly formed, (ex: left_table->right_table)');
         }
         $this->left = $parts[0];
-        list($right, $name) = array_pad(explode(':', $parts[1]), 2, null);
+        [$right, $name] = array_pad(explode(':', $parts[1]), 2, null);
         $this->right = $right;
         $this->name = $name;
     }

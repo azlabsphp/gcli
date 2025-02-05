@@ -23,14 +23,10 @@ final class PolicyConfig
     /** @var string */
     private $path;
 
-
     /**
-     * Class instance initializer
-     * 
-     * @param Builder $builder 
-     * @param string $directory 
-     * @param null|string $domain 
-     * @return void 
+     * Class instance initializer.
+     *
+     * @return void
      */
     public function __construct(
         Builder $builder,
@@ -42,31 +38,23 @@ final class PolicyConfig
     }
 
     /**
-     * return the class path of the model
-     * 
-     * @return string 
+     * return the class path of the model.
      */
     public function getClassPath(): string
     {
         return $this->builder->getClassPath();
     }
 
-
     /**
-     * return the builder instance
-     * 
-     * @return Builder 
+     * return the builder instance.
      */
     public function getBuilder(): Builder
     {
         return $this->builder;
     }
 
-
     /**
-     * return the path where instance source code must be generated
-     * 
-     * @return string 
+     * return the path where instance source code must be generated.
      */
     public function getPath(): string
     {

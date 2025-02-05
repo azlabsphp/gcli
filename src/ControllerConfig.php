@@ -13,9 +13,9 @@ declare(strict_types=1);
 
 namespace Drewlabs\GCli;
 
+use Drewlabs\GCli\Contracts\ControllerBuilder as Builder;
 use Drewlabs\GCli\Contracts\SourceFileInterface;
 use Drewlabs\GCli\Factories\RouteName;
-use Drewlabs\GCli\Contracts\ControllerBuilder  as Builder;
 
 final class ControllerConfig
 {
@@ -26,10 +26,9 @@ final class ControllerConfig
     private $path;
 
     /**
-     * Class constructor
-     * 
-     * @param \Closure(...$args): Builder $builder 
-     * @param string $directory
+     * Class constructor.
+     *
+     * @param \Closure(...$args): Builder $builder
      */
     public function __construct(\Closure $builder, string $directory)
     {
@@ -37,22 +36,18 @@ final class ControllerConfig
         $this->builder = $builder;
     }
 
-
     /**
-     * return the builder instance
-     * 
-     * @return Builder 
+     * return the builder instance.
+     *
+     * @return Builder
      */
     public function getBuilder(): \Closure
     {
         return $this->builder;
     }
 
-
     /**
-     * return the path where instance source code must be generated
-     * 
-     * @return string 
+     * return the path where instance source code must be generated.
      */
     public function getPath(): string
     {

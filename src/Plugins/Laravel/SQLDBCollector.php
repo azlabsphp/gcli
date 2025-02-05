@@ -14,18 +14,16 @@ declare(strict_types=1);
 namespace Drewlabs\GCli\Plugins\Laravel;
 
 use Drewlabs\Core\Helpers\Str;
-use Drewlabs\GCli\Contracts\RulesFactory;
-use Traversable;
+use Drewlabs\GCli\Contracts\ForeignKeyConstraintDefinition as ForeignKey;
 use Drewlabs\GCli\Contracts\ORMModelDefinition;
+use Drewlabs\GCli\Contracts\RulesFactory;
 use Drewlabs\GCli\DBAL\ProvidesTrimTableSchema;
 use Drewlabs\GCli\DBAL\R\Basic;
-use Drewlabs\GCli\DBAL\R\Through;
 use Drewlabs\GCli\DBAL\R\Config\Basic as BasicConfig;
 use Drewlabs\GCli\DBAL\R\Config\Through as ThroughConfig;
-use Illuminate\Support\Pluralizer;
-use InvalidArgumentException;
+use Drewlabs\GCli\DBAL\R\Through;
 use Drewlabs\GCli\DBAL\R\Types;
-use Drewlabs\GCli\Contracts\ForeignKeyConstraintDefinition as ForeignKey;
+use Illuminate\Support\Pluralizer;
 
 final class SQLDBCollector
 {
@@ -74,15 +72,9 @@ final class SQLDBCollector
     private $relations = false;
 
     /**
-     * Class constructor
-     * 
-     * @param array $manyToMany 
-     * @param array $toOnes 
-     * @param array $oneToMany 
-     * @param array $manyThroughs 
-     * @param array $oneThroughs 
-     * @param string|null $schema 
-     * @return void 
+     * Class constructor.
+     *
+     * @return void
      */
     public function __construct(
         array $manyToMany = [],
@@ -100,17 +92,10 @@ final class SQLDBCollector
         $this->schema = $schema;
     }
 
-
     /**
-     * Creates new class instance
-     * 
-     * @param array $manyToMany 
-     * @param array $toOnes 
-     * @param array $oneToMany 
-     * @param array $manyThroughs 
-     * @param array $oneThroughs 
-     * @param string|null $schema 
-     * @return static 
+     * Creates new class instance.
+     *
+     * @return static
      */
     public static function new(
         array $manyToMany = [],
@@ -131,124 +116,120 @@ final class SQLDBCollector
     }
 
     /**
-     * Add a factory function that generates validation rules
-     * 
-     * @param RulesFactory $factory
-     * 
-     * @return static 
+     * Add a factory function that generates validation rules.
+     *
+     * @return static
      */
     public function withValidationFactory(RulesFactory $factory)
     {
         $this->rulesFactory = $factory;
+
         return $this;
     }
 
-
     /**
-     * Provides a directory in which source code must be generated
-     * 
-     * @param string $directory
-     * 
-     * @return static 
+     * Provides a directory in which source code must be generated.
+     *
+     * @return static
      */
     public function inDirectory(string $directory)
     {
         $this->directory = $directory;
+
         return $this;
     }
 
-
     /**
-     * Provides a namespace in which components are to be generated
-     * 
-     * @param string $name 
-     * @return static 
+     * Provides a namespace in which components are to be generated.
+     *
+     * @return static
      */
     public function inNamespace(string $name)
     {
         $this->namespace = $name;
+
         return $this;
     }
 
     /**
-     * Disables authentication integration in module generated source code
-     * 
-     * @return static 
+     * Disables authentication integration in module generated source code.
+     *
+     * @return static
      */
     public function withoutAuth()
     {
         $this->auth = false;
+
         return $this;
     }
 
     /**
-     * Set the namespace in which components are generated
-     * 
-     * @param string|null $domain
-     * 
-     * @return static 
+     * Set the namespace in which components are generated.
+     *
+     * @return static
      */
     public function setDomain(?string $domain = null)
     {
         $this->domain = !empty($domain) ? $domain : $this->domain;
+
         return $this;
     }
 
     /**
-     * Set the schema property used when compiling table name
-     * 
-     * @param string|null $value
-     * 
-     * @return static 
+     * Set the schema property used when compiling table name.
+     *
+     * @return static
      */
     public function useSchema(?string $value = null)
     {
         $this->schema = $value;
+
         return $this;
     }
 
     /**
      * Provides iterator with support for http handlers like controllers, routes, etc...
-     * 
+     *
      * @return static
      */
     public function withHttpHandlers()
     {
         $this->http = true;
+
         return $this;
     }
 
     /**
-     * Provides iterator with support for policy components
-     * 
-     * @return static 
+     * Provides iterator with support for policy components.
+     *
+     * @return static
      */
     public function withPolicies()
     {
         $this->policies = true;
+
         return $this;
     }
 
-
     /**
      * Set the `relations` flag to true to which forces the collector
-     * to add relations to table configuration based on foreign key definition
-     * 
-     * @return static 
+     * to add relations to table configuration based on foreign key definition.
+     *
+     * @return static
      */
     public function withRelations()
     {
         $this->relations = true;
+
         return $this;
     }
 
-
     /**
-     * Creates a db configuration containing the list of tables, foreign and unique keys
-     * 
-     * @param Traversable<ORMModelDefinition> $items
-     * 
-     * @return DBConfig 
+     * Creates a db configuration containing the list of tables, foreign and unique keys.
+     *
+     * @param \Traversable<ORMModelDefinition> $items
+     *
+     * @return DBConfig
      */
     public function collect(\Traversable $items)
     {
@@ -288,7 +269,6 @@ final class SQLDBCollector
         return new DBConfig($tables, $foreignKeys, $uniqueKeys, $pivots);
     }
 
-
     /**
      * Remove the _id suffix from column name.
      *
@@ -300,15 +280,15 @@ final class SQLDBCollector
             substr($column ?? '', 0, \strlen($column ?? '') - \strlen('_id')) : $column;
     }
 
-
     /**
-     * Add relation instance to the table configuration based on foreign key definitions
-     * 
-     * @param array<string,Config> $values 
-     * @param array<ForeignKey> $foreignKeys 
-     * @param string|null $schema 
-     * @return array 
-     * @throws InvalidArgumentException 
+     * Add relation instance to the table configuration based on foreign key definitions.
+     *
+     * @param array<string,Config> $values
+     * @param array<ForeignKey>    $foreignKeys
+     *
+     * @throws \InvalidArgumentException
+     *
+     * @return array
      */
     private function provideRelations(array $values, array $foreignKeys, ?string $schema = null)
     {
@@ -325,18 +305,18 @@ final class SQLDBCollector
 
         foreach ($values as $table => $tableConfig) {
             foreach ($foreignKeys as $foreign) {
-                if (is_null($localColumn = ($foreign->localColumns() ?? [])[0] ?? null)) {
+                if (null === ($localColumn = ($foreign->localColumns() ?? [])[0] ?? null)) {
                     continue;
                 }
-                if (is_null($foreignColumn = ($foreign->getForeignColumns())[0] ?? null)) {
+                if (null === ($foreignColumn = $foreign->getForeignColumns()[0] ?? null)) {
                     continue;
                 }
                 if ($table === $foreign->getLocalTableName()) {
                     $foreignTable = $foreign->getForeignTableName();
-                    if (is_null($foreignTable)) {
+                    if (null === $foreignTable) {
                         continue;
                     }
-                    if (is_null($foreignTableConfig = $values[$foreignTable] ?? null)) {
+                    if (null === ($foreignTableConfig = $values[$foreignTable] ?? null)) {
                         continue;
                     }
 
@@ -345,7 +325,7 @@ final class SQLDBCollector
                     $result = $this->find($ones, static function (BasicConfig $currrent) use ($foreignTable, $table) {
                         return ($currrent->leftTable() === $foreignTable) && ($currrent->rightTable() === $table);
                     });
-                    if (is_null($result)) {
+                    if (null === $result) {
                         $isToMany = true;
                         $result = $this->find($oneToMany, static function (BasicConfig $currrent) use ($foreignTable, $table) {
                             return ($currrent->leftTable() === $foreignTable) && ($currrent->rightTable() === $table);
@@ -373,11 +353,11 @@ final class SQLDBCollector
                     $leftTable = $values[$foreignTable];
                     $rightTable = $values[$table];
 
-                    if (!is_null($rightDefinition = $rightTable->getType())) {
+                    if (null !== ($rightDefinition = $rightTable->getType())) {
                         $basic = $basic->withModuleName($rightDefinition->getModuleName());
                     }
 
-                    if (!is_null($leftDefinition = $leftTable->getType())) {
+                    if (null !== ($leftDefinition = $leftTable->getType())) {
                         $reverse = $reverse->withModuleName($leftDefinition->getModuleName());
                     }
 
@@ -386,15 +366,15 @@ final class SQLDBCollector
                 }
             }
 
-            if (!is_null($t1 = $this->createManyToMany($manyToMany, $table, $values, $pivots, $schema))) {
+            if (null !== ($t1 = $this->createManyToMany($manyToMany, $table, $values, $pivots, $schema))) {
                 $tableConfig->addRelation($t1);
             }
 
-            if (!is_null($t2 = $this->createThrough($manyThroughs, Types::ONE_TO_MANY_THROUGH, $table, $values, $schema))) {
+            if (null !== ($t2 = $this->createThrough($manyThroughs, Types::ONE_TO_MANY_THROUGH, $table, $values, $schema))) {
                 $tableConfig->addRelation($t2);
             }
 
-            if (!is_null($t3 = $this->createThrough($oneThroughs, Types::ONE_TO_ONE_THROUGH, $table, $values, $schema))) {
+            if (null !== ($t3 = $this->createThrough($oneThroughs, Types::ONE_TO_ONE_THROUGH, $table, $values, $schema))) {
                 $tableConfig->addRelation($t3);
             }
         }
@@ -403,15 +383,13 @@ final class SQLDBCollector
     }
 
     /**
-     * Creates a 1 -> t -> 1 or 1 -> t -> * relation instance
-     * 
-     * @param mixed $items 
-     * @param string $type 
-     * @param string $table 
-     * @param array $values 
-     * @param string|null $schema 
-     * @return mixed|array 
-     * @throws InvalidArgumentException 
+     * Creates a 1 -> t -> 1 or 1 -> t -> * relation instance.
+     *
+     * @param mixed $items
+     *
+     * @throws \InvalidArgumentException
+     *
+     * @return mixed|array
      */
     private function createThrough(
         array $items,
@@ -425,18 +403,18 @@ final class SQLDBCollector
             return $currrent->leftTable() === $table;
         }));
 
-        if (is_null($through = $result[0] ?? null)) {
+        if (null === ($through = $result[0] ?? null)) {
             return null;
         }
         $intermediate = $values[$through->intermediateTable()] ?? null;
         $right = $values[$through->rightTable()] ?? null;
 
         if (
-            is_null($intermediate)
-            || is_null($right)
-            || is_null($rightDefinition = $right->getType())
-            || is_null($rightclasspath = $right->getModelConfig()->getClassPath())
-            || is_null($intermediateclasspath = $intermediate->getModelConfig()->getClassPath())
+            null === $intermediate
+            || null === $right
+            || null === ($rightDefinition = $right->getType())
+            || null === ($rightclasspath = $right->getModelConfig()->getClassPath())
+            || null === ($intermediateclasspath = $intermediate->getModelConfig()->getClassPath())
         ) {
             return null;
         }
@@ -461,17 +439,12 @@ final class SQLDBCollector
         return $through->withModuleName($rightDefinition->getModuleName());
     }
 
-
     /**
-     * Creates a * -> t -> * through relation instance
-     * 
-     * @param array $items 
-     * @param string $table 
-     * @param array $values 
-     * @param array &$pivots 
-     * @param string|null $schema 
-     * @return null|Through 
-     * @throws InvalidArgumentException 
+     * Creates a * -> t -> * through relation instance.
+     *
+     * @throws \InvalidArgumentException
+     *
+     * @return Through|null
      */
     private function createManyToMany(
         array $items,
@@ -485,19 +458,19 @@ final class SQLDBCollector
             return $currrent->leftTable() === $table;
         }));
 
-        if (is_null($match = $result[0] ?? null)) {
+        if (null === ($match = $result[0] ?? null)) {
             return null;
         }
         $intermediate = $values[$match->intermediateTable()] ?? null;
         $right = $values[$match->rightTable()];
 
         if (
-            is_null($intermediate)
-            || is_null($right)
-            || is_null($rightclasspath = $right->getModelConfig()->getClassPath())
-            || is_null($rightDefinition = $right->getType())
-            || is_null($throughclasspath = $intermediate->getModelConfig()->getClassPath())
-            || is_null($throughtable = $intermediate->getModelConfig()->getTable())
+            null === $intermediate
+            || null === $right
+            || null === ($rightclasspath = $right->getModelConfig()->getClassPath())
+            || null === ($rightDefinition = $right->getType())
+            || null === ($throughclasspath = $intermediate->getModelConfig()->getClassPath())
+            || null === ($throughtable = $intermediate->getModelConfig()->getTable())
         ) {
             return null;
         }
@@ -576,16 +549,15 @@ final class SQLDBCollector
         }, $array ?? []);
     }
 
-
     /**
-     * Find the first element in the array returns true for the predicate
-     * 
+     * Find the first element in the array returns true for the predicate.
+     *
      * @psalm-template T
+     *
      * @template T
-     * 
-     * @param T[] $values 
-     * @param callable $predicate
-     * 
+     *
+     * @param T[] $values
+     *
      * @return T|null
      */
     private function find(array $values, callable $predicate)
@@ -597,6 +569,7 @@ final class SQLDBCollector
                 break;
             }
         }
+
         return $result;
     }
 }

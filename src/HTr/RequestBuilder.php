@@ -81,7 +81,7 @@ class RequestBuilder
      * @param mixed       $path
      * @param string|null $prefix
      */
-    public function __construct(string $path, string $method = 'GET', $prefix = null, string $name = null, string $description = null)
+    final public function __construct(string $path, string $method = 'GET', $prefix = null, ?string $name = null, ?string $description = null)
     {
         $this->path = $path;
         $this->method = $method;

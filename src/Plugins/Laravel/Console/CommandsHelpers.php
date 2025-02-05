@@ -15,8 +15,8 @@ namespace Drewlabs\GCli\Plugins\Laravel\Console;
 
 use Drewlabs\CodeGenerator\Exceptions\PHPVariableException;
 use Drewlabs\Core\Helpers\Str;
-use Drewlabs\GCli\Plugins\Laravel\ORMModelBuilder;
 use Drewlabs\GCli\Plugins\Laravel\Facade;
+use Drewlabs\GCli\Plugins\Laravel\ORMModelBuilder;
 
 use function Drewlabs\GCli\Proxy\ComponentsScriptWriter;
 
@@ -25,75 +25,72 @@ class CommandsHelpers
     /**
      * @throws UnableToRetrieveMetadataException
      *
-     * @return void
+     * @return string
      */
     public static function createService(string $namespace, string $basePath, ?string $model = null, ?string $class = null)
     {
-        if (null !== $class && !class_exists($class) && !class_exists(ORMModelBuilder::defaultClassPath($class))) {
-            $name = Str::contains($class, '\\') ? Str::afterLast('\\', $class) : $class;
-            $class_name_space = sprintf('\\%s\\Services', static::getBaseNamespace($namespace) ?? 'App');
-            ComponentsScriptWriter($basePath)->write(
-                Facade::buildServiceDefinition(
-                    true,
-                    $name,
-                    $class_name_space,
-                    $model
-                )
-            );
+        $class = is_null($class) ? 'Example' : $class;
+        $name = Str::contains($class, '\\') ? Str::afterLast('\\', $class) : $class;
+        $class_name_space = sprintf('\\%s\\Services', static::getBaseNamespace($namespace) ?? 'App');
+        ComponentsScriptWriter($basePath)->write(
+            Facade::buildServiceDefinition(
+                true,
+                $name,
+                $class_name_space,
+                $model
+            )
+        );
 
-            return sprintf('%s\\%s', $class_name_space, $name);
-        }
+        return sprintf('%s\\%s', $class_name_space, $name);
     }
 
     /**
      * @throws PHPVariableException
      *
-     * @return string|void
+     * @return string
      */
     public static function createDto(string $namespace, string $basePath, ?string $model = null, ?string $class = null, array $attributes = [])
     {
-        if (null !== $class && !class_exists($class) && !class_exists(ORMModelBuilder::defaultClassPath($class))) {
-            $name = Str::contains($class, '\\') ? Str::afterLast('\\', $class) : $class;
-            $class_name_space = sprintf('\\%s\\Dto', static::getBaseNamespace($namespace) ?? 'App');
-            ComponentsScriptWriter($basePath)->write(
-                Facade::buildDtoObjectDefinition(
-                    $attributes ?? [],
-                    [],
-                    $name,
-                    $class_name_space,
-                    $model
-                )
-            );
+        $class = is_null($class) ? 'Example' : $class;
+        $name = Str::contains($class, '\\') ? Str::afterLast('\\', $class) : $class;
+        $class_name_space = sprintf('\\%s\\Dto', static::getBaseNamespace($namespace) ?? 'App');
+        ComponentsScriptWriter($basePath)->write(
+            Facade::buildDtoObjectDefinition(
+                $attributes ?? [],
+                [],
+                $name,
+                $class_name_space,
+                $model
+            )
+        );
 
-            return sprintf('%s\\%s', $class_name_space, $name);
-        }
+        return sprintf('%s\\%s', $class_name_space, $name);
     }
 
     /**
      * @throws PHPVariableException
      *
-     * @return string|void
+     * @return string
      */
     public static function createViewModel(string $namespace, string $basePath, ?string $model = null, ?string $class = null, array $rules = [], array $updateRules = [])
     {
-        if (null !== $class && !class_exists($class) && !class_exists(ORMModelBuilder::defaultClassPath($class))) {
-            $name = Str::contains($class, '\\') ? Str::afterLast('\\', $class) : $class;
-            $class_namespace = sprintf('\\%s\\Http\\ViewModels', static::getBaseNamespace($namespace) ?? 'App');
-            ComponentsScriptWriter($basePath)->write(
-                Facade::buildViewModelDefinition(
-                    false,
-                    $rules ?? [],
-                    $updateRules ?? [],
-                    $name,
-                    $class_namespace,
-                    null,
-                    $model,
-                    true
-                )
-            );
+        $class = is_null($class) ? 'Example' : $class;
+        $name = Str::contains($class, '\\') ? Str::afterLast('\\', $class) : $class;
+        $class_namespace = sprintf('\\%s\\Http\\ViewModels', static::getBaseNamespace($namespace) ?? 'App');
+        ComponentsScriptWriter($basePath)->write(
+            Facade::buildViewModelDefinition(
+                false,
+                $rules ?? [],
+                $updateRules ?? [],
+                $name,
+                $class_namespace,
+                null,
+                $model,
+                true
+            )
+        );
 
-            return sprintf('%s\\%s', $class_namespace, $name);
-        }
+        return sprintf('%s\\%s', $class_namespace, $name);
     }
 
     /**

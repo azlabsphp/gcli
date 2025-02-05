@@ -48,7 +48,7 @@ interface SourceFileInterface extends Writable, Stringable
     /**
      * Returns the content of the source file.
      *
-     * @return NamespaceComponent
+     * @return \Drewlabs\CodeGenerator\Contracts\NamespaceComponent
      */
     public function getContent();
 

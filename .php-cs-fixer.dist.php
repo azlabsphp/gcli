@@ -52,6 +52,9 @@ $rules = [
     'strict_comparison' => true,
     'strict_param' => true,
     'void_return' => false,
+    'visibility_required' => [
+        'elements' =>  ['method', 'property']
+    ]
 ];
 
 

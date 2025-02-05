@@ -26,29 +26,26 @@ use Drewlabs\CodeGenerator\Types\PHPTypesModifiers;
 use Drewlabs\Core\Helpers\Str;
 use Drewlabs\GCli\Contracts\ComponentBuilder as AbstractBuilder;
 use Drewlabs\GCli\Contracts\EloquentORMModelBuilder as AbstractORMModelBuilder;
+use Drewlabs\GCli\Contracts\HasRelations;
 use Drewlabs\GCli\Contracts\ORMColumnDefinition;
 use Drewlabs\GCli\Contracts\ORMModelDefinition;
 use Drewlabs\GCli\Contracts\Pivotable;
 use Drewlabs\GCli\Contracts\ProvidesPropertyAccessors;
-use Drewlabs\GCli\Contracts\HasRelations;
+use Drewlabs\GCli\DBAL\ProvidesTrimTableSchema;
 use Drewlabs\GCli\DBAL\R\Through;
 use Drewlabs\GCli\DBAL\R\Types;
+
 use Drewlabs\GCli\Factories\ComponentPath;
+
+use Drewlabs\GCli\Plugins\Laravel\Traits\HasNamespaceAttribute;
+use Drewlabs\GCli\Plugins\Laravel\Traits\ViewModelBuilder;
 
 use function Drewlabs\GCli\Proxy\PHPScript;
 
-use Drewlabs\GCli\Plugins\Laravel\Traits\HasNamespaceAttribute;
-use Drewlabs\GCli\DBAL\ProvidesTrimTableSchema;
-use Drewlabs\GCli\Plugins\Laravel\Traits\ViewModelBuilder;
 use Illuminate\Database\Eloquent\Model as EloquentModel;
 use Illuminate\Support\Pluralizer;
 
-class ORMModelBuilder implements
-    AbstractORMModelBuilder,
-    AbstractBuilder,
-    HasRelations,
-    ProvidesPropertyAccessors,
-    Pivotable
+class ORMModelBuilder implements AbstractORMModelBuilder, AbstractBuilder, HasRelations, ProvidesPropertyAccessors, Pivotable
 {
     use HasNamespaceAttribute;
     use ProvidesTrimTableSchema;
@@ -350,7 +347,7 @@ class ORMModelBuilder implements
         $component = PHPClass($this->name());
         if ($this->isViewModel) {
             /**
-             * @var BluePrint
+             * @var Blueprint
              */
             $component = $component->addMethod(PHPClassMethod(
                 'rules',
@@ -366,12 +363,12 @@ class ORMModelBuilder implements
                     PHPTypesModifiers::PUBLIC,
                     'Returns a fluent validation rules'
                 )->addContents(
-                    'return ' . PHPVariable('rules', null, $this->rules ?? [])->asRValue()->__toString()
+                    'return '.PHPVariable('rules', null, $this->rules ?? [])->asRValue()->__toString()
                 )
             );
             if (!$this->isSingleActionValidator) {
                 /**
-                 * @var BluePrint|PHPClass
+                 * @var Blueprint|PHPClass
                  */
                 $component = $component
                     ->addImplementation(\Drewlabs\Contracts\Validator\Validatable::class)
@@ -382,7 +379,7 @@ class ORMModelBuilder implements
                             'array<string,string|string[]>',
                             PHPTypesModifiers::PUBLIC,
                             'Returns a fluent validation rules applied during update actions'
-                        )->addContents('return ' . PHPVariable('rules', null, $this->rules ?? [])->asRValue()->__toString())
+                        )->addContents('return '.PHPVariable('rules', null, $this->rules ?? [])->asRValue()->__toString())
                     );
             } else {
                 /**
@@ -393,10 +390,13 @@ class ORMModelBuilder implements
             }
         }
 
-        // Add inputs traits
         if ($this->hasInputsTraits) {
-            /** @var BluePrint */
-            $component = $component->addTrait(\Drewlabs\Core\Validator\Traits\ViewModel::class);
+            foreach (ViewModelClassBuilder::DEFAULT_CLASS_PATHS as $classPath) {
+                $component = $component->addClassPath($classPath);
+            }
+            foreach (ViewModelClassBuilder::DEFAULT_CLASS_TRAITS as $trait) {
+                $component = $component->addTrait($trait);
+            }
         }
 
         // If the generator is configured to provide model relation, the relation is generated
@@ -524,7 +524,7 @@ class ORMModelBuilder implements
 
         // Add implementations
         /**
-         * @var BluePrint
+         * @var Blueprint
          */
         $component = array_reduce(static::CLASS_IMPLEMENTATIONS, static function (Blueprint $carry, $curr) {
             $carry = $carry->addImplementation($curr);
@@ -534,7 +534,7 @@ class ORMModelBuilder implements
 
         // Add Traits
         /**
-         * @var BluePrint
+         * @var Blueprint
          */
         $component = array_reduce(static::CLASS_TRAITS, static function (Blueprint $carry, $curr) {
             $carry = $carry->addTrait($curr);
@@ -544,7 +544,7 @@ class ORMModelBuilder implements
 
         // Add class path
         /**
-         * @var BluePrint
+         * @var Blueprint
          */
         $component = array_reduce(static::CLASS_PATHS, static function (Blueprint $carry, $curr) {
             $carry = $carry->addClassPath($curr);
@@ -593,7 +593,7 @@ class ORMModelBuilder implements
      */
     private function createPropertySetter(string $name, ?string $type = null)
     {
-        return PHPClassMethod(sprintf('set%s', Str::camelize($name)), [PHPFunctionParameter('value', $type)], 'static', 'public', sprintf('Set `%s` property to the parameter value', $name))
+        return PHPClassMethod(sprintf('set%s', Str::camelize($name)), [PHPFunctionParameter('value', $type)], 'static', 'public', sprintf('mutate `%s` property to the parameter value', $name))
             ->addLine(sprintf("\$this->setRawPropertyValue('%s', \$value)", $name))
             ->addLine('return $this');
     }
@@ -605,7 +605,7 @@ class ORMModelBuilder implements
      */
     private function createPropertyGetter(string $name, ?string $type = null)
     {
-        return PHPClassMethod(sprintf('get%s', Str::camelize($name)), [], $type ?? 'mixed', 'public', sprintf('Get `%s` property value', $name))
+        return PHPClassMethod(sprintf('get%s', Str::camelize($name)), [], $type ?? 'mixed', 'public', sprintf('returns `%s` property value', $name))
             ->addLine(sprintf("return \$this->getRawPropertyValue('%s')", $name));
     }
 
@@ -643,7 +643,7 @@ class ORMModelBuilder implements
      *
      * @return Blueprint
      */
-    private function addRelations(BluePrint $component)
+    private function addRelations(Blueprint $component)
     {
         if (empty($this->relations)) {
             return $component;
@@ -668,7 +668,7 @@ class ORMModelBuilder implements
                 continue;
             }
             if (Types::MANY_TO_MANY === $type && $relation instanceof Through) {
-                /** @var BluePrint */
+                /** @var Blueprint */
                 $component = $component->addMethod($this->createManyToManyRelationTemplate($relation, $methods));
                 $this->relationMethods[] = $relation->getName();
                 continue;
@@ -678,7 +678,7 @@ class ORMModelBuilder implements
                 && $relation instanceof Through
             ) {
                 /**
-                 * @var BluePrint
+                 * @var Blueprint
                  */
                 $component = $component->addMethod($this->createThroughRelationTemplate($relation, $methods));
                 $this->relationMethods[] = $relation->getName();
@@ -737,7 +737,7 @@ class ORMModelBuilder implements
      *
      * @return CallableInterface
      */
-    private function createThroughRelationTemplate(\Drewlabs\GCli\DBAL\R\Through $relation, array $methods)
+    private function createThroughRelationTemplate(Through $relation, array $methods)
     {
         $returns = Types::ONE_TO_MANY_THROUGH === $relation->getType() ? \Illuminate\Database\Eloquent\Relations\HasManyThrough::class : \Illuminate\Database\Eloquent\Relations\HasOneThrough::class;
         $left = $relation->getLeftTable();
@@ -776,7 +776,7 @@ class ORMModelBuilder implements
      *
      * @return CallableInterface
      */
-    private function createManyToManyRelationTemplate(\Drewlabs\GCli\DBAL\R\Through $relation, array $methods)
+    private function createManyToManyRelationTemplate(Through $relation, array $methods)
     {
         $returns = \Illuminate\Database\Eloquent\Relations\BelongsToMany::class;
         $left = $relation->getLeftTable();

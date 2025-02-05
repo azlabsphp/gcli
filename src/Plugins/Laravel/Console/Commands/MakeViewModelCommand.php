@@ -13,8 +13,8 @@ declare(strict_types=1);
 
 namespace Drewlabs\GCli\Plugins\Laravel\Console\Commands;
 
-use Drewlabs\GCli\Plugins\Laravel\ORMModelBuilder;
 use Drewlabs\GCli\Plugins\Laravel\Facade;
+use Drewlabs\GCli\Plugins\Laravel\ORMModelBuilder;
 
 use function Drewlabs\GCli\Proxy\ComponentsScriptWriter;
 
@@ -43,7 +43,7 @@ class MakeViewModelCommand extends Command
 
     public function __construct()
     {
-        $this->app = ($this->getLaravel() ?? Container::getInstance());
+        $this->laravel = ($this->getLaravel() ?? Container::getInstance());
         parent::__construct();
     }
 
@@ -53,7 +53,7 @@ class MakeViewModelCommand extends Command
         $name = $this->argument('name') ?? null;
         $model = $this->option('model') ? ORMModelBuilder::defaultClassPath($this->option('model')) : null;
         $namespace = $this->option('namespace') ?? (bool) ($this->option('http')) ? '\\App\\Http\\ViewModels' : '\\App\\ViewModels';
-        $basePath = $this->app->basePath($this->option('path') ?? 'app');
+        $basePath = $this->laravel->basePath($this->option('path') ?? 'app');
         $rules = $this->option('rules') ?? [];
         $updateRules = $this->option('updateRules') ?? [];
         // # End of parameters initialization

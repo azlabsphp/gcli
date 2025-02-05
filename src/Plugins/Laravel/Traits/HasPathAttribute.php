@@ -11,7 +11,7 @@ declare(strict_types=1);
  * file that was distributed with this source code.
  */
 
- namespace Drewlabs\GCli\Plugins\Laravel\Traits;
+namespace Drewlabs\GCli\Plugins\Laravel\Traits;
 
 trait HasPathAttribute
 {

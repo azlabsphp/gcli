@@ -41,7 +41,7 @@ class ServiceProvider extends SupportServiceProvider
                 MakeModelCommand::class,
                 MakeServiceCommand::class,
                 MakeViewModelCommand::class,
-                MakeTsModuleCommand::class
+                MakeTsModuleCommand::class,
             ]);
         }
     }

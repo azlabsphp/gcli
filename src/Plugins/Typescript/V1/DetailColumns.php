@@ -40,7 +40,6 @@ class DetailColumns
         $this->module = $module;
     }
 
-
     public function __toString(): string
     {
         $lines = [

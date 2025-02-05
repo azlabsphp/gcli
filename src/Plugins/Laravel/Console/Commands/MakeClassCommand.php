@@ -41,7 +41,7 @@ class MakeClassCommand extends Command
 
     public function __construct()
     {
-        $this->app = $this->getLaravel() ?? Container::getInstance();
+        $this->laravel = $this->getLaravel() ?? Container::getInstance();
         parent::__construct();
     }
 
@@ -50,7 +50,8 @@ class MakeClassCommand extends Command
         // Parameters initialization
         $name = $this->option('name') ?? null;
         if (null === $name) {
-            return $this->error('Error while building class: name option is required!');
+            $this->error('Error while building class: name option is required!');
+            return;
         }
         $namespace = $this->option('namespace') ?? '\\App';
         $basePath = $this->option('path') ?? 'app';

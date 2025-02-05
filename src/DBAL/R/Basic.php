@@ -1,6 +1,5 @@
 <?php
 
-
 declare(strict_types=1);
 
 /*
@@ -69,14 +68,8 @@ class Basic implements ReversibleRelation
 
     /**
      * Creates an instance of relation class.
-     * 
-     * @param string $name 
-     * @param string $model 
-     * @param string $reference 
-     * @param string $local 
-     * @param string $type 
-     * @param string|null $castclasspath 
-     * @return void 
+     *
+     * @return void
      */
     final public function __construct(
         string $name,
@@ -94,22 +87,20 @@ class Basic implements ReversibleRelation
         $this->castclasspath = $castclasspath;
     }
 
+    public function __toString()
+    {
+        return sprintf('%s', $this->getType());
+    }
+
     public function isInverse(): bool
     {
         return $this->isInverse;
     }
 
     /**
-     * Creates a basic relation instance setting the reverse flag to true
-     * 
-     * @param string $name 
-     * @param string $model 
-     * @param string $reference 
-     * @param string $local 
-     * @param string $type 
-     * @param string|null $castclasspath
-     * 
-     * @return static 
+     * Creates a basic relation instance setting the reverse flag to true.
+     *
+     * @return static
      */
     public static function reverse(...$args)
     {
@@ -122,6 +113,7 @@ class Basic implements ReversibleRelation
     public function withModuleName(string $name)
     {
         $this->module = $name;
+
         return $this;
     }
 
@@ -132,19 +124,13 @@ class Basic implements ReversibleRelation
 
     public function multi(): bool
     {
-        return in_array($this->type, [Types::MANY_TO_MANY, Types::ONE_TO_MANY, Types::ONE_TO_MANY_THROUGH]);
+        return \in_array($this->type, [Types::MANY_TO_MANY, Types::ONE_TO_MANY, Types::ONE_TO_MANY_THROUGH], true);
     }
 
     public function to(): string
     {
-        return strpos($this->model, '\\') !== false ? Str::afterLast('\\', $this->model) : $this->model;
+        return str_contains($this->model, '\\') ? Str::afterLast('\\', $this->model) : $this->model;
     }
-
-    public function __toString()
-    {
-        return sprintf('%s', $this->getType());
-    }
-
 
     public function getName(): string
     {
@@ -180,7 +166,6 @@ class Basic implements ReversibleRelation
     {
         return $this->local;
     }
-
 
     public function getType(): string
     {

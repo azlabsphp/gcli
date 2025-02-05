@@ -79,13 +79,9 @@ class Routes
     }
 
     /**
-     * Write route configuration to disk
-     * 
-     * @param string $basePath 
-     * @param array $definitions 
-     * @param string $filename 
-     * @param bool $partial 
-     * @return Closure(bool $lumen, null|string $prefix = null, null|string $middleware = null, null|Closure $callback = null): void 
+     * Write route configuration to disk.
+     *
+     * @return Closure(bool $lumen, null|string $prefix = null, null|string $middleware = null, null|Closure $callback = null): void
      */
     public static function write(
         string $basePath,

@@ -39,15 +39,15 @@ if (!function_exists('app')) {
      *
      * @param string|null $abstract
      *
-     * @return mixed|\Illuminate\Contracts\Foundation\Application
+     * @return mixed|Illuminate\Contracts\Foundation\Application
      */
     function app($abstract = null, array $parameters = [])
     {
         if (null === $abstract) {
-            return \Illuminate\Container\Container::getInstance();
+            return Illuminate\Container\Container::getInstance();
         }
 
-        return \Illuminate\Container\Container::getInstance()->make($abstract, $parameters);
+        return Illuminate\Container\Container::getInstance()->make($abstract, $parameters);
     }
 }
 
@@ -60,7 +60,7 @@ if (!function_exists('config')) {
      * @param array|string|null $key
      * @param mixed             $default
      *
-     * @return mixed|\Illuminate\Config\Repository
+     * @return mixed|Illuminate\Config\Repository
      */
     function config($key = null, $default = null)
     {

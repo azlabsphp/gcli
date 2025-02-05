@@ -97,22 +97,22 @@ class Types
 
                 $name = $value->getName();
                 if (isset($names[$name])) {
-                    $names[$name] += 1;
+                    ++$names[$name];
                 }
                 $tmpName = $name;
                 $typeName = sprintf('%s', $value->to());
                 $import = sprintf('import { %s } from \'../%s\';', $typeName, str_replace('_', '-', $value->getModuleName() ?? ''));
-                if (!in_array($import, $imports)) {
+                if (!\in_array($import, $imports, true)) {
                     $imports[] = $import;
                 }
                 $type = $value->multi() ? sprintf('BuiltType._array(%s).nullish(),', $typeName) : sprintf('%s.nullish(),', $typeName);
                 if ($this->camelize && (($name = Str::camelize($name, false)) !== $tmpName)) {
                     $mappings[$name] = $tmpName;
                 }
-                if (in_array($name, $defaultProperties)) {
+                if (\in_array($name, $defaultProperties, true)) {
                     $lines[] = '//#TODO: Fix property name to avoid duplicate keys on the object';
                 }
-                $lines[] = sprintf("\t\t%s%s: %s", in_array($name, $defaultProperties) ? '//' : '', isset($names[$name]) ? sprintf("%s_%d", $name, intval($names[$name])) : $name, $type);
+                $lines[] = sprintf("\t\t%s%s: %s", \in_array($name, $defaultProperties, true) ? '//' : '', isset($names[$name]) ? sprintf('%s_%d', $name, (int) $names[$name]) : $name, $type);
                 $names[$name] = 0;
             }
             array_unshift($lines, ...$imports);

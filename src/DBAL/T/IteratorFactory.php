@@ -35,7 +35,7 @@ class IteratorFactory
     /**
      * Create factory class instance.
      */
-    public function __construct(string $namespace, string $schema = null, array $dbOptions, array $tables = [], array $excepts = [])
+    public function __construct(string $namespace, ?string $schema, array $dbOptions, array $tables = [], array $excepts = [])
     {
         $this->namespace = $namespace;
         $this->schema = $schema;

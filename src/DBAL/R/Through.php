@@ -1,6 +1,5 @@
 <?php
 
-
 declare(strict_types=1);
 
 /*
@@ -114,28 +113,6 @@ class Through implements Relation
         $this->castclasspath = $castclasspath;
     }
 
-    
-    public function withModuleName(string $name)
-    {
-        $this->module = $name;
-        return $this;
-    }
-
-    public function getModuleName(): ?string
-    {
-        return $this->module;
-    }
-
-    public function to(): string
-    {
-        return strpos($this->left, '\\') !== false ? Str::afterLast('\\', $this->left) : $this->left;
-    }
-
-    public function multi(): bool
-    {
-        return in_array($this->type, [Types::MANY_TO_MANY, Types::ONE_TO_MANY, Types::ONE_TO_MANY_THROUGH]);
-    }
-
     /**
      * Returns the string representation of the relation.
      *
@@ -146,10 +123,30 @@ class Through implements Relation
         return sprintf('%s', $this->getType());
     }
 
+    public function withModuleName(string $name)
+    {
+        $this->module = $name;
+
+        return $this;
+    }
+
+    public function getModuleName(): ?string
+    {
+        return $this->module;
+    }
+
+    public function to(): string
+    {
+        return str_contains($this->left, '\\') ? Str::afterLast('\\', $this->left) : $this->left;
+    }
+
+    public function multi(): bool
+    {
+        return \in_array($this->type, [Types::MANY_TO_MANY, Types::ONE_TO_MANY, Types::ONE_TO_MANY_THROUGH], true);
+    }
+
     /**
      * name property getter method.
-     *
-     * @return string
      */
     public function getName(): string
     {

@@ -14,6 +14,9 @@ declare(strict_types=1);
 namespace Drewlabs\GCli\Proxy;
 
 use Drewlabs\CodeGenerator\Contracts\Stringable;
+use Drewlabs\GCli\Contracts\ORMModelDefinition;
+use Drewlabs\GCli\IO\ScriptWriter;
+use Drewlabs\GCli\PHPScript;
 use Drewlabs\GCli\Plugins\Laravel\ControllerClassBuilder;
 use Drewlabs\GCli\Plugins\Laravel\DataTransfertClassBuilder;
 use Drewlabs\GCli\Plugins\Laravel\ORMModelBuilder;
@@ -22,9 +25,6 @@ use Drewlabs\GCli\Plugins\Laravel\ServiceClassBuilder;
 use Drewlabs\GCli\Plugins\Laravel\ServiceInterfaceBuilder;
 use Drewlabs\GCli\Plugins\Laravel\ServiceProviderBuilder;
 use Drewlabs\GCli\Plugins\Laravel\ViewModelClassBuilder;
-use Drewlabs\GCli\IO\ScriptWriter;
-use Drewlabs\GCli\Contracts\ORMModelDefinition;
-use Drewlabs\GCli\PHPScript;
 
 /**
  * Provides a proxy function to the {@link ScriptWriter} constructor.
