@@ -10,6 +10,7 @@
         "drewlabs/php-value": "^0.2.5|^0.3",
         "drewlabs/validation": "^0.2.6|^0.3",
         "illuminate/database": "8.0|^9.0|^10.0|^11.0",
+        "phpstan/phpstan": "^2.1",
         "phpunit/phpunit": "^9.5|^10.0"
     },
     "license": "MIT",
@@ -58,7 +59,8 @@
         "drewlabs/laravel-query": "required for eloquent query builder implementation ^0.2.6",
         "drewlabs/laravel-http": "required for laravel http bindings ^0.2.2",
         "drewlabs/validation": "required for validation requirements ^0.2.6",
-        "doctrine/dbal": "required for database tables & indexes resolvers ^4.0"
+        "doctrine/dbal": "required for database tables & indexes resolvers ^4.0",
+        "symfony/console": "required for using symfony console objects"
     },
     "config": {
         "optimize-autoloader": true,

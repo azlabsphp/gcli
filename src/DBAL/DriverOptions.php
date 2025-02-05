@@ -23,7 +23,7 @@ class DriverOptions
      *
      * @return void
      */
-    public function __construct(array $options = [])
+    final public function __construct(array $options = [])
     {
         $this->options = $options ?? [];
     }

@@ -90,17 +90,17 @@ class Through implements Relation
     /**
      * Creates Many through relation instance.
      */
-    public function __construct(
+    final public function __construct(
         string $name,
         string $type,
         string $left,
         string $right,
-        string $through = null,
-        string $leftforeignkey = null,
-        string $rightforeignkey = null,
-        string $leftlocalkey = null,
-        string $rightlocalkey = null,
-        string $castclasspath = null
+        ?string $through = null,
+        ?string $leftforeignkey = null,
+        ?string $rightforeignkey = null,
+        ?string $leftlocalkey = null,
+        ?string $rightlocalkey = null,
+        ?string $castclasspath = null
     ) {
         $this->name = $name;
         $this->type = $type;

@@ -29,7 +29,7 @@ class Options
      *
      * @return void
      */
-    public function __construct(array $options)
+    final public function __construct(array $options)
     {
         $this->options = $options;
     }
@@ -128,7 +128,7 @@ class Options
      *
      * @return self
      */
-    public function merge($value, string $key = null)
+    public function merge($value, ?string $key = null)
     {
         if (null === $key) {
             foreach ($value as $k => $v) {

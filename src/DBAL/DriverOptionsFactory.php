@@ -16,7 +16,7 @@ namespace Drewlabs\GCli\DBAL;
 use Closure;
 use Drewlabs\GCli\Console\Options;
 
-class DriverOptionsFactory
+final class DriverOptionsFactory
 {
 
     /**
@@ -36,7 +36,7 @@ class DriverOptionsFactory
      * @param Closure|null $resolveFn 
      * @return DriverOptions 
      */
-    public function createOptions(Options $options, \Closure $resolveFn = null): DriverOptions
+    public function createOptions(Options $options, ?\Closure $resolveFn = null): DriverOptions
     {
         $resolveFn = $resolveFn ?? static function ($_, $default = null) {
             return $default;

@@ -20,7 +20,7 @@ class ForeignKeyConstraint
     /**
      * Class constructor.
      */
-    public function __construct(array $foreignKeys)
+    final public function __construct(array $foreignKeys)
     {
         $this->foreignKeys = $foreignKeys;
     }

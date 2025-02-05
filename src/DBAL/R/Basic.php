@@ -78,13 +78,13 @@ class Basic implements ReversibleRelation
      * @param string|null $castclasspath 
      * @return void 
      */
-    public function __construct(
+    final public function __construct(
         string $name,
         string $model,
         string $reference,
         string $local,
         string $type = Types::ONE_TO_MANY,
-        string $castclasspath = null
+        ?string $castclasspath = null
     ) {
         $this->name = $name;
         $this->model = $model;

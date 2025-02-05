@@ -21,7 +21,7 @@ use Drewlabs\GCli\Contracts\ORMColumnDefinition as ColumnDefinition;
 use Drewlabs\GCli\Contracts\UniqueKeyConstraintDefinition;
 
 /** @internal */
-class Column implements ColumnDefinition, HasSizeProperty, HasExistConstraint, HasUniqueConstraint
+final class Column implements ColumnDefinition, HasSizeProperty, HasExistConstraint, HasUniqueConstraint
 {
     /** @var string|null */
     private $table;
@@ -65,7 +65,7 @@ class Column implements ColumnDefinition, HasSizeProperty, HasExistConstraint, H
     public function __construct(
         string $name,
         string $type,
-        string $table = null,
+        ?string $table = null,
         $required = false,
         $default = null,
         $unsigned = false,
