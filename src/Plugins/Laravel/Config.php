@@ -314,9 +314,10 @@ class Config implements HasRelations
      */
     private function getModelBuilder(Type $def, ?string $schema = null)
     {
-        $timestamps = Arr::containsAll(array_map(static function ($column) {
+        $names = array_map(static function ($column) {
             return $column->name();
-        }, $columns ?? []), static::DEFAULT_TIMESTAMP_COLUMNS);
+        }, $def->columns() ?? []);
+        $timestamps = Arr::containsAll($names, static::DEFAULT_TIMESTAMP_COLUMNS);
         return EloquentORMModelBuilder($def, $schema)->hasTimestamps($timestamps);
     }
 
