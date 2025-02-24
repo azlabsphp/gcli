@@ -23,7 +23,7 @@ interface ORMColumnDefinition extends Property
     public function getTable();
 
     /**
-     * returns the proiperty `type` definition.
+     * returns the property `type` definition.
      */
     public function type(): string;
 

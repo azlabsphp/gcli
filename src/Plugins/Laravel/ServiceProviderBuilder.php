@@ -34,31 +34,19 @@ class ServiceProviderBuilder implements AbstractBuilder
 {
     use HasNamespaceAttribute;
 
-    /**
-     * class namespace.
-     *
-     * @var string
-     */
+    /** @var string */
     private const __NAMESPACE__ = 'App\\Providers';
 
-    /**
-     * @var string
-     */
-    private const __NAME__ = 'PoliciesServiceProvider';
+    /** @var string */
+    private const __NAME__ = 'ServiceProvider';
 
-    /**
-     * @var string
-     */
+    /** @var string */
     private const __PATH__ = 'Providers/';
 
-    /**
-     * @var array
-     */
+    /** @var array */
     private $policies = [];
 
-    /**
-     * @var array
-     */
+    /** @var array */
     private $bindings = [];
 
     /**

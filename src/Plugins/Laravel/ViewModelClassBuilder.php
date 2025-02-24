@@ -49,9 +49,7 @@ class ViewModelClassBuilder implements AbstractBuilder
      */
     public const DEFAULT_NAMESPACE = 'App\\ViewModels';
 
-    /**
-     * @var string[]
-     */
+    /** @var string[] */
     public const HTTP_CLASS_PATHS = [
         'Drewlabs\\Contracts\\Validator\\ViewModel as AbstractViewModel',
         'Drewlabs\\Laravel\\Http\\Traits\\HttpViewModel as ViewModel',
@@ -64,9 +62,7 @@ class ViewModelClassBuilder implements AbstractBuilder
         'Illuminate\\Http\\Request',
     ];
 
-    /**
-     * @var string[]
-     */
+    /** @var string[] */
     public const HTTP_CLASS_TRAITS = [
         'ViewModel',
         'InteractsWithServerRequest',
@@ -77,9 +73,7 @@ class ViewModelClassBuilder implements AbstractBuilder
         'CreatesFilters',
     ];
 
-    /**
-     * @var string[]
-     */
+    /** @var string[] */
     public const DEFAULT_CLASS_PATHS = [
         'Drewlabs\\Contracts\\Validator\\ViewModel as AbstractViewModel',
         'Drewlabs\\Validation\\Traits\\FilesAttributesAware',
@@ -90,9 +84,7 @@ class ViewModelClassBuilder implements AbstractBuilder
         'Drewlabs\\Validation\\Traits\\ViewModel',
     ];
 
-    /**
-     * @var string[]
-     */
+    /** @var string[] */
     public const DEFAULT_CLASS_TRAITS = [
         'ViewModel',
         'ModelAware',
@@ -102,34 +94,22 @@ class ViewModelClassBuilder implements AbstractBuilder
         'FilesAttributesAware',
     ];
 
-    /**
-     * @var string
-     */
+    /** @var string */
     private const DEFAULT_NAME = 'TestViewModel';
 
-    /**
-     * @var string
-     */
+    /** @var string */
     private const DEFAULT_PATH = 'ViewModels';
 
-    /**
-     * @var bool
-     */
+    /** @var bool */
     private $supportHttp = false;
 
-    /**
-     * @var string
-     */
+    /** @var string */
     private $modelPath;
 
-    /**
-     * @var string
-     */
+    /** @var string */
     private $model;
 
-    /**
-     * @var string
-     */
+    /** @var string */
     private $dtoPath;
 
     /**

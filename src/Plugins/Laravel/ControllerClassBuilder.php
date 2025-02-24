@@ -52,9 +52,7 @@ class ControllerClassBuilder implements AbstractBuilder
         'Drewlabs\\PHPValue\\Utils\\SanitizeCustomProperties',
     ];
 
-    /**
-     * @var string[]
-     */
+    /** @var string[] */
     private const DATABASE_ACTIONS_PATH = [
         'Drewlabs\\Laravel\\Query\\Proxy\\CreateQueryAction',
         'Drewlabs\\Laravel\\Query\\Proxy\\SelectQueryAction',
@@ -62,49 +60,32 @@ class ControllerClassBuilder implements AbstractBuilder
         'Drewlabs\\Laravel\\Query\\Proxy\\DeleteQueryAction',
     ];
 
-    /**
-     * @var string
-     */
+    /** @var string */
     private const USE_QUERY_RESULT_PROXY = 'Drewlabs\\Laravel\\Query\\Proxy\\useMapQueryResult';
 
-    /**
-     * @var string
+    /** @var string
      */
     private const DEFAULT_NAME = 'TestsController';
 
-    /**
-     * @var string
-     */
+    /** @var string */
     private const DEFAULT_PATH = 'Http/Controllers/';
 
-    /**
-     * @var bool
-     */
+    /** @var bool */
     private $providesActions = false;
 
-    /**
-     * @var bool
-     */
+    /** @var bool */
     private $invokable = false;
 
-    /**
-     * @var string
-     */
+    /** @var string */
     private $viewModelName;
 
-    /**
-     * @var string
-     */
+    /** @var string */
     private $dtoName;
 
-    /**
-     * @var string
-     */
+    /** @var string */
     private $serviceName;
 
-    /**
-     * @var string|null
-     */
+    /** @var string|null */
     private $serviceType;
 
     /**
@@ -114,9 +95,7 @@ class ControllerClassBuilder implements AbstractBuilder
      */
     private $classPaths = [];
 
-    /**
-     * @var string
-     */
+    /** @var string */
     private $modelName = 'Test';
 
     /**
@@ -133,14 +112,10 @@ class ControllerClassBuilder implements AbstractBuilder
      */
     private $supportAuth = true;
 
-    /**
-     * @var bool
-     */
+    /** @var bool */
     private $policies = false;
 
-    /**
-     * @var string
-     */
+    /** @var string */
     private $primaryKey = 'id';
 
     /**

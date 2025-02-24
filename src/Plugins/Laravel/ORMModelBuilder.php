@@ -80,9 +80,7 @@ class ORMModelBuilder implements AbstractORMModelBuilder, AbstractBuilder, HasRe
         'Drewlabs\\Laravel\\Query\\Traits\\Queryable',
     ];
 
-    /**
-     * @var string[]
-     */
+    /**  @var string[] */
     public const CLASS_TRAITS = [
         'Queryable',
     ];
@@ -185,11 +183,7 @@ class ORMModelBuilder implements AbstractORMModelBuilder, AbstractBuilder, HasRe
      */
     private $definition;
 
-    /**
-     * List of model relations to provide.
-     *
-     * @var (\Drewlabs\GCli\DBAL\R\Basic|\Drewlabs\GCli\DBAL\R\Through)[]
-     */
+    /** @var (\Drewlabs\GCli\DBAL\R\Basic|\Drewlabs\GCli\DBAL\R\Through)[] */
     private $relations;
 
     /**
@@ -199,9 +193,7 @@ class ORMModelBuilder implements AbstractORMModelBuilder, AbstractBuilder, HasRe
      */
     private $aspivot;
 
-    /**
-     * @var false
-     */
+    /** @var false */
     private $provideAccessors = true;
 
     /**
@@ -817,7 +809,7 @@ class ORMModelBuilder implements AbstractORMModelBuilder, AbstractBuilder, HasRe
     }
 
     /**
-     * Resolve relation name.
+     * resolve relation name.
      *
      * @return string
      */

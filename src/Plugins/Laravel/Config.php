@@ -40,9 +40,6 @@ class Config implements HasRelations
     /** @var array */
     const DEFAULT_TIMESTAMP_COLUMNS = ['created_at', 'updated_at'];
 
-    // /** @var Type */
-    // private $def;
-
     /** @var ModelConfig */
     private $table;
 
