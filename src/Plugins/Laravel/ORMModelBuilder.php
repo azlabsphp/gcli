@@ -14,7 +14,6 @@ declare(strict_types=1);
 namespace Drewlabs\GCli\Plugins\Laravel;
 
 use Drewlabs\CodeGenerator\Contracts\Blueprint;
-use Drewlabs\CodeGenerator\Contracts\CallableInterface;
 
 use function Drewlabs\CodeGenerator\Proxy\PHPClass;
 use function Drewlabs\CodeGenerator\Proxy\PHPClassMethod;
@@ -39,6 +38,7 @@ use Drewlabs\GCli\Factories\ComponentPath;
 use Drewlabs\GCli\Plugins\Laravel\Observers\Observers;
 use Drewlabs\GCli\Plugins\Laravel\Traits\HasNamespaceAttribute;
 use Drewlabs\GCli\Plugins\Laravel\Traits\ViewModelBuilder;
+use Drewlabs\CodeGenerator\Contracts\CallableInterface;
 
 use function Drewlabs\GCli\Proxy\PHPScript;
 
@@ -289,11 +289,10 @@ class ORMModelBuilder implements AbstractORMModelBuilder, AbstractBuilder, HasRe
 
     public function build()
     {
+        $comments = [];
         $component = PHPClass($this->name());
         if ($this->isViewModel) {
-            /**
-             * @var Blueprint
-             */
+            /** @var Blueprint */
             $component = $component->addMethod(PHPClassMethod(
                 'rules',
                 [],
@@ -312,9 +311,7 @@ class ORMModelBuilder implements AbstractORMModelBuilder, AbstractBuilder, HasRe
                 )
             );
             if (!$this->isSingleActionValidator) {
-                /**
-                 * @var Blueprint|PHPClass
-                 */
+                /** @var Blueprint|PHPClass */
                 $component = $component
                     ->addImplementation(\Drewlabs\Contracts\Validator\Validatable::class)
                     ->addMethod(
@@ -327,9 +324,7 @@ class ORMModelBuilder implements AbstractORMModelBuilder, AbstractBuilder, HasRe
                         )->addContents('return ' . PHPVariable('rules', null, $this->rules ?? [])->asRValue()->__toString())
                     );
             } else {
-                /**
-                 * @var Blueprint
-                 */
+                /** @var Blueprint */
                 $component = $component
                     ->addImplementation(\Drewlabs\Contracts\Validator\BaseValidatable::class);
             }
@@ -345,7 +340,7 @@ class ORMModelBuilder implements AbstractORMModelBuilder, AbstractBuilder, HasRe
         }
 
         // If the generator is configured to provide model relation, the relation is generated
-        $component = $this->addRelations($component);
+        $component = $this->addRelations($component, $comments);
 
         $component->setBaseClass(EloquentModel::class)
             ->asFinal()
@@ -403,7 +398,6 @@ class ORMModelBuilder implements AbstractORMModelBuilder, AbstractBuilder, HasRe
             ->addToNamespace($this->namespace_ ?? self::DEFAULT_NAMESPACE);
 
         // #region Add properties setters and getters
-        // TODO : Add these method to a class region instance in future release
         if ($this->provideAccessors) {
             foreach ($this->columns as $column) {
                 if (\in_array($name = $column->name(), array_merge(static::RESERVED_KEYWORDS, [$this->primaryKey ?? 'id']), true)) { // RESERVED_KEYWORDS
@@ -416,7 +410,6 @@ class ORMModelBuilder implements AbstractORMModelBuilder, AbstractBuilder, HasRe
         // #region Add properties setters and getters
 
         // #region add boot method
-
         $boot = PHPClassMethod('boot', [], 'void',  PHPTypesModifiers::PROTECTED, 'Bootstrap the model and its traits.')->asStatic(true)
             ->addLine('parent::boot()')
             ->addLine('');
@@ -504,11 +497,13 @@ class ORMModelBuilder implements AbstractORMModelBuilder, AbstractBuilder, HasRe
         }, $component);
 
         // Add class path
-        /** @var Blueprint */
+        /** @var \Drewlabs\CodeGenerator\Models\PHPClass */
         $component = array_reduce(static::CLASS_PATHS, static function (Blueprint $carry, $curr) {
             $carry = $carry->addClassPath($curr);
             return $carry;
         }, $component);
+
+        $component = $component->addComment($comments);
 
         // Returns the builded component
         return PHPScript(
@@ -601,7 +596,7 @@ class ORMModelBuilder implements AbstractORMModelBuilder, AbstractBuilder, HasRe
      *
      * @return Blueprint
      */
-    private function addRelations(Blueprint $component)
+    private function addRelations(Blueprint $component, array &$comments)
     {
         if (empty($this->relations)) {
             return $component;
@@ -616,18 +611,24 @@ class ORMModelBuilder implements AbstractORMModelBuilder, AbstractBuilder, HasRe
             }
             $type = $relation->getType();
             if (Types::ONE_TO_MANY === $type || Types::ONE_TO_ONE === $type) {
-                $component = $component->addMethod($this->createOneOrManyMethodTemplate($relation, $type, $methods));
+                $method = $this->createOneOrManyMethodTemplate($relation, $type, $methods);
+                $component = $component->addMethod($method);
+                $comments[] = sprintf("@property \\%s%s %s", ltrim($relation->getModel(), '\\'), Types::ONE_TO_MANY === $type ? '[]' : '', $method->getName());
                 $this->relationMethods[] = $relation->getName();
                 continue;
             }
             if (Types::MANY_TO_ONE === $type) {
-                $component = $component->addMethod($this->createBelongsToTemplate($relation, $methods));
+                $method = $this->createBelongsToTemplate($relation, $methods);
+                $component = $component->addMethod($method);
+                $comments[] = sprintf("@property \\%s %s", ltrim($relation->getModel(), '\\'), $method->getName());
                 $this->relationMethods[] = $relation->getName();
                 continue;
             }
             if (Types::MANY_TO_MANY === $type && $relation instanceof Through) {
+                $method = $this->createManyToManyRelationTemplate($relation, $methods);
                 /** @var Blueprint */
-                $component = $component->addMethod($this->createManyToManyRelationTemplate($relation, $methods));
+                $component = $component->addMethod($method);
+                $comments[] = sprintf("@property \\%s[] %s", ltrim($relation->getLeftTable(), '\\'), $method->getName());
                 $this->relationMethods[] = $relation->getName();
                 continue;
             }
@@ -635,8 +636,10 @@ class ORMModelBuilder implements AbstractORMModelBuilder, AbstractBuilder, HasRe
                 \in_array($type, [Types::ONE_TO_MANY_THROUGH, Types::ONE_TO_ONE_THROUGH], true)
                 && $relation instanceof Through
             ) {
+                $method = $this->createThroughRelationTemplate($relation, $methods);
                 /** @var Blueprint */
-                $component = $component->addMethod($this->createThroughRelationTemplate($relation, $methods));
+                $component = $component->addMethod($method);
+                $comments[] = sprintf("@property \\%s%s %s", ltrim($relation->getLeftTable(), '\\'), Types::ONE_TO_MANY_THROUGH === $relation->getType() ? '[]' : '', $method->getName());
                 $this->relationMethods[] = $relation->getName();
                 continue;
             }
@@ -657,11 +660,12 @@ class ORMModelBuilder implements AbstractORMModelBuilder, AbstractBuilder, HasRe
         $reference = $relation->getReference();
         $returns = Types::ONE_TO_MANY === $type ? \Illuminate\Database\Eloquent\Relations\HasMany::class : \Illuminate\Database\Eloquent\Relations\HasOne::class;
         $method = Types::ONE_TO_MANY === $type ? 'hasMany' : 'hasOne';
+        $returnType = "\\$returns<\\$model>";
 
         return PHPClassMethod(
             $this->resolvename($relation->getName(), $methods),
             [],
-            $returns,
+            $returnType,
             'public',
             Types::ONE_TO_MANY === $type ? 'returns an eloquent `has many` relation' : 'returns an eloquent `has one` relation'
         )->addLine("return \$this->$method(\\$model::class, '$local', '$reference')");
@@ -678,14 +682,8 @@ class ORMModelBuilder implements AbstractORMModelBuilder, AbstractBuilder, HasRe
         $local = $relation->getLocal();
         $reference = $relation->getReference();
         $returns = \Illuminate\Database\Eloquent\Relations\BelongsTo::class;
-
-        return PHPClassMethod(
-            $this->resolvename($relation->getName(), $methods),
-            [],
-            $returns,
-            'public',
-            'returns an eloquent `belongs to` relation'
-        )->addLine("return \$this->belongsTo(\\$model::class, '$local', '$reference')");
+        $returnType = "\\$returns<\\$model>";
+        return PHPClassMethod($this->resolvename($relation->getName(), $methods), [], $returnType, 'public', 'returns an eloquent `belongs to` relation')->addLine("return \$this->belongsTo(\\$model::class, '$local', '$reference')");
     }
 
     /**
@@ -702,6 +700,7 @@ class ORMModelBuilder implements AbstractORMModelBuilder, AbstractBuilder, HasRe
         $rightforeignkey = $relation->getRightForeignKey();
         $leftlocalkey = $relation->getLeftLocalKey();
         $rightlocalkey = $relation->getRightLocalKey();
+        $returnType = "\\$returns<\\$left>";
 
         $line = Types::ONE_TO_MANY_THROUGH === $relation->getType() ? "return \$this->hasManyThrough(\\$left::class, \\$right::class, " : "return \$this->hasOneThrough(\\$left::class, \\$right::class, ";
         if ($leftforeignkey) {
@@ -718,13 +717,7 @@ class ORMModelBuilder implements AbstractORMModelBuilder, AbstractBuilder, HasRe
         }
         $line .= ')';
 
-        return PHPClassMethod(
-            $this->resolvename($relation->getName(), $methods),
-            [],
-            $returns,
-            'public',
-            'returns an eloquent `through` relation'
-        )->addLine($line);
+        return PHPClassMethod($this->resolvename($relation->getName(), $methods), [], $returnType, 'public', 'returns an eloquent `through` relation')->addLine($line);
     }
 
     /**
@@ -742,7 +735,9 @@ class ORMModelBuilder implements AbstractORMModelBuilder, AbstractBuilder, HasRe
         $leftlocalkey = $relation->getLeftLocalKey();
         $rightlocalkey = $relation->getRightLocalKey();
         $through = $relation->getThroughTable();
+        $returnType = "\\$returns<\\$left>";
         $line = "return \$this->belongsToMany(\\$left::class, ";
+
         if ($right) {
             $line .= "'$right', ";
         }
@@ -764,12 +759,7 @@ class ORMModelBuilder implements AbstractORMModelBuilder, AbstractBuilder, HasRe
             $line .= "->using(\\$through::class)";
         }
 
-        return PHPClassMethod(
-            $this->resolvename($relation->getName(), $methods),
-            [],
-            $returns,
-            'public'
-        )->addLine($line);
+        return PHPClassMethod($this->resolvename($relation->getName(), $methods), [], $returnType, 'public')->addLine($line);
     }
 
     /**

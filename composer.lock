@@ -68,16 +68,16 @@
         },
         {
             "name": "drewlabs/code-generator",
-            "version": "v0.3.11",
+            "version": "v0.3.20",
             "source": {
                 "type": "git",
                 "url": "https://github.com/azandrew-sidoine/drewlabs-php-code-generator.git",
-                "reference": "b4e8cea3bef1c568dc720fed1522510f0d958216"
+                "reference": "09450ba51bd79ee51fbd1bcfae01d786025a2a78"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/azandrew-sidoine/drewlabs-php-code-generator/zipball/b4e8cea3bef1c568dc720fed1522510f0d958216",
-                "reference": "b4e8cea3bef1c568dc720fed1522510f0d958216",
+                "url": "https://api.github.com/repos/azandrew-sidoine/drewlabs-php-code-generator/zipball/09450ba51bd79ee51fbd1bcfae01d786025a2a78",
+                "reference": "09450ba51bd79ee51fbd1bcfae01d786025a2a78",
                 "shasum": ""
             },
             "require": {
@@ -104,9 +104,9 @@
             ],
             "description": "Simple utility classes for generating PHP classes, methods, properties and interfaces",
             "support": {
-                "source": "https://github.com/azandrew-sidoine/drewlabs-php-code-generator/tree/v0.3.11"
+                "source": "https://github.com/azandrew-sidoine/drewlabs-php-code-generator/tree/v0.3.20"
             },
-            "time": "2025-02-25T13:52:50+00:00"
+            "time": "2025-02-25T16:07:35+00:00"
         },
         {
             "name": "drewlabs/core-helpers",
