@@ -1,23 +1,37 @@
 <?php
 
+declare(strict_types=1);
+
+/*
+ * This file is part of the drewlabs namespace.
+ *
+ * (c) Sidoine Azandrew <azandrewdevelopper@gmail.com>
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
+
 namespace Drewlabs\GCli\Plugins\Laravel;
 
-
-use Drewlabs\GCli\Contracts\ComponentBuilder as AbstractBuilder;
-use Drewlabs\GCli\Factories\ComponentPath;
-use Drewlabs\GCli\Plugins\Laravel\Traits\HasNamespaceAttribute;
 use Drewlabs\CodeGenerator\Contracts\Blueprint;
 use Drewlabs\CodeGenerator\Contracts\FunctionParameterInterface;
-use Drewlabs\CodeGenerator\Types\PHPTypesModifiers;
-use Drewlabs\Core\Helpers\Str;
-use Drewlabs\GCli\Plugins\Laravel\Observers\Event;
-use Illuminate\Foundation\Events\Dispatchable;
-use Illuminate\Queue\SerializesModels;
 
 use function Drewlabs\CodeGenerator\Proxy\PHPClass;
 use function Drewlabs\CodeGenerator\Proxy\PHPClassMethod;
 use function Drewlabs\CodeGenerator\Proxy\PHPClassProperty;
+
+use Drewlabs\CodeGenerator\Types\PHPTypesModifiers;
+use Drewlabs\Core\Helpers\Str;
+use Drewlabs\GCli\Contracts\ComponentBuilder as AbstractBuilder;
+use Drewlabs\GCli\Factories\ComponentPath;
+use Drewlabs\GCli\Plugins\Laravel\Observers\Event;
+
+use Drewlabs\GCli\Plugins\Laravel\Traits\HasNamespaceAttribute;
+
 use function Drewlabs\GCli\Proxy\PHPScript;
+
+use Illuminate\Foundation\Events\Dispatchable;
+use Illuminate\Queue\SerializesModels;
 
 final class EventBuilder implements AbstractBuilder
 {
@@ -53,7 +67,7 @@ final class EventBuilder implements AbstractBuilder
             ->asFinal();
 
         foreach ($this->properties as $property) {
-            $component = $component->addProperty(PHPClassProperty($property->name(), $property->getType(), PHPTypesModifiers::PRIVATE, '', sprintf("class %s property", $property->name())));
+            $component = $component->addProperty(PHPClassProperty($property->name(), $property->getType(), PHPTypesModifiers::PRIVATE, '', sprintf('class %s property', $property->name())));
         }
 
         $component = $component->addClassPath(SerializesModels::class)
@@ -71,7 +85,7 @@ final class EventBuilder implements AbstractBuilder
                 $property->getType() ?? 'mixed',
                 'public',
                 sprintf('returns `%s` property value', $property->name())
-            )->addLine(sprintf("return \$this->%s", $property->name())));
+            )->addLine(sprintf('return $this->%s', $property->name())));
         }
 
         return PHPScript(

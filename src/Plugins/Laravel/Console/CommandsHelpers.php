@@ -16,7 +16,6 @@ namespace Drewlabs\GCli\Plugins\Laravel\Console;
 use Drewlabs\CodeGenerator\Exceptions\PHPVariableException;
 use Drewlabs\Core\Helpers\Str;
 use Drewlabs\GCli\Plugins\Laravel\Facade;
-use Drewlabs\GCli\Plugins\Laravel\ORMModelBuilder;
 
 use function Drewlabs\GCli\Proxy\ComponentsScriptWriter;
 
@@ -29,7 +28,7 @@ class CommandsHelpers
      */
     public static function createService(string $namespace, string $basePath, ?string $model = null, ?string $class = null)
     {
-        $class = is_null($class) ? 'Example' : $class;
+        $class = null === $class ? 'Example' : $class;
         $name = Str::contains($class, '\\') ? Str::afterLast('\\', $class) : $class;
         $class_name_space = sprintf('\\%s\\Services', static::getBaseNamespace($namespace) ?? 'App');
         ComponentsScriptWriter($basePath)->write(
@@ -51,7 +50,7 @@ class CommandsHelpers
      */
     public static function createDto(string $namespace, string $basePath, ?string $model = null, ?string $class = null, array $attributes = [])
     {
-        $class = is_null($class) ? 'Example' : $class;
+        $class = null === $class ? 'Example' : $class;
         $name = Str::contains($class, '\\') ? Str::afterLast('\\', $class) : $class;
         $class_name_space = sprintf('\\%s\\Dto', static::getBaseNamespace($namespace) ?? 'App');
         ComponentsScriptWriter($basePath)->write(
@@ -74,7 +73,7 @@ class CommandsHelpers
      */
     public static function createViewModel(string $namespace, string $basePath, ?string $model = null, ?string $class = null, array $rules = [], array $updateRules = [])
     {
-        $class = is_null($class) ? 'Example' : $class;
+        $class = null === $class ? 'Example' : $class;
         $name = Str::contains($class, '\\') ? Str::afterLast('\\', $class) : $class;
         $class_namespace = sprintf('\\%s\\Http\\ViewModels', static::getBaseNamespace($namespace) ?? 'App');
         ComponentsScriptWriter($basePath)->write(

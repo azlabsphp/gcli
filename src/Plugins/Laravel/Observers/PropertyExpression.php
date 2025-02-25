@@ -1,9 +1,17 @@
 <?php
 
-namespace Drewlabs\GCli\Plugins\Laravel\Observers;
+declare(strict_types=1);
 
-use BadMethodCallException;
-use InvalidArgumentException;
+/*
+ * This file is part of the drewlabs namespace.
+ *
+ * (c) Sidoine Azandrew <azandrewdevelopper@gmail.com>
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
+
+namespace Drewlabs\GCli\Plugins\Laravel\Observers;
 
 final class PropertyExpression
 {
@@ -17,11 +25,9 @@ final class PropertyExpression
     private $condition;
 
     /**
-     * Null property observer expression
-     * 
-     * @param string $property 
-     * @param string $value 
-     * @return void 
+     * Null property observer expression.
+     *
+     * @return void
      */
     public function __construct(string $property, string $value, $condition = null)
     {
@@ -30,53 +36,14 @@ final class PropertyExpression
         $this->condition = $condition;
     }
 
-    public static function create(string $haystack)
-    {
-        if (!empty($params = Expression::new($haystack)->read('set', $offset))) {
-            $next = trim(mb_substr($haystack, $offset + 1));
-            if (empty($next)) {
-                return new self(...$params);
-            }
-
-            if (strtolower($next) === '->null()') {
-                $property = $params[0];
-                $params[] = new PropertyLogicalExpression($property, 'null');
-                return new self(...$params);
-            }
-
-            if (!empty($p = Expression::new($next)->read('->onChange'))) {
-                $params[] = new PropertyChangedLogicalExpression(...$p);
-                return new self(...$params);
-            }
-
-
-            if (!empty($p = Expression::new($next)->read('->if'))) {
-                $params[] = new PropertyLogicalExpression(...$p);
-                return new self(...$params);
-            }
-        }
-
-        throw new BadMethodCallException('set expression not correctly formed, supported syntax is set(property, value)->null()');
-    }
-
-
-    public static function new(string $format, $condition = null)
-    {
-        if ($pos = strpos($format, ',')) {
-            return new static(trim(substr($format, 0, $pos)), trim(substr($format, $pos + 1)), $condition);
-        }
-
-        throw new InvalidArgumentException('Expect the format to contains , seperator between property name and it default value');
-    }
-
     public function __toString(): string
     {
         $lcvalue = strtolower($this->value);
-        if (($lcvalue === 'now' || $lcvalue === 'now()' || $lcvalue === 'datetime' || $lcvalue === 'datetime()')) {
+        if ('now' === $lcvalue || 'now()' === $lcvalue || 'datetime' === $lcvalue || 'datetime()' === $lcvalue) {
             return $this->createExpression($this->property, "date('Y-m-d H:i:s')");
         }
 
-        if (($lcvalue === 'date' || $lcvalue === 'date()')) {
+        if ('date' === $lcvalue || 'date()' === $lcvalue) {
             return $this->createExpression($this->property, "date('Y-m-d H:i:s')");
         }
 
@@ -88,8 +55,9 @@ final class PropertyExpression
                 case 'decimal':
                     $pos_2 = strpos($params, ':');
                     $p = $pos_2 ? trim(substr($params, 0, $pos_2)) : $params;
-                    $precision = $pos_2 ? intval(empty($result = trim(substr($params, $pos_2 + 1))) ? 2 : $result) : 2;
-                    return $this->createExpression($this->property, sprintf("%." . $precision . "f", $p));
+                    $precision = $pos_2 ? (int) (empty($result = trim(substr($params, $pos_2 + 1))) ? 2 : $result) : 2;
+
+                    return $this->createExpression($this->property, sprintf('%.'.$precision.'f', $p));
                 case 'str':
                 case 'string':
                     return $this->createExpression($this->property, sprintf("'%s'", $params));
@@ -107,17 +75,55 @@ final class PropertyExpression
         return $this->createExpression($this->property, $this->value);
     }
 
+    public static function create(string $haystack)
+    {
+        if (!empty($params = Expression::new($haystack)->read('set', $offset))) {
+            $next = trim(mb_substr($haystack, $offset + 1));
+            if (empty($next)) {
+                return new self(...$params);
+            }
+
+            if ('->null()' === strtolower($next)) {
+                $property = $params[0];
+                $params[] = new PropertyLogicalExpression($property, 'null');
+
+                return new self(...$params);
+            }
+
+            if (!empty($p = Expression::new($next)->read('->onChange'))) {
+                $params[] = new PropertyChangedLogicalExpression(...$p);
+
+                return new self(...$params);
+            }
+
+            if (!empty($p = Expression::new($next)->read('->if'))) {
+                $params[] = new PropertyLogicalExpression(...$p);
+
+                return new self(...$params);
+            }
+        }
+
+        throw new \BadMethodCallException('set expression not correctly formed, supported syntax is set(property, value)->null()');
+    }
+
+    public static function new(string $format, $condition = null)
+    {
+        if ($pos = strpos($format, ',')) {
+            return new static(trim(substr($format, 0, $pos)), trim(substr($format, $pos + 1)), $condition);
+        }
+
+        throw new \InvalidArgumentException('Expect the format to contains , seperator between property name and it default value');
+    }
 
     /**
-     * Create expression that set property value if provided value is null
-     * 
-     * @param string $property 
-     * @param mixed $value 
-     * @return string 
+     * Create expression that set property value if provided value is null.
+     *
+     * @param mixed $value
      */
     private function createExpression(string $property, $value): string
     {
-        $condition = is_null($this->condition) ? sprintf("is_null(\$model->getRawPropertyValue('%s'))", $property) : (string)$this->condition;
+        $condition = null === $this->condition ? sprintf("is_null(\$model->getRawPropertyValue('%s'))", $property) : (string) $this->condition;
+
         return sprintf("if (%s) {\n    \$model->setRawPropertyValue('%s', %s); \n}\n", $condition, $property, $value);
     }
 }

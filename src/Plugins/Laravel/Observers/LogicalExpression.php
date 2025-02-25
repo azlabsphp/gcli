@@ -1,10 +1,20 @@
 <?php
 
+declare(strict_types=1);
+
+/*
+ * This file is part of the drewlabs namespace.
+ *
+ * (c) Sidoine Azandrew <azandrewdevelopper@gmail.com>
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
+
 namespace Drewlabs\GCli\Plugins\Laravel\Observers;
 
 final class LogicalExpression
 {
-
     /** @var string */
     private $lvalue;
 
@@ -15,11 +25,11 @@ final class LogicalExpression
     private $operator = '===';
 
     /**
-     * creates new logical expression instance
-     * @param string $lvalue 
-     * @param string|null $value 
-     * @param string $operator 
-     * @return void 
+     * creates new logical expression instance.
+     *
+     * @param string $operator
+     *
+     * @return void
      */
     public function __construct(string $lvalue, ?string $value = null, $operator = '===')
     {
@@ -30,23 +40,23 @@ final class LogicalExpression
 
     public function __toString(): string
     {
-        if (is_null($this->value)) {
+        if (null === $this->value) {
             return sprintf("!is_null(\$model->getRawPropertyValue('%s'))", $this->lvalue);
         }
 
-        if (strtolower($this->value) === 'null') {
+        if ('null' === strtolower($this->value)) {
             return sprintf("is_null(\$model->getRawPropertyValue('%s'))", $this->lvalue);
         }
 
-        $op = $this->operator === '=' || $this->operator === '==' ? '===' : $this->operator;
-        return sprintf("%s %s %s", $this->createLValueExpression($this->value, sprintf("\$model->getRawPropertyValue('%s')", $this->lvalue)), $op, $this->createRValueExpression($this->value));
+        $op = '=' === $this->operator || '==' === $this->operator ? '===' : $this->operator;
+
+        return sprintf('%s %s %s', $this->createLValueExpression($this->value, sprintf("\$model->getRawPropertyValue('%s')", $this->lvalue)), $op, $this->createRValueExpression($this->value));
     }
 
     /**
-     * creates an expression at the left of the operator
-     * 
-     * @param string $value 
-     * @return string 
+     * creates an expression at the left of the operator.
+     *
+     * @return string
      */
     private function createLValueExpression(string $value, string $expression)
     {
@@ -56,18 +66,18 @@ final class LogicalExpression
             switch (strtolower($op)) {
                 case 'float':
                 case 'decimal':
-                    return "floatval(" . $expression . ")";
+                    return 'floatval('.$expression.')';
                 case 'int':
-                    return "intval(" . $expression . ")";
+                    return 'intval('.$expression.')';
                 case 'str':
                 case 'string':
-                    return "strval(" . $expression . ")";
+                    return 'strval('.$expression.')';
                 case 'upper':
-                    return "\strtoupper(" . $expression . ")";
+                    return "\strtoupper(".$expression.')';
                 case 'lower':
-                    return "\strtolower(" . $expression . ")";
+                    return "\strtolower(".$expression.')';
                 case 'date':
-                    return "strtotime(" . $expression . ")";
+                    return 'strtotime('.$expression.')';
                 default:
                     return $value;
             }
@@ -77,10 +87,9 @@ final class LogicalExpression
     }
 
     /**
-     * creates an expression at the right of the operator
-     * 
-     * @param string $value 
-     * @return string 
+     * creates an expression at the right of the operator.
+     *
+     * @return string
      */
     private function createRValueExpression(string $value)
     {
@@ -92,10 +101,11 @@ final class LogicalExpression
                 case 'decimal':
                     $pos_2 = strpos($params, ':');
                     $p = $pos_2 ? trim(substr($params, 0, $pos_2)) : $params;
-                    $precision = $pos_2 ? intval(empty($result = trim(substr($params, $pos_2 + 1))) ? 2 : $result) : 2;
-                    return sprintf("%." . $precision . "f", $p);
+                    $precision = $pos_2 ? (int) (empty($result = trim(substr($params, $pos_2 + 1))) ? 2 : $result) : 2;
+
+                    return sprintf('%.'.$precision.'f', $p);
                 case 'int':
-                    return sprintf("%s", intval($params));
+                    return sprintf('%s', (int) $params);
                 case 'str':
                 case 'string':
                     return sprintf("'%s'", $params);
@@ -109,6 +119,7 @@ final class LogicalExpression
                     return $value;
             }
         }
+
         return $value;
     }
 }

@@ -15,7 +15,7 @@ namespace Drewlabs\GCli\Plugins\Laravel\Traits;
 
 trait HasNameAttribute
 {
-    /**  @var string */
+    /** @var string */
     private $name;
 
     public function setName(string $value)

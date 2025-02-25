@@ -23,6 +23,7 @@ use function Drewlabs\CodeGenerator\Proxy\PHPFunctionParameter;
 use Drewlabs\CodeGenerator\Types\PHPTypesModifiers;
 use Drewlabs\Core\Helpers\Str;
 use Drewlabs\GCli\Contracts\DtoBuilder as AbstractBuilder;
+use Drewlabs\GCli\DBAL\Types;
 use Drewlabs\GCli\Factories\ComponentPath;
 
 use Drewlabs\GCli\Plugins\Laravel\Traits\HasNamespaceAttribute;
@@ -311,9 +312,9 @@ class DataTransfertClassBuilder implements AbstractBuilder
 
         // Add getter methods
         $component = $component->addMethod(PHPClassMethod('getCasts', [], 'array', 'public', 'returns properties cast definitions')->addLine('return $this->__CASTS__ ?? []'))
-            ->addMethod(PHPClassMethod('setCasts', [PHPFunctionParameter('values', 'array')], 'string[]', 'public', 'set properties cast definitions')->addLine('$this->__CASTS__ = $values ?? $this->__CASTS__ ?? []')->addLine('return $this'))
+            ->addMethod(PHPClassMethod('setCasts', [PHPFunctionParameter('values', 'array')], 'self', 'public', 'set properties cast definitions')->addLine('$this->__CASTS__ = $values ?? $this->__CASTS__ ?? []')->addLine('')->addLine('return $this'))
             ->addMethod(PHPClassMethod('getHidden', [], 'string[]', 'public', 'returns the list of hidden properties')->addLine('return $this->__HIDDEN__ ?? []'))
-            ->addMethod(PHPClassMethod('setHidden', [PHPFunctionParameter('values', 'array')], 'string[]', 'public', 'set properties hidden properties')->addLine('$this->__HIDDEN__ = $values')->addLine('return $this'));
+            ->addMethod(PHPClassMethod('setHidden', [PHPFunctionParameter('values', 'array')], 'self', 'public', 'set properties hidden properties')->addLine('$this->__HIDDEN__ = $values')->addLine('')->addLine('return $this'));
 
         // Returns the builded component
         return PHPScript(
@@ -351,29 +352,12 @@ class DataTransfertClassBuilder implements AbstractBuilder
         return $attributes;
     }
 
-    private function getPHPType(string $type)
-    {
-        switch (strtolower($type)) {
-            case 'bigint':
-            case 'integer':
-            case 'integer':
-                return 'int';
-            case 'string':
-            case 'datetime':
-                return 'string';
-            case 'decimal':
-                return 'float';
-            default:
-                return 'mixed';
-        }
-    }
-
     private function buildPropertiesTypeComments(array $properties = [], bool $camelize = false)
     {
         $comments = [];
         foreach ($properties as $key => $value) {
             $name = str_contains($value, ':') ? Str::before(':', $value) : $value;
-            $comments[] = '@property '.$this->getPHPType($name).' '.($camelize ? Str::camelize(trim($key), false) : $key);
+            $comments[] = '@property '.Types::new($name)->toPHPType().' '.($camelize ? Str::camelize(trim($key), false) : $key);
         }
 
         return $comments;

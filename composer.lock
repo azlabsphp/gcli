@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "98fc243c74b7356b82ba236964febdc2",
+    "content-hash": "e08ac779a93681466030acd73d725991",
     "packages": [
         {
             "name": "brick/math",
@@ -68,16 +68,16 @@
         },
         {
             "name": "drewlabs/code-generator",
-            "version": "v0.3.20",
+            "version": "v0.3.21",
             "source": {
                 "type": "git",
                 "url": "https://github.com/azandrew-sidoine/drewlabs-php-code-generator.git",
-                "reference": "09450ba51bd79ee51fbd1bcfae01d786025a2a78"
+                "reference": "d55de4257661638d5b3ff73d4893931c430ede69"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/azandrew-sidoine/drewlabs-php-code-generator/zipball/09450ba51bd79ee51fbd1bcfae01d786025a2a78",
-                "reference": "09450ba51bd79ee51fbd1bcfae01d786025a2a78",
+                "url": "https://api.github.com/repos/azandrew-sidoine/drewlabs-php-code-generator/zipball/d55de4257661638d5b3ff73d4893931c430ede69",
+                "reference": "d55de4257661638d5b3ff73d4893931c430ede69",
                 "shasum": ""
             },
             "require": {
@@ -104,9 +104,9 @@
             ],
             "description": "Simple utility classes for generating PHP classes, methods, properties and interfaces",
             "support": {
-                "source": "https://github.com/azandrew-sidoine/drewlabs-php-code-generator/tree/v0.3.20"
+                "source": "https://github.com/azandrew-sidoine/drewlabs-php-code-generator/tree/v0.3.21"
             },
-            "time": "2025-02-25T16:07:35+00:00"
+            "time": "2025-02-25T16:53:23+00:00"
         },
         {
             "name": "drewlabs/core-helpers",

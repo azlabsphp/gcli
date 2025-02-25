@@ -51,6 +51,7 @@ class MakeClassCommand extends Command
         $name = $this->option('name') ?? null;
         if (null === $name) {
             $this->error('Error while building class: name option is required!');
+
             return;
         }
         $namespace = $this->option('namespace') ?? '\\App';

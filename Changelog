@@ -72,3 +72,7 @@
 
 - Registered TsModule command library
 - Added TsModuleCommand console application to service provider commands
+
+# >= 0.3.2x [2025-02-25]
+
+- Added event, listeners and model observers source code generator

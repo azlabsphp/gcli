@@ -60,7 +60,7 @@ class Config
             '',
             '// Exported types declarations',
             'export * from \'./form\';',
-            sprintf('export * from \'./types\';'),
+            'export * from \'./types\';',
         ];
 
         return implode("\n", $lines);

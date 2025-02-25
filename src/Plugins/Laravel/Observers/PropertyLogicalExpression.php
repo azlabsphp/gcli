@@ -1,5 +1,16 @@
 <?php
 
+declare(strict_types=1);
+
+/*
+ * This file is part of the drewlabs namespace.
+ *
+ * (c) Sidoine Azandrew <azandrewdevelopper@gmail.com>
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
+
 namespace Drewlabs\GCli\Plugins\Laravel\Observers;
 
 final class PropertyLogicalExpression
@@ -14,12 +25,9 @@ final class PropertyLogicalExpression
     private $operator = '===';
 
     /**
-     * property change event trigger expression
-     * 
-     * @param string $property 
-     * @param string $value 
-     * @param string $operator 
-     * @return void 
+     * property change event trigger expression.
+     *
+     * @return void
      */
     public function __construct(string $property, ?string $value = null, string $operator = '===')
     {
@@ -31,6 +39,7 @@ final class PropertyLogicalExpression
     public function __toString(): string
     {
         $expression = new LogicalExpression($this->property, $this->value, $this->operator);
+
         return $expression->__toString();
     }
 }

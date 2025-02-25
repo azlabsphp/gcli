@@ -1,17 +1,31 @@
 <?php
 
+declare(strict_types=1);
+
+/*
+ * This file is part of the drewlabs namespace.
+ *
+ * (c) Sidoine Azandrew <azandrewdevelopper@gmail.com>
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
+
 namespace Drewlabs\GCli\Plugins\Laravel;
 
-use Drewlabs\GCli\Contracts\ComponentBuilder as AbstractBuilder;
-use Drewlabs\GCli\Factories\ComponentPath;
-use Drewlabs\GCli\Plugins\Laravel\Traits\HasNamespaceAttribute;
 use Drewlabs\CodeGenerator\Contracts\Blueprint;
-use Drewlabs\Core\Helpers\Str;
-use Drewlabs\GCli\Plugins\Laravel\Observers\Listener;
 
 use function Drewlabs\CodeGenerator\Proxy\PHPClass;
 use function Drewlabs\CodeGenerator\Proxy\PHPClassMethod;
 use function Drewlabs\CodeGenerator\Proxy\PHPFunctionParameter;
+
+use Drewlabs\Core\Helpers\Str;
+use Drewlabs\GCli\Contracts\ComponentBuilder as AbstractBuilder;
+
+use Drewlabs\GCli\Factories\ComponentPath;
+use Drewlabs\GCli\Plugins\Laravel\Observers\Listener;
+use Drewlabs\GCli\Plugins\Laravel\Traits\HasNamespaceAttribute;
+
 use function Drewlabs\GCli\Proxy\PHPScript;
 
 final class ListenerBuilder implements AbstractBuilder
@@ -46,7 +60,7 @@ final class ListenerBuilder implements AbstractBuilder
                             ->addConstructor()
                             ->addToNamespace($this->namespace_ ?? self::__NAMESPACE__)
                             ->asFinal();
-                            
+
         if ($isClasspath = Str::contains(rtrim($classPath = $this->listener->getEvent()->getClasspath(), '\\'), '\\')) {
             $component = $component->addClassPath($classPath);
         }
@@ -54,7 +68,7 @@ final class ListenerBuilder implements AbstractBuilder
         $paramType = $classPath;
         if ($isClasspath) {
             $values = explode('\\', rtrim($classPath, '\\'));
-            $paramType = $values[count($values) - 1];
+            $paramType = $values[\count($values) - 1];
         }
 
         $component = $component->addMethod(PHPClassMethod('handle', [PHPFunctionParameter('e', $paramType)], 'void', 'public', 'Handle the event.'));

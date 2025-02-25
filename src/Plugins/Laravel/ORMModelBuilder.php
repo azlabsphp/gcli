@@ -15,10 +15,13 @@ namespace Drewlabs\GCli\Plugins\Laravel;
 
 use Drewlabs\CodeGenerator\Contracts\Blueprint;
 
+use Drewlabs\CodeGenerator\Contracts\CallableInterface;
+
 use function Drewlabs\CodeGenerator\Proxy\PHPClass;
 use function Drewlabs\CodeGenerator\Proxy\PHPClassMethod;
 use function Drewlabs\CodeGenerator\Proxy\PHPClassProperty;
 use function Drewlabs\CodeGenerator\Proxy\PHPFunctionParameter;
+
 use function Drewlabs\CodeGenerator\Proxy\PHPVariable;
 
 use Drewlabs\CodeGenerator\Types\PHPTypesModifiers;
@@ -32,13 +35,12 @@ use Drewlabs\GCli\Contracts\Pivotable;
 use Drewlabs\GCli\Contracts\ProvidesPropertyAccessors;
 use Drewlabs\GCli\DBAL\ProvidesTrimTableSchema;
 use Drewlabs\GCli\DBAL\R\Through;
-use Drewlabs\GCli\DBAL\R\Types;
 
+use Drewlabs\GCli\DBAL\R\Types;
 use Drewlabs\GCli\Factories\ComponentPath;
 use Drewlabs\GCli\Plugins\Laravel\Observers\Observers;
 use Drewlabs\GCli\Plugins\Laravel\Traits\HasNamespaceAttribute;
 use Drewlabs\GCli\Plugins\Laravel\Traits\ViewModelBuilder;
-use Drewlabs\CodeGenerator\Contracts\CallableInterface;
 
 use function Drewlabs\GCli\Proxy\PHPScript;
 
@@ -60,7 +62,7 @@ class ORMModelBuilder implements AbstractORMModelBuilder, AbstractBuilder, HasRe
     /** @var string */
     public const DEFAULT_PATH = 'Models';
 
-    /**  @var string[] */
+    /** @var string[] */
     public const CLASS_PATHS = [
         'Drewlabs\\PHPValue\\Contracts\\Adaptable',
         'Drewlabs\\Query\\Contracts\\Queryable as AbstractQueryable',
@@ -68,7 +70,7 @@ class ORMModelBuilder implements AbstractORMModelBuilder, AbstractBuilder, HasRe
         'Drewlabs\\Laravel\\Query\\Traits\\Queryable',
     ];
 
-    /**  @var string[] */
+    /** @var string[] */
     public const CLASS_TRAITS = [
         'Queryable',
     ];
@@ -134,10 +136,10 @@ class ORMModelBuilder implements AbstractORMModelBuilder, AbstractBuilder, HasRe
     /** @var array List of eloquent relation methods. */
     private $relationMethods = [];
 
-    /**  @var false Specify that the model act like a view model. */
+    /** @var false Specify that the model act like a view model. */
     private $isViewModel = false;
 
-    /**  @var ORMModelDefinition */
+    /** @var ORMModelDefinition */
     private $definition;
 
     /** @var (\Drewlabs\GCli\DBAL\R\Basic|\Drewlabs\GCli\DBAL\R\Through)[] */
@@ -307,7 +309,7 @@ class ORMModelBuilder implements AbstractORMModelBuilder, AbstractBuilder, HasRe
                     PHPTypesModifiers::PUBLIC,
                     'Returns a fluent validation rules'
                 )->addContents(
-                    'return ' . PHPVariable('rules', null, $this->rules ?? [])->asRValue()->__toString()
+                    'return '.PHPVariable('rules', null, $this->rules ?? [])->asRValue()->__toString()
                 )
             );
             if (!$this->isSingleActionValidator) {
@@ -321,7 +323,7 @@ class ORMModelBuilder implements AbstractORMModelBuilder, AbstractBuilder, HasRe
                             'array<string,string|string[]>',
                             PHPTypesModifiers::PUBLIC,
                             'Returns a fluent validation rules applied during update actions'
-                        )->addContents('return ' . PHPVariable('rules', null, $this->rules ?? [])->asRValue()->__toString())
+                        )->addContents('return '.PHPVariable('rules', null, $this->rules ?? [])->asRValue()->__toString())
                     );
             } else {
                 /** @var Blueprint */
@@ -410,35 +412,35 @@ class ORMModelBuilder implements AbstractORMModelBuilder, AbstractBuilder, HasRe
         // #region Add properties setters and getters
 
         // #region add boot method
-        $boot = PHPClassMethod('boot', [], 'void',  PHPTypesModifiers::PROTECTED, 'Bootstrap the model and its traits.')->asStatic(true)
+        $boot = PHPClassMethod('boot', [], 'void', PHPTypesModifiers::PROTECTED, 'Bootstrap the model and its traits.')->asStatic(true)
             ->addLine('parent::boot()')
             ->addLine('');
 
         foreach (self::OBSERVERS as $value) {
-            if ($observers = Observers::getInstance()->get(sprintf("%s.%s", $this->table, $value))) {
-                $boot->addLine(sprintf("parent::%s(function(self \$model) {", $value));
+            if ($observers = Observers::getInstance()->get(sprintf('%s.%s', $this->table, $value))) {
+                $boot->addLine(sprintf('parent::%s(function(self $model) {', $value));
                 foreach ($observers as $expression) {
-                    $items = array_map(function ($item) {
-                        return sprintf("    %s", $item);
-                    }, explode(PHP_EOL, strval($expression)));
+                    $items = array_map(static function ($item) {
+                        return sprintf('    %s', $item);
+                    }, explode(\PHP_EOL, (string) $expression));
                     foreach ($items as $item) {
                         $boot->addLine(rtrim($item, " \n\r\t\v\0;"));
                     }
                 }
-                $boot->addLine(sprintf("});"));
+                $boot->addLine('});');
                 continue;
             }
-            if ($observers = Observers::getInstance()->get(sprintf("%s.%s", self::trimschema($this->table, $this->schema), $value))) {
-                $boot->addLine(sprintf("parent::%s(function(self \$model) {", $value));
+            if ($observers = Observers::getInstance()->get(sprintf('%s.%s', self::trimschema($this->table, $this->schema), $value))) {
+                $boot->addLine(sprintf('parent::%s(function(self $model) {', $value));
                 foreach ($observers as $expression) {
-                    $items = array_map(function ($item) {
-                        return sprintf("    %s", $item);
-                    }, explode(PHP_EOL, strval($expression)));
+                    $items = array_map(static function ($item) {
+                        return sprintf('    %s', $item);
+                    }, explode(\PHP_EOL, (string) $expression));
                     foreach ($items as $item) {
                         $boot->addLine(rtrim($item, " \n\r\t\v\0;"));
                     }
                 }
-                $boot->addLine(sprintf("});"));
+                $boot->addLine('});');
                 continue;
             }
         }
@@ -486,6 +488,7 @@ class ORMModelBuilder implements AbstractORMModelBuilder, AbstractBuilder, HasRe
         /** @var Blueprint */
         $component = array_reduce(static::CLASS_IMPLEMENTATIONS, static function (Blueprint $carry, $curr) {
             $carry = $carry->addImplementation($curr);
+
             return $carry;
         }, $component);
 
@@ -493,6 +496,7 @@ class ORMModelBuilder implements AbstractORMModelBuilder, AbstractBuilder, HasRe
         /** @var Blueprint */
         $component = array_reduce(static::CLASS_TRAITS, static function (Blueprint $carry, $curr) {
             $carry = $carry->addTrait($curr);
+
             return $carry;
         }, $component);
 
@@ -500,6 +504,7 @@ class ORMModelBuilder implements AbstractORMModelBuilder, AbstractBuilder, HasRe
         /** @var \Drewlabs\CodeGenerator\Models\PHPClass */
         $component = array_reduce(static::CLASS_PATHS, static function (Blueprint $carry, $curr) {
             $carry = $carry->addClassPath($curr);
+
             return $carry;
         }, $component);
 
@@ -575,7 +580,7 @@ class ORMModelBuilder implements AbstractORMModelBuilder, AbstractBuilder, HasRe
      */
     private function setComponentBaseDefinitions($schema, $table, $name)
     {
-        $table = is_null($table) ? (!is_null($name) ? Str::snakeCase(Pluralizer::plural($name)) : null) : $table;
+        $table = null === $table ? (null !== $name ? Str::snakeCase(Pluralizer::plural($name)) : null) : $table;
         if ($table) {
             $this->setTableName($table);
         }
@@ -613,14 +618,14 @@ class ORMModelBuilder implements AbstractORMModelBuilder, AbstractBuilder, HasRe
             if (Types::ONE_TO_MANY === $type || Types::ONE_TO_ONE === $type) {
                 $method = $this->createOneOrManyMethodTemplate($relation, $type, $methods);
                 $component = $component->addMethod($method);
-                $comments[] = sprintf("@property \\%s%s %s", ltrim($relation->getModel(), '\\'), Types::ONE_TO_MANY === $type ? '[]' : '', $method->getName());
+                $comments[] = sprintf('@property \\%s%s %s', ltrim($relation->getModel(), '\\'), Types::ONE_TO_MANY === $type ? '[]' : '', $method->getName());
                 $this->relationMethods[] = $relation->getName();
                 continue;
             }
             if (Types::MANY_TO_ONE === $type) {
                 $method = $this->createBelongsToTemplate($relation, $methods);
                 $component = $component->addMethod($method);
-                $comments[] = sprintf("@property \\%s %s", ltrim($relation->getModel(), '\\'), $method->getName());
+                $comments[] = sprintf('@property \\%s %s', ltrim($relation->getModel(), '\\'), $method->getName());
                 $this->relationMethods[] = $relation->getName();
                 continue;
             }
@@ -628,7 +633,7 @@ class ORMModelBuilder implements AbstractORMModelBuilder, AbstractBuilder, HasRe
                 $method = $this->createManyToManyRelationTemplate($relation, $methods);
                 /** @var Blueprint */
                 $component = $component->addMethod($method);
-                $comments[] = sprintf("@property \\%s[] %s", ltrim($relation->getLeftTable(), '\\'), $method->getName());
+                $comments[] = sprintf('@property \\%s[] %s', ltrim($relation->getLeftTable(), '\\'), $method->getName());
                 $this->relationMethods[] = $relation->getName();
                 continue;
             }
@@ -639,7 +644,7 @@ class ORMModelBuilder implements AbstractORMModelBuilder, AbstractBuilder, HasRe
                 $method = $this->createThroughRelationTemplate($relation, $methods);
                 /** @var Blueprint */
                 $component = $component->addMethod($method);
-                $comments[] = sprintf("@property \\%s%s %s", ltrim($relation->getLeftTable(), '\\'), Types::ONE_TO_MANY_THROUGH === $relation->getType() ? '[]' : '', $method->getName());
+                $comments[] = sprintf('@property \\%s%s %s', ltrim($relation->getLeftTable(), '\\'), Types::ONE_TO_MANY_THROUGH === $relation->getType() ? '[]' : '', $method->getName());
                 $this->relationMethods[] = $relation->getName();
                 continue;
             }
@@ -683,6 +688,7 @@ class ORMModelBuilder implements AbstractORMModelBuilder, AbstractBuilder, HasRe
         $reference = $relation->getReference();
         $returns = \Illuminate\Database\Eloquent\Relations\BelongsTo::class;
         $returnType = "\\$returns<\\$model>";
+
         return PHPClassMethod($this->resolvename($relation->getName(), $methods), [], $returnType, 'public', 'returns an eloquent `belongs to` relation')->addLine("return \$this->belongsTo(\\$model::class, '$local', '$reference')");
     }
 

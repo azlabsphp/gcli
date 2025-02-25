@@ -59,6 +59,7 @@ class MakeModelCommand extends Command
     {
         if (null === ($table = $this->option('table') ?? null)) {
             $this->error('Model generator requires at least the table name');
+
             return;
         }
         // Parameters initialization

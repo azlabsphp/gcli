@@ -216,7 +216,7 @@ class ViewModelClassBuilder implements AbstractBuilder
                  */
                 $component = $component->addProperty(
                     PHPClassProperty(
-                        'model_',
+                        'model',
                         PHPTypes::STRING,
                         PHPTypesModifiers::PRIVATE,
                         $this->model.'::class',
@@ -226,13 +226,12 @@ class ViewModelClassBuilder implements AbstractBuilder
                 $component = $component->addClassPath($this->modelPath);
             }
 
+            // #Remove dependency this class in future release if not required
             if ($this->dtoPath) {
-                /**
-                 * @var Blueprint
-                 */
+                /** @var Blueprint */
                 $component = $component->addProperty(
                     PHPClassProperty(
-                        'dtoclass_',
+                        'dtoclass',
                         PHPTypes::STRING,
                         PHPTypesModifiers::PRIVATE,
                         Str::afterLast('\\', $this->dtoPath).'::class',
@@ -266,7 +265,7 @@ class ViewModelClassBuilder implements AbstractBuilder
                 ['$this->bootInstance($request)']
             )->addMethod(
                 PHPClassMethod('getModel', [], 'string', 'public', 'returns the model class')
-                    ->addLine('return $this->model_')
+                    ->addLine('return $this->model')
             )
                 ->addMethod(
                     PHPClassMethod('getColumns', [], 'array', 'public', 'returns the list of queried columns')
@@ -294,7 +293,7 @@ class ViewModelClassBuilder implements AbstractBuilder
             $component = $component->addConstructor(
                 [PHPConstructorParameter('inputs', 'array', [])->asOptional(), PHPConstructorParameter('files', 'array', [])->asOptional()],
                 ['$this->set($inputs)', '$this->files($files)']
-            )->addMethod(PHPClassMethod('getModel', [], 'string', 'public', 'returns the model class')->addLine('return $this->model_'));
+            )->addMethod(PHPClassMethod('getModel', [], 'string', 'public', 'returns the model class')->addLine('return $this->model'));
         }
 
         // Returns the builded component

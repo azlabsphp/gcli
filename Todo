@@ -51,3 +51,9 @@
 ## 20240516 (v0.3.x)
 
 - Move source code for generating laravel project components to laravel plugin [x]
+
+## 20250225 (v0.4.x)
+
+- Use new PHP `fn` closure in when generating code []
+- Drop support for PHP < 7.4 by generating PHP8 compatible code []
+- Add a `DTOClass::useBuilder()` implementation to dto classes []

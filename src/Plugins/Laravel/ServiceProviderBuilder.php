@@ -15,15 +15,18 @@ namespace Drewlabs\GCli\Plugins\Laravel;
 
 use Drewlabs\CodeGenerator\Contracts\Blueprint;
 use Drewlabs\CodeGenerator\Helpers\Str;
-use Drewlabs\CodeGenerator\Types\PHPTypesModifiers;
-use Drewlabs\GCli\Contracts\ComponentBuilder as AbstractBuilder;
-use Drewlabs\GCli\Factories\ComponentPath;
-use Drewlabs\GCli\Plugins\Laravel\Traits\HasNamespaceAttribute;
-use Drewlabs\GCli\Plugins\Laravel\Observers\Event;
 
 use function Drewlabs\CodeGenerator\Proxy\PHPClass;
 use function Drewlabs\CodeGenerator\Proxy\PHPClassMethod;
 use function Drewlabs\CodeGenerator\Proxy\PHPClassProperty;
+
+use Drewlabs\CodeGenerator\Types\PHPTypesModifiers;
+use Drewlabs\GCli\Contracts\ComponentBuilder as AbstractBuilder;
+
+use Drewlabs\GCli\Factories\ComponentPath;
+use Drewlabs\GCli\Plugins\Laravel\Observers\Event;
+use Drewlabs\GCli\Plugins\Laravel\Traits\HasNamespaceAttribute;
+
 use function Drewlabs\GCli\Proxy\PHPScript;
 
 class ServiceProviderBuilder implements AbstractBuilder
@@ -87,15 +90,15 @@ class ServiceProviderBuilder implements AbstractBuilder
     }
 
     /**
-     * add event listeners to the service provider
-     * 
-     * @param array $events 
-     * @return static 
+     * add event listeners to the service provider.
+     *
+     * @return static
      */
     public function withEvents(array $events)
     {
         $self = clone $this;
         $self->events = $events;
+
         return $self;
     }
 
@@ -135,11 +138,11 @@ class ServiceProviderBuilder implements AbstractBuilder
             ->addLine('parent::register()')
             ->addLine('')
             ->addContents(implode(\PHP_EOL, array_map(static function ($binding) use ($values) {
-                return '$this->app->bind(' . $binding . '::class, ' . $values[$binding] . '::class);';
+                return '$this->app->bind('.$binding.'::class, '.$values[$binding].'::class);';
             }, array_keys($values))));
-            
+
         if ($this->routeFilePath) {
-            $routeFilePath = Str::endsWith($this->routeFilePath, '.php') ? $this->routeFilePath : ($this->routeFilePath . '.php');
+            $routeFilePath = Str::endsWith($this->routeFilePath, '.php') ? $this->routeFilePath : ($this->routeFilePath.'.php');
             $registerMethod = $registerMethod->addLine(implode(\PHP_EOL, [
                 '',
                 "\t\t// Register domain routes",

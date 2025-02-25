@@ -45,8 +45,6 @@ class Cache
     }
 
     /**
-     * @param Cacheable $value
-     *
      * @return mixed
      */
     public function dump(Cacheable $value)
