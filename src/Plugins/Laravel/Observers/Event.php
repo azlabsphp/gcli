@@ -3,7 +3,9 @@
 namespace Drewlabs\GCli\Plugins\Laravel\Observers;
 
 use Drewlabs\CodeGenerator\Contracts\FunctionParameterInterface;
-use Drewlabs\CodeGenerator\Models\PHPFunctionParameter;
+use Drewlabs\CodeGenerator\Models\PHPConstructorParameter;
+use Drewlabs\GCli\Contracts\ComponentBuilder;
+use Drewlabs\GCli\Plugins\Laravel\EventBuilder;
 
 final class Event
 {
@@ -11,10 +13,10 @@ final class Event
     private $name;
 
     /** @var string */
-    private $namespace = 'App\\Events';
+    private $namespace = 'App';
 
     /** @var FunctionParameterInterface[] */
-    private $params;
+    private $params = [];
 
     /**
      * creates event class instance
@@ -24,10 +26,10 @@ final class Event
      * @param null|string $namespace 
      * @return void 
      */
-    public function __construct(string $name, $params = null, ?string $namespace = null)
+    public function __construct(string $name, $params = null, ?string $namespace = 'App')
     {
         $this->name = $name;
-        $this->namespace = $namespace ?? 'App\\Events';
+        $this->namespace = $namespace ?? 'App';
         if (!is_null($params)) {
             $params = is_string($params) ? explode(',', $params) : (array)$params;
             foreach ($params as $p) {
@@ -37,7 +39,7 @@ final class Event
                 }
                 $p = trim(strval($p));
                 $pos = strpos($p, ':');
-                $this->params[] = new PHPFunctionParameter(trim(substr($p, 0, $pos)), trim(substr($p, $pos + 1)));
+                $this->params[] = new PHPConstructorParameter(trim(substr($p, 0, $pos)), trim(substr($p, $pos + 1)));
             }
         }
     }
@@ -49,7 +51,7 @@ final class Event
      */
     public function getClasspath(): string
     {
-        return sprintf("%s\\%s", $this->namespace, $this->name);
+        return sprintf("\\%s\\%s", rtrim($this->getNamespace(), '\\'), $this->name);
     }
 
     /**
@@ -69,7 +71,7 @@ final class Event
      */
     public function getNamespace(): string
     {
-        return $this->namespace;
+        return sprintf("%s\\%s", rtrim($this->namespace, '\\'), 'Events');
     }
 
     /**
@@ -80,5 +82,26 @@ final class Event
     public function getParams(): array
     {
         return $this->params ?? [];
+    }
+
+    /**
+     * returns the event listener instance
+     * 
+     * @return Listener 
+     */
+    public function getListener(): Listener
+    {
+        return new Listener($this);
+    }
+
+    /**
+     * returns event component builder instance
+     * 
+     * @param null|string $path 
+     * @return ComponentBuilder 
+     */
+    public function getBuilder(?string $path = null): ComponentBuilder
+    {
+        return new EventBuilder($this, $path);
     }
 }

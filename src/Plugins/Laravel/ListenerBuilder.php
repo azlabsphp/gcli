@@ -7,6 +7,7 @@ use Drewlabs\GCli\Factories\ComponentPath;
 use Drewlabs\GCli\Plugins\Laravel\Traits\HasNamespaceAttribute;
 use Drewlabs\CodeGenerator\Contracts\Blueprint;
 use Drewlabs\Core\Helpers\Str;
+use Drewlabs\GCli\Plugins\Laravel\Observers\Listener;
 
 use function Drewlabs\CodeGenerator\Proxy\PHPClass;
 use function Drewlabs\CodeGenerator\Proxy\PHPClassMethod;
@@ -18,37 +19,41 @@ final class ListenerBuilder implements AbstractBuilder
     use HasNamespaceAttribute;
 
     /** @var string */
-    private const __NAMESPACE__ = 'App\\Listener';
+    private const __NAMESPACE__ = 'App\\Listeners';
 
     /** @var string */
     private const __NAME__ = 'ExampleEventListener';
 
     /** @var string */
-    private const __PATH__ = 'app/Listeners/';
+    private const __PATH__ = 'app/Listeners';
 
-    /** @var string */
-    private $event;
+    /** @var Listener */
+    private $listener;
 
-    public function __construct(string $event, string $name, ?string $namespace = null, ?string $path = null)
+    public function __construct(Listener $listener, ?string $path = null)
     {
-        $this->setName($name ?? self::__NAME__);
+        $this->setName($listener->getName() ?? self::__NAME__);
+        $this->setNamespace($listener->getNamespace() ?? self::__NAMESPACE__);
         $this->setWritePath($path ?? self::__PATH__);
-        $this->setNamespace($namespace ?? self::__NAMESPACE__);
-        $this->event = $event;
+        $this->listener = $listener;
     }
 
     public function build()
     {
-
         /** @var Blueprint */
-        $component = PHPClass($this->name())->withPromotedProperties()->addConstructor()->asFinal();
-        if ($isClasspath = Str::contains(rtrim($this->event, '\\'), '\\')) {
-            $component = $component->addClassPath($this->event);
+        $component = PHPClass($this->name())
+                            ->withPromotedProperties()
+                            ->addConstructor()
+                            ->addToNamespace($this->namespace_ ?? self::__NAMESPACE__)
+                            ->asFinal();
+                            
+        if ($isClasspath = Str::contains(rtrim($classPath = $this->listener->getEvent()->getClasspath(), '\\'), '\\')) {
+            $component = $component->addClassPath($classPath);
         }
 
-        $paramType = $this->event;
+        $paramType = $classPath;
         if ($isClasspath) {
-            $values = explode('\\', rtrim($this->event, '\\'));
+            $values = explode('\\', rtrim($classPath, '\\'));
             $paramType = $values[count($values) - 1];
         }
 

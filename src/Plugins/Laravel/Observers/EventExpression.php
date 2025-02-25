@@ -26,7 +26,7 @@ final class EventExpression
      * @param \Stringable $trigger 
      * @return void 
      */
-    public function __construct(string $event, ?array $params = null, string $namespace = '\\App\\Events', $trigger = null)
+    public function __construct(string $event, ?array $params = null, string $namespace = 'App', $trigger = null)
     {
         $this->condition = $trigger;
         $items = [];
@@ -80,7 +80,7 @@ final class EventExpression
         $this->formatters = $expressions;
     }
 
-    public static function create(string $haystack, string $namespace = '\\App\\Events')
+    public static function create(string $haystack, string $namespace = 'App')
     {
         if (!empty($params = Expression::new($haystack)->read('dispatch', $offset))) {
             $next = trim(mb_substr($haystack, $offset + 1));

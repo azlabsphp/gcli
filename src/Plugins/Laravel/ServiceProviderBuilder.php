@@ -15,19 +15,15 @@ namespace Drewlabs\GCli\Plugins\Laravel;
 
 use Drewlabs\CodeGenerator\Contracts\Blueprint;
 use Drewlabs\CodeGenerator\Helpers\Str;
+use Drewlabs\CodeGenerator\Types\PHPTypesModifiers;
+use Drewlabs\GCli\Contracts\ComponentBuilder as AbstractBuilder;
+use Drewlabs\GCli\Factories\ComponentPath;
+use Drewlabs\GCli\Plugins\Laravel\Traits\HasNamespaceAttribute;
+use Drewlabs\GCli\Plugins\Laravel\Observers\Event;
 
 use function Drewlabs\CodeGenerator\Proxy\PHPClass;
 use function Drewlabs\CodeGenerator\Proxy\PHPClassMethod;
-
 use function Drewlabs\CodeGenerator\Proxy\PHPClassProperty;
-
-use Drewlabs\CodeGenerator\Types\PHPTypesModifiers;
-
-use Drewlabs\GCli\Contracts\ComponentBuilder as AbstractBuilder;
-use Drewlabs\GCli\Factories\ComponentPath;
-
-use Drewlabs\GCli\Plugins\Laravel\Traits\HasNamespaceAttribute;
-
 use function Drewlabs\GCli\Proxy\PHPScript;
 
 class ServiceProviderBuilder implements AbstractBuilder
@@ -49,12 +45,11 @@ class ServiceProviderBuilder implements AbstractBuilder
     /** @var array */
     private $bindings = [];
 
-    /**
-     * Domain route file path.
-     *
-     * @var string
-     */
+    /** @var string domain route file path. */
     private $routeFilePath;
+
+    /** @var Event[] */
+    private $events;
 
     /**
      * Creates new class instance.
@@ -91,20 +86,40 @@ class ServiceProviderBuilder implements AbstractBuilder
         return $self;
     }
 
+    /**
+     * add event listeners to the service provider
+     * 
+     * @param array $events 
+     * @return static 
+     */
+    public function withEvents(array $events)
+    {
+        $self = clone $this;
+        $self->events = $events;
+        return $self;
+    }
+
     public function build()
     {
-        /**
-         * @var Blueprint
-         */
+        /** @var Blueprint */
         $component = PHPClass($this->name());
         $component = $component = $component->asFinal()
             ->setBaseClass('BaseServiceProvider')
             ->addToNamespace($this->namespace_ ?? self::__NAMESPACE__);
-        $classPaths = empty($this->policies) ? ['Illuminate\\Support\\ServiceProvider as BaseServiceProvider'] : ['Illuminate\\Support\\Facades\\Gate', 'Illuminate\\Support\\ServiceProvider as BaseServiceProvider'];
-        foreach ($classPaths ?? [] as $value) {
-            /**
-             * @var Blueprint
-             */
+
+        $imports = [];
+        if (empty($this->events)) {
+            $imports[] = 'Illuminate\\Support\\ServiceProvider as BaseServiceProvider';
+        } else {
+            $imports[] = class_exists('\\Laravel\\Lumen\\Providers\\EventServiceProvider') ? 'Laravel\\Lumen\\Providers\\EventServiceProvider as BaseServiceProvider' : 'Illuminate\\Foundation\\Support\\Providers\\EventServiceProvider as BaseServiceProvider';
+        }
+
+        if (!empty($this->policies)) {
+            $imports[] = 'Illuminate\\Support\\Facades\\Gate';
+        }
+
+        foreach ($imports ?? [] as $value) {
+            /** @var Blueprint */
             $component = $component->addClassPath($value);
         }
         $values = [];
@@ -117,11 +132,11 @@ class ServiceProviderBuilder implements AbstractBuilder
         }
 
         $registerMethod = PHPClassMethod('register', [], 'void', PHPTypesModifiers::PUBLIC, ['Register application services.'])
-        ->addContents(implode(\PHP_EOL, array_map(static function ($binding) use ($values) {
-            return '$this->app->bind('.$binding.'::class, '.$values[$binding].'::class);';
-        }, array_keys($values))));
+            ->addContents(implode(\PHP_EOL, array_map(static function ($binding) use ($values) {
+                return '$this->app->bind(' . $binding . '::class, ' . $values[$binding] . '::class);';
+            }, array_keys($values))));
         if ($this->routeFilePath) {
-            $routeFilePath = Str::endsWith($this->routeFilePath, '.php') ? $this->routeFilePath : ($this->routeFilePath.'.php');
+            $routeFilePath = Str::endsWith($this->routeFilePath, '.php') ? $this->routeFilePath : ($this->routeFilePath . '.php');
             $registerMethod = $registerMethod->addLine(implode(\PHP_EOL, [
                 '',
                 "\t\t// Register domain routes",
@@ -136,6 +151,15 @@ class ServiceProviderBuilder implements AbstractBuilder
             ]));
         }
         $component = $component->addMethod($registerMethod);
+
+        // Add event listeners
+        if ($this->events) {
+            $events = [];
+            foreach ($this->events as $e) {
+                $events[$e->getClasspath()] = [$e->getListener()->getClasspath()];
+            }
+            $component = $component->addProperty(PHPClassProperty('listen', 'array', PHPTypesModifiers::PROTECTED, $events, ['event listener mappings for the application.']));
+        }
 
         // Boot method
         $bootMethod = PHPClassMethod('boot', [], 'void', PHPTypesModifiers::PUBLIC, ['Boot application services.']);

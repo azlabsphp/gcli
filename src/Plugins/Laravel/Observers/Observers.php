@@ -2,6 +2,8 @@
 
 namespace Drewlabs\GCli\Plugins\Laravel\Observers;
 
+use BadMethodCallException;
+
 final class Observers
 {
     /** @var self */
@@ -9,6 +11,9 @@ final class Observers
 
     /**  @var array<string,array<\Stringable>> */
     private $observers = [];
+
+    /** @var Event[] */
+    private $events = [];
 
     /** @constructor */
     private function __construct() {}
@@ -26,15 +31,20 @@ final class Observers
         return static::$instance;
     }
 
-    public function configure(array $observers)
+    /**
+     * configure a list of observers from the provided array for a given namespace
+     * @param array $observers 
+     * @param string $namespace 
+     * @return void 
+     * @throws BadMethodCallException 
+     */
+    public function configure(array $observers, string $namespace = 'App')
     {
         foreach ($observers as $name => $model) {
             if (!is_array($model)) {
                 continue;
             }
-            printf("model: %s\n", $name);
             foreach ($model as $observer => $expressions) {
-                printf("observer: %s\n", $observer);
                 $expressions = is_array($expressions) ? $expressions : [$expressions];
                 foreach ($expressions as $expression) {
                     if (!is_string($expression)) {
@@ -48,12 +58,11 @@ final class Observers
                     }
 
                     if (mb_substr(trim($expression), 0, strlen('dispatch(')) === 'dispatch(') {
-                        printf("Expression: %s\n", $expression);
-                        $e = EventExpression::create($expression);
+                        $e = EventExpression::create($expression, $namespace);
+                        $this->events[] = $e->getEvent();
                         $this->addObserver($name . "." . $observer, $e);
                         continue;
                     }
-
                     // if required, add support for other expression parsers
                 }
             }
@@ -67,7 +76,7 @@ final class Observers
      * @param mixed $expression 
      * @return void 
      */
-    public function addObserver(string $event, $expression)
+    private function addObserver(string $event, $expression)
     {
         if (array_key_exists($event, $this->observers)) {
             $this->observers[$event][] = $expression;
@@ -83,15 +92,24 @@ final class Observers
      */
     public function getObservers()
     {
-        printf("Reading observers....\n");
         return $this->observers;
+    }
+
+    /**
+     * returns the list of namespace events
+     * 
+     * @return Event[] 
+     */
+    public function getEvents(): array
+    {
+        return $this->events;
     }
 
     /**
      * get an observer matching the provided name parameter
      * 
      * @param string $name 
-     * @return Stringable|null 
+     * @return \Stringable[]|null 
      */
     public function get(string $name)
     {

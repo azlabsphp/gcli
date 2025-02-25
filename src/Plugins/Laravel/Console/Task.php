@@ -26,6 +26,7 @@ use Drewlabs\GCli\DBAL\R\Types;
 use Drewlabs\GCli\HTr\RouteRequestBodyMap;
 use Drewlabs\GCli\Plugins\G;
 use Drewlabs\GCli\Plugins\Laravel\DBConfig;
+use Drewlabs\GCli\Plugins\Laravel\Observers\Observers;
 use Drewlabs\GCli\Plugins\Laravel\Routes;
 
 use function Drewlabs\GCli\Proxy\ComponentsScriptWriter;
@@ -276,7 +277,7 @@ class Task
                 $serviceProviderBuilder = MVCServiceProviderBuilder(
                     $policies ?? [],
                     $bindings ?? [],
-                    sprintf('%s%s', $namespace, $subPackage ? trim(sprintf('\\%s', "$subPackage")) : ''),
+                    sprintf('%s%s', $namespace, $subPackage ? trim(sprintf('\\%s', "$subPackage")) : '\\Providers'),
                     implode(\DIRECTORY_SEPARATOR, [$directory, $subPackage ? sprintf('%s', "$subPackage/") : 'Providers']),
                     $subPackage ? 'ServiceProvider' : null,
                 );
@@ -285,9 +286,23 @@ class Task
                 if (!\in_array($routingfilename, ['api', 'web', 'api.php', 'web.php'], true)) {
                     $serviceProviderBuilder = $serviceProviderBuilder->withDomainRouting($routingfilename);
                 }
+
+                // Add observers events
+                $serviceProviderBuilder = $serviceProviderBuilder->withEvents(Observers::getInstance()->getEvents());
+
                 static::writeComponentSourceCode($directory, self::resolveWritable($serviceProviderBuilder), $onExistsCallback);
                 $message = [sprintf("Please add [\%s::class] to the list of application service providers.\n", $serviceProviderBuilder->getClassPath())];
             }
+
+            if (!empty($events = Observers::getInstance()->getEvents())) {
+                foreach ($events as $e) {
+                    $eventBuilder = $e->getBuilder(implode(\DIRECTORY_SEPARATOR, [$directory, $subPackage ? sprintf('%s', "$subPackage/Events") : 'Events']));
+                    $listenerBuilder = $e->getListener()->getBuilder(implode(\DIRECTORY_SEPARATOR, [$directory, $subPackage ? sprintf('%s', "$subPackage/Listeners") : 'Listeners']));
+                    static::writeComponentSourceCode($directory, self::resolveWritable($eventBuilder), $onExistsCallback);
+                    static::writeComponentSourceCode($directory, self::resolveWritable($listenerBuilder), $onExistsCallback);
+                }
+            }
+
             if ((null !== $indicator) && ($indicator instanceof Progress)) {
                 $indicator->finish();
             }
@@ -369,13 +384,12 @@ class Task
      */
     private static function writeComponentSourceCode($path, Writable $writable, ?callable $callback = null)
     {
-        /**
-         * @var ComponentsScriptWriterClass
-         */
+        /** @var ComponentsScriptWriterClass */
         $instance = ComponentsScriptWriter($path);
         if (!$instance->fileExists($writable)) {
             return $instance->write($writable);
         }
+
         if (!isset($callback) || (isset($callback) && true === $callback($writable))) {
             return $instance->write($writable);
         }

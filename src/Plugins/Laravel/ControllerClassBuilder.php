@@ -261,7 +261,6 @@ class ControllerClassBuilder implements AbstractBuilder
         // #region Add class paths
         foreach (static::CLASS_PATHS as $classPath) {
             $component = $component->addClassPath($classPath);
-            // code...
         }
         // #endregion Add class paths
 
@@ -270,9 +269,7 @@ class ControllerClassBuilder implements AbstractBuilder
             $component = $component->addFunctionPath(self::USE_QUERY_RESULT_PROXY);
         }
         foreach ($this->classPaths ?? [] as $value) {
-            /**
-             * @var Blueprint
-             */
+            /** @var Blueprint */
             $component = $component->addClassPath($value);
         }
         if ($this->serviceName) {

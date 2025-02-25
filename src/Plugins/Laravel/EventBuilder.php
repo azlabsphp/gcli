@@ -8,12 +8,15 @@ use Drewlabs\GCli\Factories\ComponentPath;
 use Drewlabs\GCli\Plugins\Laravel\Traits\HasNamespaceAttribute;
 use Drewlabs\CodeGenerator\Contracts\Blueprint;
 use Drewlabs\CodeGenerator\Contracts\FunctionParameterInterface;
+use Drewlabs\CodeGenerator\Types\PHPTypesModifiers;
 use Drewlabs\Core\Helpers\Str;
+use Drewlabs\GCli\Plugins\Laravel\Observers\Event;
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
 
 use function Drewlabs\CodeGenerator\Proxy\PHPClass;
 use function Drewlabs\CodeGenerator\Proxy\PHPClassMethod;
+use function Drewlabs\CodeGenerator\Proxy\PHPClassProperty;
 use function Drewlabs\GCli\Proxy\PHPScript;
 
 final class EventBuilder implements AbstractBuilder
@@ -42,18 +45,24 @@ final class EventBuilder implements AbstractBuilder
 
     public function build()
     {
-
         /** @var Blueprint */
         $component = PHPClass($this->name())
-                                ->withPromotedProperties()
-                                ->asFinal()
-                                ->addConstructor($this->properties);
+            ->withPromotedProperties()
+            ->addConstructor($this->properties)
+            ->addToNamespace($this->namespace_ ?? self::__NAMESPACE__)
+            ->asFinal();
 
-        $component = $component->addClassPath(Dispatchable::class)
-                                ->addClassPath(SerializesModels::class);
+        foreach ($this->properties as $property) {
+            $component = $component->addProperty(PHPClassProperty($property->name(), $property->getType(), PHPTypesModifiers::PRIVATE, '', sprintf("class %s property", $property->name())));
+        }
 
-        $component = $component->addTrait(Dispatchable::class)
-                               ->addTrait(SerializesModels::class);
+        $component = $component->addClassPath(SerializesModels::class)
+            ->addTrait(SerializesModels::class);
+
+        if (class_exists(Dispatchable::class)) {
+            $component = $component->addClassPath(Dispatchable::class)
+                ->addTrait(Dispatchable::class);
+        }
 
         foreach ($this->properties as $property) {
             $component = $component->addMethod(PHPClassMethod(

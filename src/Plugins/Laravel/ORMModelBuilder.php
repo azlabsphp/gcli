@@ -36,7 +36,7 @@ use Drewlabs\GCli\DBAL\R\Through;
 use Drewlabs\GCli\DBAL\R\Types;
 
 use Drewlabs\GCli\Factories\ComponentPath;
-
+use Drewlabs\GCli\Plugins\Laravel\Observers\Observers;
 use Drewlabs\GCli\Plugins\Laravel\Traits\HasNamespaceAttribute;
 use Drewlabs\GCli\Plugins\Laravel\Traits\ViewModelBuilder;
 
@@ -51,28 +51,16 @@ class ORMModelBuilder implements AbstractORMModelBuilder, AbstractBuilder, HasRe
     use ProvidesTrimTableSchema;
     use ViewModelBuilder;
 
-    /**
-     * The name of the model.
-     *
-     * @var string
-     */
+    /** @var string name of the model. */
     public const DEFAULT_NAME = 'Test';
 
-    /**
-     * The namespace of the model.
-     *
-     * @var string
-     */
+    /** @var string namespace of the model. */
     public const DEFAULT_NAMESPACE = 'App\\Models';
 
-    /**
-     * @var string
-     */
+    /** @var string */
     public const DEFAULT_PATH = 'Models';
 
-    /**
-     * @var string[]
-     */
+    /**  @var string[] */
     public const CLASS_PATHS = [
         'Drewlabs\\PHPValue\\Contracts\\Adaptable',
         'Drewlabs\\Query\\Contracts\\Queryable as AbstractQueryable',
@@ -85,6 +73,7 @@ class ORMModelBuilder implements AbstractORMModelBuilder, AbstractBuilder, HasRe
         'Queryable',
     ];
 
+    /** @var string[] */
     public const CLASS_IMPLEMENTATIONS = [
         'AbstractQueryable',
         'Adaptable',
@@ -115,82 +104,46 @@ class ORMModelBuilder implements AbstractORMModelBuilder, AbstractBuilder, HasRe
         'time_stamp',
     ];
 
-    /**
-     * List of appendable model properties.
-     *
-     * @var array
-     */
+    /** @var string[] List of supported observers */
+    private const OBSERVERS = ['creating', 'created', 'saving', 'saved', 'updating', 'updated', 'deleting', 'deleted'];
+
+    /** @var array list of appendable model properties. */
     private $appends = [];
 
-    /**
-     * List of model properties that will not be added to serialized output.
-     *
-     * @var array
-     */
+    /** @var array list of model properties that will not be added to serialized output. */
     private $hidden = [];
 
-    /**
-     * Indicates whether the model must have a timestamp or Not.
-     *
-     * @var bool
-     */
+    /** @var bool indicates whether the model must have a timestamp or not. */
     private $hasTimestamps = true;
 
-    /**
-     * The table name binded to the model.
-     *
-     * @var string
-     */
+    /** @var string table name binded to the model. */
     private $table;
 
-    /**
-     * List of table columns.
-     *
-     * @var ORMColumnDefinition[]
-     */
+    /** Database table schema value */
+    private $schema;
+
+    /** @var ORMColumnDefinition[] List of table columns. */
     private $columns = [];
 
-    /**
-     * They primary key of the model/table.
-     *
-     * @var string
-     */
+    /** @var string They primary key of the model/table. */
     private $primaryKey = 'id';
 
-    /**
-     * Is the model primary key incrementable.
-     *
-     * @var true
-     */
+    /** @var true is the model primary key incrementable. */
     private $autoIncrements = true;
 
-    /**
-     * List of eloquent relation methods.
-     *
-     * @var array
-     */
+    /** @var array List of eloquent relation methods. */
     private $relationMethods = [];
 
-    /**
-     * Specify that the model act like a view model.
-     *
-     * @var false
-     */
+    /**  @var false Specify that the model act like a view model. */
     private $isViewModel = false;
 
-    /**
-     * @var ORMModelDefinition
-     */
+    /**  @var ORMModelDefinition */
     private $definition;
 
     /** @var (\Drewlabs\GCli\DBAL\R\Basic|\Drewlabs\GCli\DBAL\R\Through)[] */
     private $relations;
 
-    /**
-     * Makes the table a pivot table.
-     *
-     * @var bool
-     */
+    /** @var bool Makes the table a pivot table. */
     private $aspivot;
 
     /** @var false */
@@ -209,30 +162,30 @@ class ORMModelBuilder implements AbstractORMModelBuilder, AbstractBuilder, HasRe
      * @return void
      */
     public function __construct(
-        ORMModelDefinition $defintion,
+        ORMModelDefinition $definition,
         ?string $schema = null,
         ?string $path = null
     ) {
-        $this->setDefinition($defintion);
-        [$table, $name] = [$defintion->table(), $defintion->name() ?? self::DEFAULT_NAME];
+        $this->setDefinition($definition);
+        [$table, $name] = [$definition->table(), $definition->name() ?? self::DEFAULT_NAME];
         $this->setComponentBaseDefinitions($schema, $table, $name);
         // Set the primary key
-        if ($defintion->primaryKey()) {
-            $this->setKeyName($defintion->primaryKey() ?? 'id');
+        if ($definition->primaryKey()) {
+            $this->setKeyName($definition->primaryKey() ?? 'id');
         }
         // Set the list of columns
-        if ($defintion->columns()) {
-            $this->setColumns($defintion->columns() ?? []);
+        if ($definition->columns()) {
+            $this->setColumns($definition->columns() ?? []);
         }
 
         // Set the AUTO-INCREMENTS property
-        if (!$defintion->shouldAutoIncrements()) {
+        if (!$definition->shouldAutoIncrements()) {
             $this->doesNotAutoIncrements();
         }
 
         // Set the model namespace
-        if ($defintion->namespace()) {
-            $this->setNamespace($defintion->namespace());
+        if ($definition->namespace()) {
+            $this->setNamespace($definition->namespace());
         }
 
         // Set the model path
@@ -355,7 +308,7 @@ class ORMModelBuilder implements AbstractORMModelBuilder, AbstractBuilder, HasRe
                     PHPTypesModifiers::PUBLIC,
                     'Returns a fluent validation rules'
                 )->addContents(
-                    'return '.PHPVariable('rules', null, $this->rules ?? [])->asRValue()->__toString()
+                    'return ' . PHPVariable('rules', null, $this->rules ?? [])->asRValue()->__toString()
                 )
             );
             if (!$this->isSingleActionValidator) {
@@ -371,7 +324,7 @@ class ORMModelBuilder implements AbstractORMModelBuilder, AbstractBuilder, HasRe
                             'array<string,string|string[]>',
                             PHPTypesModifiers::PUBLIC,
                             'Returns a fluent validation rules applied during update actions'
-                        )->addContents('return '.PHPVariable('rules', null, $this->rules ?? [])->asRValue()->__toString())
+                        )->addContents('return ' . PHPVariable('rules', null, $this->rules ?? [])->asRValue()->__toString())
                     );
             } else {
                 /**
@@ -463,24 +416,44 @@ class ORMModelBuilder implements AbstractORMModelBuilder, AbstractBuilder, HasRe
         // #region Add properties setters and getters
 
         // #region add boot method
-        /**
-         * @var Blueprint
-         */
-        $component = $component->addMethod(
-            PHPClassMethod(
-                'boot',
-                [],
-                'void',
-                PHPTypesModifiers::PROTECTED,
-                'Bootstrap the model and its traits.'
-            )->asStatic(true)->addLine('parent::boot()')
-        );
+
+        $boot = PHPClassMethod('boot', [], 'void',  PHPTypesModifiers::PROTECTED, 'Bootstrap the model and its traits.')->asStatic(true)->addLine('parent::boot()');
+
+        foreach (self::OBSERVERS as $value) {
+            if ($observers = Observers::getInstance()->get(sprintf("%s.%s", $this->table, $value))) {
+                $boot->addLine(sprintf("parent::%s(function(self \$model) {", $value));
+                foreach ($observers as $expression) {
+                    $items = array_map(function($item) {
+                        return sprintf("    %s", $item);
+                    }, explode(PHP_EOL, strval($expression)));
+                    foreach ($items as $item) {
+                        $boot->addLine(rtrim($item, " \n\r\t\v\0;"));
+                    }
+                }
+                $boot->addLine(sprintf("});"));
+                continue;
+            }
+            if ($observers = Observers::getInstance()->get(sprintf("%s.%s", self::trimschema($this->table, $this->schema), $value))) {
+                $boot->addLine(sprintf("parent::%s(function(self \$model) {", $value));
+                foreach ($observers as $expression) {
+                    $items = array_map(function($item) {
+                        return sprintf("    %s", $item);
+                    }, explode(PHP_EOL, strval($expression)));
+                    foreach ($items as $item) {
+                        $boot->addLine(rtrim($item, " \n\r\t\v\0;"));
+                    }
+                }
+                $boot->addLine(sprintf("});"));
+                continue;
+            }
+        }
+
+        /** @var Blueprint */
+        $component = $component->addMethod($boot);
         // #endregion add boot method
 
         if (null !== $this->primaryKey) {
-            /**
-             * @var Blueprint
-             */
+            /** @var Blueprint */
             $component = $component->addProperty(
                 PHPClassProperty(
                     'primaryKey',
@@ -515,32 +488,23 @@ class ORMModelBuilder implements AbstractORMModelBuilder, AbstractBuilder, HasRe
         }
 
         // Add implementations
-        /**
-         * @var Blueprint
-         */
+        /** @var Blueprint */
         $component = array_reduce(static::CLASS_IMPLEMENTATIONS, static function (Blueprint $carry, $curr) {
             $carry = $carry->addImplementation($curr);
-
             return $carry;
         }, $component);
 
         // Add Traits
-        /**
-         * @var Blueprint
-         */
+        /** @var Blueprint */
         $component = array_reduce(static::CLASS_TRAITS, static function (Blueprint $carry, $curr) {
             $carry = $carry->addTrait($curr);
-
             return $carry;
         }, $component);
 
         // Add class path
-        /**
-         * @var Blueprint
-         */
+        /** @var Blueprint */
         $component = array_reduce(static::CLASS_PATHS, static function (Blueprint $carry, $curr) {
             $carry = $carry->addClassPath($curr);
-
             return $carry;
         }, $component);
 
@@ -614,20 +578,20 @@ class ORMModelBuilder implements AbstractORMModelBuilder, AbstractBuilder, HasRe
      */
     private function setComponentBaseDefinitions($schema, $table, $name)
     {
-        $table = (null === $table) ? (null !== $name ? Str::snakeCase(Pluralizer::plural($name)) : null) : $table;
-        // Set the table name
+        $table = is_null($table) ? (!is_null($name) ? Str::snakeCase(Pluralizer::plural($name)) : null) : $table;
         if ($table) {
             $this->setTableName($table);
         }
-        // Set model name
-        $result = $table ?? $name ?? null;
-        if ($result && $schema) {
+
+        if (($result = $table ?? $name ?? null) && $schema) {
             $result = self::trimschema($result, $schema);
         }
 
         if ($name = Str::camelize(Pluralizer::singular($result))) {
             $this->setName($name);
         }
+
+        $this->schema = $schema;
     }
 
     /**
@@ -669,9 +633,7 @@ class ORMModelBuilder implements AbstractORMModelBuilder, AbstractBuilder, HasRe
                 \in_array($type, [Types::ONE_TO_MANY_THROUGH, Types::ONE_TO_ONE_THROUGH], true)
                 && $relation instanceof Through
             ) {
-                /**
-                 * @var Blueprint
-                 */
+                /** @var Blueprint */
                 $component = $component->addMethod($this->createThroughRelationTemplate($relation, $methods));
                 $this->relationMethods[] = $relation->getName();
                 continue;

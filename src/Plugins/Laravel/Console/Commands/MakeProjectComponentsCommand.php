@@ -24,6 +24,7 @@ use Drewlabs\GCli\IO\Disk;
 use Drewlabs\GCli\IO\Path;
 use Drewlabs\GCli\Plugins\G;
 use Drewlabs\GCli\Plugins\Laravel\Console\Task;
+use Drewlabs\GCli\Plugins\Laravel\Observers\Observers;
 use Drewlabs\GCli\Plugins\Laravel\SQLDBCollector;
 use Drewlabs\GCli\Plugins\Laravel\Validation\RulesFactory;
 use Drewlabs\GCli\Plugins\Typescript\V1\Plugin;
@@ -152,6 +153,9 @@ class MakeProjectComponentsCommand extends Command
             // We register the Ts-Module plugin
             G::getInstance()->addPlugin('ts-module', new Plugin($this->laravel->publicPath('assets/lib'), (bool) $options->get('ts.camelize')));
         }
+
+        // configure observers and listeners
+        Observers::getInstance()->configure($options->get('models.observers', []), sprintf('%s%s', $namespace, $domain ? trim(sprintf('\\%s', "$domain")) : ''));
 
         // #region Load database tables
         $providesRelations = $options->get('models.relations.provides', false) ?? false;
