@@ -132,9 +132,12 @@ class ServiceProviderBuilder implements AbstractBuilder
         }
 
         $registerMethod = PHPClassMethod('register', [], 'void', PHPTypesModifiers::PUBLIC, ['Register application services.'])
+            ->addLine('parent::register()')
+            ->addLine('')
             ->addContents(implode(\PHP_EOL, array_map(static function ($binding) use ($values) {
                 return '$this->app->bind(' . $binding . '::class, ' . $values[$binding] . '::class);';
             }, array_keys($values))));
+            
         if ($this->routeFilePath) {
             $routeFilePath = Str::endsWith($this->routeFilePath, '.php') ? $this->routeFilePath : ($this->routeFilePath . '.php');
             $registerMethod = $registerMethod->addLine(implode(\PHP_EOL, [
@@ -162,7 +165,10 @@ class ServiceProviderBuilder implements AbstractBuilder
         }
 
         // Boot method
-        $bootMethod = PHPClassMethod('boot', [], 'void', PHPTypesModifiers::PUBLIC, ['Boot application services.']);
+        $bootMethod = PHPClassMethod('boot', [], 'void', PHPTypesModifiers::PUBLIC, ['Boot application services.'])
+            ->addLine('parent::boot()')
+            ->addLine('');
+
         if (!empty($this->policies)) {
             $bootMethod = $bootMethod->addLine('$this->registerPolicies()');
             $component = $component->addProperty(

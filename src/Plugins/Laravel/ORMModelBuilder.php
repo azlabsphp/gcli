@@ -417,13 +417,15 @@ class ORMModelBuilder implements AbstractORMModelBuilder, AbstractBuilder, HasRe
 
         // #region add boot method
 
-        $boot = PHPClassMethod('boot', [], 'void',  PHPTypesModifiers::PROTECTED, 'Bootstrap the model and its traits.')->asStatic(true)->addLine('parent::boot()');
+        $boot = PHPClassMethod('boot', [], 'void',  PHPTypesModifiers::PROTECTED, 'Bootstrap the model and its traits.')->asStatic(true)
+            ->addLine('parent::boot()')
+            ->addLine('');
 
         foreach (self::OBSERVERS as $value) {
             if ($observers = Observers::getInstance()->get(sprintf("%s.%s", $this->table, $value))) {
                 $boot->addLine(sprintf("parent::%s(function(self \$model) {", $value));
                 foreach ($observers as $expression) {
-                    $items = array_map(function($item) {
+                    $items = array_map(function ($item) {
                         return sprintf("    %s", $item);
                     }, explode(PHP_EOL, strval($expression)));
                     foreach ($items as $item) {
@@ -436,7 +438,7 @@ class ORMModelBuilder implements AbstractORMModelBuilder, AbstractBuilder, HasRe
             if ($observers = Observers::getInstance()->get(sprintf("%s.%s", self::trimschema($this->table, $this->schema), $value))) {
                 $boot->addLine(sprintf("parent::%s(function(self \$model) {", $value));
                 foreach ($observers as $expression) {
-                    $items = array_map(function($item) {
+                    $items = array_map(function ($item) {
                         return sprintf("    %s", $item);
                     }, explode(PHP_EOL, strval($expression)));
                     foreach ($items as $item) {
