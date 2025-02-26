@@ -56,7 +56,6 @@ final class PropertyExpression
                     $pos_2 = strpos($params, ':');
                     $p = $pos_2 ? trim(substr($params, 0, $pos_2)) : $params;
                     $precision = $pos_2 ? (int) (empty($result = trim(substr($params, $pos_2 + 1))) ? 2 : $result) : 2;
-
                     return $this->createExpression($this->property, sprintf('%.'.$precision.'f', $p));
                 case 'str':
                 case 'string':
@@ -78,7 +77,7 @@ final class PropertyExpression
     public static function create(string $haystack)
     {
         if (!empty($params = Expression::new($haystack)->read('set', $offset))) {
-            $next = trim(mb_substr($haystack, $offset + 1));
+            $next = trim(substr($haystack, $offset + 1));
             if (empty($next)) {
                 return new self(...$params);
             }
@@ -91,7 +90,7 @@ final class PropertyExpression
             }
 
             if (!empty($p = Expression::new($next)->read('->onChange'))) {
-                $params[] = new PropertyChangedLogicalExpression(...$p);
+                $params[] = new PropertyChangedExpression(...$p);
 
                 return new self(...$params);
             }
@@ -111,7 +110,6 @@ final class PropertyExpression
         if ($pos = strpos($format, ',')) {
             return new static(trim(substr($format, 0, $pos)), trim(substr($format, $pos + 1)), $condition);
         }
-
         throw new \InvalidArgumentException('Expect the format to contains , seperator between property name and it default value');
     }
 
@@ -122,8 +120,7 @@ final class PropertyExpression
      */
     private function createExpression(string $property, $value): string
     {
-        $condition = null === $this->condition ? sprintf("is_null(\$model->getRawPropertyValue('%s'))", $property) : (string) $this->condition;
-
-        return sprintf("if (%s) {\n    \$model->setRawPropertyValue('%s', %s); \n}\n", $condition, $property, $value);
+        $condition = null === $this->condition ? sprintf("is_null(%s)", Property::create($property)) :  $this->condition;
+        return sprintf("if (%s) {\n    \$model->setRawPropertyValue('%s', %s); \n}\n", $condition, new PropertyName($property), $value);
     }
 }

@@ -13,33 +13,23 @@ declare(strict_types=1);
 
 namespace Drewlabs\GCli\Plugins\Laravel\Observers;
 
-final class PropertyChangedLogicalExpression
+final class PropertyChangedExpression
 {
     /** @var string */
     private $property;
-
-    /** @var string */
-    private $value;
-
-    /** @var string */
-    private $operator = '===';
 
     /**
      * property change event trigger expression.
      *
      * @return void
      */
-    public function __construct(string $property, ?string $value = null, string $operator = '===')
+    public function __construct(string $property)
     {
         $this->property = $property;
-        $this->value = $value;
-        $this->operator = $operator ?? '===';
     }
 
     public function __toString(): string
     {
-        $expression = new LogicalExpression($this->property, $this->value, $this->operator);
-
-        return sprintf("\$model->wasChanged('%s') && %s", $this->property, $expression->__toString());
+        return sprintf("\$model->wasChanged('%s')", new PropertyName($this->property));
     }
 }

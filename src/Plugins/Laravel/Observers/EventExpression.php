@@ -25,20 +25,19 @@ final class EventExpression
     private $condition;
 
     /** @var array|null */
-    private $formatters;
+    private $variables;
 
     /**
      * Create new event observer expression instance.
      *
-     * @param \Stringable $trigger
+     * @param \Stringable $condition
      *
      * @return void
      */
-    public function __construct(string $event, ?array $params = null, string $namespace = 'App', $trigger = null)
+    public function __construct(string $event, ?array $params = null, string $namespace = 'App', $condition = null)
     {
-        $this->condition = $trigger;
         $items = [];
-        $expressions = [];
+        $variables = [];
         foreach ($params as $p) {
             if ($pos = strpos($p, ':')) {
                 $name = trim(substr($p, 0, $pos));
@@ -48,34 +47,34 @@ final class EventExpression
                     case 'float':
                     case 'decimal':
                         $items[] = new PHPConstructorParameter($camelized, 'float');
-                        $expressions[] = [$name, 'floatval(%s)'];
+                        $variables[] = new Property($name, $type);
                         break;
                     case 'int':
                         $items[] = new PHPConstructorParameter($camelized, 'int');
-                        $expressions[] = [$name, 'intval(%s)'];
+                        $variables[] = new Property($name, $type);
                         break;
                     case 'bool':
                         $items[] = new PHPConstructorParameter($camelized, 'bool');
-                        $expressions[] = [$name, 'boolval(%s)'];
+                        $variables[] = new Property($name, $type);
                         break;
                     case 'str':
                     case 'string':
                         $items[] = new PHPConstructorParameter($camelized, 'string');
-                        $expressions[] = [$name, 'strval(%s)'];
+                        $variables[] = new Property($name, $type);
                         break;
                     case 'date':
                         $items[] = new PHPConstructorParameter($camelized, '\DateTimeInterface');
-                        $expressions[] = [$name, "\DateTimeImmutable::createFromTimestamp(strtotime(%s))"];
+                        $variables[] = new Property($name, $type);
                         break;
                     default:
                         $items[] = new PHPConstructorParameter($camelized);
-                        $expressions[] = [$name, '%s'];
+                        $variables[] = new Property($name, 'mixed');
                         break;
                 }
                 continue;
             }
             $items[] = new PHPConstructorParameter(Str::camelize($p, false));
-            $expressions[] = [$p, '%s'];
+            $variables[] = new Property($p, 'mixed');
         }
 
         // Use the model as parameter if event does not take any argument
@@ -85,46 +84,46 @@ final class EventExpression
         }
 
         $this->event = new Event($event, $items, $namespace);
-        $this->formatters = $expressions;
+        $this->variables = $variables;
+        $this->condition = $condition;
     }
 
     public function __toString(): string
     {
         if ($this->condition) {
-            return sprintf("if (%s) {\n    %s \n}", (string) $this->condition, $this->createExpression($this->event, $this->formatters));
+            return sprintf("if (%s) {\n    %s \n}", (string) $this->condition, $this->createExpression($this->event, $this->variables));
         }
-
-        return sprintf('%s', $this->createExpression($this->event, $this->formatters));
+        return sprintf('%s', $this->createExpression($this->event, $this->variables));
     }
 
     public static function create(string $haystack, string $namespace = 'App')
     {
         if (!empty($params = Expression::new($haystack)->read('dispatch', $offset))) {
-            $next = trim(mb_substr($haystack, $offset + 1));
+            $next = trim(substr($haystack, $offset + 1));
             if (empty($next)) {
                 return new self(Str::camelize($params[0]), \array_slice($params, 1), $namespace);
             }
 
             if (!empty($p = Expression::new($next)->read('->onChange'))) {
-                $expression = new PropertyChangedLogicalExpression(...$p);
-
+                $expression = new PropertyChangedExpression(...$p);
                 return new self(Str::camelize($params[0]), \array_slice($params, 1), $namespace, $expression);
             }
 
             if (!empty($p = Expression::new($next)->read('->changed'))) {
-                $expression = new PropertyChangedLogicalExpression(...$p);
+                $expression = new PropertyChangedExpression(...$p);
 
                 return new self(Str::camelize($params[0]), \array_slice($params, 1), $namespace, $expression);
             }
 
-            if (!empty($p = Expression::new($next)->read('->if'))) {
-                $expression = new PropertyLogicalExpression(...$p);
-
+            // if next expression stack starts with if
+            if ('->if(' === substr(trim($next), 0, \strlen('->if('))) {
+                $expression = PropertyLogicalExpression::compile($next);
                 return new self(Str::camelize($params[0]), \array_slice($params, 1), $namespace, $expression);
+
             }
         }
 
-        throw new \BadMethodCallException('dispatch expression not correctly formed, supported syntax is dispatch(event_name, id:string, name:string)->if(property, value)');
+        throw new \BadMethodCallException('dispatch expression not correctly formed, supported syntax is dispatch(event_name, [id]:string, [name]:string)->if(property, value)');
     }
 
     /**
@@ -138,9 +137,7 @@ final class EventExpression
     private function createExpression(Event $e, array $formatters)
     {
         $expression = !empty($formatters) ? array_map(static function ($p) {
-            [$name, $format] = $p;
-
-            return sprintf($format, sprintf("\$model->getRawPropertyValue('%s')", $name));
+            return sprintf('%s', $p);
         }, $formatters) : ['$model'];
 
         return sprintf('\\Illuminate\\Support\\Facades\\Event::dispatch(new %s(%s));', $e->getClasspath(), implode(', ', $expression));

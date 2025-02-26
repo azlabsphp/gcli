@@ -13,6 +13,8 @@ declare(strict_types=1);
 
 namespace Drewlabs\GCli\Plugins\Laravel\Observers;
 
+use LogicException;
+
 final class PropertyLogicalExpression
 {
     /** @var string */
@@ -36,9 +38,17 @@ final class PropertyLogicalExpression
         $this->operator = $operator ?? '===';
     }
 
+    /**
+     * 
+     * @return array 
+     */
+    public static function compile(string $expr)
+    {
+    }
+
     public function __toString(): string
     {
-        $expression = new LogicalExpression($this->property, $this->value, $this->operator);
+        $expression = new LiteralLogicalExpression($this->property, $this->value, $this->operator);
 
         return $expression->__toString();
     }

@@ -63,13 +63,13 @@ final class Observers
                         continue;
                     }
 
-                    if ('set(' === mb_substr(trim($expression), 0, \strlen('set('))) {
+                    if ('set(' === substr(trim($expression), 0, \strlen('set('))) {
                         $e = PropertyExpression::create($expression);
                         $this->addObserver($name.'.'.$observer, $e);
                         continue;
                     }
 
-                    if ('dispatch(' === mb_substr(trim($expression), 0, \strlen('dispatch('))) {
+                    if ('dispatch(' === substr(trim($expression), 0, \strlen('dispatch('))) {
                         $e = EventExpression::create($expression, $namespace);
                         $this->events[] = $e->getEvent();
                         $this->addObserver($name.'.'.$observer, $e);
