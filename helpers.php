@@ -102,3 +102,12 @@ if (!function_exists('str_ends_with')) {
         return $len <= strlen($haystack) && 0 === substr_compare($haystack, $needle, -$len);
     }
 }
+
+
+if (!function_exists('str_contains')) {
+    /** The function returns true if the passed $haystack contains $needle string or false otherwise */
+    function str_contains(string $haystack, string $needle): bool
+    {
+        return '' === $needle || false !== strpos($haystack, $needle);
+    }
+}

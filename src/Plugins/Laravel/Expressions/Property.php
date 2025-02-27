@@ -37,6 +37,10 @@ final class Property
 
     public function __toString(): string
     {
+        if ((null === $this->cached) && str_contains($this->value, '\\')) {
+            $this->cached = $this->value;
+        }
+
         if (null === $this->cached) {
             $type = $this->type ?? 'mixed';
             if (((false !== ($offset_1 = strpos($this->value, '['))) && (false !== ($offset_2 = strpos($this->value, ']')))) || ((false !== ($offset_1 = strpos($this->value, '{'))) && (false !== ($offset_2 = strpos($this->value, '}'))))) {
@@ -60,9 +64,13 @@ final class Property
      */
     public static function create(string $expr)
     {
+        if (str_contains($expr, '\\')) {
+            return new static($expr);
+        }
+
         if (static::isPlaceholder($expr, $start, $end)) {
             $name = trim(substr($expr, $start, $end - \strlen(substr($expr, 0, $start + 1)) + 2));
-            $type = empty($type = trim(str_replace($name.':', '', $expr))) || ($name === $type) ? 'mixed' : $type;
+            $type = empty($type = trim(str_replace($name . ':', '', $expr))) || ($name === $type) ? 'mixed' : $type;
 
             return new static($name, $type);
         }
@@ -71,7 +79,6 @@ final class Property
         $name = false !== $pos ? trim(substr($expr, 0, $pos)) : $expr;
 
         return new static($name, $type);
-
     }
 
     private static function isPlaceholder(string $expr, ?int &$start = null, ?int &$end = null)
@@ -84,20 +91,20 @@ final class Property
         switch (strtolower($type)) {
             case 'float':
             case 'decimal':
-                return 'floatval('.$value.')';
+                return 'floatval(' . $value . ')';
             case 'int':
-                return 'intval('.$value.')';
+                return 'intval(' . $value . ')';
             case 'str':
             case 'string':
-                return 'strval('.$value.')';
+                return 'strval(' . $value . ')';
             case 'str::upper':
             case 'string::upper':
-                return "\strtoupper(strval(".$value.'))';
+                return "\strtoupper(strval(" . $value . '))';
             case 'str::lower':
             case 'string::lower':
-                return "\strtolower(strval(".$value.'))';
+                return "\strtolower(strval(" . $value . '))';
             case 'date':
-                return '\DateTimeImmutable::createFromTimestamp(strtotime('.$value.'))';
+                return 'new \DateTimeImmutable(' . $value . ')';
             default:
                 return $value;
         }
@@ -113,6 +120,7 @@ final class Property
         if ('date' === $lcvalue || 'date()' === $lcvalue) {
             $value = "date('Y-m-d')";
         }
+        
         switch (strtolower($type)) {
             case 'float':
             case 'decimal':
@@ -120,7 +128,7 @@ final class Property
                 $p = $pos_2 ? trim(substr($value, 0, $pos_2)) : $value;
                 $precision = $pos_2 ? (int) (empty($result = trim(substr($value, $pos_2 + 1))) ? 2 : $result) : 2;
 
-                return sprintf('%.'.$precision.'f', $p);
+                return sprintf('%.' . $precision . 'f', $p);
             case 'int':
                 return sprintf('%s', (int) $value);
             case 'str':
@@ -133,7 +141,7 @@ final class Property
             case 'string::lower':
                 return sprintf("\strtolower('%s')", $value);
             case 'date':
-                return sprintf("\DateTimeImmutable::createFromTimestamp(strtotime(%s))", $value);
+                return sprintf("new \DateTimeImmutable(%s)", $value);
             default:
                 return $value;
         }

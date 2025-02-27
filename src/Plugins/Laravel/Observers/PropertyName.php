@@ -13,6 +13,8 @@ declare(strict_types=1);
 
 namespace Drewlabs\GCli\Plugins\Laravel\Observers;
 
+use Drewlabs\Core\Helpers\Str;
+
 final class PropertyName
 {
     /** @var string */
@@ -31,7 +33,11 @@ final class PropertyName
     public function __toString(): string
     {
         if (((false !== ($offset_1 = strpos($this->name, '['))) && (false !== ($offset_2 = strpos($this->name, ']')))) || ((false !== ($offset_1 = strpos($this->name, '{'))) && (false !== ($offset_2 = strpos($this->name, '}'))))) {
-            return trim(substr($this->name, $offset_1 + 1, $offset_2 - \strlen(substr($this->name, 0, $offset_1 + 1))));
+            $name =  trim(substr($this->name, $offset_1 + 1, $offset_2 - \strlen(substr($this->name, 0, $offset_1 + 1))));
+            if (false !== ($pos = strpos($name, ':'))) {
+                return Str::camelize(sprintf("%s_%s", str_replace(':', '_', substr($name, $pos+1)), substr($name, 0, $pos)), false);
+            }
+            return $name;
         }
 
         return $this->name;

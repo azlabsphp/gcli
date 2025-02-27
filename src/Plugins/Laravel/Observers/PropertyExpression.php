@@ -54,36 +54,6 @@ final class PropertyExpression
         if ('date' === $lcvalue || 'date()' === $lcvalue) {
             return $this->createExpression($this->property, "date('Y-m-d H:i:s')");
         }
-
-        if ($pos = strpos($this->value, ':')) {
-            $op = trim(substr($this->value, 0, $pos));
-            $params = trim(substr($this->value, $pos + 1));
-            switch (strtolower($op)) {
-                case 'float':
-                case 'decimal':
-                    $pos_2 = strpos($params, ':');
-                    $p = $pos_2 ? trim(substr($params, 0, $pos_2)) : $params;
-                    $precision = $pos_2 ? (int) (empty($result = trim(substr($params, $pos_2 + 1))) ? 2 : $result) : 2;
-
-                    return $this->createExpression($this->property, sprintf('%.'.$precision.'f', $p));
-                case 'str':
-                case 'string':
-                    return $this->createExpression($this->property, sprintf("'%s'", $params));
-                case 'str::upper':
-                    return $this->createExpression($this->property, sprintf("\strtoupper('%s')", $params));
-                case 'str::lower':
-                    return $this->createExpression($this->property, sprintf("\strtolower('%s')", $params));
-                case 'string::upper':
-                    return $this->createExpression($this->property, sprintf("\strtoupper('%s')", $params));
-                case 'string::lower':
-                    return $this->createExpression($this->property, sprintf("\strtolower('%s')", $params));
-                case 'date':
-                    return $this->createExpression($this->property, sprintf("date('%s')", $params));
-                default:
-                    $this->createExpression($this->property, $this->value);
-            }
-        }
-
         return $this->createExpression($this->property, $this->value);
     }
 
@@ -138,6 +108,6 @@ final class PropertyExpression
     {
         $condition = null === $this->condition ? sprintf('is_null(%s)', Property::create($property)) : $this->condition;
 
-        return sprintf("if (%s%s) {\n    \$model->setRawPropertyValue('%s', %s); \n}\n", $this->changedExpression ?? '', sprintf('%s%s', $this->changedExpression ? ' && ' : '', $condition), new PropertyName($property), $value);
+        return sprintf("if (%s%s) {\n    \$model->setRawPropertyValue('%s', %s); \n}\n", $this->changedExpression ?? '', sprintf('%s%s', $this->changedExpression ? ' && ' : '', $condition), new PropertyName($property), Property::create($value));
     }
 }

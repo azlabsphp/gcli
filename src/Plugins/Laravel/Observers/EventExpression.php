@@ -44,7 +44,8 @@ final class EventExpression
         $items = [];
         $variables = [];
         foreach ($params as $p) {
-            if ($pos = strpos($p, ':')) {
+            // We look for the last occurrence of : as the type is after last occurrence of :
+            if ($pos = strrpos($p, ':')) {
                 $name = trim(substr($p, 0, $pos));
                 $type = trim(substr($p, $pos + 1));
                 $camelized = new PropertyName(Str::camelize($name, false));
@@ -52,34 +53,34 @@ final class EventExpression
                     case 'float':
                     case 'decimal':
                         $items[] = new PHPConstructorParameter((string)$camelized, 'float');
-                        $variables[] = new Property($name, $type);
+                        $variables[] = Property::create($p);
                         break;
                     case 'int':
                         $items[] = new PHPConstructorParameter((string)$camelized, 'int');
-                        $variables[] = new Property($name, $type);
+                        $variables[] = Property::create($p);
                         break;
                     case 'bool':
                         $items[] = new PHPConstructorParameter((string)$camelized, 'bool');
-                        $variables[] = new Property($name, $type);
+                        $variables[] = Property::create($p);
                         break;
                     case 'str':
                     case 'string':
                         $items[] = new PHPConstructorParameter((string)$camelized, 'string');
-                        $variables[] = new Property($name, $type);
+                        $variables[] = Property::create($p);
                         break;
                     case 'date':
                         $items[] = new PHPConstructorParameter((string)$camelized, '\DateTimeInterface');
-                        $variables[] = new Property($name, $type);
+                        $variables[] = Property::create($p);
                         break;
                     default:
                         $items[] = new PHPConstructorParameter((string)$camelized);
-                        $variables[] = new Property($name, 'mixed');
+                        $variables[] = Property::create($p);
                         break;
                 }
                 continue;
             }
             $items[] = new PHPConstructorParameter((string)(new PropertyName((Str::camelize($p, false)))));
-            $variables[] = new Property($p, 'mixed');
+            $variables[] = Property::create($p);
         }
 
         // Use the model as parameter if event does not take any argument
@@ -88,10 +89,10 @@ final class EventExpression
             $items = [new PHPConstructorParameter('model')];
         }
 
-        $this->event = new Event($event, $items, $namespace);
         $this->variables = $variables;
-        $this->changedExpression = $changedExpression;
         $this->condition = $condition;
+        $this->changedExpression = $changedExpression;
+        $this->event = new Event($event, $items, $namespace);
     }
 
     public function __toString(): string
@@ -142,11 +143,11 @@ final class EventExpression
         return $this->event;
     }
 
-    private function createExpression(Event $e, array $formatters)
+    private function createExpression(Event $e, array $variables)
     {
-        $expression = !empty($formatters) ? array_map(static function ($p) {
+        $expression = !empty($variables) ? array_map(static function ($p) {
             return sprintf('%s', $p);
-        }, $formatters) : ['$model'];
+        }, $variables) : ['$model'];
 
         return sprintf('\\Illuminate\\Support\\Facades\\Event::dispatch(new %s(%s));', $e->getClasspath(), implode(', ', $expression));
     }

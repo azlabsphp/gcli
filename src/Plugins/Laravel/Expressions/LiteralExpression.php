@@ -33,7 +33,6 @@ final class LiteralExpression
 
     public function __toString(): string
     {
-
         if (null === $this->variable) {
             return null === $this->value ? 'true' : (string)Property::create($this->value);
         }
@@ -43,7 +42,7 @@ final class LiteralExpression
         }
 
         if ('null' === strtolower($this->value)) {
-            return sprintf('is_null(%s)', Property::create($this->variable));
+            return sprintf('%sis_null(%s)', $this->operator === '!=' || $this->operator === '!==' ?  '!' : '', Property::create($this->variable));
         }
 
         $op = '=' === $this->operator || '==' === $this->operator ? '===' : $this->operator;
@@ -59,14 +58,14 @@ final class LiteralExpression
      */
     public static function compile(string $expr)
     {
-        $regex = "/^([\[\]A-Za-z\d_ \"'?:]+)([><!]?[=]+|[>]+|[<]+)([\[\]A-Za-z\d_ \"'?:]+)$/";
+        $regex = '/^((((?:\\\{1,2}\w+|\w+\\\{1,2})(?:\w+\\\{0,2}))+((:{2}\w+)?)|(\w+|\$\w+|\$\w+\b->\b\w+|(\[\w+(:\w+)?\](:\w+)?)))[\s]([><!]?[=]+|[>]+|[<]+)[\s](((?:\\\{1,2}\w+|\w+\\\{1,2})(?:\w+\\\{0,2}))+((:{2}\w+)?)|(\w+|\$\w+|\$\w+\b->\b\w+|(\[\w+(:\w+)?\](:\w+)?))))+$/';
         if (1 === preg_match($regex, $expr)) {
             $swap_array_values = static function (&$array, $i, $j) {
                 $tmp = $array[$i];
                 $array[$i] = $array[$j];
                 $array[$j] = $tmp;
             };
-            $items = preg_split('/([><!]?[=]+|[>]+|[<]+)/', $expr, -1, \PREG_SPLIT_NO_EMPTY | \PREG_SPLIT_DELIM_CAPTURE);
+            $items = preg_split('/[\s]([><!]?[=]+|[\b>\b]+|[<]+)[\s]/', $expr, -1, \PREG_SPLIT_NO_EMPTY | \PREG_SPLIT_DELIM_CAPTURE);
             $items = array_map(static function ($item) {
                 return trim($item);
             }, array_filter($items, static function ($item) {
@@ -78,7 +77,6 @@ final class LiteralExpression
 
             return new static(...$items);
         }
-
         return new static(null, $expr, null);
     }
 }
