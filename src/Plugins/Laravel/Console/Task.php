@@ -296,6 +296,9 @@ class Task
 
             if (!empty($events = Observers::getInstance()->getEvents())) {
                 foreach ($events as $e) {
+                    if ($e->doesExists()) {
+                        continue;
+                    }
                     $eventBuilder = $e->getBuilder(implode(\DIRECTORY_SEPARATOR, [$directory, $subPackage ? sprintf('%s', "$subPackage/Events") : 'Events']));
                     $listenerBuilder = $e->getListener()->getBuilder(implode(\DIRECTORY_SEPARATOR, [$directory, $subPackage ? sprintf('%s', "$subPackage/Listeners") : 'Listeners']));
                     static::writeComponentSourceCode($directory, self::resolveWritable($eventBuilder), $onExistsCallback);

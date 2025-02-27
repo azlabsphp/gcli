@@ -29,6 +29,9 @@ final class Event
     /** @var FunctionParameterInterface[] */
     private $params = [];
 
+    /** @var bool */
+    private $exists = false;
+
     /**
      * creates event class instance.
      *
@@ -40,6 +43,13 @@ final class Event
     {
         $this->name = $name;
         $this->namespace = $namespace ?? 'App';
+
+        // case event nane is a class path, we mark the event as existing
+        if ($name && (false !== strpos($name, '\\'))) {
+            $this->exists = true;
+            $this->namespace = $this->removeClassName($name);
+        }
+
         if (null !== $params) {
             $params = \is_string($params) ? explode(',', $params) : (array) $params;
             foreach ($params as $p) {
@@ -59,6 +69,9 @@ final class Event
      */
     public function getClasspath(): string
     {
+        if ($this->name && (false !== strpos($this->name, '\\'))) {
+            return $this->name;
+        }
         return sprintf('\\%s\\%s', rtrim($this->getNamespace(), '\\'), $this->name);
     }
 
@@ -102,5 +115,20 @@ final class Event
     public function getBuilder(?string $path = null): ComponentBuilder
     {
         return new EventBuilder($this, $path);
+    }
+
+    /**
+     * returns true if event class exists or false if class does not exists
+     * 
+     * @return bool 
+     */
+    public function doesExists()
+    {
+        return $this->exists;
+    }
+
+    private function removeClassName(string $name)
+    {
+        return implode("\\", explode('\\', $name));
     }
 }

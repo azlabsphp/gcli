@@ -6,3 +6,4 @@ Todo export-ignore
 .gitattributes export-ignore
 Changelog export-ignore
 .gitignore export-ignore
+phpunit.xml export-ignore
