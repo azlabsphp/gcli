@@ -91,18 +91,20 @@ final class Property
         switch (strtolower($type)) {
             case 'float':
             case 'decimal':
-                return 'floatval('.$value.')';
+                return '(float)'.$value;
             case 'int':
-                return 'intval('.$value.')';
+                return '(int)'.$value;
             case 'str':
             case 'string':
-                return 'strval('.$value.')';
+                return '(string)'.$value;
+            case 'upper':
             case 'str::upper':
             case 'string::upper':
-                return "\strtoupper(strval(".$value.'))';
+                return "\strtoupper((string)".$value.')';
+            case 'lower':
             case 'str::lower':
             case 'string::lower':
-                return "\strtolower(strval(".$value.'))';
+                return "\strtolower((string)".$value.')';
             case 'date':
                 return 'new \DateTimeImmutable('.$value.')';
             default:
@@ -130,13 +132,15 @@ final class Property
 
                 return sprintf('%.'.$precision.'f', $p);
             case 'int':
-                return sprintf('%s', (int) $value);
+                return sprintf('(int)%s', $value);
             case 'str':
             case 'string':
                 return sprintf("'%s'", $value);
+            case ':upper':
             case 'str::upper':
             case 'string::upper':
                 return sprintf("\strtoupper('%s')", $value);
+            case 'lower':
             case 'str::lower':
             case 'string::lower':
                 return sprintf("\strtolower('%s')", $value);
