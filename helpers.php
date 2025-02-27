@@ -75,3 +75,14 @@ if (!function_exists('config')) {
         return app('config')->get($key, $default);
     }
 }
+
+
+if (!function_exists('str_starts_with')) {
+
+    /** The function returns `true` if the passed $haystack starts from the $needle string or `false` otherwise */
+    function str_starts_with(string $haystack, string $substr): bool
+    {
+        return ((false !== ($offset = strpos($haystack, $substr))) && (substr($haystack, 0, $offset) === $substr));
+    }
+}
+

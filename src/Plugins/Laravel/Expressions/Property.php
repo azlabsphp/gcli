@@ -1,7 +1,7 @@
 <?php
 
 
-namespace Drewlabs\GCli\Plugins\Laravel\Observers;
+namespace Drewlabs\GCli\Plugins\Laravel\Expressions;
 
 final class Property
 {
@@ -34,10 +34,16 @@ final class Property
      */
     public static function create(string $expr)
     {
-        $pos = strpos($expr, ':');
-        $type = $pos !== false ? trim(substr($expr, 0, $pos)) : 'mixed';
-        $value = $pos !== false ? trim(substr($expr, $pos + 1)) : $expr;
-        return new static($value, $type);
+        if (static::isPlaceholder($expr, $start, $end)) {
+            $name = trim(substr($expr, $start, $end - \strlen(substr($expr, 0, $start + 1)) + 2));
+            $type = empty($type = trim(str_replace($name.":", '', $expr))) || ($name === $type) ? 'mixed' : $type;
+            return new static($name, $type);
+        } else {
+            $pos = strpos($expr, ':');
+            $type = $pos !== false ? trim(substr($expr, $pos + 1)) : 'mixed';
+            $name = $pos !== false ? trim(substr($expr, 0, $pos)) : $expr;
+            return new static($name, $type);
+        }
     }
 
     public function __toString(): string
@@ -45,12 +51,21 @@ final class Property
         if (is_null($this->cached)) {
             $type = $this->type ?? 'mixed';
             if (((false !== ($offset_1 = strpos($this->value, '['))) && (false !== ($offset_2 = strpos($this->value, ']')))) || ((false !== ($offset_1 = strpos($this->value, '{'))) && (false !== ($offset_2 = strpos($this->value, '}'))))) {
-                $this->cached = $this->getExpression($type, sprintf("\$model->getRawPropertyValue('%s')", trim(substr($this->value, $offset_1 + 1, $offset_2 - \strlen(substr($this->value, 0, $offset_1 + 1))))));
+                $param = trim(substr($this->value, $offset_1 + 1, $offset_2 - \strlen(substr($this->value, 0, $offset_1 + 1))));
+                $ends_with_original = str_ends_with($param, ':original');
+                $format =  $ends_with_original ? "\$model->getOriginal('%s')" : "\$model->getRawPropertyValue('%s')";
+                $param = $ends_with_original ? trim(str_replace(":original", "", $param)) : $param;
+                $this->cached = $this->getExpression($type, sprintf($format, $param));
             } else {
                 $this->cached = $this->getValueExpression($type, $this->value);
             }
         }
         return $this->cached;
+    }
+
+    private static function isPlaceholder(string $expr, ?int &$start = null, ?int &$end = null)
+    {
+        return ((false !== ($start = strpos($expr, '['))) && (false !== ($end = strpos($expr, ']')))) || ((false !== ($start = strpos($expr, '{'))) && (false !== ($end = strpos($expr, '}'))));
     }
 
     private function getExpression(string $type, string $value)
@@ -64,10 +79,10 @@ final class Property
             case 'str':
             case 'string':
                 return 'strval(' . $value . ')';
-            case 'str:upper':
+            case 'str::upper':
             case 'string::upper':
                 return "\strtoupper(strval(" . $value . '))';
-            case 'str:lower':
+            case 'str::lower':
             case 'string::lower':
                 return "\strtolower(strval(" . $value . '))';
             case 'date':
@@ -79,6 +94,14 @@ final class Property
 
     private function getValueExpression(string $type, string $value)
     {
+        $lcvalue = strtolower($value);
+        if ('now' === $lcvalue || 'now()' === $lcvalue || 'datetime' === $lcvalue || 'datetime()' === $lcvalue) {
+            $value = "date('Y-m-d H:i:s')";
+        }
+
+        if ('date' === $lcvalue || 'date()' === $lcvalue) {
+            $value = "date('Y-m-d')";
+        }
         switch (strtolower($type)) {
             case 'float':
             case 'decimal':
@@ -91,10 +114,10 @@ final class Property
             case 'str':
             case 'string':
                 return sprintf("'%s'", $value);
-            case 'str:upper':
+            case 'str::upper':
             case 'string::upper':
                 return sprintf("\strtoupper('%s')", $value);
-            case 'str:lower':
+            case 'str::lower':
             case 'string::lower':
                 return sprintf("\strtolower('%s')", $value);
             case 'date':

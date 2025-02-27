@@ -13,6 +13,10 @@ declare(strict_types=1);
 
 namespace Drewlabs\GCli\Plugins\Laravel\Observers;
 
+use Drewlabs\GCli\Plugins\Laravel\Expressions\ComposedExpression;
+use Drewlabs\GCli\Plugins\Laravel\Expressions\LiteralExpression;
+use Drewlabs\GCli\Plugins\Laravel\Expressions\Property;
+
 final class PropertyExpression
 {
     /** @var string */
@@ -24,16 +28,20 @@ final class PropertyExpression
     /** @var \Stringable */
     private $condition;
 
+    /** @var \Stringable */
+    private $changedExpression;
+
     /**
      * Null property observer expression.
      *
      * @return void
      */
-    public function __construct(string $property, string $value, $condition = null)
+    public function __construct(string $property, string $value, $changedExpression = null, $condition = null)
     {
         $this->property = $property;
         $this->value = $value;
         $this->condition = $condition;
+        $this->changedExpression = $changedExpression;
     }
 
     public function __toString(): string
@@ -56,13 +64,17 @@ final class PropertyExpression
                     $pos_2 = strpos($params, ':');
                     $p = $pos_2 ? trim(substr($params, 0, $pos_2)) : $params;
                     $precision = $pos_2 ? (int) (empty($result = trim(substr($params, $pos_2 + 1))) ? 2 : $result) : 2;
-                    return $this->createExpression($this->property, sprintf('%.'.$precision.'f', $p));
+                    return $this->createExpression($this->property, sprintf('%.' . $precision . 'f', $p));
                 case 'str':
                 case 'string':
                     return $this->createExpression($this->property, sprintf("'%s'", $params));
-                case 'upper':
+                case 'str::upper':
                     return $this->createExpression($this->property, sprintf("\strtoupper('%s')", $params));
-                case 'lower':
+                case 'str::lower':
+                    return $this->createExpression($this->property, sprintf("\strtolower('%s')", $params));
+                case 'string::upper':
+                    return $this->createExpression($this->property, sprintf("\strtoupper('%s')", $params));
+                case 'string::lower':
                     return $this->createExpression($this->property, sprintf("\strtolower('%s')", $params));
                 case 'date':
                     return $this->createExpression($this->property, sprintf("date('%s')", $params));
@@ -78,28 +90,31 @@ final class PropertyExpression
     {
         if (!empty($params = Expression::new($haystack)->read('set', $offset))) {
             $next = trim(substr($haystack, $offset + 1));
+
             if (empty($next)) {
                 return new self(...$params);
             }
 
+            if ((strpos($next, '->onChange') !== false) && !empty($p = Expression::new($next)->read('->onChange', $offset))) {
+                $next = ltrim(substr($next, $offset + 1));
+                $params[] = new PropertyChangedExpression(...$p);
+            } else if ((strpos($next, '->changed') !== false) && !empty($p = Expression::new($next)->read('->changed', $offset))) {
+                $next = ltrim(substr($next, $offset + 1));
+                $params[] = new PropertyChangedExpression(...$p);
+            } else {
+                $params[] = null;
+            }
+
+            $next = ltrim($next);
             if ('->null()' === strtolower($next)) {
                 $property = $params[0];
-                $params[] = new PropertyLogicalExpression($property, 'null');
+                $params[] = new LiteralExpression($property, 'null');
 
-                return new self(...$params);
+            } else if (str_starts_with($next, '->if')) {
+                $params[] = ComposedExpression::compile(substr($next, strlen('->if')));
             }
 
-            if (!empty($p = Expression::new($next)->read('->onChange'))) {
-                $params[] = new PropertyChangedExpression(...$p);
-
-                return new self(...$params);
-            }
-
-            if (!empty($p = Expression::new($next)->read('->if'))) {
-                $params[] = new PropertyLogicalExpression(...$p);
-
-                return new self(...$params);
-            }
+            return new self(...$params);
         }
 
         throw new \BadMethodCallException('set expression not correctly formed, supported syntax is set(property, value)->null()');
@@ -121,6 +136,6 @@ final class PropertyExpression
     private function createExpression(string $property, $value): string
     {
         $condition = null === $this->condition ? sprintf("is_null(%s)", Property::create($property)) :  $this->condition;
-        return sprintf("if (%s) {\n    \$model->setRawPropertyValue('%s', %s); \n}\n", $condition, new PropertyName($property), $value);
+        return sprintf("if (%s%s) {\n    \$model->setRawPropertyValue('%s', %s); \n}\n", $this->changedExpression ?? '', sprintf("%s%s", $this->changedExpression ? ' && ' : '', $condition), new PropertyName($property), $value);
     }
 }

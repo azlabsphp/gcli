@@ -15,6 +15,8 @@ namespace Drewlabs\GCli\Plugins\Laravel\Observers;
 
 use Drewlabs\CodeGenerator\Models\PHPConstructorParameter;
 use Drewlabs\Core\Helpers\Str;
+use Drewlabs\GCli\Plugins\Laravel\Expressions\ComposedExpression;
+use Drewlabs\GCli\Plugins\Laravel\Expressions\Property;
 
 final class EventExpression
 {
@@ -27,6 +29,9 @@ final class EventExpression
     /** @var array|null */
     private $variables;
 
+    /** @var \Stringable */
+    private $changedExpression;
+
     /**
      * Create new event observer expression instance.
      *
@@ -34,7 +39,7 @@ final class EventExpression
      *
      * @return void
      */
-    public function __construct(string $event, ?array $params = null, string $namespace = 'App', $condition = null)
+    public function __construct(string $event, ?array $params = null, string $namespace = 'App', $changedExpression = null, $condition = null)
     {
         $items = [];
         $variables = [];
@@ -85,13 +90,14 @@ final class EventExpression
 
         $this->event = new Event($event, $items, $namespace);
         $this->variables = $variables;
+        $this->changedExpression = $changedExpression;
         $this->condition = $condition;
     }
 
     public function __toString(): string
     {
         if ($this->condition) {
-            return sprintf("if (%s) {\n    %s \n}", (string) $this->condition, $this->createExpression($this->event, $this->variables));
+            return sprintf("if (%s%s) {\n    %s \n}", $this->changedExpression ?? '', $this->condition ? sprintf("%s%s", $this->changedExpression ? ' && ' : '', $this->condition) : '' , $this->createExpression($this->event, $this->variables));
         }
         return sprintf('%s', $this->createExpression($this->event, $this->variables));
     }
@@ -104,26 +110,27 @@ final class EventExpression
                 return new self(Str::camelize($params[0]), \array_slice($params, 1), $namespace);
             }
 
-            if (!empty($p = Expression::new($next)->read('->onChange'))) {
-                $expression = new PropertyChangedExpression(...$p);
-                return new self(Str::camelize($params[0]), \array_slice($params, 1), $namespace, $expression);
+            $changedExpression = null;
+            if ((strpos($next, '->onChange') !== false) && !empty($p = Expression::new($next)->read('->onChange', $offset))) {
+                $next = ltrim(substr($next, $offset + 1));
+                $changedExpression = new PropertyChangedExpression(...$p);
             }
 
-            if (!empty($p = Expression::new($next)->read('->changed'))) {
-                $expression = new PropertyChangedExpression(...$p);
-
-                return new self(Str::camelize($params[0]), \array_slice($params, 1), $namespace, $expression);
+            if ((strpos($next, '->changed') !== false) && !empty($p = Expression::new($next)->read('->changed', $offset))) {
+                $next = ltrim(substr($next, $offset + 1));
+                $changedExpression = new PropertyChangedExpression(...$p);
             }
 
-            // if next expression stack starts with if
-            if ('->if(' === substr(trim($next), 0, \strlen('->if('))) {
-                $expression = PropertyLogicalExpression::compile($next);
-                return new self(Str::camelize($params[0]), \array_slice($params, 1), $namespace, $expression);
-
+            $next = ltrim($next);
+            $condition = null;
+            if (str_starts_with($next, '->if')) {
+                $condition = ComposedExpression::compile(substr($next, strlen('->if')));
             }
+
+            return new self(Str::camelize($params[0]), \array_slice($params, 1), $namespace, $changedExpression, $condition);
         }
 
-        throw new \BadMethodCallException('dispatch expression not correctly formed, supported syntax is dispatch(event_name, [id]:string, [name]:string)->if(property, value)');
+        throw new \BadMethodCallException('dispatch expression not correctly formed, supported syntax is dispatch(event_name, [id]:string, [name]:string)->if(property == value)');
     }
 
     /**
