@@ -54,6 +54,7 @@ final class PropertyExpression
         if ('date' === $lcvalue || 'date()' === $lcvalue) {
             return $this->createExpression($this->property, "date('Y-m-d H:i:s')");
         }
+
         return $this->createExpression($this->property, $this->value);
     }
 

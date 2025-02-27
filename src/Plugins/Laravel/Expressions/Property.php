@@ -70,7 +70,7 @@ final class Property
 
         if (static::isPlaceholder($expr, $start, $end)) {
             $name = trim(substr($expr, $start, $end - \strlen(substr($expr, 0, $start + 1)) + 2));
-            $type = empty($type = trim(str_replace($name . ':', '', $expr))) || ($name === $type) ? 'mixed' : $type;
+            $type = empty($type = trim(str_replace($name.':', '', $expr))) || ($name === $type) ? 'mixed' : $type;
 
             return new static($name, $type);
         }
@@ -91,20 +91,20 @@ final class Property
         switch (strtolower($type)) {
             case 'float':
             case 'decimal':
-                return 'floatval(' . $value . ')';
+                return 'floatval('.$value.')';
             case 'int':
-                return 'intval(' . $value . ')';
+                return 'intval('.$value.')';
             case 'str':
             case 'string':
-                return 'strval(' . $value . ')';
+                return 'strval('.$value.')';
             case 'str::upper':
             case 'string::upper':
-                return "\strtoupper(strval(" . $value . '))';
+                return "\strtoupper(strval(".$value.'))';
             case 'str::lower':
             case 'string::lower':
-                return "\strtolower(strval(" . $value . '))';
+                return "\strtolower(strval(".$value.'))';
             case 'date':
-                return 'new \DateTimeImmutable(' . $value . ')';
+                return 'new \DateTimeImmutable('.$value.')';
             default:
                 return $value;
         }
@@ -120,7 +120,7 @@ final class Property
         if ('date' === $lcvalue || 'date()' === $lcvalue) {
             $value = "date('Y-m-d')";
         }
-        
+
         switch (strtolower($type)) {
             case 'float':
             case 'decimal':
@@ -128,7 +128,7 @@ final class Property
                 $p = $pos_2 ? trim(substr($value, 0, $pos_2)) : $value;
                 $precision = $pos_2 ? (int) (empty($result = trim(substr($value, $pos_2 + 1))) ? 2 : $result) : 2;
 
-                return sprintf('%.' . $precision . 'f', $p);
+                return sprintf('%.'.$precision.'f', $p);
             case 'int':
                 return sprintf('%s', (int) $value);
             case 'str':

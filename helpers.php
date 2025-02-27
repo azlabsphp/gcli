@@ -103,11 +103,10 @@ if (!function_exists('str_ends_with')) {
     }
 }
 
-
 if (!function_exists('str_contains')) {
     /** The function returns true if the passed $haystack contains $needle string or false otherwise */
     function str_contains(string $haystack, string $needle): bool
     {
-        return '' === $needle || false !== strpos($haystack, $needle);
+        return '' === $needle || str_contains($haystack, $needle);
     }
 }

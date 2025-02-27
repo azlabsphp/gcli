@@ -34,7 +34,7 @@ final class LiteralExpression
     public function __toString(): string
     {
         if (null === $this->variable) {
-            return null === $this->value ? 'true' : (string)Property::create($this->value);
+            return null === $this->value ? 'true' : (string) Property::create($this->value);
         }
 
         if (null === $this->value) {
@@ -42,7 +42,7 @@ final class LiteralExpression
         }
 
         if ('null' === strtolower($this->value)) {
-            return sprintf('%sis_null(%s)', $this->operator === '!=' || $this->operator === '!==' ?  '!' : '', Property::create($this->variable));
+            return sprintf('%sis_null(%s)', '!=' === $this->operator || '!==' === $this->operator ? '!' : '', Property::create($this->variable));
         }
 
         $op = '=' === $this->operator || '==' === $this->operator ? '===' : $this->operator;
@@ -77,6 +77,7 @@ final class LiteralExpression
 
             return new static(...$items);
         }
+
         return new static(null, $expr, null);
     }
 }

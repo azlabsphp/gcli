@@ -52,34 +52,34 @@ final class EventExpression
                 switch (strtolower($type)) {
                     case 'float':
                     case 'decimal':
-                        $items[] = new PHPConstructorParameter((string)$camelized, 'float');
+                        $items[] = new PHPConstructorParameter((string) $camelized, 'float');
                         $variables[] = Property::create($p);
                         break;
                     case 'int':
-                        $items[] = new PHPConstructorParameter((string)$camelized, 'int');
+                        $items[] = new PHPConstructorParameter((string) $camelized, 'int');
                         $variables[] = Property::create($p);
                         break;
                     case 'bool':
-                        $items[] = new PHPConstructorParameter((string)$camelized, 'bool');
+                        $items[] = new PHPConstructorParameter((string) $camelized, 'bool');
                         $variables[] = Property::create($p);
                         break;
                     case 'str':
                     case 'string':
-                        $items[] = new PHPConstructorParameter((string)$camelized, 'string');
+                        $items[] = new PHPConstructorParameter((string) $camelized, 'string');
                         $variables[] = Property::create($p);
                         break;
                     case 'date':
-                        $items[] = new PHPConstructorParameter((string)$camelized, '\DateTimeInterface');
+                        $items[] = new PHPConstructorParameter((string) $camelized, '\DateTimeInterface');
                         $variables[] = Property::create($p);
                         break;
                     default:
-                        $items[] = new PHPConstructorParameter((string)$camelized);
+                        $items[] = new PHPConstructorParameter((string) $camelized);
                         $variables[] = Property::create($p);
                         break;
                 }
                 continue;
             }
-            $items[] = new PHPConstructorParameter((string)(new PropertyName((Str::camelize($p, false)))));
+            $items[] = new PHPConstructorParameter((string) (new PropertyName(Str::camelize($p, false))));
             $variables[] = Property::create($p);
         }
 
