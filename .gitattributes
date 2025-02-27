@@ -4,3 +4,5 @@ Todo export-ignore
 .php-cs-fixer.dist.php export-ignore
 .phpunit.result.cache export-ignore
 .gitattributes export-ignore
+Changelog export-ignore
+.gitignore export-ignore
