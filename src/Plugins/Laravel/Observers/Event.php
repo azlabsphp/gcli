@@ -107,7 +107,7 @@ final class Event
      */
     public function getListener(): Listener
     {
-        return new Listener($this);
+        return new Listener($this, $this->namespace);
     }
 
     /**
