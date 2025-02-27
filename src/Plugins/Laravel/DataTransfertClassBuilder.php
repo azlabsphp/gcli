@@ -223,9 +223,7 @@ class DataTransfertClassBuilder implements AbstractBuilder
 
     public function build()
     {
-        /**
-         * @var Blueprint
-         */
+        /** @var Blueprint */
         $component = PHPClass($this->name())
             ->addComment(
                 array_merge(
@@ -259,9 +257,7 @@ class DataTransfertClassBuilder implements AbstractBuilder
             $component = $component->addImplementation(\Illuminate\Contracts\Routing\UrlRoutable::class)->addTrait(\Drewlabs\Laravel\Query\Traits\URLRoutableAware::class);
         }
 
-        /**
-         * @var Blueprint
-         */
+        /** @var Blueprint */
         $component = $component->addProperty(
             PHPClassProperty(
                 '__PROPERTIES__',
@@ -271,9 +267,7 @@ class DataTransfertClassBuilder implements AbstractBuilder
             )->asConstant()
         );
 
-        /**
-         * @var Blueprint
-         */
+        /** @var Blueprint */
         $component = $component->addProperty(
             PHPClassProperty(
                 '__HIDDEN__',
@@ -282,9 +276,8 @@ class DataTransfertClassBuilder implements AbstractBuilder
                 $this->excepts ?? []
             )
         );
-        /**
-         * @var Blueprint
-         */
+        
+        /** @var Blueprint */
         $component = $component->addProperty(
             PHPClassProperty(
                 '__CASTS__',

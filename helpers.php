@@ -80,9 +80,27 @@ if (!function_exists('config')) {
 if (!function_exists('str_starts_with')) {
 
     /** The function returns `true` if the passed $haystack starts from the $needle string or `false` otherwise */
-    function str_starts_with(string $haystack, string $substr): bool
+    function str_starts_with(string $haystack, string $needle): bool
     {
-        return ((false !== ($offset = strpos($haystack, $substr))) && (substr($haystack, 0, $offset) === $substr));
+        return 0 === strncmp($haystack, $needle, \strlen($needle));
     }
 }
 
+
+if (!function_exists('str_ends_with')) {
+    /** The function returns true if the passed $haystack ends with the $needle string or false otherwise */
+    function str_ends_with(string $haystack, string $needle): bool
+    {
+        if ('' === $needle || $needle === $haystack) {
+            return true;
+        }
+
+        if ('' === $haystack) {
+            return false;
+        }
+
+        $len = \strlen($needle);
+
+        return $len <= \strlen($haystack) && 0 === substr_compare($haystack, $needle, -$len);
+    }
+}

@@ -27,7 +27,7 @@ final class LiteralExpression
      */
     public static function compile(string $expr)
     {
-        $regex = "/^([\[\]A-Za-z\d_ \"'?:]+)([><!]?[=]+|[>]+|[<]+)([\[\]A-Za-z\d_ \"'?:])+$/";
+        $regex = "/^([\[\]A-Za-z\d_ \"'?:]+)([><!]?[=]+|[>]+|[<]+)([\[\]A-Za-z\d_ \"'?:]+)$/";
         if (preg_match($regex, $expr) === 1) {
             $swap_array_values = function(&$array, $i, $j) {
                 $tmp = $array[$i];

@@ -124,6 +124,7 @@ final class EventExpression
             $next = ltrim($next);
             $condition = null;
             if (str_starts_with($next, '->if')) {
+                print_r([substr($next, strlen('->if'))]);
                 $condition = ComposedExpression::compile(substr($next, strlen('->if')));
             }
 

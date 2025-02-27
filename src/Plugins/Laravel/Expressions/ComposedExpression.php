@@ -46,7 +46,7 @@ final class ComposedExpression {
         };
 
         if (strpos($expr, '(') === false) {
-            return strpos($expr, ' AND ') ? AndExpression::compile($expr) : (strpos($expr, ' OR ') ? OrExpression::compile($expr) : new LiteralExpression($expr));
+            return strpos($expr, ' AND ') ? AndExpression::compile($expr) : (strpos($expr, ' OR ') ? OrExpression::compile($expr) : LiteralExpression::compile($expr));
         }
     
         // Chop off all white spaces
@@ -76,7 +76,7 @@ final class ComposedExpression {
         }
 
         if (!empty(trim($before))) {
-            $output = strpos($before, ' AND ') ? AndExpression::compile($before) : (strpos($before, ' OR ') ? OrExpression::compile($before) : new LiteralExpression($before));
+            $output = strpos($before, ' AND ') ? AndExpression::compile($before) : (strpos($before, ' OR ') ? OrExpression::compile($before) : LiteralExpression::compile($before));
         }
 
         // Chop off ( character
@@ -87,7 +87,7 @@ final class ComposedExpression {
                 ++$offset;
                 if (!empty($characters)) {
                     $expression = implode("", $characters);
-                    $compiled = false !== strpos($expression, ' AND ') ? AndExpression::compile($expression) : (false !== strpos($expression, ' OR ') ? OrExpression::compile($expression) : new LiteralExpression($expression));
+                    $compiled = false !== strpos($expression, ' AND ') ? AndExpression::compile($expression) : (false !== strpos($expression, ' OR ') ? OrExpression::compile($expression) : LiteralExpression::compile($expression));
     
                     if (!is_null($output) && is_null($op)) {
                         throw new LogicException('expression error, expressions should be combined with AND or OR logical operators');
