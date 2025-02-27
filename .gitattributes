@@ -1,4 +1,6 @@
 /tests export-ignore
 Todo export-ignore
-php-cs-fixer.* export-ignore
-.phpunit.result.* export-ignore
+php-cs-fixer.cache export-ignore
+php-cs-fixer.dist.php export-ignore
+.phpunit.result.cache export-ignore
+.gitattributes export-ignore
