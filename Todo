@@ -58,3 +58,4 @@
 - Drop support for PHP < 7.4 by generating PHP8 compatible code [x]
 - Add a `DTOClass::useBuilder()` implementation to dto classes [x]
 - Fix bug in `ComposedExpression::compile()` []
+- REview code for optimization and resource consumption []
