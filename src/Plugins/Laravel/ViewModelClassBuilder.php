@@ -133,7 +133,7 @@ class ViewModelClassBuilder implements AbstractBuilder
     ) {
         $this->setName($name ?
             (!Str::endsWith($name, 'ViewModel') ?
-                Str::camelize(Pluralizer::singular($name)) . 'ViewModel' :
+                Str::camelize(Pluralizer::singular($name)).'ViewModel' :
                 Str::camelize(Pluralizer::singular($name))) :
             self::DEFAULT_NAME);
         // Set the component write path
@@ -154,7 +154,7 @@ class ViewModelClassBuilder implements AbstractBuilder
         $isPath = Str::contains($path, '\\');
         $this->modelPath = $isPath ? $path : $this->modelPath;
         $this->model = $isPath ? $this->getClassNameFromPath($path) : $path;
-        $this->setName(Str::camelize(Pluralizer::singular($this->model)) . 'ViewModel');
+        $this->setName(Str::camelize(Pluralizer::singular($this->model)).'ViewModel');
 
         return $this;
     }
@@ -186,7 +186,7 @@ class ViewModelClassBuilder implements AbstractBuilder
                 'array<string,string|string[]>',
                 PHPTypesModifiers::PUBLIC,
                 'Returns a fluent validation rules'
-            )->addContents('return ' . PHPVariable('rules', null, $this->rules ?? [])->asRValue()->__toString()))
+            )->addContents('return '.PHPVariable('rules', null, $this->rules ?? [])->asRValue()->__toString()))
             ->addMethod(PHPClassMethod(
                 'messages',
                 [],
@@ -203,7 +203,7 @@ class ViewModelClassBuilder implements AbstractBuilder
                 'array<string,string|string[]>',
                 PHPTypesModifiers::PUBLIC,
                 'Returns a fluent validation rules applied during update actions'
-            )->addContents('return ' . PHPVariable('rules', null, $this->updateRules ?? [])->asRValue()->__toString()));
+            )->addContents('return '.PHPVariable('rules', null, $this->updateRules ?? [])->asRValue()->__toString()));
         }
         // Add inputs traits
         if ($this->hasInputsTraits) {
@@ -216,7 +216,7 @@ class ViewModelClassBuilder implements AbstractBuilder
                         'model',
                         PHPTypes::STRING,
                         PHPTypesModifiers::PRIVATE,
-                        $this->model . '::class',
+                        $this->model.'::class',
                         'Model class associated with the view model'
                     )
                 );
@@ -231,7 +231,7 @@ class ViewModelClassBuilder implements AbstractBuilder
                         'dtoclass',
                         PHPTypes::STRING,
                         PHPTypesModifiers::PRIVATE,
-                        Str::afterLast('\\', $this->dtoPath) . '::class',
+                        Str::afterLast('\\', $this->dtoPath).'::class',
                         'Data transfer class associated with the view model'
                     )
                 );
@@ -296,19 +296,19 @@ class ViewModelClassBuilder implements AbstractBuilder
         //     return null !== $value ? CommentDto::new($value)->addProperties($properties)->mergeHidden(array_merge($view->getExcludes(), $value->getHidden() ?? [])) : $value;
         // }
         // Add builder class
-        if (!is_null($this->dtoPath) && version_compare(PHP_VERSION, '7.4') < 0) {
+        if (null !== $this->dtoPath && version_compare(\PHP_VERSION, '7.4') < 0) {
             $component = $component->addMethod(
-                PHPClassMethod('useResourceBuilder', [PHPFunctionParameter('properties', 'array')], "\\".\Closure::class, PHPTypesModifiers::PUBLIC)
+                PHPClassMethod('useResourceBuilder', [PHPFunctionParameter('properties', 'array')], '\\'.\Closure::class, PHPTypesModifiers::PUBLIC)
                     ->addLine('return function ($value) use ($properties) {')
-                    ->addLine(sprintf("return null !== \$value ? %s::new(\$value)->addProperties(\$properties)->mergeHidden(array_merge(\$this->getExcludes(), \$value->getHidden() ?? [])) : \$value", $this->getClassNameFromPath($this->dtoPath)))
+                    ->addLine(sprintf('return null !== $value ? %s::new($value)->addProperties($properties)->mergeHidden(array_merge($this->getExcludes(), $value->getHidden() ?? [])) : $value', $this->getClassNameFromPath($this->dtoPath)))
                     ->addLine('})')
             );
         }
 
-        if (!is_null($this->dtoPath) && version_compare(PHP_VERSION, '7.4') > 0) {
+        if (null !== $this->dtoPath && version_compare(\PHP_VERSION, '7.4') > 0) {
             $component = $component->addMethod(
-                PHPClassMethod('useResourceBuilder', [PHPFunctionParameter('properties', 'array')], "\\".\Closure::class, PHPTypesModifiers::PUBLIC)
-                    ->addLine(sprintf("return fn (\$value) => null !== \$value ? %s::new(\$value)->addProperties(\$properties)->mergeHidden(array_merge(\$this->getExcludes(), \$value->getHidden() ?? [])) : \$value", $this->getClassNameFromPath($this->dtoPath)))
+                PHPClassMethod('useResourceBuilder', [PHPFunctionParameter('properties', 'array')], '\\'.\Closure::class, PHPTypesModifiers::PUBLIC)
+                    ->addLine(sprintf('return fn ($value) => null !== $value ? %s::new($value)->addProperties($properties)->mergeHidden(array_merge($this->getExcludes(), $value->getHidden() ?? [])) : $value', $this->getClassNameFromPath($this->dtoPath)))
             );
         }
 

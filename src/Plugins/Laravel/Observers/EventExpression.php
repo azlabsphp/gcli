@@ -47,38 +47,38 @@ final class EventExpression
             if ($pos = strpos($p, ':')) {
                 $name = trim(substr($p, 0, $pos));
                 $type = trim(substr($p, $pos + 1));
-                $camelized = Str::camelize($name, false);
+                $camelized = new PropertyName(Str::camelize($name, false));
                 switch (strtolower($type)) {
                     case 'float':
                     case 'decimal':
-                        $items[] = new PHPConstructorParameter($camelized, 'float');
+                        $items[] = new PHPConstructorParameter((string)$camelized, 'float');
                         $variables[] = new Property($name, $type);
                         break;
                     case 'int':
-                        $items[] = new PHPConstructorParameter($camelized, 'int');
+                        $items[] = new PHPConstructorParameter((string)$camelized, 'int');
                         $variables[] = new Property($name, $type);
                         break;
                     case 'bool':
-                        $items[] = new PHPConstructorParameter($camelized, 'bool');
+                        $items[] = new PHPConstructorParameter((string)$camelized, 'bool');
                         $variables[] = new Property($name, $type);
                         break;
                     case 'str':
                     case 'string':
-                        $items[] = new PHPConstructorParameter($camelized, 'string');
+                        $items[] = new PHPConstructorParameter((string)$camelized, 'string');
                         $variables[] = new Property($name, $type);
                         break;
                     case 'date':
-                        $items[] = new PHPConstructorParameter($camelized, '\DateTimeInterface');
+                        $items[] = new PHPConstructorParameter((string)$camelized, '\DateTimeInterface');
                         $variables[] = new Property($name, $type);
                         break;
                     default:
-                        $items[] = new PHPConstructorParameter($camelized);
+                        $items[] = new PHPConstructorParameter((string)$camelized);
                         $variables[] = new Property($name, 'mixed');
                         break;
                 }
                 continue;
             }
-            $items[] = new PHPConstructorParameter(Str::camelize($p, false));
+            $items[] = new PHPConstructorParameter((string)(new PropertyName((Str::camelize($p, false)))));
             $variables[] = new Property($p, 'mixed');
         }
 
@@ -97,8 +97,9 @@ final class EventExpression
     public function __toString(): string
     {
         if ($this->condition) {
-            return sprintf("if (%s%s) {\n    %s \n}", $this->changedExpression ?? '', $this->condition ? sprintf("%s%s", $this->changedExpression ? ' && ' : '', $this->condition) : '' , $this->createExpression($this->event, $this->variables));
+            return sprintf("if (%s%s) {\n    %s \n}", $this->changedExpression ?? '', $this->condition ? sprintf('%s%s', $this->changedExpression ? ' && ' : '', $this->condition) : '', $this->createExpression($this->event, $this->variables));
         }
+
         return sprintf('%s', $this->createExpression($this->event, $this->variables));
     }
 
@@ -111,12 +112,12 @@ final class EventExpression
             }
 
             $changedExpression = null;
-            if ((strpos($next, '->onChange') !== false) && !empty($p = Expression::new($next)->read('->onChange', $offset))) {
+            if (str_contains($next, '->onChange') && !empty($p = Expression::new($next)->read('->onChange', $offset))) {
                 $next = ltrim(substr($next, $offset + 1));
                 $changedExpression = new PropertyChangedExpression(...$p);
             }
 
-            if ((strpos($next, '->changed') !== false) && !empty($p = Expression::new($next)->read('->changed', $offset))) {
+            if (str_contains($next, '->changed') && !empty($p = Expression::new($next)->read('->changed', $offset))) {
                 $next = ltrim(substr($next, $offset + 1));
                 $changedExpression = new PropertyChangedExpression(...$p);
             }
@@ -124,8 +125,7 @@ final class EventExpression
             $next = ltrim($next);
             $condition = null;
             if (str_starts_with($next, '->if')) {
-                print_r([substr($next, strlen('->if'))]);
-                $condition = ComposedExpression::compile(substr($next, strlen('->if')));
+                $condition = ComposedExpression::compile(substr($next, \strlen('->if')));
             }
 
             return new self(Str::camelize($params[0]), \array_slice($params, 1), $namespace, $changedExpression, $condition);

@@ -276,7 +276,7 @@ class DataTransfertClassBuilder implements AbstractBuilder
                 $this->excepts ?? []
             )
         );
-        
+
         /** @var Blueprint */
         $component = $component->addProperty(
             PHPClassProperty(

@@ -45,7 +45,7 @@ final class Event
         $this->namespace = $namespace ?? 'App';
 
         // case event nane is a class path, we mark the event as existing
-        if ($name && (false !== strpos($name, '\\'))) {
+        if ($name && str_contains($name, '\\')) {
             $this->exists = true;
             $this->namespace = $this->removeClassName($name);
         }
@@ -69,9 +69,10 @@ final class Event
      */
     public function getClasspath(): string
     {
-        if ($this->name && (false !== strpos($this->name, '\\'))) {
+        if ($this->name && str_contains($this->name, '\\')) {
             return $this->name;
         }
+
         return sprintf('\\%s\\%s', rtrim($this->getNamespace(), '\\'), $this->name);
     }
 
@@ -118,9 +119,9 @@ final class Event
     }
 
     /**
-     * returns true if event class exists or false if class does not exists
-     * 
-     * @return bool 
+     * returns true if event class exists or false if class does not exists.
+     *
+     * @return bool
      */
     public function doesExists()
     {
@@ -129,6 +130,6 @@ final class Event
 
     private function removeClassName(string $name)
     {
-        return implode("\\", explode('\\', $name));
+        return implode('\\', explode('\\', $name));
     }
 }

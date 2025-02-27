@@ -64,7 +64,8 @@ final class PropertyExpression
                     $pos_2 = strpos($params, ':');
                     $p = $pos_2 ? trim(substr($params, 0, $pos_2)) : $params;
                     $precision = $pos_2 ? (int) (empty($result = trim(substr($params, $pos_2 + 1))) ? 2 : $result) : 2;
-                    return $this->createExpression($this->property, sprintf('%.' . $precision . 'f', $p));
+
+                    return $this->createExpression($this->property, sprintf('%.'.$precision.'f', $p));
                 case 'str':
                 case 'string':
                     return $this->createExpression($this->property, sprintf("'%s'", $params));
@@ -95,10 +96,10 @@ final class PropertyExpression
                 return new self(...$params);
             }
 
-            if ((strpos($next, '->onChange') !== false) && !empty($p = Expression::new($next)->read('->onChange', $offset))) {
+            if (str_contains($next, '->onChange') && !empty($p = Expression::new($next)->read('->onChange', $offset))) {
                 $next = ltrim(substr($next, $offset + 1));
                 $params[] = new PropertyChangedExpression(...$p);
-            } else if ((strpos($next, '->changed') !== false) && !empty($p = Expression::new($next)->read('->changed', $offset))) {
+            } elseif (str_contains($next, '->changed') && !empty($p = Expression::new($next)->read('->changed', $offset))) {
                 $next = ltrim(substr($next, $offset + 1));
                 $params[] = new PropertyChangedExpression(...$p);
             } else {
@@ -110,8 +111,8 @@ final class PropertyExpression
                 $property = $params[0];
                 $params[] = new LiteralExpression($property, 'null');
 
-            } else if (str_starts_with($next, '->if')) {
-                $params[] = ComposedExpression::compile(substr($next, strlen('->if')));
+            } elseif (str_starts_with($next, '->if')) {
+                $params[] = ComposedExpression::compile(substr($next, \strlen('->if')));
             }
 
             return new self(...$params);
@@ -135,7 +136,8 @@ final class PropertyExpression
      */
     private function createExpression(string $property, $value): string
     {
-        $condition = null === $this->condition ? sprintf("is_null(%s)", Property::create($property)) :  $this->condition;
-        return sprintf("if (%s%s) {\n    \$model->setRawPropertyValue('%s', %s); \n}\n", $this->changedExpression ?? '', sprintf("%s%s", $this->changedExpression ? ' && ' : '', $condition), new PropertyName($property), $value);
+        $condition = null === $this->condition ? sprintf('is_null(%s)', Property::create($property)) : $this->condition;
+
+        return sprintf("if (%s%s) {\n    \$model->setRawPropertyValue('%s', %s); \n}\n", $this->changedExpression ?? '', sprintf('%s%s', $this->changedExpression ? ' && ' : '', $condition), new PropertyName($property), $value);
     }
 }

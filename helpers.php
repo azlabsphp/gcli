@@ -76,16 +76,14 @@ if (!function_exists('config')) {
     }
 }
 
-
 if (!function_exists('str_starts_with')) {
 
     /** The function returns `true` if the passed $haystack starts from the $needle string or `false` otherwise */
     function str_starts_with(string $haystack, string $needle): bool
     {
-        return 0 === strncmp($haystack, $needle, \strlen($needle));
+        return 0 === strncmp($haystack, $needle, strlen($needle));
     }
 }
-
 
 if (!function_exists('str_ends_with')) {
     /** The function returns true if the passed $haystack ends with the $needle string or false otherwise */
@@ -99,8 +97,8 @@ if (!function_exists('str_ends_with')) {
             return false;
         }
 
-        $len = \strlen($needle);
+        $len = strlen($needle);
 
-        return $len <= \strlen($haystack) && 0 === substr_compare($haystack, $needle, -$len);
+        return $len <= strlen($haystack) && 0 === substr_compare($haystack, $needle, -$len);
     }
 }
