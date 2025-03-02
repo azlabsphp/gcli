@@ -32,9 +32,9 @@ final class Observers
     /**
      * returns observers singleton instance.
      *
-     * @return Observers
+     * @return self
      */
-    public static function getInstance()
+    public static function getInstance(): self
     {
         if (null === static::$instance) {
             static::$instance = new self();
@@ -63,19 +63,36 @@ final class Observers
                         continue;
                     }
 
-                    if ('set(' === substr(trim($expression), 0, \strlen('set('))) {
+                    if (str_starts_with($expression, 'SET')) {
                         $e = PropertyExpression::create($expression);
                         $this->addObserver($name.'.'.$observer, $e);
                         continue;
                     }
 
-                    if ('dispatch(' === substr(trim($expression), 0, \strlen('dispatch('))) {
+                    if (str_starts_with($expression, 'DISPATCH')) {
                         $e = EventExpression::create($expression, $namespace);
                         $this->events[] = $e->getEvent();
                         $this->addObserver($name.'.'.$observer, $e);
                         continue;
                     }
-                    // if required, add support for other expression parsers
+
+                    if (str_starts_with($expression, 'QUERY')) {
+                        $e = QueryExpression::create($expression);
+                        $this->addObserver($name.'.'.$observer, $e);
+                        continue;
+                    }
+
+                    if (str_starts_with($expression, 'EXEC')) {
+                        $e = ExecExpression::create($expression);
+                        $this->addObserver($name.'.'.$observer, $e);
+                        continue;
+                    }
+
+                    if (str_starts_with($expression, 'PRINT')) {
+                        $e = OutputExpression::create($expression);
+                        $this->addObserver($name.'.'.$observer, $e);
+                        continue;
+                    }
                 }
             }
         }

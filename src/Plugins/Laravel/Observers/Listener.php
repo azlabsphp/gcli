@@ -35,41 +35,31 @@ final class Listener
         $this->namespace = $namespace;
     }
 
-    /**
-     * returns the source event instance.
-     */
+    /** returns the source event instance. */
     public function getEvent(): Event
     {
         return $this->event;
     }
 
-    /**
-     * return class path to listener source code.
-     */
+    /** return class path to listener source code. */
     public function getClasspath(): string
     {
         return sprintf('%s\\%s', rtrim($this->getNamespace(), '\\'), $this->getName());
     }
 
-    /**
-     * return class name of the listener source code.
-     */
+    /** return class name of the listener source code. */
     public function getName(): string
     {
         return sprintf('%sListener', $this->event->getName());
     }
 
-    /**
-     * returns listener namespace or domain.
-     */
+    /** returns listener namespace or domain. */
     public function getNamespace(): string
     {
         return sprintf('\\%s\\%s', rtrim($this->namespace, '\\'), 'Listeners');
     }
 
-    /**
-     * creates listener source code builder.
-     */
+    /** creates listener source code builder. */
     public function getBuilder(?string $path = null): ComponentBuilder
     {
         return new ListenerBuilder($this, $path);

@@ -11,7 +11,7 @@ declare(strict_types=1);
  * file that was distributed with this source code.
  */
 
-namespace Drewlabs\GCli\Plugins\Laravel\Observers;
+namespace Drewlabs\GCli\Plugins\Laravel\Expressions;
 
 use Drewlabs\Core\Helpers\Str;
 

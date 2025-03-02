@@ -24,6 +24,14 @@ final class LiteralExpression
     /** @var string */
     private $operator = '===';
 
+    /**
+     * literal expression class constructor
+     * 
+     * @param null|string $variable 
+     * @param null|string $value 
+     * @param null|string $operator 
+     * @return void 
+     */
     public function __construct(?string $variable = null, ?string $value = null, ?string $operator = null)
     {
         $this->variable = $variable;

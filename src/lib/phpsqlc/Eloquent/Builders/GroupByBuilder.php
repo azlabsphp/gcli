@@ -1,0 +1,43 @@
+<?php
+
+namespace Drewlabs\PHPSQLC\Eloquent\Builders;
+
+use Drewlabs\PHPSQLC\Utils\Expression;
+
+/**
+ * This class constructs and produces following Query Builder methods :
+ *
+ *  groupBy
+ *  groupByRaw
+ *
+ * @author Rexhep Shijaku <rexhepshijaku@gmail.com>
+ *
+ */
+class GroupByBuilder extends AbstractBuilder implements Builder
+{
+    public function build(array $parts, array &$skipBag = []): string
+    {
+        $qb = '';
+        $partsLen = count($parts['parts']);
+
+        if ($partsLen == 0)
+            return $qb;
+
+        $fn = !$parts['is_raw'] ? 'groupBy' : 'groupByRaw';
+
+        $inner = '';
+        if ($partsLen == 1) {
+            $inner .= Expression::quote($parts['parts'][0]);
+        } else if ($partsLen > 1) {
+            if ($parts['is_raw']) {
+                $inner = Expression::quote(implode(', ', $parts['parts']));
+            } else {
+                $inner = '[' . implode(", ", array_map(array($this, 'quote'), $parts['parts'])) . ']';
+            }
+        }
+
+        $qb .= "->" . $fn . '(' . $inner . ')';
+
+        return $qb;
+    }
+}

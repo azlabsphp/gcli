@@ -16,6 +16,8 @@ namespace Drewlabs\GCli\Plugins\Laravel\Observers;
 use Drewlabs\GCli\Plugins\Laravel\Expressions\ComposedExpression;
 use Drewlabs\GCli\Plugins\Laravel\Expressions\LiteralExpression;
 use Drewlabs\GCli\Plugins\Laravel\Expressions\Property;
+use Drewlabs\GCli\Plugins\Laravel\Expressions\PropertyChangedExpression;
+use Drewlabs\GCli\Plugins\Laravel\Expressions\PropertyName;
 
 final class PropertyExpression
 {
@@ -60,36 +62,74 @@ final class PropertyExpression
 
     public static function create(string $haystack)
     {
-        if (!empty($params = Expression::new($haystack)->read('set', $offset))) {
-            $next = trim(substr($haystack, $offset + 1));
+        /** @var string|null */
+        $property = null;
 
-            if (empty($next)) {
-                return new self(...$params);
-            }
+        /** @var string|\Stringable|\Closure|null */
+        $condition = null;
 
-            if (str_contains($next, '->onChange') && !empty($p = Expression::new($next)->read('->onChange', $offset))) {
-                $next = ltrim(substr($next, $offset + 1));
-                $params[] = new PropertyChangedExpression(...$p);
-            } elseif (str_contains($next, '->changed') && !empty($p = Expression::new($next)->read('->changed', $offset))) {
-                $next = ltrim(substr($next, $offset + 1));
-                $params[] = new PropertyChangedExpression(...$p);
-            } else {
-                $params[] = null;
-            }
+        /** @var string|null */
+        $changed = null;
 
-            $next = ltrim($next);
-            if ('->null()' === strtolower($next)) {
-                $property = $params[0];
-                $params[] = new LiteralExpression($property, 'null');
+        /** @var string|null */
+        $setExpression = null;
 
-            } elseif (str_starts_with($next, '->if')) {
-                $params[] = ComposedExpression::compile(substr($next, \strlen('->if')));
-            }
+        /** @var int */
+        $pos = strlen($haystack) - 1;
 
-            return new self(...$params);
+        if (str_contains($haystack, 'CHANGED')) {
+            $pos = strpos($haystack, 'CHANGED');
+            $changedProperty = trim(substr($haystack, $pos + strlen('CHANGED')));
+            $changed = empty($changedProperty) ? function ($p) {
+                return new PropertyChangedExpression($p);
+            } : new PropertyChangedExpression($changedProperty);
+            $haystack = substr($haystack, 0, $pos);
+        } else if (str_contains($haystack, 'ON CHANGE')) {
+            $pos = strpos($haystack, 'ON CHANGE');
+            $changedProperty = trim(substr($haystack, $pos + strlen('ON CHANGE')));
+            $changed = empty($changedProperty) ? function ($p) {
+                return new PropertyChangedExpression($p);
+            } : new PropertyChangedExpression($changedProperty);
+            $haystack = substr($haystack, 0, $pos);
         }
 
-        throw new \BadMethodCallException('set expression not correctly formed, supported syntax is set(property, value)->null()');
+        if (str_contains($haystack, 'IF NOT NULL')) {
+            $pos = strpos($haystack, 'IF NOT NULL');
+            $string = trim(substr($haystack, $pos + strlen('IF NOT NULL')));
+            $property = !empty(trim($string)) ? $string : $property;
+            $condition = function ($p) {
+                return new LiteralExpression($p, 'null', '!==');
+            };
+            $haystack = substr($haystack, 0, $pos);
+        } else if (str_contains($haystack, 'IF NULL')) {
+            $pos = strpos($haystack, 'IF NULL');
+            $string = trim(substr($haystack, $pos + strlen('IF NULL')));
+            $property = !empty(trim($string)) ? $string : $property;
+            $condition = function ($p) {
+                return new LiteralExpression($p, 'null');
+            };
+            $haystack = substr($haystack, 0, $pos);
+        } else if (str_contains($haystack, 'IF')) {
+            $pos = strpos($haystack, 'IF');
+            $condition = ComposedExpression::compile(trim(substr($haystack, $pos + strlen('IF'))));
+            $haystack = substr($haystack, 0, $pos);
+        }
+
+        if (str_contains($haystack, 'SET')) {
+            $pos = strpos($haystack, 'SET');
+            $setExpression = trim(substr($haystack, $pos + strlen('SET')));
+            $haystack = substr($haystack, 0, $pos);
+        }
+
+        if (empty($params = preg_split("/\s+/", $setExpression ?? ''))) {
+            throw new \BadMethodCallException('SET expression not correctly formed, supported syntax is `SET property value IF NULL` or `SET property value IF property == value`');
+        }
+
+        if (is_null($property)) {
+            $property = $params[0];
+        }
+
+        return new static($params[0], $params[1] ?? 'null', is_callable($changed) ? ($property ? call_user_func($changed, $property) : null) : $changed, is_callable($condition) ? ($property ? call_user_func($condition, $property) : null) : $condition);
     }
 
     public static function new(string $format, $condition = null)

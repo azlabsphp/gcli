@@ -16,7 +16,10 @@ namespace Drewlabs\GCli\Plugins\Laravel\Observers;
 use Drewlabs\CodeGenerator\Models\PHPConstructorParameter;
 use Drewlabs\Core\Helpers\Str;
 use Drewlabs\GCli\Plugins\Laravel\Expressions\ComposedExpression;
+use Drewlabs\GCli\Plugins\Laravel\Expressions\LiteralExpression;
 use Drewlabs\GCli\Plugins\Laravel\Expressions\Property;
+use Drewlabs\GCli\Plugins\Laravel\Expressions\PropertyChangedExpression;
+use Drewlabs\GCli\Plugins\Laravel\Expressions\PropertyName;
 
 final class EventExpression
 {
@@ -100,39 +103,69 @@ final class EventExpression
         if ($this->condition) {
             return sprintf("if (%s%s) {\n    %s \n}", $this->changedExpression ?? '', $this->condition ? sprintf('%s%s', $this->changedExpression ? ' && ' : '', $this->condition) : '', $this->createExpression($this->event, $this->variables));
         }
-
         return sprintf('%s', $this->createExpression($this->event, $this->variables));
     }
 
     public static function create(string $haystack, string $namespace = 'App')
     {
-        if (!empty($params = Expression::new($haystack)->read('dispatch', $offset))) {
-            $next = trim(substr($haystack, $offset + 1));
-            if (empty($next)) {
-                return new self(Str::camelize($params[0]), \array_slice($params, 1), $namespace);
-            }
+        /** @var string|null */
+        $property = null;
 
-            $changedExpression = null;
-            if (str_contains($next, '->onChange') && !empty($p = Expression::new($next)->read('->onChange', $offset))) {
-                $next = ltrim(substr($next, $offset + 1));
-                $changedExpression = new PropertyChangedExpression(...$p);
-            }
+        /** @var string|\Stringable|\Closure|null */
+        $condition = null;
 
-            if (str_contains($next, '->changed') && !empty($p = Expression::new($next)->read('->changed', $offset))) {
-                $next = ltrim(substr($next, $offset + 1));
-                $changedExpression = new PropertyChangedExpression(...$p);
-            }
+        /** @var string|null */
+        $changed = null;
 
-            $next = ltrim($next);
-            $condition = null;
-            if (str_starts_with($next, '->if')) {
-                $condition = ComposedExpression::compile(substr($next, \strlen('->if')));
-            }
+        /** @var string|null */
+        $dispatch = null;
 
-            return new self(Str::camelize($params[0]), \array_slice($params, 1), $namespace, $changedExpression, $condition);
+        /** @var int */
+        $pos = strlen($haystack) - 1;
+
+        if (str_contains($haystack, 'CHANGED')) {
+            $pos = strpos($haystack, 'CHANGED');
+            $changed = new PropertyChangedExpression($property = trim(substr($haystack, $pos + strlen('CHANGED'))));
+            $haystack = substr($haystack, 0, $pos);
+        } else if (str_contains($haystack, 'ON CHANGE')) {
+            $pos = strpos($haystack, 'ON CHANGE');
+            $changed = new PropertyChangedExpression($property = trim(substr($haystack, $pos + strlen('ON CHANGE'))));
+            $haystack = substr($haystack, 0, $pos);
+        }
+        
+        if (str_contains($haystack, 'IF NOT NULL')) {
+            $pos = strpos($haystack, 'IF NOT NULL');
+            $string = trim(substr($haystack, $pos + strlen('IF NOT NULL')));
+            $property = !empty(trim($string)) ? $string : $property;
+            $condition = $property ? new LiteralExpression($property, 'null', '!==') : null;
+            $haystack = substr($haystack, 0, $pos);
+        } else if (str_contains($haystack, 'IF NULL')) {
+            $pos = strpos($haystack, 'IF NULL');
+            $string = trim(substr($haystack, $pos + strlen('IF NULL')));
+            $property = !empty(trim($string)) ? $string : $property;
+            $condition = $property ? new LiteralExpression($property, 'null', '!==') : null;
+            $haystack = substr($haystack, 0, $pos);
+        } else if (str_contains($haystack, 'IF')) {
+            $pos = strpos($haystack, 'IF');
+            $condition = ComposedExpression::compile(trim(substr($haystack, $pos + strlen('IF'))));
+            $haystack = substr($haystack, 0, $pos);
         }
 
-        throw new \BadMethodCallException('dispatch expression not correctly formed, supported syntax is dispatch(event_name, [id]:string, [name]:string)->if(property == value)');
+        if (str_contains($haystack, 'DISPATCH')) {
+            $pos = strpos($haystack, 'DISPATCH');
+            $dispatch = trim(substr($haystack, $pos + strlen('DISPATCH')));
+            $haystack = substr($haystack, 0, $pos);
+        }
+
+        if (empty($params = explode('WITH', $dispatch ?? ''))) {
+            throw new \BadMethodCallException('dispatch expression not correctly formed, supported syntax is DISPATCH event_name WITH [id]:string, [name]:string IF property == value CHANGED [name]');
+        }
+
+        $dispatchParams = array_map(function ($item) {
+            return trim($item);
+        }, preg_split('/\s+/', $params[1] ?? '', -1, \PREG_SPLIT_NO_EMPTY));
+
+        return new static(Str::camelize(trim($params[0])), $dispatchParams, $namespace, $changed, is_callable($condition) ? ($property ? call_user_func($condition, $property) : null) : $condition);
     }
 
     /**

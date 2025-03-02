@@ -19,7 +19,8 @@
     "license": "MIT",
     "autoload": {
         "psr-4": {
-            "Drewlabs\\GCli\\": "src/"
+            "Drewlabs\\GCli\\": "src/",
+            "Drewlabs\\PHPSQLC\\": "src/lib/phpsqlc"
         },
         "files": [
             "./src/proxies.php",
@@ -48,7 +49,8 @@
         "php": ">=7.4",
         "drewlabs/code-generator": "^0.3.21",
         "drewlabs/core-helpers": "^0.3",
-        "drewlabs/htr": "^0.2.0"
+        "drewlabs/htr": "^0.2.0",
+        "greenlion/php-sql-parser": "^4.7"
     },
     "extra": {
         "laravel": {
