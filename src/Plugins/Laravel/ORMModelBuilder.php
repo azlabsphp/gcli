@@ -428,6 +428,7 @@ class ORMModelBuilder implements AbstractORMModelBuilder, AbstractBuilder, HasRe
                     }
                 }
                 $boot->addLine('});');
+                $boot->addLine("");
                 continue;
             }
             if ($observers = Observers::getInstance()->get(sprintf('%s.%s', self::trimschema($this->table, $this->schema), $value))) {
@@ -441,6 +442,7 @@ class ORMModelBuilder implements AbstractORMModelBuilder, AbstractBuilder, HasRe
                     }
                 }
                 $boot->addLine('});');
+                $boot->addLine("");
                 continue;
             }
         }
