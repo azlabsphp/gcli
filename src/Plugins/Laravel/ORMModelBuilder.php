@@ -620,7 +620,7 @@ class ORMModelBuilder implements AbstractORMModelBuilder, AbstractBuilder, HasRe
             if (Types::ONE_TO_MANY === $type || Types::ONE_TO_ONE === $type) {
                 $method = $this->createOneOrManyMethodTemplate($relation, $type, $methods);
                 $component = $component->addMethod($method);
-                $comments[] = sprintf('@property \\%s%s %s', ltrim($relation->getModel(), '\\'), Types::ONE_TO_MANY === $type ? '[]' : '', $method->getName());
+                $comments[] = Types::ONE_TO_MANY === $type ? sprintf('@property \Illuminate\Support\Collection<\\%s> %s', ltrim($relation->getModel(), '\\'), $method->getName()) : sprintf('@property \\%s %s', ltrim($relation->getModel(), '\\'), $method->getName());
                 $this->relationMethods[] = $relation->getName();
                 continue;
             }
@@ -635,7 +635,7 @@ class ORMModelBuilder implements AbstractORMModelBuilder, AbstractBuilder, HasRe
                 $method = $this->createManyToManyRelationTemplate($relation, $methods);
                 /** @var Blueprint */
                 $component = $component->addMethod($method);
-                $comments[] = sprintf('@property \\%s[] %s', ltrim($relation->getLeftTable(), '\\'), $method->getName());
+                $comments[] = sprintf('@property \Illuminate\Support\Collection<\\%s> %s', ltrim($relation->getLeftTable(), '\\'), $method->getName());
                 $this->relationMethods[] = $relation->getName();
                 continue;
             }
@@ -646,7 +646,7 @@ class ORMModelBuilder implements AbstractORMModelBuilder, AbstractBuilder, HasRe
                 $method = $this->createThroughRelationTemplate($relation, $methods);
                 /** @var Blueprint */
                 $component = $component->addMethod($method);
-                $comments[] = sprintf('@property \\%s%s %s', ltrim($relation->getLeftTable(), '\\'), Types::ONE_TO_MANY_THROUGH === $relation->getType() ? '[]' : '', $method->getName());
+                $comments[] = Types::ONE_TO_MANY_THROUGH === $relation->getType() ? sprintf('@property \Illuminate\Support\Collection<\\%s> %s', ltrim($relation->getLeftTable(), '\\'), $method->getName()) : sprintf('@property \\%s %s', ltrim($relation->getLeftTable(), '\\'), $method->getName());
                 $this->relationMethods[] = $relation->getName();
                 continue;
             }

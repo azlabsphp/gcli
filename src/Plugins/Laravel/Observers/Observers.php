@@ -25,9 +25,7 @@ final class Observers
     private $events = [];
 
     /** @constructor */
-    private function __construct()
-    {
-    }
+    private function __construct() {}
 
     /**
      * returns observers singleton instance.
@@ -65,34 +63,36 @@ final class Observers
 
                     if (str_starts_with($expression, 'SET')) {
                         $e = PropertyExpression::create($expression);
-                        $this->addObserver($name.'.'.$observer, $e);
+                        $this->addObserver($name . '.' . $observer, $e);
                         continue;
                     }
 
                     if (str_starts_with($expression, 'DISPATCH')) {
                         $e = EventExpression::create($expression, $namespace);
                         $this->events[] = $e->getEvent();
-                        $this->addObserver($name.'.'.$observer, $e);
+                        $this->addObserver($name . '.' . $observer, $e);
                         continue;
                     }
 
-                    if (str_starts_with($expression, 'QUERY')) {
+                    if (str_starts_with($expression, 'SQL')) {
                         $e = QueryExpression::create($expression);
-                        $this->addObserver($name.'.'.$observer, $e);
+                        $this->addObserver($name . '.' . $observer, $e);
                         continue;
                     }
 
                     if (str_starts_with($expression, 'EXEC')) {
                         $e = ExecExpression::create($expression);
-                        $this->addObserver($name.'.'.$observer, $e);
+                        $this->addObserver($name . '.' . $observer, $e);
                         continue;
                     }
 
                     if (str_starts_with($expression, 'PRINT')) {
                         $e = OutputExpression::create($expression);
-                        $this->addObserver($name.'.'.$observer, $e);
+                        $this->addObserver($name . '.' . $observer, $e);
                         continue;
                     }
+
+                    $this->addObserver($name . '.' . $observer, $expression);
                 }
             }
         }
