@@ -124,6 +124,9 @@ final class Property
                 return '(float)' . $value;
             case 'int':
                 return '(int)' . $value;
+            case 'bool':
+            case 'boolean':
+                return '(bool)' . $value;
             case 'str':
             case 'string':
                 return '(string)' . $value;
@@ -170,6 +173,9 @@ final class Property
                 return sprintf('%.' . $precision . 'f', $p);
             case 'int':
                 return sprintf('(int)%s', $value);
+            case 'bool':
+            case 'boolean':
+                return sprintf('(bool)%s', $value);
             case 'str':
             case 'string':
                 return sprintf("'%s'", $value);
