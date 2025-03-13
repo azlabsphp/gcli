@@ -134,15 +134,24 @@ class ServiceProviderBuilder implements AbstractBuilder
             }
         }
 
+        // Add event listeners
+        if ($this->events && !empty($this->events)) {
+            $events = [];
+            foreach ($this->events as $e) {
+                $events[$e->getClasspath()] = [$e->getListener()->getClasspath()];
+            }
+            $component = $component->addProperty(PHPClassProperty('listen', 'array', PHPTypesModifiers::PROTECTED, $events, ['event listener mappings for the application.']));
+        }
+
         $registerMethod = PHPClassMethod('register', [], 'void', PHPTypesModifiers::PUBLIC, ['Register application services.'])
             ->addLine('parent::register()')
             ->addLine('')
             ->addContents(implode(\PHP_EOL, array_map(static function ($binding) use ($values) {
-                return '$this->app->bind('.$binding.'::class, '.$values[$binding].'::class);';
+                return '$this->app->bind(' . $binding . '::class, ' . $values[$binding] . '::class);';
             }, array_keys($values))));
 
         if ($this->routeFilePath) {
-            $routeFilePath = Str::endsWith($this->routeFilePath, '.php') ? $this->routeFilePath : ($this->routeFilePath.'.php');
+            $routeFilePath = Str::endsWith($this->routeFilePath, '.php') ? $this->routeFilePath : ($this->routeFilePath . '.php');
             $registerMethod = $registerMethod->addLine(implode(\PHP_EOL, [
                 '',
                 "\t\t// Register domain routes",
@@ -158,19 +167,8 @@ class ServiceProviderBuilder implements AbstractBuilder
         }
         $component = $component->addMethod($registerMethod);
 
-        // Add event listeners
-        if ($this->events) {
-            $events = [];
-            foreach ($this->events as $e) {
-                $events[$e->getClasspath()] = [$e->getListener()->getClasspath()];
-            }
-            $component = $component->addProperty(PHPClassProperty('listen', 'array', PHPTypesModifiers::PROTECTED, $events, ['event listener mappings for the application.']));
-        }
-
-        // Boot method
-        $bootMethod = PHPClassMethod('boot', [], 'void', PHPTypesModifiers::PUBLIC, ['Boot application services.'])
-            ->addLine('parent::boot()')
-            ->addLine('');
+        $bootMethod = PHPClassMethod('boot', [], 'void', PHPTypesModifiers::PUBLIC, ['Boot application services.']);
+        $bootMethod = $this->events && !empty($this->events) ? $bootMethod->addLine('parent::boot()')->addLine('') : $bootMethod;
 
         if (!empty($this->policies)) {
             $bootMethod = $bootMethod->addLine('$this->registerPolicies()');
