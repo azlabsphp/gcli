@@ -138,7 +138,7 @@ class ServiceProviderBuilder implements AbstractBuilder
         if ($this->events && !empty($this->events)) {
             $events = [];
             foreach ($this->events as $e) {
-                $events[$e->getClasspath()] = [$e->getListener()->getClasspath()];
+                $events[ltrim($e->getClasspath(), '\\')] = [ltrim($e->getListener()->getClasspath(), '\\')];
             }
             $component = $component->addProperty(PHPClassProperty('listen', 'array', PHPTypesModifiers::PROTECTED, $events, ['event listener mappings for the application.']));
         }
