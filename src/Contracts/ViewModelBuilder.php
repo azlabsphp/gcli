@@ -15,6 +15,15 @@ namespace Drewlabs\GCli\Contracts;
 
 interface ViewModelBuilder extends ComponentBuilder
 {
+
+    /**
+     * set data transfer object class path on the builder
+     * 
+     * @param string $path 
+     * @return static 
+     */
+    public function withDto(string $path);
+
     /**
      * returns the list of rules during create action.
      */

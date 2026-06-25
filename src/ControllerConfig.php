@@ -39,7 +39,7 @@ final class ControllerConfig
     /**
      * return the builder instance.
      *
-     * @return Builder
+     * @return (\Closure(...$args): Builder)|Builder
      */
     public function getBuilder(): \Closure
     {

@@ -21,7 +21,7 @@ interface Plugin
      * compile source code for the provided type and write all components
      * source code to disk.
      *
-     * @param string module
+     * @param string|null $module
      */
     public function generate(Type $type, ?string $module = null): void;
 }

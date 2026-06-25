@@ -128,14 +128,13 @@ class DataTransfertClassBuilder implements AbstractBuilder
         ?string $path = null
     ) {
         $this->setName($name ? (!Str::endsWith($name, 'Dto') ?
-            Str::camelize(Pluralizer::singular($name)).'Dto' :
+            Str::camelize(Pluralizer::singular($name)) . 'Dto' :
             Str::camelize(Pluralizer::singular($name))) : self::DEFAULT_NAME);
-        // Set the component write path
+
         $this->setWritePath($path ?? self::DEFAULT_PATH);
 
-        // Set the component namespace
         $this->setNamespace($namespace ?? self::DEFAULT_NAMESPACE);
-        // Set json_attributes
+
         $this->setAttributes(function ($camelize) use ($json_attributes) {
             return $this->resolveClassProperties(array_keys($json_attributes ?? []), $camelize);
         });
@@ -145,7 +144,7 @@ class DataTransfertClassBuilder implements AbstractBuilder
     }
 
     /**
-     * Attach a model class metadata to the data transfer class builder.
+     * Attach a model class metadata to the data transfer classx builder.
      *
      * @param mixed $model
      *
@@ -165,7 +164,7 @@ class DataTransfertClassBuilder implements AbstractBuilder
         }
         $modelname = 'Test';
         $modelname = $isClassPath ? $this->getClassNameFromPath($classname) : $classname;
-        $this->setName(Str::camelize(Pluralizer::singular($modelname)).'Dto');
+        $this->setName(Str::camelize(Pluralizer::singular($modelname)) . 'Dto');
 
         // creates an object to if the model is a PHP string
         if (\is_string($model) && class_exists($model)) {
@@ -229,7 +228,7 @@ class DataTransfertClassBuilder implements AbstractBuilder
                 array_merge(
                     \is_array($this->propertyDocComments) ?
                         $this->propertyDocComments ?? [] : (null !== $this->propertyDocComments ? ($this->propertyDocComments)($this->camelize) : []),
-                    [' ', '@package '.$this->namespace_ ?? self::DEFAULT_NAMESPACE]
+                    [' ', '@package ' . $this->namespace_ ?? self::DEFAULT_NAMESPACE]
                 )
             )
             ->asFinal()
@@ -350,7 +349,7 @@ class DataTransfertClassBuilder implements AbstractBuilder
         $comments = [];
         foreach ($properties as $key => $value) {
             $name = str_contains($value, ':') ? Str::before(':', $value) : $value;
-            $comments[] = '@property '.Types::new($name)->toPHPType().' '.($camelize ? Str::camelize(trim($key), false) : $key);
+            $comments[] = '@property $' . Types::new($name)->toPHPType() . ' ' . ($camelize ? Str::camelize(trim($key), false) : $key);
         }
 
         return $comments;

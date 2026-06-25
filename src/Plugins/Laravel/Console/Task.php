@@ -46,9 +46,7 @@ class Task
     /**
      * Class constructor.
      */
-    public function __construct()
-    {
-    }
+    public function __construct() {}
 
     /**
      * By default from version 2.7.x model attribute attibutes are no more
@@ -192,24 +190,29 @@ class Task
                     // #region Write service source code
                     $tableServiceConfig = $component->getServiceConfig();
                     $serviceSourceCode = self::resolveWritable($tableServiceConfig->getBuilder());
+
+                    /** @var  \Drewlabs\GCli\Contracts\SourceFileInterface|null */
+                    $serviceTypeSourceCode = null;
                     if ((null !== ($serviceType = $tableServiceConfig->getContract())) && $serviceTypeSourceCode = self::resolveWritable($serviceType->getBuilder())) {
                         static::writeComponentSourceCode($serviceType->getPath(), $serviceTypeSourceCode, $onExistsCallback);
                     }
                     static::writeComponentSourceCode($tableServiceConfig->getPath(), $serviceSourceCode, $onExistsCallback);
-                    $bindings[$serviceTypeSourceCode->getClassPath()] = sprintf("\%s", $serviceSourceCode->getClassPath());
+                    if ($serviceTypeSourceCode !== null) {
+                        $bindings[$serviceTypeSourceCode->getClassPath()] = sprintf("\%s", $serviceSourceCode->getClassPath());
+                    }
                     // #endregion Write service source code
 
                     // #region Write DTO Component source code
                     $tableDtoConfig = $component->getDtoConfig();
                     $currentDtoCasts = [];
+                    
+                    /** @var \Drewlabs\GCli\DBAL\R\Through|\Drewlabs\GCli\DBAL\R\Basic $_current */
                     foreach ($relations as $_current) {
                         $currentDtoCasts[$_current->getName()] = \in_array(
                             $_current->getType(),
                             [Types::ONE_TO_MANY, Types::MANY_TO_MANY, Types::ONE_TO_MANY_THROUGH],
                             true
-                        ) ?
-                            'collectionOf:\\'.ltrim($_current->getCastClassPath(), '\\') :
-                            'value:\\'.ltrim($_current->getCastClassPath(), '\\');
+                        ) ? 'collectionOf:\\' . ltrim($_current->getCastClassPath(), '\\') : 'value:\\' . ltrim($_current->getCastClassPath(), '\\');
                     }
                     $tableDtoConfig = $tableDtoConfig->camelizeProperties($camelize)->setCasts($currentDtoCasts);
                     $dtoSourceCode = self::resolveWritable($tableDtoConfig->getBuilder());
@@ -221,10 +224,7 @@ class Task
                         // Call the controller factory builder function with the required parameters
                         $controllersource = self::resolveWritable(
                             $controllerConfig->getBuilder(),
-                            [
-                                $serviceSourceCode->getClassPath(),
-                                $serviceTypeSourceCode->getClassPath(),
-                            ],
+                            $serviceTypeSourceCode ? [$serviceSourceCode->getClassPath(), $serviceTypeSourceCode->getClassPath() ] : [$serviceSourceCode->getClassPath()],
                             $viewmodelSourceCode->getClassPath(),
                             $dtoSourceCode->getClassPath()
                         );
@@ -387,7 +387,7 @@ class Task
      */
     private static function writeComponentSourceCode($path, Writable $writable, ?callable $callback = null)
     {
-        /** @var ComponentsScriptWriterClass */
+        /** @var \Drewlabs\GCli\IO\ScriptWriter */
         $instance = ComponentsScriptWriter($path);
         if (!$instance->fileExists($writable)) {
             return $instance->write($writable);
@@ -404,7 +404,7 @@ class Task
      * @param Writable|AbstractBuilder|\Closure(...$args):SourceFileInterface $component
      * @param mixed $args
      *
-     * @throws RuntimeExWritableception
+     * @throws \RuntimeException
      *
      * @return SourceFileInterface
      */
@@ -420,6 +420,6 @@ class Task
             return $component(...$args);
         }
 
-        throw new \RuntimeException('Unsupported type '.(\is_object($component) && null !== $component ? $component::class : \gettype($component)));
+        throw new \RuntimeException('Unsupported type ' . (\is_object($component) && null !== $component ? $component::class : \gettype($component)));
     }
 }

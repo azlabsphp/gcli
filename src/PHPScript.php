@@ -16,6 +16,7 @@ namespace Drewlabs\GCli;
 use Drewlabs\CodeGenerator\Contracts\Stringable;
 use Drewlabs\Core\Helpers\Str;
 use Drewlabs\GCli\Contracts\SourceFileInterface;
+use Drewlabs\CodeGenerator\Contracts\NamespaceComponent;
 
 class PHPScript implements SourceFileInterface
 {

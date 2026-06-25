@@ -122,6 +122,7 @@ class ORMModelBuilder implements AbstractORMModelBuilder, AbstractBuilder, HasRe
     private $table;
 
     /** Database table schema value */
+    /** @var string */
     private $schema;
 
     /** @var ORMColumnDefinition[] List of table columns. */
@@ -313,7 +314,7 @@ class ORMModelBuilder implements AbstractORMModelBuilder, AbstractBuilder, HasRe
                 )
             );
             if (!$this->isSingleActionValidator) {
-                /** @var Blueprint|PHPClass */
+                /** @var Blueprint */
                 $component = $component
                     ->addImplementation(\Drewlabs\Contracts\Validator\Validatable::class)
                     ->addMethod(
@@ -620,14 +621,14 @@ class ORMModelBuilder implements AbstractORMModelBuilder, AbstractBuilder, HasRe
             if (Types::ONE_TO_MANY === $type || Types::ONE_TO_ONE === $type) {
                 $method = $this->createOneOrManyMethodTemplate($relation, $type, $methods);
                 $component = $component->addMethod($method);
-                $comments[] = Types::ONE_TO_MANY === $type ? sprintf('@property \Illuminate\Support\Collection<\\%s> %s', ltrim($relation->getModel(), '\\'), $method->getName()) : sprintf('@property \\%s %s', ltrim($relation->getModel(), '\\'), $method->getName());
+                $comments[] = Types::ONE_TO_MANY === $type ? sprintf('@property \Illuminate\Support\Collection<\\%s> $%s', ltrim($relation->getModel(), '\\'), $method->getName()) : sprintf('@property \\%s $%s', ltrim($relation->getModel(), '\\'), $method->getName());
                 $this->relationMethods[] = $relation->getName();
                 continue;
             }
             if (Types::MANY_TO_ONE === $type) {
                 $method = $this->createBelongsToTemplate($relation, $methods);
                 $component = $component->addMethod($method);
-                $comments[] = sprintf('@property \\%s %s', ltrim($relation->getModel(), '\\'), $method->getName());
+                $comments[] = sprintf('@property \\%s $%s', ltrim($relation->getModel(), '\\'), $method->getName());
                 $this->relationMethods[] = $relation->getName();
                 continue;
             }
@@ -635,7 +636,7 @@ class ORMModelBuilder implements AbstractORMModelBuilder, AbstractBuilder, HasRe
                 $method = $this->createManyToManyRelationTemplate($relation, $methods);
                 /** @var Blueprint */
                 $component = $component->addMethod($method);
-                $comments[] = sprintf('@property \Illuminate\Support\Collection<\\%s> %s', ltrim($relation->getLeftTable(), '\\'), $method->getName());
+                $comments[] = sprintf('@property \Illuminate\Support\Collection<\\%s> $%s', ltrim($relation->getLeftTable(), '\\'), $method->getName());
                 $this->relationMethods[] = $relation->getName();
                 continue;
             }
@@ -646,7 +647,7 @@ class ORMModelBuilder implements AbstractORMModelBuilder, AbstractBuilder, HasRe
                 $method = $this->createThroughRelationTemplate($relation, $methods);
                 /** @var Blueprint */
                 $component = $component->addMethod($method);
-                $comments[] = Types::ONE_TO_MANY_THROUGH === $relation->getType() ? sprintf('@property \Illuminate\Support\Collection<\\%s> %s', ltrim($relation->getLeftTable(), '\\'), $method->getName()) : sprintf('@property \\%s %s', ltrim($relation->getLeftTable(), '\\'), $method->getName());
+                $comments[] = Types::ONE_TO_MANY_THROUGH === $relation->getType() ? sprintf('@property \Illuminate\Support\Collection<\\%s> $%s', ltrim($relation->getLeftTable(), '\\'), $method->getName()) : sprintf('@property \\%s $%s', ltrim($relation->getLeftTable(), '\\'), $method->getName());
                 $this->relationMethods[] = $relation->getName();
                 continue;
             }

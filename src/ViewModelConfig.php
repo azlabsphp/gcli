@@ -40,9 +40,9 @@ final class ViewModelConfig
     /**
      * set the class path on the builder instance.
      */
-    public function setDtoClassPath(string $path): self
+    public function setDtoClassPath(string $path)
     {
-        $this->builder = $this->builder->setDtoClassPath($path);
+        $this->builder = $this->builder->withDto($path);
 
         return $this;
     }

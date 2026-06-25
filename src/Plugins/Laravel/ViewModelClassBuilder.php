@@ -58,7 +58,6 @@ class ViewModelClassBuilder implements AbstractBuilder
         'Drewlabs\\Validation\\Traits\\ModelAware',
         'Drewlabs\\Validation\\Traits\\ProvidesRulesFactory',
         'Drewlabs\\Validation\\Traits\\Validatable',
-        'Drewlabs\Laravel\\Query\Traits\CreatesFilters',
         'Illuminate\\Http\\Request',
     ];
 
@@ -70,7 +69,6 @@ class ViewModelClassBuilder implements AbstractBuilder
         'ModelAware',
         'ProvidesRulesFactory',
         'Validatable',
-        'CreatesFilters',
     ];
 
     /** @var string[] */
@@ -80,7 +78,6 @@ class ViewModelClassBuilder implements AbstractBuilder
         'Drewlabs\\Validation\\Traits\\ModelAware',
         'Drewlabs\\Validation\\Traits\\ProvidesRulesFactory',
         'Drewlabs\\Validation\\Traits\\Validatable',
-        'Drewlabs\Laravel\\Query\Traits\CreatesFilters',
         'Drewlabs\\Validation\\Traits\\ViewModel',
     ];
 
@@ -90,7 +87,6 @@ class ViewModelClassBuilder implements AbstractBuilder
         'ModelAware',
         'ProvidesRulesFactory',
         'Validatable',
-        'CreatesFilters',
         'FilesAttributesAware',
     ];
 
@@ -141,14 +137,16 @@ class ViewModelClassBuilder implements AbstractBuilder
         $this->setNamespace($namespace ?? self::DEFAULT_NAMESPACE);
     }
 
+    /**
+     * {@inheritDoc}
+     * @param mixed $model 
+     * @return static 
+     */
     public function bindModel($model)
     {
         if (empty($model)) {
             return $this;
         }
-        /**
-         * @var string
-         */
         $path = \is_object($model) ? $model::class : (string) $model;
         $isPath = Str::contains($path, '\\');
         $this->modelPath = $isPath ? $path : $this->modelPath;
@@ -165,7 +163,7 @@ class ViewModelClassBuilder implements AbstractBuilder
         return $this;
     }
 
-    public function setDtoClassPath(string $path)
+    public function withDto(string $path)
     {
         $this->dtoPath = $path;
 
@@ -174,7 +172,7 @@ class ViewModelClassBuilder implements AbstractBuilder
 
     public function build()
     {
-        /** @var Blueprint|PHPClass */
+        /** @var Blueprint */
         $component = PHPClass($this->name())
             ->asFinal()
             ->addToNamespace($this->namespace() ?? self::DEFAULT_NAMESPACE)
@@ -195,7 +193,7 @@ class ViewModelClassBuilder implements AbstractBuilder
             )->addContents('return []'));
 
         if (!$this->isSingleActionValidator) {
-            /** @var Blueprint|PHPClass */
+            /** @var Blueprint */
             $component = $component->addMethod(PHPClassMethod(
                 'updateRules',
                 [],
@@ -216,13 +214,15 @@ class ViewModelClassBuilder implements AbstractBuilder
                         PHPTypes::STRING,
                         PHPTypesModifiers::PRIVATE,
                         $this->model . '::class',
-                        'Model class associated with the view model'
+                        'model class name'
                     )
-                );
-                $component = $component->addClassPath($this->modelPath);
+                )->addClassPath($this->modelPath)
+                ->addClassPath("Drewlabs\\Query\\PreparesFiltersBag")
+                    ->addMethod(PHPClassMethod('makeFilters', [PHPFunctionParameter('defaults', 'array', '[]')], 'array', 'public', ['creates a list of filters based on view model input & query parameters'])
+                        ->addLine("return PreparesFiltersBag::new(\$this)->call(new \$this->model, \$defaults ?? [])"));
             }
 
-            // #Remove dependency this class in future release if not required
+            #remove dependency this class in future release if not required
             if ($this->dtoPath) {
                 /** @var Blueprint */
                 $component = $component->addProperty(
@@ -231,7 +231,7 @@ class ViewModelClassBuilder implements AbstractBuilder
                         PHPTypes::STRING,
                         PHPTypesModifiers::PRIVATE,
                         Str::afterLast('\\', $this->dtoPath) . '::class',
-                        'Data transfer class associated with the view model'
+                        'data transfer object class name'
                     )
                 );
                 $component = $component->addClassPath($this->dtoPath);
@@ -263,11 +263,13 @@ class ViewModelClassBuilder implements AbstractBuilder
             )
                 ->addMethod(
                     PHPClassMethod('getColumns', [], 'array', 'public', 'returns the list of queried columns')
-                        ->addLine("return \$this->has('_columns') ? (is_array(\$columns = \$this->get('_columns')) ? \$columns : (@json_decode(\$columns, true) ?? ['*'])): ['*']")
+                        ->addLine("\$columns = \$this->has('_columns') ? (is_array(\$columns = \$this->get('_columns')) ? \$columns : (@json_decode(\$columns, true) ?? ['*'])): ['*']")
+                        ->addLine("return \\is_string(\$columns) ? \\explode(\$columns, ',') : (\$columns === false ? [] : \$columns)")
                 )
                 ->addMethod(
                     PHPClassMethod('getExcludes', [], 'array', 'public', 'returns the list of excluded columns')
-                        ->addLine("return \$this->has('_hidden') ? (is_array(\$columns = \$this->get('_hidden')) ? \$columns : (@json_decode(\$columns, true) ?? ['*'])): ['*']")
+                        ->addLine("\$columns = \$this->has('_hidden') ? (is_array(\$columns = \$this->get('_hidden')) ? \$columns : (@json_decode(\$columns, true) ?? ['*'])): ['*']")
+                        ->addLine("return \\is_string(\$columns) ? \\explode(\$columns, ',') : (\$columns === false ? [] : \$columns)")
                 );
         } else {
 
