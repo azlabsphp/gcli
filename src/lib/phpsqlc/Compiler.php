@@ -9,12 +9,6 @@ class Compiler
     /** @var AbstractBuilder */
     private $builder;
 
-    /**
-     * class constructor
-     * 
-     * @param array $options 
-     * @return void 
-     */
     public function __construct(AbstractBuilder $builder)
     {
         $this->builder = $builder;
@@ -23,12 +17,12 @@ class Compiler
     /**
      * Converts a SQL Query into Query Builder
      * 
-     * @param $sql
+     * @param string $sql
      * @return string
      * 
      * @throws \Exception
      */
-    public function compile($sql, bool $collect = true): string
+    public function compile(string $sql, bool $collect = true): string
     {
         // reset the builder to, to prevent subsequent call to not concatenate results.
         $this->builder->resetQuery();
