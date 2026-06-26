@@ -23,7 +23,7 @@ use Illuminate\Console\Command;
 use Illuminate\Container\Container;
 
 /**
- * @property \Illuminate\Contracts\Foundation\Application app
+ * @property \Illuminate\Contracts\Foundation\Application $app
  */
 class MakeViewModelCommand extends Command
 {
@@ -43,7 +43,7 @@ class MakeViewModelCommand extends Command
 
     public function __construct()
     {
-        $this->laravel = ($this->getLaravel() ?? Container::getInstance());
+        $this->laravel = $this->getLaravel();
         parent::__construct();
     }
 

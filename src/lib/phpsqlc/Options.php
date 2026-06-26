@@ -4,7 +4,7 @@ namespace Drewlabs\PHPSQLC;
 
 use ArrayAccess;
 
-class Options implements ArrayAccess
+final class Options implements ArrayAccess
 {
     /** @var array */
     private $options;

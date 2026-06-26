@@ -33,9 +33,8 @@ use function Drewlabs\GCli\Proxy\ComponentsScriptWriter;
 use function Drewlabs\GCli\Proxy\MVCServiceProviderBuilder;
 
 use Drewlabs\GCli\RouteControllerConfig;
-use Drewlabs\GCli\ScriptWriter as ComponentsScriptWriterClass;
 
-class Task
+final class Task
 {
     /** @var bool */
     private $camelize = false;
@@ -76,8 +75,6 @@ class Task
 
     /**
      * Creates a code generator factory function based on provided options.
-     *
-     * @return Closure(string $routesDirectory, string $routesCachePath, Closure $onStartCallback, null|\Closure($policies) $onCompleteCallback = null, null|Closure $onExistsCallback = null, null|Closure $createHTrProjectsCallback = null): void
      */
     public function run(
         DBConfig $dbConfig,
@@ -159,41 +156,35 @@ class Task
                     $tableConfig = $component->getModelConfig();
                     $relations = $component->getRelations();
 
-                    if ($tableConfig instanceof Pivotable && \in_array($component->getModelConfig()->getTable(), $pivots, true)) {
+                    if (\in_array($component->getModelConfig()->getTable(), $pivots, true)) {
                         $tableConfig = $tableConfig->asPivot();
                     }
 
                     // disable accessor generator case providesModelAccessors is false
-                    if ($tableConfig instanceof ProvidesPropertyAccessors && $withoutModelAccessors) {
+                    if ($withoutModelAccessors) {
                         $tableConfig = $tableConfig->withoutAccessors();
                     }
 
-                    static::writeComponentSourceCode($tableConfig->getPath(), self::resolveWritable($tableConfig->getBuilder()), $onExistsCallback);
-                    // #endregion Write model source code
+                    static::writeComponentSourceCode($tableConfig->getPath(), static::resolveWritable($tableConfig->getBuilder()), $onExistsCallback);
 
-                    // Use plugin code generator
-                    /** @var \Drewlabs\GCli\Contracts\Type $type */
-                    if (null !== ($type = $component->getType())) {
-                        G::getInstance()->generate($type);
-                    }
+                    G::getInstance()->generate($component->getType());
 
                     // #region Write view model source code
                     $tableViewConfig = $component->getViewModelConfig();
-                    if ($tableDtoConfig = $component->getDtoConfig()) {
-                        $tableViewConfig = $tableViewConfig->setDtoClassPath($tableDtoConfig->getClassPath());
-                    }
+                    $tableViewConfig = $tableViewConfig->setDtoClassPath($component->getDtoConfig()->getClassPath());
 
-                    $viewmodelSourceCode = self::resolveWritable($tableViewConfig->getBuilder());
+                    $viewmodelSourceCode = static::resolveWritable($tableViewConfig->getBuilder());
                     static::writeComponentSourceCode($tableViewConfig->getPath(), $viewmodelSourceCode, $onExistsCallback);
                     // #endregion Write view model source code
 
                     // #region Write service source code
                     $tableServiceConfig = $component->getServiceConfig();
-                    $serviceSourceCode = self::resolveWritable($tableServiceConfig->getBuilder());
+                    $serviceSourceCode = static::resolveWritable($tableServiceConfig->getBuilder());
 
-                    /** @var  \Drewlabs\GCli\Contracts\SourceFileInterface|null */
+                    /** @var  (\Drewlabs\GCli\Contracts\SourceFileInterface&AbstractBuilder)|null */
                     $serviceTypeSourceCode = null;
-                    if ((null !== ($serviceType = $tableServiceConfig->getContract())) && $serviceTypeSourceCode = self::resolveWritable($serviceType->getBuilder())) {
+                    $serviceType = $tableServiceConfig->getContract();
+                    if ($serviceTypeSourceCode = static::resolveWritable($serviceType->getBuilder())) {
                         static::writeComponentSourceCode($serviceType->getPath(), $serviceTypeSourceCode, $onExistsCallback);
                     }
                     static::writeComponentSourceCode($tableServiceConfig->getPath(), $serviceSourceCode, $onExistsCallback);
@@ -215,14 +206,14 @@ class Task
                         ) ? 'collectionOf:\\' . ltrim($_current->getCastClassPath(), '\\') : 'value:\\' . ltrim($_current->getCastClassPath(), '\\');
                     }
                     $tableDtoConfig = $tableDtoConfig->camelizeProperties($camelize)->setCasts($currentDtoCasts);
-                    $dtoSourceCode = self::resolveWritable($tableDtoConfig->getBuilder());
+                    $dtoSourceCode = static::resolveWritable($tableDtoConfig->getBuilder());
                     static::writeComponentSourceCode($tableDtoConfig->getPath(), $dtoSourceCode, $onExistsCallback);
                     // #endregion Write DTO Component source code
 
                     if ($hasHttpHandlers) {
                         $controllerConfig = $component->getControllerConfig();
                         // Call the controller factory builder function with the required parameters
-                        $controllersource = self::resolveWritable(
+                        $controllersource = static::resolveWritable(
                             $controllerConfig->getBuilder(),
                             $serviceTypeSourceCode ? [$serviceSourceCode->getClassPath(), $serviceTypeSourceCode->getClassPath() ] : [$serviceSourceCode->getClassPath()],
                             $viewmodelSourceCode->getClassPath(),
@@ -238,13 +229,13 @@ class Task
                             $tableViewConfig->getUpdateRules(),
                             array_map(static function ($current) {
                                 return sprintf('%s (%s)', $current->getName(), (string) $current);
-                            }, \is_array($relations) ? $relations : [$relations])
+                            }, $relations)
                         );
                         yield $name => $routeController;
                     }
                     if ($supportPolicies) {
                         $policyConfig = $component->getPolicyConfig();
-                        static::writeComponentSourceCode($policyConfig->getPath(), self::resolveWritable($policyConfig->getBuilder()), $onExistsCallback);
+                        static::writeComponentSourceCode($policyConfig->getPath(), static::resolveWritable($policyConfig->getBuilder()), $onExistsCallback);
                         $policies[sprintf("\%s", $tableConfig->getClassPath())] = sprintf("\%s", $policyConfig->getClassPath());
                     }
                     $indicator->advance();
@@ -273,10 +264,10 @@ class Task
             }
 
             // Case policies where generated, we creates a policy service provider class in the project
-            if (\is_array($policies) && !empty($policies) || (\is_array($bindings) && !empty($bindings))) {
+            if (!empty($policies) || !empty($bindings)) {
                 $serviceProviderBuilder = MVCServiceProviderBuilder(
-                    $policies ?? [],
-                    $bindings ?? [],
+                    $policies,
+                    $bindings,
                     sprintf('%s%s', $namespace, $subPackage ? trim(sprintf('\\%s', "$subPackage")) : '\\Providers'),
                     implode(\DIRECTORY_SEPARATOR, [$directory, $subPackage ? sprintf('%s', "$subPackage/") : 'Providers']),
                     $subPackage ? 'ServiceProvider' : null,
@@ -290,7 +281,7 @@ class Task
                 // Add observers events
                 $serviceProviderBuilder = $serviceProviderBuilder->withEvents(Observers::getInstance()->getEvents());
 
-                static::writeComponentSourceCode($directory, self::resolveWritable($serviceProviderBuilder), $onExistsCallback);
+                static::writeComponentSourceCode($directory, static::resolveWritable($serviceProviderBuilder), $onExistsCallback);
                 $message = [sprintf("Please add [\%s::class] to the list of application service providers.\n", $serviceProviderBuilder->getClassPath())];
             }
 
@@ -301,16 +292,14 @@ class Task
                     }
                     $eventBuilder = $e->getBuilder(implode(\DIRECTORY_SEPARATOR, [$directory, $subPackage ? sprintf('%s', "$subPackage/Events") : 'Events']));
                     $listenerBuilder = $e->getListener()->getBuilder(implode(\DIRECTORY_SEPARATOR, [$directory, $subPackage ? sprintf('%s', "$subPackage/Listeners") : 'Listeners']));
-                    static::writeComponentSourceCode($directory, self::resolveWritable($eventBuilder), $onExistsCallback);
-                    static::writeComponentSourceCode($directory, self::resolveWritable($listenerBuilder), $onExistsCallback);
+                    static::writeComponentSourceCode($directory, static::resolveWritable($eventBuilder), $onExistsCallback);
+                    static::writeComponentSourceCode($directory, static::resolveWritable($listenerBuilder), $onExistsCallback);
                 }
             }
 
-            if ((null !== $indicator) && ($indicator instanceof Progress)) {
-                $indicator->finish();
-            }
+            $indicator->finish();
 
-            if (null !== $onCompleteCallback && ($onCompleteCallback instanceof \Closure)) {
+            if ($onCompleteCallback instanceof \Closure) {
                 $onCompleteCallback(implode(\PHP_EOL, $message));
             }
         };
@@ -326,7 +315,7 @@ class Task
      * @param (string|null)|null $middleware
      * @param (string|null)|null $subPackage
      *
-     * @return Closure(array $routes = [], bool $partial = false): void
+     * @return \Closure(array, bool): void
      */
     protected function writeRoutes(
         ?bool $disableCache,
@@ -390,36 +379,39 @@ class Task
         /** @var \Drewlabs\GCli\IO\ScriptWriter */
         $instance = ComponentsScriptWriter($path);
         if (!$instance->fileExists($writable)) {
-            return $instance->write($writable);
+            $instance->write($writable);
+            return;
         }
 
-        if (!isset($callback) || (isset($callback) && true === $callback($writable))) {
-            return $instance->write($writable);
+        if ($callback && true === $callback($writable)) {
+            $instance->write($writable);
         }
     }
 
     /**
      * Resolve writable instance.
      *
-     * @param Writable|AbstractBuilder|\Closure(...$args):SourceFileInterface $component
+     * @param mixed $component
      * @param mixed $args
      *
      * @throws \RuntimeException
      *
-     * @return SourceFileInterface
+     * @return (SourceFileInterface&Writable)|null
      */
     private static function resolveWritable($component, ...$args)
     {
-        if ($component instanceof Writable) {
+        if ($component instanceof SourceFileInterface) {
             return $component;
         }
+    
         if ($component instanceof AbstractBuilder) {
             return $component->build();
         }
+    
         if (\is_callable($component)) {
             return $component(...$args);
         }
 
-        throw new \RuntimeException('Unsupported type ' . (\is_object($component) && null !== $component ? $component::class : \gettype($component)));
+        throw new \RuntimeException('Unsupported type ' . ($component && \is_object($component) ? $component::class : \gettype($component)));
     }
 }

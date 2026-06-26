@@ -36,12 +36,14 @@ class ColumnsIteratorFactory
             if ('datetime' === $typeName) {
                 $regex = 'Y-m-d H:i:s';
             } elseif ($length = $column->getLength()) {
-                $regex = (null === $length && 'bigint' === $typeName) ? \PHP_INT_MAX : $length;
+                $regex = $length;
+            } else {
+                $regex = \PHP_INT_MAX;
             }
 
             $instance = new Column(
-                $column->getName(),
-                $regex ? sprintf('%s:%s', $typeName, $regex) : sprintf('%s', $typeName),
+                (string)$column->getObjectName()->toString(),
+                sprintf('%s:%s', $typeName, $regex),
                 $table,
                 $column->getNotnull(),
                 $column->getDefault(),
@@ -53,7 +55,7 @@ class ColumnsIteratorFactory
                 $instance = $instance->withSize($length);
             }
 
-            yield $column->getName() => $instance;
+            yield (string)$column->getObjectName()->toString() => $instance;
         }
     }
 }

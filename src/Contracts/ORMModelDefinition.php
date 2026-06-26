@@ -17,6 +17,8 @@ interface ORMModelDefinition extends Type
 {
     /**
      * Returns the model primary key.
+     * 
+     * @return string|null
      */
     public function primaryKey(): ?string;
 

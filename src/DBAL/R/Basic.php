@@ -83,7 +83,7 @@ class Basic implements ReversibleRelation
         $this->model = $model;
         $this->reference = $reference;
         $this->local = $local;
-        $this->type = $type ?? Types::ONE_TO_MANY;
+        $this->type = $type;
         $this->castclasspath = $castclasspath;
     }
 
@@ -99,6 +99,8 @@ class Basic implements ReversibleRelation
 
     /**
      * Creates a basic relation instance setting the reverse flag to true.
+     * 
+     * @param mixed ...$args
      *
      * @return static
      */

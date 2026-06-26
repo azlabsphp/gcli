@@ -20,7 +20,7 @@ final class RawBuilder
         $this->facade = $facade;
     }
 
-    public function build(string $value, bool $isRaw = false): int|string
+    public function build(string $value, bool $isRaw = false): string
     {
         $value = Expression::wrap($value);
         return $isRaw ? $this->facade . 'raw(' . $value . ')' : $value;

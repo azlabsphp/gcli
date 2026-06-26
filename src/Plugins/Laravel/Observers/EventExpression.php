@@ -26,19 +26,19 @@ final class EventExpression
     /** @var Event */
     private $event;
 
-    /** @var \Stringable */
-    private $condition;
+    /** @var \Stringable|null */
+    private $condition = null;
 
     /** @var array|null */
     private $variables;
 
-    /** @var \Stringable */
+    /** @var \Stringable|null */
     private $changedExpression;
 
     /**
      * Create new event observer expression instance.
      *
-     * @param \Stringable $condition
+     * @param \Stringable|null $condition
      *
      * @return void
      */
@@ -101,7 +101,8 @@ final class EventExpression
     public function __toString(): string
     {
         if ($this->condition) {
-            return sprintf("if (%s%s) {\n    %s \n}", $this->changedExpression ?? '', $this->condition ? sprintf('%s%s', $this->changedExpression ? ' && ' : '', $this->condition) : '', $this->createExpression($this->event, $this->variables));
+            $condition = sprintf('%s%s', $this->changedExpression ? ' && ' : '', $this->condition);
+            return sprintf("if (%s%s) {\n    %s \n}", $this->changedExpression ?? '', $condition , $this->createExpression($this->event, $this->variables));
         }
         return sprintf('%s', $this->createExpression($this->event, $this->variables));
     }
@@ -120,7 +121,6 @@ final class EventExpression
         /** @var string|null */
         $dispatch = null;
 
-        /** @var int */
         $pos = strlen($haystack) - 1;
 
         if (str_contains($haystack, 'CHANGED')) {
@@ -157,6 +157,7 @@ final class EventExpression
             $haystack = substr($haystack, 0, $pos);
         }
 
+        // @phpstan-ignore empty.expr
         if (empty($params = explode('WITH', $dispatch ?? ''))) {
             throw new \BadMethodCallException('dispatch expression not correctly formed, supported syntax is DISPATCH event_name WITH [id]:string, [name]:string IF property == value CHANGED [name]');
         }

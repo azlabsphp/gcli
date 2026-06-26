@@ -62,7 +62,7 @@ class Arguments
      */
     public function __construct(array $options = [])
     {
-        $this->options = $options ?? [];
+        $this->options = $options;
     }
 
     /**
@@ -112,7 +112,8 @@ class Arguments
             $options = $options->merge(['excludes' => $excludes]);
         }
 
-        /** @var CacheableTables $pool */
+        /** @var CacheableTables|null $pool */
+        $pool = null;
         if ($options->get('cache', false) && null !== ($pool = Cache::new((string) $cachePath)->load(CacheableTables::class))) {
             $options = $options->merge(['excludes' => $pool->getTables()]);
         }
@@ -129,8 +130,8 @@ class Arguments
             $options = $options->merge(['schema' => $schema]);
         }
 
-        if (null !== ($camelize = (bool) $this->getOption('camelize-attributes', $this->getOption('camelize') ?? false))) {
-            $options = $options->merge(['models.attributes.camelize' => $camelize]);
+        if (null !== ($camelize = $this->getOption('camelize-attributes', $this->getOption('camelize') ?? false))) {
+            $options = $options->merge(['models.attributes.camelize' => (bool)$camelize]);
         }
 
         if ((bool) $this->getOption('relations')) {
@@ -143,7 +144,7 @@ class Arguments
                 'models.relations.one-to-many-through' => iterator_to_array($this->flatten($this->getOption('manythroughs', []))),
             ]);
         }
-        // Add model accessors' flag
+
         $options = $options->merge(['models.attributes.accessors' => !(bool) $this->getOption('no-model-accessors')]);
 
         if ($this->getOption('htr', false)) {

@@ -27,10 +27,10 @@ final class PropertyExpression
     /** @var string */
     private $value;
 
-    /** @var \Stringable */
+    /** @var \Stringable|null */
     private $condition;
 
-    /** @var \Stringable */
+    /** @var \Stringable|null */
     private $changedExpression;
 
     /**
@@ -73,8 +73,7 @@ final class PropertyExpression
 
         /** @var string|null */
         $setExpression = null;
-
-        /** @var int */
+        
         $pos = strlen($haystack) - 1;
 
         if (str_contains($haystack, 'CHANGED')) {

@@ -18,12 +18,12 @@ use Drewlabs\GCli\Contracts\Type;
 
 // Plugins files generator class implementation
 // It provides method to register plugins and generate source codes using the plugin implementation
-class G
+final class G
 {
     /** @var Plugin[] */
     private $plugins = [];
 
-    /** @var static */
+    /** @var mixed */
     private static $instance;
 
     // Private constructor
@@ -34,12 +34,12 @@ class G
     /**
      * Get class singleton instance.
      *
-     * @return G|static
+     * @return static
      */
     public static function getInstance()
     {
         if (null === static::$instance) {
-            static::$instance = new self();
+            static::$instance = new static();
         }
 
         return static::$instance;

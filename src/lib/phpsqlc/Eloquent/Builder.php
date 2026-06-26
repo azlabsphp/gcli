@@ -37,7 +37,10 @@ use Drewlabs\PHPSQLC\Options;
  */
 class Builder extends AbstractBuilder
 {
+    /** @var \Drewlabs\PHPSQLC\Options */
     private $options;
+
+    /** @var array */
     private $skipBag;
 
     /** @var bool */
@@ -62,6 +65,12 @@ class Builder extends AbstractBuilder
         $this->rawExpressionBuilder = new RawBuilder($this->options['facade'] ?? 'DB::');
     }
 
+    /**
+     * build a select statement
+     * 
+     * @param mixed $value 
+     * @param mixed $parsed 
+     */
     public function select($value, $parsed)
     {
         // $this->isSelect = true;
@@ -82,6 +91,12 @@ class Builder extends AbstractBuilder
         $this->qbClosed = $builder->getClosesQuery();
     }
 
+    /**
+     * build a from statement
+     * 
+     * @param mixed $value 
+     * @param mixed $parsed 
+     */
     public function from($value, $parsed)
     {
         $fromExtractor = new FromExtractor($this->options);
@@ -107,15 +122,27 @@ class Builder extends AbstractBuilder
         $this->qb .= $joinBuilder->build($joinExtractor->extract($value));
     }
 
+    /**
+     * build a where statement
+     * @param mixed $value 
+     * @return void 
+     */
     public function where($value)
     {
         $extractor = new CriterionExtractor($this->options['group'] ?? false, $this->options['settings']['fns'] ?? []);
         $builder = new CriterionBuilder($this->rawExpressionBuilder);
 
+        $part = [];
         $q = $extractor->extractAsArray($value, $part) ? $builder->buildAsArray($part) : $builder->build($extractor->extract($value));
         $this->qb .= $q;
     }
 
+    /**
+     * build a group by statement
+     * 
+     * @param mixed $value 
+     * @return void 
+     */
     public function group_by($value)
     {
         $extractor = new GroupByExtractor($this->options);
@@ -126,6 +153,12 @@ class Builder extends AbstractBuilder
         $this->qb .= $q;
     }
 
+    /**
+     * build a limit statement
+     * 
+     * @param mixed $value 
+     * @return void 
+     */
     public function limit($value)
     {
         $extractor = new LimitExtractor($this->options);
@@ -136,6 +169,12 @@ class Builder extends AbstractBuilder
         $this->qb .= $q;
     }
 
+    /**
+     * build a having statement
+     * 
+     * @param mixed $value 
+     * @return void 
+     */
     public function having($value)
     {
         $extractor = new HavingExtractor(new CriterionExtractor($this->options['group'] ?? false, $this->options['settings']['fns'] ?? []));
@@ -146,6 +185,12 @@ class Builder extends AbstractBuilder
         $this->qb .= $q;
     }
 
+    /**
+     * build an order by statement
+     * 
+     * @param mixed $value 
+     * @return void 
+     */
     public function order($value)
     {
         $extractor = new OrderExtractor($this->options);
@@ -156,6 +201,13 @@ class Builder extends AbstractBuilder
         $this->qb .= $q;
     }
 
+    /**
+     * build an insert statement
+     * 
+     * @param mixed $value 
+     * @param mixed $parsed 
+     * @return void 
+     */
     public function insert($value, $parsed)
     {
         $extractor = new InsertExtractor($this->options);
@@ -168,6 +220,13 @@ class Builder extends AbstractBuilder
         unset($this->options['command']);
     }
 
+    /**
+     * build an update statement
+     * 
+     * @param mixed $value 
+     * @param mixed $parsed 
+     * @return void 
+     */
     public function update($value, $parsed)
     {
         $extractor = new UpdateExtractor(new CriterionExtractor($this->options['group'] ?? false, $this->options['settings']['fns'] ?? []));
@@ -178,6 +237,12 @@ class Builder extends AbstractBuilder
         $this->lastly = $q;
     }
 
+    /**
+     * build a delete statement
+     * 
+     * @param mixed $parsed 
+     * @return void 
+     */
     public function delete($parsed)
     {
         $extractor = new DeleteExtractor($this->options);
@@ -186,6 +251,12 @@ class Builder extends AbstractBuilder
         $this->lastly = $builder->build($parts, $this->skipBag);
     }
 
+    /**
+     * build a union statement
+     * 
+     * @param mixed $parts 
+     * @return void 
+     */
     public function union($parts)
     {
         $builder = new UnionBuilder;

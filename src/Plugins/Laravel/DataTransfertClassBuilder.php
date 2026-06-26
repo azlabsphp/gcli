@@ -32,7 +32,7 @@ use function Drewlabs\GCli\Proxy\PHPScript;
 
 use Illuminate\Support\Pluralizer;
 
-class DataTransfertClassBuilder implements AbstractBuilder
+final class DataTransfertClassBuilder implements AbstractBuilder
 {
     use HasNamespaceAttribute;
 
@@ -99,11 +99,6 @@ class DataTransfertClassBuilder implements AbstractBuilder
     private $propertyDocComments = [];
 
     /**
-     * @var string
-     */
-    private $modelClassPath;
-
-    /**
      * @var bool
      */
     private $camelize = false;
@@ -129,17 +124,17 @@ class DataTransfertClassBuilder implements AbstractBuilder
     ) {
         $this->setName($name ? (!Str::endsWith($name, 'Dto') ?
             Str::camelize(Pluralizer::singular($name)) . 'Dto' :
-            Str::camelize(Pluralizer::singular($name))) : self::DEFAULT_NAME);
+            Str::camelize(Pluralizer::singular($name))) : static::DEFAULT_NAME);
 
-        $this->setWritePath($path ?? self::DEFAULT_PATH);
+        $this->setWritePath($path ?? static::DEFAULT_PATH);
 
-        $this->setNamespace($namespace ?? self::DEFAULT_NAMESPACE);
+        $this->setNamespace($namespace ?? static::DEFAULT_NAMESPACE);
 
         $this->setAttributes(function ($camelize) use ($json_attributes) {
-            return $this->resolveClassProperties(array_keys($json_attributes ?? []), $camelize);
+            return $this->resolveClassProperties(array_keys($json_attributes), $camelize);
         });
         $this->propertyDocComments = function ($camelize) use ($json_attributes) {
-            return $this->buildPropertiesTypeComments($json_attributes ?? [], $camelize);
+            return $this->buildPropertiesTypeComments($json_attributes, $camelize);
         };
     }
 
@@ -159,9 +154,6 @@ class DataTransfertClassBuilder implements AbstractBuilder
         }
         $classname = \is_object($model) ? $model::class : (string) $model;
         $isClassPath = Str::contains($classname, '\\');
-        if ($isClassPath) {
-            $this->modelClassPath = $classname;
-        }
         $modelname = 'Test';
         $modelname = $isClassPath ? $this->getClassNameFromPath($classname) : $classname;
         $this->setName(Str::camelize(Pluralizer::singular($modelname)) . 'Dto');
@@ -182,7 +174,7 @@ class DataTransfertClassBuilder implements AbstractBuilder
 
     public function setHidden(array $properties = [])
     {
-        $this->excepts = $properties ?? [];
+        $this->excepts = $properties;
 
         return $this;
     }
@@ -199,7 +191,7 @@ class DataTransfertClassBuilder implements AbstractBuilder
         if (\is_array($attributes) && empty($attributes)) {
             return $this;
         }
-        $this->properties = $attributes ?? [];
+        $this->properties = $attributes;
 
         return $this;
     }
@@ -226,15 +218,14 @@ class DataTransfertClassBuilder implements AbstractBuilder
         $component = PHPClass($this->name())
             ->addComment(
                 array_merge(
-                    \is_array($this->propertyDocComments) ?
-                        $this->propertyDocComments ?? [] : (null !== $this->propertyDocComments ? ($this->propertyDocComments)($this->camelize) : []),
-                    [' ', '@package ' . $this->namespace_ ?? self::DEFAULT_NAMESPACE]
+                    \is_array($this->propertyDocComments) ? $this->propertyDocComments : (null !== $this->propertyDocComments ? ($this->propertyDocComments)($this->camelize) : []),
+                    [' ', '@package ' . ($this->package ?? static::DEFAULT_NAMESPACE)]
                 )
             )
             ->asFinal()
             ->addImplementation('ValueInterface')
             ->addImplementation('HiddenAware')
-            ->addToNamespace($this->namespace_ ?? self::DEFAULT_NAMESPACE)
+            ->addToNamespace($this->package ?? static::DEFAULT_NAMESPACE)
             ->addMethod(
                 PHPClassMethod(
                     '__construct',
@@ -262,7 +253,7 @@ class DataTransfertClassBuilder implements AbstractBuilder
                 '__PROPERTIES__',
                 'array',
                 PHPTypesModifiers::PRIVATE,
-                \is_array($this->properties) ? $this->properties ?? [] : (null !== $this->properties ? ($this->properties)($this->camelize) : [])
+                \is_array($this->properties) ? $this->properties : (null !== $this->properties ? ($this->properties)($this->camelize) : [])
             )->asConstant()
         );
 
@@ -272,7 +263,7 @@ class DataTransfertClassBuilder implements AbstractBuilder
                 '__HIDDEN__',
                 'array',
                 PHPTypesModifiers::PROTECTED,
-                $this->excepts ?? []
+                $this->excepts
             )
         );
 
@@ -282,7 +273,7 @@ class DataTransfertClassBuilder implements AbstractBuilder
                 '__CASTS__',
                 'array',
                 PHPTypesModifiers::PROTECTED,
-                $this->casts ?? []
+                $this->casts
             )
         );
 
@@ -312,7 +303,7 @@ class DataTransfertClassBuilder implements AbstractBuilder
         return PHPScript(
             $component->getName(),
             $component,
-            ComponentPath::new()->create($this->namespace_ ?? self::DEFAULT_NAMESPACE, $this->path_ ?? self::DEFAULT_PATH)
+            ComponentPath::new()->create($this->package ?? static::DEFAULT_NAMESPACE, $this->path ?? static::DEFAULT_PATH)
         )->setNamespace($component->getNamespace());
     }
 
@@ -323,20 +314,20 @@ class DataTransfertClassBuilder implements AbstractBuilder
             return $classname;
         }
 
-        return sprintf('%s%s%s', self::DEFAULT_NAMESPACE, '\\', $classname);
+        return sprintf('%s%s%s', static::DEFAULT_NAMESPACE, '\\', $classname);
     }
 
     private function resolveClassProperties(array $values = [], bool $camelize = false)
     {
         $attributes = [];
         if ($camelize) {
-            foreach (array_filter($values ?? []) as $key => $value) {
+            foreach (array_filter($values) as $key => $value) {
                 $name = !is_numeric($key) ?
                     Str::camelize(ltrim(rtrim($key, '_'), '_'), false) : Str::camelize(ltrim(rtrim($value, '_'), '_'), false);
                 $attributes[$name] = $value;
             }
         } else {
-            foreach (array_filter($values ?? []) as $key => $value) {
+            foreach (array_filter($values) as $key => $value) {
                 $attributes[] = !is_numeric($key) ? $key : $value;
             }
         }
@@ -344,7 +335,7 @@ class DataTransfertClassBuilder implements AbstractBuilder
         return $attributes;
     }
 
-    private function buildPropertiesTypeComments(array $properties = [], bool $camelize = false)
+    private function buildPropertiesTypeComments(array $properties = [], bool $camelize = false): array
     {
         $comments = [];
         foreach ($properties as $key => $value) {

@@ -11,3 +11,5 @@ routes.php
 routes.php
 database.*
 input.json
+phpstan.*
+php-stan.*

@@ -57,7 +57,7 @@ class Group
         $this->name = $name;
         $this->valueProperty = $valueProperty;
         $this->camelize = $camelize;
-        $this->indent = $indent ?? '';
+        $this->indent = $indent;
         $this->index = $index;
     }
 

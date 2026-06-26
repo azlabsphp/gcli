@@ -36,7 +36,7 @@ use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Pluralizer;
 
-class ControllerClassBuilder implements AbstractBuilder
+final class ControllerClassBuilder implements AbstractBuilder
 {
     use HasNamespaceAttribute;
 
@@ -89,7 +89,7 @@ class ControllerClassBuilder implements AbstractBuilder
     private $serviceType;
 
     /**
-     * List of classes to imports.
+     * list of classes to imports.
      *
      * @var array
      */
@@ -121,19 +121,18 @@ class ControllerClassBuilder implements AbstractBuilder
     /**
      * Create an instance of the controller builder.
      *
-     * @return self
      */
     public function __construct(
         ?string $name = null,
         ?string $namespace = null,
         ?string $path = null
     ) {
-        $this->setName($name ? (!Str::endsWith($name, 'Controller') ? Str::camelize(Pluralizer::plural($name)).'Controller' : Str::camelize(Pluralizer::plural($name))) : self::DEFAULT_NAME);
+        $this->setName($name ? (!Str::endsWith($name, 'Controller') ? Str::camelize(Pluralizer::plural($name)).'Controller' : Str::camelize(Pluralizer::plural($name))) : static::DEFAULT_NAME);
         // Set the component write path
-        $this->setWritePath($path ?? self::DEFAULT_PATH);
+        $this->setWritePath($path ?? static::DEFAULT_PATH);
 
         // Set the component namespace
-        $this->setNamespace($namespace ?? self::DEFAULT_NAMESPACE);
+        $this->setNamespace($namespace ?? static::DEFAULT_NAMESPACE);
     }
 
     public function asResourceController()
@@ -258,7 +257,7 @@ class ControllerClassBuilder implements AbstractBuilder
                     ]) : [],
                 )
             )
-            ->addToNamespace($this->namespace_ ?? self::DEFAULT_NAMESPACE);
+            ->addToNamespace($this->package ?? static::DEFAULT_NAMESPACE);
 
         $classPaths = static::CLASS_PATHS;
 
@@ -277,10 +276,10 @@ class ControllerClassBuilder implements AbstractBuilder
 
         if ($this->dtoName) {
             /** @var Blueprint */
-            $component = $component->addFunctionPath(self::USE_QUERY_RESULT_PROXY);
+            $component = $component->addFunctionPath(static::USE_QUERY_RESULT_PROXY);
         }
 
-        foreach ($this->classPaths ?? [] as $value) {
+        foreach ($this->classPaths as $value) {
             /** @var Blueprint */
             $component = $component->addClassPath($value);
         }
@@ -342,7 +341,7 @@ class ControllerClassBuilder implements AbstractBuilder
         return PHPScript(
             $component->getName(),
             $component,
-            ComponentPath::new()->create($this->namespace_ ?? self::DEFAULT_NAMESPACE, $this->path_ ?? self::DEFAULT_PATH)
+            ComponentPath::new()->create($this->package ?? static::DEFAULT_NAMESPACE, $this->path ?? static::DEFAULT_PATH)
         )->setNamespace($component->getNamespace());
     }
 
@@ -353,12 +352,12 @@ class ControllerClassBuilder implements AbstractBuilder
             return $classname;
         }
 
-        return sprintf('%s%s%s', self::DEFAULT_NAMESPACE, '\\', $classname);
+        return sprintf('%s%s%s', static::DEFAULT_NAMESPACE, '\\', $classname);
     }
 
     private function setRouteName(string $classname)
     {
-        $this->routeName = RouteName::new()->createRouteName($classname ?? '');
+        $this->routeName = RouteName::new()->createRouteName($classname);
 
         return $this;
     }
@@ -366,8 +365,7 @@ class ControllerClassBuilder implements AbstractBuilder
     private function getClassFromClassPath(string $classPath)
     {
         $list = explode('\\', $classPath);
-
-        return array_reverse(array_values($list))[0];
+        return array_reverse($list)[0];
     }
 
     private function addResourcesActions(Blueprint $component)
@@ -532,12 +530,11 @@ class ControllerClassBuilder implements AbstractBuilder
             $method = PHPClassMethod(
                 $action['name'],
                 $action['params'],
-                $action['returns'] ?? null,
+                $action['returns'],
                 PHPTypesModifiers::PUBLIC,
                 $action['descriptors']
             );
-            if ($contents = $action['contents'] ?? null) {
-                $contents = \is_array($contents) ? $contents : [$contents];
+            if ($contents = $action['contents']) {
                 foreach (
                     array_filter($contents, static function ($item) {
                         return null !== $item;

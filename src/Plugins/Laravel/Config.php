@@ -21,6 +21,7 @@ use Drewlabs\GCli\Contracts\HasRelations;
 use Drewlabs\GCli\Contracts\ORMModelDefinition as Type;
 use Drewlabs\GCli\Contracts\Relation;
 use Drewlabs\GCli\Contracts\RulesFactory;
+use Drewlabs\GCli\Contracts\SourceFileInterface;
 use Drewlabs\GCli\ControllerConfig;
 use Drewlabs\GCli\DtoConfig;
 use Drewlabs\GCli\ModelConfig;
@@ -32,7 +33,7 @@ use Drewlabs\GCli\ServiceConfig;
 
 use Drewlabs\GCli\ViewModelConfig;
 
-class Config implements HasRelations
+final class Config implements HasRelations
 {
     /** @var string */
     const DEFAULT_PROJECT_NAMESPACE = 'App';
@@ -62,7 +63,7 @@ class Config implements HasRelations
      * Class constructor.
      */
     final public function __construct(
-        Type $def,
+        Type&HasModuleMetadata $def,
         ?string $domain = null,
         ?string $directory = null,
         ?string $namespace = null,
@@ -73,8 +74,8 @@ class Config implements HasRelations
         bool $authorize = false,
     ) {
         $domain = $domain;
-        $directory = $directory ?? 'app';
-        $namespace = $namespace ?? self::DEFAULT_PROJECT_NAMESPACE;
+        $directory = $directory;
+        $namespace = $namespace ?? static::DEFAULT_PROJECT_NAMESPACE;
 
         $this->table = new ModelConfig(
             $def,
@@ -89,7 +90,7 @@ class Config implements HasRelations
                 $factory ? $factory->createRules($def) : [],
                 $factory ? $factory->createRules($def, true) : [],
                 null,
-                sprintf('%s\\%s', $namespace ?? 'App', sprintf('%s%s', $domain ? "$domain\\" : '', 'ViewModels')),
+                sprintf('%s\\%s', $namespace, sprintf('%s%s', $domain ? "$domain\\" : '', 'ViewModels')),
                 null,
                 $this->table->getClassPath(),
                 $isHTTP ?: false
@@ -110,7 +111,7 @@ class Config implements HasRelations
         $this->controller = new ControllerConfig(
             $this->getControllerBuilder(
                 $this->table->getClassPath(),
-                $namespace ?? 'App',
+                $namespace,
                 $domain,
                 $authenticate,
                 $authorize,
@@ -128,7 +129,7 @@ class Config implements HasRelations
                 })()),
                 [],
                 null,
-                sprintf('%s\\%s', $namespace ?? 'App', sprintf('%s%s', $domain ? "$domain\\" : '', 'Dto')),
+                sprintf('%s\\%s', $namespace, sprintf('%s%s', $domain ? "$domain\\" : '', 'Dto')),
                 $this->table->getClassPath()
             ),
             $directory,
@@ -136,7 +137,7 @@ class Config implements HasRelations
         );
 
         $this->policy = new PolicyConfig(
-            (new PolicyClassBuilder(null, sprintf('%s\\%s', $namespace ?? 'App', sprintf('%s%s', $domain ? "$domain\\" : '', 'Policies'))))
+            (new PolicyClassBuilder(null, sprintf('%s\\%s', $namespace, sprintf('%s%s', $domain ? "$domain\\" : '', 'Policies'))))
                 ->withModel($this->table->getClassPath())
                 ->withViewModel($this->view->getClassPath()),
             $directory,
@@ -150,7 +151,7 @@ class Config implements HasRelations
      * @return static
      */
     public static function new(
-        Type $def,
+        Type&HasModuleMetadata $def,
         string $domain,
         ?string $directory,
         ?string $namespace,
@@ -270,7 +271,7 @@ class Config implements HasRelations
     {
         $names = array_map(static function ($column) {
             return $column->name();
-        }, $def->columns() ?? []);
+        }, $def->columns());
         $timestamps = Arr::containsAll($names, static::DEFAULT_TIMESTAMP_COLUMNS);
 
         return EloquentORMModelBuilder($def, $schema)->hasTimestamps($timestamps);
@@ -279,7 +280,7 @@ class Config implements HasRelations
     /**
      * Creates a factory method that create the controller script.
      *
-     * @return \Closure(mixed $service = null, mixed $viewModel = null, mixed $dtoObject = null): SourceFileInterface
+     * @return \Closure(): SourceFileInterface
      */
     private function getControllerBuilder(
         ?string $model = null,
@@ -296,7 +297,7 @@ class Config implements HasRelations
                 $view ?? null,
                 $dto ?? null,
                 null,
-                sprintf('%s\\%s', $namespace ?? 'App', sprintf('%s%s', 'Http\\Controllers', $domain ? "\\$domain" : '')),
+                sprintf('%s\\%s', $namespace, sprintf('%s%s', 'Http\\Controllers', $domain ? "\\$domain" : '')),
                 $authenticate,
                 $authorizable,
                 $key
@@ -313,7 +314,7 @@ class Config implements HasRelations
     {
         return new ServiceInterfaceBuilder(
             sprintf('%s%s', array_reverse(explode('\\', $model))[0], 'ServiceInterface'),
-            sprintf('%s\\%s', $namespace ?? 'App', sprintf('%s%s', $domain ? "$domain\\" : '', 'Contracts'))
+            sprintf('%s\\%s', $namespace, sprintf('%s%s', $domain ? "$domain\\" : '', 'Contracts'))
         );
     }
 
@@ -329,7 +330,7 @@ class Config implements HasRelations
         return Facade::createServiceBuilder(
             true,
             null,
-            sprintf('%s\\%s', $namespace ?? 'App', sprintf('%s%s', $domain ? "$domain\\" : '', 'Services')),
+            sprintf('%s\\%s', $namespace, sprintf('%s%s', $domain ? "$domain\\" : '', 'Services')),
             $model
         )->addContracts($contractBuilder->getClassPath());
     }

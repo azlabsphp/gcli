@@ -60,7 +60,7 @@ class IteratorFactory
     public function except(array $tables)
     {
         $self = clone $this;
-        $self->excepts = $tables ?? [];
+        $self->excepts = $tables;
 
         return $self;
     }

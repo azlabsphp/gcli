@@ -18,7 +18,8 @@ class GroupByBuilder extends AbstractBuilder implements Builder
     public function build(array $parts, array &$skipBag = []): string
     {
         $qb = '';
-        $partsLen = count($parts['parts']);
+        /** @var int */
+        $partsLen = intval(count($parts['parts']));
 
         if ($partsLen == 0)
             return $qb;

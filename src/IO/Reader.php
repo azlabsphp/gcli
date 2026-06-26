@@ -18,7 +18,7 @@ use Drewlabs\GCli\Exceptions\IOException;
 class Reader
 {
     /**
-     * @var int|resource
+     * @var int|resource|null
      */
     private $handle;
 
@@ -57,7 +57,6 @@ class Reader
      * file resource because the resource was close or a read error
      * occurs
      *
-     * @param int|null $offset
      *
      * @return string|false
      */
@@ -71,7 +70,7 @@ class Reader
             $length = \is_array($stats = @fstat($this->handle)) ? $stats['size'] : 0;
         }
 
-        return 0 === $length ? '' : $this->readBytes($length, $operation, $offset ?? 0);
+        return 0 === $length ? '' : $this->readBytes($length, $operation, $offset);
     }
 
     /**

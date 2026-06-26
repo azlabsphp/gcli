@@ -22,7 +22,7 @@ use Drewlabs\GCli\Contracts\Relation;
 /** @internal */
 class Table implements ModelDefinition, HasModuleMetadata, HasRelations
 {
-    /** @var string */
+    /** @var string|null */
     private $primaryKey;
 
     /** @var string */
@@ -37,13 +37,13 @@ class Table implements ModelDefinition, HasModuleMetadata, HasRelations
     /** @var bool */
     private $increments;
 
-    /** @var string */
+    /** @var string|null */
     private $namespace;
 
-    /** @var string */
+    /** @var string|null */
     private $comment;
 
-    /** @var string */
+    /** @var string|null */
     private $module;
 
     /** @var Relation[] */
@@ -60,7 +60,7 @@ class Table implements ModelDefinition, HasModuleMetadata, HasRelations
         string $name,
         string $table,
         array $columns,
-        bool $increments,
+        bool $increments = true,
         ?string $namespace = null,
         ?string $module = null,
         ?string $comment = null,
@@ -74,7 +74,7 @@ class Table implements ModelDefinition, HasModuleMetadata, HasRelations
         $this->namespace = $namespace;
         $this->comment = $comment;
         $this->module = $module;
-        $this->relations = $relations ?? [];
+        $this->relations = $relations;
     }
 
     public function withModuleName(string $name)
@@ -105,7 +105,7 @@ class Table implements ModelDefinition, HasModuleMetadata, HasRelations
 
     public function getProperties(): array
     {
-        return $this->columns ?? [];
+        return $this->columns;
     }
 
     public function primaryKey(): ?string
@@ -130,12 +130,12 @@ class Table implements ModelDefinition, HasModuleMetadata, HasRelations
 
     public function columns(): array
     {
-        return $this->columns ?? [];
+        return $this->columns;
     }
 
     public function shouldAutoIncrements(): bool
     {
-        return $this->increments ?? true;
+        return $this->increments;
     }
 
     public function namespace(): ?string

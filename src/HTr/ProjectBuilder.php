@@ -40,18 +40,12 @@ class ProjectBuilder
     private $env = [];
 
     /**
-     * @var string
-     */
-    private $schemaUri;
-
-    /**
      * Creates new builder instance.
      */
-    public function __construct(string $name, string $version = '0.2.0', ?string $schemaUri = null)
+    public function __construct(string $name = 'HTr Project', string $version = '0.2.0')
     {
         $this->name = $name;
-        $this->version = $version ?? '0.2.0';
-        $this->schemaUri = $schemaUri;
+        $this->version = $version;
     }
 
     /**
@@ -64,7 +58,7 @@ class ProjectBuilder
     public function build()
     {
         // Create the project instance
-        return Project::make($this->getEnvironments(), $this->getComponents(), $this->name ?? 'HTr Project', $this->version);
+        return Project::make($this->getEnvironments(), $this->getComponents(), $this->name, $this->version);
     }
 
     /**
@@ -128,7 +122,7 @@ class ProjectBuilder
      */
     public function getComponents()
     {
-        return $this->components ?? [];
+        return $this->components;
     }
 
     /**
@@ -162,6 +156,6 @@ class ProjectBuilder
      */
     public function getEnvironments()
     {
-        return $this->env ?? [];
+        return $this->env;
     }
 }

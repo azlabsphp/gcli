@@ -76,9 +76,8 @@ final class LiteralExpression
             $items = preg_split('/[\s]([><!]?[=]+|[\b>\b]+|[<]+)[\s]/', $expr, -1, \PREG_SPLIT_NO_EMPTY | \PREG_SPLIT_DELIM_CAPTURE);
             $items = array_map(static function ($item) {
                 return trim($item);
-            }, array_filter($items, static function ($item) {
-                return false !== $item;
-            }));
+            }, array_filter($items ? $items : []));
+            
             if (\count($items) >= 3) {
                 $swap_array_values($items, 1, 2);
             }

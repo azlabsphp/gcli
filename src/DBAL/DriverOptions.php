@@ -25,7 +25,7 @@ class DriverOptions
      */
     final public function __construct(array $options = [])
     {
-        $this->options = $options ?? [];
+        $this->options = $options;
     }
 
     /**
@@ -45,16 +45,16 @@ class DriverOptions
      */
     public function prepare()
     {
-        $options = $this->options ?? [];
-        // If database driver is SQLite we apply configuration values for SQLite PDO object
+        $options = $this->options;
+
         if ('pdo_sqlite' === ($options['driver'] ?? null)) {
-            $options = $this->prepareSQLiteOptions($options ?? []);
+            $options = $this->prepareSQLiteOptions($options);
         }
-        // Removes Null keys values
+
         $options = array_filter($options, static function ($value) {
             return null !== $value;
         });
-        // We set the new state of the options property after preparing
+
         $this->options = $options;
 
         return $this;

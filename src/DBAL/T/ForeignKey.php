@@ -27,7 +27,7 @@ class ForeignKey implements ForeignKeyConstraintDefinition
     /** @var string */
     private $foreign_table;
 
-    /** @var string[] */
+    /** @var string[]|null */
     private $foreign_columns;
 
     /** @var string */

@@ -66,7 +66,7 @@ class Basic
      */
     public static function create(string $value)
     {
-        /** @var self */
+        /** @var static */
         $object = (new \ReflectionClass(__CLASS__))->newInstanceWithoutConstructor();
         $object->setTables($value);
 

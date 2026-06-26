@@ -77,7 +77,14 @@ class Options
             throw IOException::readable($realpath);
         }
 
-        return new static((array) (yaml_parse(file_get_contents($realpath)) ?? []));
+        if (function_exists('yaml_parse')) {
+            return new static((array) (\yaml_parse(file_get_contents($realpath)) ?? []));
+        }
+
+        trigger_error('ext-yaml is missing from the system, in order but is required to parse yaml files using yaml_parse() function', \E_USER_WARNING);
+
+        return new static([]);
+
     }
 
     /**

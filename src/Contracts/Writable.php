@@ -18,7 +18,7 @@ use Drewlabs\CodeGenerator\Contracts\Stringable;
 interface Writable extends Stringable
 {
     /**
-     * Returns the path the component should be written to.
+     * returns the path the component should be written to.
      */
     public function getPath(): string;
 }

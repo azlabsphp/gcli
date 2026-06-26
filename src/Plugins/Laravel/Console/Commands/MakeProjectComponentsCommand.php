@@ -33,10 +33,10 @@ use Illuminate\Container\Container;
 
 /**
  * @property \Illuminate\Contracts\Console\Application|\Illuminate\Contracts\Foundation\Application $laravel
- * @property mixed output
+ * @property mixed $output
  *
  * @method bool                   confirm($question, $default = false)
- * @method array|string|boo|null  option($key = null)
+ * @method array|string|bool|null  option($key = null)
  * @method string|array           choice($question, array $choices, $default = null, $attempts = null, $multiple = false)
  * @method string|array|bool|null option(string $key)
  * @method array                  options()
@@ -44,7 +44,7 @@ use Illuminate\Container\Container;
  * @method void                   warn($string, $verbosity = null)
  * @method void                   error($string, $verbosity = null)
  */
-class MakeProjectComponentsCommand extends Command
+final class MakeProjectComponentsCommand extends Command
 {
     /** @var string[] */
     public const CAMEL_CASE_CHOICES = [
@@ -133,7 +133,7 @@ class MakeProjectComponentsCommand extends Command
         // #region local variables initialization
         $noAuth = (bool) $this->option('noAuth');
         $http = (bool) $this->option('http');
-        $commandoptions = $this->mergeCamelizeOption($this->choice(static::PROMPT, self::CAMEL_CASE_CHOICES, 0), $this->options() ?? []);
+        $commandoptions = $this->mergeCamelizeOption($this->choice(static::PROMPT, static::CAMEL_CASE_CHOICES, 0), $this->options());
         $commandoptions = array_merge($commandoptions, []);
         $commandargs = new Arguments($commandoptions);
         $options = $commandargs->providesoptions($this->cachePath, $this->laravel->basePath($this->option('srcPath') ?? 'app'));
@@ -254,10 +254,10 @@ class MakeProjectComponentsCommand extends Command
      */
     private function mergeCamelizeOption($choice, array $options)
     {
-        if ($choice === self::CAMEL_CASE_CHOICES[0]) {
+        if ($choice === static::CAMEL_CASE_CHOICES[0]) {
             return array_merge($options, ['camelize' => false]);
         }
-        if ($choice === self::CAMEL_CASE_CHOICES[1]) {
+        if ($choice === static::CAMEL_CASE_CHOICES[1]) {
             return array_merge($options, ['camelize' => true]);
         }
 

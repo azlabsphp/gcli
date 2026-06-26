@@ -18,7 +18,7 @@ use Drewlabs\Core\Helpers\Str;
 use Drewlabs\GCli\Contracts\SourceFileInterface;
 use Drewlabs\CodeGenerator\Contracts\NamespaceComponent;
 
-class PHPScript implements SourceFileInterface
+final class PHPScript implements SourceFileInterface
 {
     private const DEFAULT_HEADER = <<<EOT
 /*
@@ -42,7 +42,7 @@ EOT;
     /** @var string[] */
     private $headers;
 
-    /** @var NamespaceComponent|Stringable */
+    /** @var NamespaceComponent&Stringable */
     private $content;
 
     /** @var string */
@@ -51,7 +51,7 @@ EOT;
     /** @var string */
     private $extension;
 
-    /** @var string */
+    /** @var ?string */
     private $name;
 
     /** @var string|null */
@@ -59,7 +59,7 @@ EOT;
 
     public function __construct(
         string $name,
-        Stringable $content,
+        NamespaceComponent&Stringable $content,
         string $path,
         string $extension = 'php'
     ) {
@@ -79,7 +79,7 @@ EOT;
             $parts[] = 'declare(strict_types=1);';
         }
         // Add File headers
-        $parts[] = null !== $this->headers ? implode(\PHP_EOL, $this->headers) : self::DEFAULT_HEADER;
+        $parts[] = null !== $this->headers ? implode(\PHP_EOL, $this->headers) : static::DEFAULT_HEADER;
         // Convert the stringeable content to string
         $parts[] = $this->content->__toString();
 

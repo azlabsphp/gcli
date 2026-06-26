@@ -29,7 +29,7 @@ use Drewlabs\GCli\Plugins\Laravel\Traits\HasNamespaceAttribute;
 
 use function Drewlabs\GCli\Proxy\PHPScript;
 
-class ServiceProviderBuilder implements AbstractBuilder
+final class ServiceProviderBuilder implements AbstractBuilder
 {
     use HasNamespaceAttribute;
 
@@ -57,23 +57,23 @@ class ServiceProviderBuilder implements AbstractBuilder
     /**
      * Creates new class instance.
      *
-     * @throws RuntimeException
+     * @throws \RuntimeException
      * @throws \Exception
      *
      * @return void
      */
     public function __construct(array $policies = [], array $bindings = [], ?string $namespace = null, ?string $path = null, ?string $name = null)
     {
-        $this->setName($name ?? self::__NAME__);
+        $this->setName($name ?? static::__NAME__);
 
         $this->policies = $policies;
-        $this->bindings = $bindings ?? [];
+        $this->bindings = $bindings;
 
         // Set the component write path
-        $this->setWritePath($path ?? self::__PATH__);
+        $this->setWritePath($path ?? static::__PATH__);
 
         // Set the component namespace
-        $this->setNamespace($namespace ?? self::__NAMESPACE__);
+        $this->setNamespace($namespace ?? static::__NAMESPACE__);
     }
 
     /**
@@ -108,7 +108,7 @@ class ServiceProviderBuilder implements AbstractBuilder
         $component = PHPClass($this->name());
         $component = $component = $component->asFinal()
             ->setBaseClass('BaseServiceProvider')
-            ->addToNamespace($this->namespace_ ?? self::__NAMESPACE__);
+            ->addToNamespace($this->package ?? static::__NAMESPACE__);
 
         $imports = [];
         if (empty($this->events)) {
@@ -121,7 +121,7 @@ class ServiceProviderBuilder implements AbstractBuilder
             $imports[] = 'Illuminate\\Support\\Facades\\Gate';
         }
 
-        foreach ($imports ?? [] as $value) {
+        foreach ($imports as $value) {
             /** @var Blueprint */
             $component = $component->addClassPath($value);
         }
@@ -195,7 +195,7 @@ class ServiceProviderBuilder implements AbstractBuilder
         return PHPScript(
             $component->getName(),
             $component,
-            ComponentPath::new()->create($this->namespace_ ?? self::__NAMESPACE__, $this->path_ ?? self::__PATH__)
+            ComponentPath::new()->create($this->package ?? static::__NAMESPACE__, $this->path ?? static::__PATH__)
         )->setNamespace($component->getNamespace());
     }
 }

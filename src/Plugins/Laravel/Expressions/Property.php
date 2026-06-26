@@ -29,7 +29,7 @@ final class Property
      *
      * @return void
      */
-    public function __construct(string $value, ?string $type = null)
+    public function __construct(string $value, string $type = 'mixed')
     {
         $this->value = $value;
         $this->type = $type;
@@ -38,7 +38,7 @@ final class Property
     public function __toString(): string
     {
         if (null === $this->cached) {
-            $type = $this->type ?? 'mixed';
+            $type = $this->type;
             if (((false !== ($offset_1 = strpos($this->value, '['))) && (false !== ($offset_2 = strpos($this->value, ']')))) || ((false !== ($offset_1 = strpos($this->value, '{'))) && (false !== ($offset_2 = strpos($this->value, '}'))))) {
                 $param = trim(substr($this->value, $offset_1 + 1, $offset_2 - \strlen(substr($this->value, 0, $offset_1 + 1))));
                 if (str_contains($param, '\\') && empty(static::getPropertyWithoutType($param))) {
@@ -69,7 +69,11 @@ final class Property
             return new static($expr);
         }
 
-        if (static::isplaceholder($expr, $start, $end)) {
+        /** @var int|bool */
+        $start = false;
+        /** @var int|bool */
+        $end = false;
+        if (static::isplaceholder($expr, $start, $end) && is_int($start) && is_int($end)) {
             $name = trim(substr($expr, $start, $end - \strlen(substr($expr, 0, $start + 1)) + 2));
             $type = empty($type = trim(str_replace($name . ':', '', $expr))) || ($name === $type) ? 'mixed' : $type;
             return new static($name, $type);
@@ -100,11 +104,9 @@ final class Property
      * checks if expression is a placeholder
      * 
      * @param string $expr 
-     * @param null|int &$start 
-     * @param null|int &$end 
      * @return bool 
      */
-    private static function isplaceholder(string $expr, ?int &$start = null, ?int &$end = null)
+    private static function isplaceholder(string $expr, int|bool &$start, int|bool &$end)
     {
         return ((false !== ($start = strpos($expr, '['))) && (false !== ($end = strpos($expr, ']')))) || ((false !== ($start = strpos($expr, '{'))) && (false !== ($end = strpos($expr, '}'))));
     }

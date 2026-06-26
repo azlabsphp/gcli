@@ -15,7 +15,7 @@ namespace Drewlabs\GCli\IO;
 
 use Drewlabs\GCli\Exceptions\IOException;
 
-class Disk
+final class Disk
 {
     /**
      * @var string
@@ -41,7 +41,7 @@ class Disk
         $object = new self();
 
         // Set the base path
-        $object->setBasePath(self::normalizeBasePath($base));
+        $object->setBasePath(static::normalizeBasePath($base));
 
         // Return the constructed object
         return $object;

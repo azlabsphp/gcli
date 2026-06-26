@@ -134,14 +134,14 @@ class RouteProjectFactory
     /**
      * returns the request name.
      *
-     * @return string|null
+     * @return string
      */
     private function getNameFromPath(string $path)
     {
         $components = explode('/', ltrim($path, '/'));
-        $name = $components[0] ?? null;
+        $name = $components[0];
 
-        return null !== $name ? str_replace(['-', '_'], ' ', $name) : $name;
+        return $name ? str_replace(['-', '_'], ' ', $name) : $name;
     }
 
     /**

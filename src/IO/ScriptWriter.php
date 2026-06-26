@@ -34,15 +34,12 @@ class ScriptWriter implements AbstractScriptWriter
      */
     public function __construct(string $src)
     {
-        if (!\is_string($src)) {
-            throw new \InvalidArgumentException('$srcPath must be a valid PHP string');
-        }
         $this->disk = Disk::new($src);
     }
 
     public function write(Writable $writable)
     {
-        return $this->disk->write($writable->getPath(), $writable->__toString());
+        $this->disk->write($writable->getPath(), $writable->__toString());
     }
 
     /**

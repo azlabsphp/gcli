@@ -69,7 +69,7 @@ class Facade
                 array_map(
                     static function ($definition) {
                         $name = Str::before('|', $definition);
-                        $least = explode(',', Str::after('|', $definition) ?? '');
+                        $least = explode(',', Str::after('|', $definition));
                         $type = Arr::first($least) ?? null;
 
                         return new Column($name, empty($type) ? null : $type);
@@ -89,8 +89,7 @@ class Facade
                 $module,
                 $comments,
             )
-        )->setHiddenColumns($hidden ?? [])
-            ->setAppends($appends ?? []);
+        )->setHiddenColumns($hidden)->setAppends($appends);
         if ($isViewModel) {
             $component = $component->asViewModel();
         }
@@ -141,7 +140,7 @@ class Facade
         ?bool $hasHttpHandlers = false
     ) {
         $rulesParserFunc = static function ($definitions) {
-            $definitions_ = [];
+            $def = [];
             foreach ($definitions as $key => $value) {
                 if (\is_string($value) && !Str::contains($value, '=')) {
                     continue;
@@ -149,12 +148,12 @@ class Facade
                 if (is_numeric($key) && \is_string($value)) {
                     $k = Str::before('=', $value);
                     $v = Str::after('=', $value);
-                    $definitions_[$k] = $v;
+                    $def[$k] = $v;
                     continue;
                 }
-                $definitions_[$key] = $value;
+                $def[$key] = $value;
             }
-            foreach ($definitions_ ?? [] as $key => $definition) {
+            foreach ($def  as $key => $definition) {
                 yield $key => $definition;
             }
         };
@@ -204,7 +203,7 @@ class Facade
             $component = $component->bindModel($model);
         }
 
-        return $component->setHidden($hidden ?? []);
+        return $component->setHidden($hidden);
     }
 
     /**
@@ -229,10 +228,8 @@ class Facade
         string $key = 'id'
     ) {
         $component = MVCControllerBuilder($name, $namespace);
-        // Add binding for primary key
-        if (null !== $key) {
-            $component = $component->withPrimaryKey($key);
-        }
+
+        $component = $component->withPrimaryKey($key);
         if (!$auth) {
             $component = $component->withoutAuthenticatable();
         }
@@ -280,7 +277,7 @@ class Facade
         ?string $namespace = null,
         ?string $model = null
     ) {
-        return self::createServiceBuilder($asCRUD, $name, $namespace, $model)->build();
+        return static::createServiceBuilder($asCRUD, $name, $namespace, $model)->build();
     }
 
     /**
@@ -307,7 +304,7 @@ class Facade
         ?string $model = null,
         ?bool $hasHttpHandlers = false
     ) {
-        return self::createViewModelBuilder(
+        return static::createViewModelBuilder(
             $single,
             $rules,
             $updateRules,
@@ -338,7 +335,7 @@ class Facade
         ?string $namespace = null,
         ?string $model = null
     ) {
-        return self::createDtoBuilder(
+        return static::createDtoBuilder(
             $attributes,
             $hidden,
             $name,
@@ -368,7 +365,7 @@ class Facade
         bool $authorize = false,
         string $key = 'id'
     ) {
-        return self::createControllerBuilder(
+        return static::createControllerBuilder(
             $model,
             $service,
             $viewModel,

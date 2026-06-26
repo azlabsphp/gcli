@@ -41,7 +41,7 @@ interface ORMModelBuilder extends ComponentBuilder
     /**
      * Indicates whether the model primary key column is auto incrementable.
      *
-     * @return bool
+     * @return static
      */
     public function doesNotAutoIncrements();
 

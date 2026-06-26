@@ -19,7 +19,7 @@ use Symfony\Component\Console\Helper\ProgressBar as BaseProgressBar;
 final class ProgressBar implements Progress
 {
     /**
-     * @var ProgressBar
+     * @var BaseProgressBar
      */
     private $bar;
 

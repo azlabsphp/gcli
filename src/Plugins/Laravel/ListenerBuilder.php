@@ -36,9 +36,6 @@ final class ListenerBuilder implements AbstractBuilder
     private const __NAMESPACE__ = 'App\\Listeners';
 
     /** @var string */
-    private const __NAME__ = 'ExampleEventListener';
-
-    /** @var string */
     private const __PATH__ = 'app/Listeners';
 
     /** @var Listener */
@@ -46,9 +43,9 @@ final class ListenerBuilder implements AbstractBuilder
 
     public function __construct(Listener $listener, ?string $path = null)
     {
-        $this->setName($listener->getName() ?? self::__NAME__);
-        $this->setNamespace($listener->getNamespace() ?? self::__NAMESPACE__);
-        $this->setWritePath($path ?? self::__PATH__);
+        $this->setName($listener->getName());
+        $this->setNamespace($listener->getNamespace());
+        $this->setWritePath($path ?? static::__PATH__);
         $this->listener = $listener;
     }
 
@@ -58,7 +55,7 @@ final class ListenerBuilder implements AbstractBuilder
         $component = PHPClass($this->name())
                             ->withPromotedProperties()
                             ->addConstructor()
-                            ->addToNamespace($this->namespace_ ?? self::__NAMESPACE__)
+                            ->addToNamespace($this->package ?? static::__NAMESPACE__)
                             ->asFinal();
 
         if ($isClasspath = Str::contains(rtrim($classPath = $this->listener->getEvent()->getClasspath(), '\\'), '\\')) {
@@ -76,7 +73,7 @@ final class ListenerBuilder implements AbstractBuilder
         return PHPScript(
             $component->getName(),
             $component,
-            ComponentPath::new()->create($this->namespace_ ?? self::__NAMESPACE__, $this->path_ ?? self::__PATH__)
+            ComponentPath::new()->create($this->package ?? static::__NAMESPACE__, $this->path ?? static::__PATH__)
         )->setNamespace($component->getNamespace());
     }
 }

@@ -28,7 +28,7 @@ use Illuminate\Console\Command;
 use Illuminate\Container\Container;
 
 /**
- * @property \Illuminate\Contracts\Foundation\Application app
+ * @property \Illuminate\Contracts\Foundation\Application $app
  */
 class MakeModelCommand extends Command
 {
@@ -51,7 +51,7 @@ class MakeModelCommand extends Command
 
     public function __construct()
     {
-        $this->laravel = ($this->getLaravel() ?? Container::getInstance());
+        $this->laravel = $this->getLaravel();
         parent::__construct();
     }
 
@@ -73,7 +73,7 @@ class MakeModelCommand extends Command
         $builder = Facade::createModelBuilder(
             $table,
             $schema,
-            $columns ?? [],
+            $columns,
             $namespace,
             $primaryKey,
             $increments,
@@ -100,9 +100,9 @@ class MakeModelCommand extends Command
     {
         $rulesFactory = new RulesFactory();
         $modelClassPath = sprintf('\\%s\\%s', $component->getNamespace(), $component->getName());
-        $service = $service ?? sprintf('%sService', $component->getName());
-        $dto = $dto ?? sprintf('%sDto', $component->getName());
-        $viewModel = $viewModel ?? sprintf('%sViewModel', $component->getName());
+        $service = sprintf('%sService', $component->getName());
+        $dto = sprintf('%sDto', $component->getName());
+        $viewModel = sprintf('%sViewModel', $component->getName());
         $serviceClass = CommandsHelpers::createService($component->getNamespace(), $basePath, $modelClassPath, $service);
         $dtoClass = CommandsHelpers::createDto(
             $component->getNamespace(),
@@ -130,7 +130,7 @@ class MakeModelCommand extends Command
                 $viewModelClass,
                 $dtoClass,
                 null,
-                sprintf('\\%s\\Http\\Controllers', CommandsHelpers::getBaseNamespace($component->getNamespace()) ?? 'App'),
+                sprintf('\\%s\\Http\\Controllers', CommandsHelpers::getBaseNamespace($component->getNamespace())),
                 true,
                 false,
                 $primaryKey

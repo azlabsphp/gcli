@@ -22,25 +22,24 @@ trait HasNamespaceAttribute
     use HasPathAttribute;
 
     /**
-     * @var string
+     * @var ?string
      */
-    private $namespace_;
+    private $package;
 
     public function setNamespace(string $namespace)
     {
         $namespace = ltrim($namespace, '\\');
-        $this->namespace_ = $namespace;
-        $path_ = $this->getWritePath();
-        if (null === $path_ || empty($path_)) {
-            // Get the list of files in the current workspace
-            $currentWsClasses = array_filter(get_declared_classes(), static function ($item) use ($namespace) {
+        $this->package = $namespace;
+        if (empty($this->getWritePath())) {
+
+        $currentWsClasses = array_filter(get_declared_classes(), static function ($item) use ($namespace) {
                 return Str::startsWith($item, $namespace);
             });
-            // Get the first element of the list if any
+
             if (null === ($first = $currentWsClasses[0] ?? null)) {
                 return $this->createPathFromNamespace($namespace);
             }
-            // Extract file and dirname from the current directory
+
             $name = (new \ReflectionClass(new $first()))->getFileName();
             $dirname = $name ? Path::new($name)->dirname() : null;
             if ($dirname) {
@@ -53,7 +52,7 @@ trait HasNamespaceAttribute
 
     public function namespace(): ?string
     {
-        return $this->namespace_;
+        return $this->package;
     }
 
     public function getClassPath()

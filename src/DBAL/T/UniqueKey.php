@@ -29,7 +29,7 @@ class UniqueKey implements UniqueKeyConstraintDefinition
      *
      * @param string|string[] $columns
      */
-    public function __construct(string $table, $columns)
+    public function __construct(string $table, array|string $columns = 'id')
     {
         $this->table = $table;
         $this->columns = $columns;
@@ -37,11 +37,11 @@ class UniqueKey implements UniqueKeyConstraintDefinition
 
     public function getTable()
     {
-        return $this->table ?? '';
+        return $this->table;
     }
 
     public function getColumns()
     {
-        return $this->columns ?? 'id';
+        return $this->columns;
     }
 }

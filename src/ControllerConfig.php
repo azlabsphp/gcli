@@ -19,7 +19,7 @@ use Drewlabs\GCli\Factories\RouteName;
 
 final class ControllerConfig
 {
-    /** @var \Closure(...$args): Builder */
+    /** @var (\Closure():SourceFileInterface)|SourceFileInterface */
     private $builder;
 
     /** @var string */
@@ -28,9 +28,9 @@ final class ControllerConfig
     /**
      * Class constructor.
      *
-     * @param \Closure(...$args): Builder $builder
+     * @param (\Closure():SourceFileInterface)|SourceFileInterface $builder
      */
-    public function __construct(\Closure $builder, string $directory)
+    public function __construct(\Closure|SourceFileInterface $builder, string $directory)
     {
         $this->path = $directory;
         $this->builder = $builder;
@@ -39,9 +39,9 @@ final class ControllerConfig
     /**
      * return the builder instance.
      *
-     * @return (\Closure(...$args): Builder)|Builder
+     * @return (\Closure(): SourceFileInterface)|SourceFileInterface
      */
-    public function getBuilder(): \Closure
+    public function getBuilder(): \Closure|SourceFileInterface
     {
         return $this->builder;
     }

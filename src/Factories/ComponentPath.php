@@ -38,7 +38,6 @@ final class ComponentPath
      */
     public function create(string $namespace, string $path)
     {
-        $namespace = $namespace ?? '';
         $dir = Str::contains($namespace, '\\') ? Str::afterLast('\\', $namespace) : $namespace;
         if (Str::lower($dir) !== Str::lower(Path::new($path)->basename())) {
             // If the last part of both namespace and path are not the same

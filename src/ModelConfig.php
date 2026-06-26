@@ -36,18 +36,18 @@ final class ModelConfig implements HasRelations, Pivotable, ProvidesPropertyAcce
     /** @var AbstractForeignConstraint[] */
     private $foreignKeys = [];
 
-    /** @var Type */
+    /** @var Type&HasModuleMetadata */
     private $def;
 
     /** @var Relation[] */
-    private $relations;
+    private $relations = [];
 
     /**
      * Class constructor.
      *
      * @return void
      */
-    public function __construct(Type $def, Builder $builder, string $directory, ?string $domain = null)
+    public function __construct(Type&HasModuleMetadata $def, Builder $builder, string $directory, ?string $domain = null)
     {
         $this->def = $def;
         $this->builder = $builder;
@@ -104,7 +104,7 @@ final class ModelConfig implements HasRelations, Pivotable, ProvidesPropertyAcce
 
     public function getRelations(): array
     {
-        return $this->relations ?? [];
+        return $this->relations;
     }
 
     public function getTable()
@@ -117,7 +117,7 @@ final class ModelConfig implements HasRelations, Pivotable, ProvidesPropertyAcce
      */
     public function getForeignKeys(): array
     {
-        return $this->foreignKeys ?? [];
+        return $this->foreignKeys;
     }
 
     /**

@@ -47,7 +47,7 @@ use function Drewlabs\GCli\Proxy\PHPScript;
 use Illuminate\Database\Eloquent\Model as EloquentModel;
 use Illuminate\Support\Pluralizer;
 
-class ORMModelBuilder implements AbstractORMModelBuilder, AbstractBuilder, HasRelations, ProvidesPropertyAccessors, Pivotable
+final class ORMModelBuilder implements AbstractORMModelBuilder, AbstractBuilder, HasRelations, ProvidesPropertyAccessors, Pivotable
 {
     use HasNamespaceAttribute;
     use ProvidesTrimTableSchema;
@@ -119,7 +119,7 @@ class ORMModelBuilder implements AbstractORMModelBuilder, AbstractBuilder, HasRe
     private $hasTimestamps = true;
 
     /** @var string table name binded to the model. */
-    private $table;
+    private $table = 'examples';
 
     /** Database table schema value */
     /** @var string */
@@ -128,28 +128,28 @@ class ORMModelBuilder implements AbstractORMModelBuilder, AbstractBuilder, HasRe
     /** @var ORMColumnDefinition[] List of table columns. */
     private $columns = [];
 
-    /** @var string They primary key of the model/table. */
-    private $primaryKey = 'id';
+    /** @var string|null They primary key of the model/table. */
+    private $primaryKey;
 
-    /** @var true is the model primary key incrementable. */
+    /** @var bool is the model primary key incrementable. */
     private $autoIncrements = true;
 
     /** @var array List of eloquent relation methods. */
     private $relationMethods = [];
 
-    /** @var false Specify that the model act like a view model. */
+    /** @var bool Specify that the model act like a view model. */
     private $isViewModel = false;
 
     /** @var ORMModelDefinition */
     private $definition;
 
     /** @var (\Drewlabs\GCli\DBAL\R\Basic|\Drewlabs\GCli\DBAL\R\Through)[] */
-    private $relations;
+    private $relations = [];
 
     /** @var bool Makes the table a pivot table. */
     private $aspivot;
 
-    /** @var false */
+    /** @var bool */
     private $provideAccessors = true;
 
     /**
@@ -170,16 +170,11 @@ class ORMModelBuilder implements AbstractORMModelBuilder, AbstractBuilder, HasRe
         ?string $path = null
     ) {
         $this->setDefinition($definition);
-        [$table, $name] = [$definition->table(), $definition->name() ?? self::DEFAULT_NAME];
+        [$table, $name] = [$definition->table(), $definition->name()];
         $this->setComponentBaseDefinitions($schema, $table, $name);
-        // Set the primary key
-        if ($definition->primaryKey()) {
-            $this->setKeyName($definition->primaryKey() ?? 'id');
-        }
-        // Set the list of columns
-        if ($definition->columns()) {
-            $this->setColumns($definition->columns() ?? []);
-        }
+        $this->setKeyName($definition->primaryKey() ?? 'id');
+        $this->setColumns($definition->columns());
+
 
         // Set the AUTO-INCREMENTS property
         if (!$definition->shouldAutoIncrements()) {
@@ -192,7 +187,7 @@ class ORMModelBuilder implements AbstractORMModelBuilder, AbstractBuilder, HasRe
         }
 
         // Set the model path
-        $this->setWritePath($path ?? self::DEFAULT_PATH);
+        $this->setWritePath($path ?? static::DEFAULT_PATH);
     }
 
     public function setRelationMethods(array $names)
@@ -272,7 +267,7 @@ class ORMModelBuilder implements AbstractORMModelBuilder, AbstractBuilder, HasRe
 
     public function getRelations(): array
     {
-        return $this->relations ?? [];
+        return $this->relations;
     }
 
     public function asPivot()
@@ -310,7 +305,7 @@ class ORMModelBuilder implements AbstractORMModelBuilder, AbstractBuilder, HasRe
                     PHPTypesModifiers::PUBLIC,
                     'Returns a fluent validation rules'
                 )->addContents(
-                    'return '.PHPVariable('rules', null, $this->rules ?? [])->asRValue()->__toString()
+                    'return ' . PHPVariable('rules', null, $this->rules ?? [])->asRValue()->__toString()
                 )
             );
             if (!$this->isSingleActionValidator) {
@@ -324,7 +319,7 @@ class ORMModelBuilder implements AbstractORMModelBuilder, AbstractBuilder, HasRe
                             'array<string,string|string[]>',
                             PHPTypesModifiers::PUBLIC,
                             'Returns a fluent validation rules applied during update actions'
-                        )->addContents('return '.PHPVariable('rules', null, $this->rules ?? [])->asRValue()->__toString())
+                        )->addContents('return ' . PHPVariable('rules', null, $this->rules ?? [])->asRValue()->__toString())
                     );
             } else {
                 /** @var Blueprint */
@@ -353,7 +348,7 @@ class ORMModelBuilder implements AbstractORMModelBuilder, AbstractBuilder, HasRe
                     'table',
                     'string',
                     PHPTypesModifiers::PROTECTED,
-                    $this->table ?? 'examples',
+                    $this->table,
                     'Model referenced table'
                 )
             )
@@ -363,7 +358,7 @@ class ORMModelBuilder implements AbstractORMModelBuilder, AbstractBuilder, HasRe
                     'hidden',
                     'array',
                     PHPTypesModifiers::PROTECTED,
-                    $this->hidden ?? [],
+                    $this->hidden,
                     'List of values that must be hidden when generating the json output'
                 )
             )
@@ -373,7 +368,7 @@ class ORMModelBuilder implements AbstractORMModelBuilder, AbstractBuilder, HasRe
                     'appends',
                     'array',
                     PHPTypesModifiers::PROTECTED,
-                    $this->appends ?? [],
+                    $this->appends,
                     'List of attributes that will be appended to the json output of the model'
                 )
             )
@@ -394,11 +389,11 @@ class ORMModelBuilder implements AbstractORMModelBuilder, AbstractBuilder, HasRe
                     'relation_methods',
                     'array',
                     PHPTypesModifiers::PUBLIC,
-                    $this->relationMethods ?? [],
+                    $this->relationMethods,
                     'List of model relation methods'
                 )
             )
-            ->addToNamespace($this->namespace_ ?? self::DEFAULT_NAMESPACE);
+            ->addToNamespace($this->package ?? static::DEFAULT_NAMESPACE);
 
         // #region Add properties setters and getters
         if ($this->provideAccessors) {
@@ -417,7 +412,7 @@ class ORMModelBuilder implements AbstractORMModelBuilder, AbstractBuilder, HasRe
             ->addLine('parent::boot()')
             ->addLine('');
 
-        foreach (self::OBSERVERS as $value) {
+        foreach (static::OBSERVERS as $value) {
             if ($observers = Observers::getInstance()->get(sprintf('%s.%s', $this->table, $value))) {
                 $boot->addLine(sprintf('parent::%s(function(self $model) {', $value));
                 foreach ($observers as $expression) {
@@ -432,7 +427,7 @@ class ORMModelBuilder implements AbstractORMModelBuilder, AbstractBuilder, HasRe
                 $boot->addLine("");
                 continue;
             }
-            if ($observers = Observers::getInstance()->get(sprintf('%s.%s', self::trimschema($this->table, $this->schema), $value))) {
+            if ($observers = Observers::getInstance()->get(sprintf('%s.%s', static::trimschema($this->table, $this->schema), $value))) {
                 $boot->addLine(sprintf('parent::%s(function(self $model) {', $value));
                 foreach ($observers as $expression) {
                     $items = array_map(static function ($item) {
@@ -517,7 +512,7 @@ class ORMModelBuilder implements AbstractORMModelBuilder, AbstractBuilder, HasRe
         return PHPScript(
             $component->getName(),
             $component,
-            ComponentPath::new()->create($this->namespace_ ?? self::DEFAULT_NAMESPACE, $this->path_ ?? self::DEFAULT_PATH)
+            ComponentPath::new()->create($this->package ?? static::DEFAULT_NAMESPACE, $this->path ?? static::DEFAULT_PATH)
         )->setNamespace($component->getNamespace());
     }
 
@@ -528,7 +523,7 @@ class ORMModelBuilder implements AbstractORMModelBuilder, AbstractBuilder, HasRe
             return $classname;
         }
 
-        return sprintf('%s%s%s', self::DEFAULT_NAMESPACE, '\\', $classname);
+        return sprintf('%s%s%s', static::DEFAULT_NAMESPACE, '\\', $classname);
     }
 
     /**
@@ -589,7 +584,7 @@ class ORMModelBuilder implements AbstractORMModelBuilder, AbstractBuilder, HasRe
         }
 
         if (($result = $table ?? $name ?? null) && $schema) {
-            $result = self::trimschema($result, $schema);
+            $result = static::trimschema($result, $schema);
         }
 
         if ($name = Str::camelize(Pluralizer::singular($result))) {
@@ -609,13 +604,15 @@ class ORMModelBuilder implements AbstractORMModelBuilder, AbstractBuilder, HasRe
         if (empty($this->relations)) {
             return $component;
         }
-        $this->relationMethods = $this->relationMethods ?? [];
+
+        /** @var array<string, int> */
         $methods = [];
         foreach ($this->relations as $relation) {
-            if (!\array_key_exists($method = $relation->getName(), $methods)) {
+            $method = $relation->getName();
+            if (!\array_key_exists($method, $methods)) {
                 $methods[$method] = 0;
             } else {
-                $methods[$method] = ($method[$method] ?? 0 + 1);
+                $methods[$method] = intval($methods[$method] + 1);
             }
             $type = $relation->getType();
             if (Types::ONE_TO_MANY === $type || Types::ONE_TO_ONE === $type) {

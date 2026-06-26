@@ -16,17 +16,17 @@ namespace Drewlabs\GCli\Console\Contracts;
 interface Progress
 {
     /**
-     * Initialize the progresss element.
+     * initialize the progresss element.
      */
     public function start(): void;
 
     /**
-     * Advance the progress element.
+     * advance the progress element.
      */
     public function advance(): void;
 
     /**
-     * Stop the progression. Indicates that the progress reach an end.
+     * stop the progression. Indicates that the progress reach an end.
      */
     public function finish(): void;
 }

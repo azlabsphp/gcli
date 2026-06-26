@@ -22,7 +22,7 @@ class NotLoadedExtensionException extends \Exception
      */
     public function __construct(string $extension)
     {
-        $message = "Extension $extension is not loaded by the PHP interpreter. Consider installing $extension extension and adding to your php.ini file";
+        $message = "Extension $extension is not loaded by the PHP interpreter. consider installing $extension extension and adding to your php.ini file";
         parent::__construct($message);
     }
 }

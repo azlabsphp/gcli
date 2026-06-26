@@ -66,15 +66,15 @@ final class Column implements ColumnDefinition, HasSizeProperty, HasExistConstra
         string $name,
         string $type,
         ?string $table = null,
-        $required = false,
+        bool $required = false,
         $default = null,
-        $unsigned = false,
+        bool $unsigned = false,
         $foreignKeyConstraint = null,
         $uniqueKeyConstraint = null
     ) {
         $this->table = $table;
         $this->name = $name;
-        $this->type = $type ?? 'string';
+        $this->type = $type;
         $this->setRawType($this->type);
         $this->default = $default;
         $this->foreignKeyConstraint = $foreignKeyConstraint;
@@ -105,7 +105,7 @@ final class Column implements ColumnDefinition, HasSizeProperty, HasExistConstra
 
     public function name(): string
     {
-        return $this->name ?? 'column';
+        return $this->name;
     }
 
     public function type(): string
@@ -149,12 +149,12 @@ final class Column implements ColumnDefinition, HasSizeProperty, HasExistConstra
 
     public function required(): bool
     {
-        return (bool) $this->required ?? false;
+        return (bool) $this->required;
     }
 
     public function unsigned()
     {
-        return (bool) $this->unsigned ?? false;
+        return (bool) $this->unsigned;
     }
 
     public function foreignConstraint()

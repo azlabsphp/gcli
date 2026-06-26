@@ -23,12 +23,12 @@ class RouteRequestBody
     /**
      * @var array
      */
-    private $postBody;
+    private $postBody = [];
 
     /**
      * @var array
      */
-    private $putBody;
+    private $putBody = [];
 
     /**
      * @var array
@@ -93,7 +93,7 @@ class RouteRequestBody
      */
     public function getPostBody()
     {
-        return $this->postBody ?? [];
+        return $this->postBody;
     }
 
     /**
@@ -103,7 +103,7 @@ class RouteRequestBody
      */
     public function getPutBody()
     {
-        return $this->putBody ?? [];
+        return $this->putBody;
     }
 
     /**

@@ -33,7 +33,7 @@ use function Drewlabs\GCli\Proxy\PHPScript;
 
 use Illuminate\Support\Pluralizer;
 
-class ServiceClassBuilder implements AbstractBuilder
+final class ServiceClassBuilder implements AbstractBuilder
 {
     use HasNamespaceAttribute;
     use ProvidesContracts;
@@ -101,12 +101,12 @@ class ServiceClassBuilder implements AbstractBuilder
     ) {
         $this->setName($name ? (!Str::endsWith($name, 'Service') ?
             Str::camelize(Pluralizer::singular($name)).'Service' :
-            Str::camelize(Pluralizer::singular($name))) : self::DEFAULT_NAME);
+            Str::camelize(Pluralizer::singular($name))) : static::DEFAULT_NAME);
         // Set the component write path
-        $this->setWritePath($path ?? self::DEFAULT_PATH);
+        $this->setWritePath($path ?? static::DEFAULT_PATH);
 
         // Set the component namespace
-        $this->setNamespace($namespace ?? self::DEFAULT_NAMESPACE);
+        $this->setNamespace($namespace ?? static::DEFAULT_NAMESPACE);
     }
 
     public function bindModel(string $classPath)
@@ -126,6 +126,7 @@ class ServiceClassBuilder implements AbstractBuilder
         return $this;
     }
 
+    /** @param mixed ...$implementations */
     public function addImplementation(...$implementations)
     {
         $this->contracts = $implementations;
@@ -149,13 +150,11 @@ class ServiceClassBuilder implements AbstractBuilder
     {
         $component = PHPClass($this->name());
         foreach (static::CLASS_FUNCTION_PATHS as $functionPath) {
-            /**
-             * @var Blueprint|PHPClass
-             */
+            /**  @var Blueprint */
             $component = $component->addFunctionPath($functionPath);
         }
 
-        foreach ($this->classPaths_ ?? [] as $value) {
+        foreach ($this->classPaths_ as $value) {
             $component = $component->addClassPath($value);
         }
 
@@ -166,9 +165,7 @@ class ServiceClassBuilder implements AbstractBuilder
         $component->asFinal()
             // Add Handler method
             ->addMethod(
-                array_reduce(array_filter([$this->asCRUD_ ? "return useActionQueryCommand($this->modelName_::class)(\$action, \$callback)" : '#code...'], static function ($line) {
-                    return null !== $line;
-                }), static function (CallableInterface $carry, $curr) {
+                array_reduce([$this->asCRUD_ ? "return useActionQueryCommand($this->modelName_::class)(\$action, \$callback)" : '#code...'], static function (CallableInterface $carry, $curr) {
                     return $carry->addLine($curr);
                 }, PHPClassMethod(
                     'handle',
@@ -185,15 +182,15 @@ class ServiceClassBuilder implements AbstractBuilder
                     \Drewlabs\Contracts\Support\Actions\ActionResult::class,
                     PHPTypesModifiers::PUBLIC,
                     '{@inheritDoc}'
-                )->throws(\Drewlabs\Contracts\Support\Actions\Exceptions\InvalidActionException::class))
+                )->throws([\Drewlabs\Contracts\Support\Actions\Exceptions\InvalidActionException::class]))
             )
-            ->addToNamespace($this->namespace_ ?? self::DEFAULT_NAMESPACE);
+            ->addToNamespace($this->package ?? static::DEFAULT_NAMESPACE);
 
         // Returns the builded component
         return PHPScript(
             $component->getName(),
             $component,
-            ComponentPath::new()->create($this->namespace_ ?? self::DEFAULT_NAMESPACE, $this->path_ ?? self::DEFAULT_PATH)
+            ComponentPath::new()->create($this->package ?? static::DEFAULT_NAMESPACE, $this->path ?? static::DEFAULT_PATH)
         )->setNamespace($component->getNamespace());
     }
 
@@ -204,6 +201,6 @@ class ServiceClassBuilder implements AbstractBuilder
             return $classname;
         }
 
-        return sprintf('%s%s%s', self::DEFAULT_NAMESPACE, '\\', $classname);
+        return sprintf('%s%s%s', static::DEFAULT_NAMESPACE, '\\', $classname);
     }
 }

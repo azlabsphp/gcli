@@ -41,7 +41,7 @@ class CacheableRoutes implements Cacheable
 
     public function getRoutes()
     {
-        return $this->routes ?? [];
+        return $this->routes;
     }
 
     public function getNamespace()
@@ -53,7 +53,7 @@ class CacheableRoutes implements Cacheable
     {
         $result = unserialize($value);
         if (!\is_array($result)) {
-            throw new \InvalidArgumentException('Serialized string is malformed');
+            throw new \InvalidArgumentException('serialized string is malformed');
         }
 
         return new self($result['routes'] ?? [], $result['namespace'] ?? null);

@@ -90,6 +90,6 @@ class DBConfig
      */
     public function getPivots(): array
     {
-        return $this->pivots ?? [];
+        return $this->pivots;
     }
 }

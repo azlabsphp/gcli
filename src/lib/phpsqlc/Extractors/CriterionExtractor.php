@@ -56,11 +56,19 @@ class CriterionExtractor extends AbstractExtractor implements Extractor
 
     public function extract(array $value, array $parsed = []): array
     {
+        $parts = [];
         $this->getCriteria($value, $parts);
 
         return $parts;
     }
 
+    /**
+     * extract criteria as array
+     * 
+     * @param mixed $value 
+     * @param mixed &$part 
+     * @return false|true 
+     */
     public function extractAsArray($value, &$part)
     {
         if (!$this->group) {
@@ -274,6 +282,10 @@ class CriterionExtractor extends AbstractExtractor implements Extractor
         }
     }
 
+    /**
+     * @param mixed $val 
+     * @return false|array{fields: string[], operators: string[], values: string[]} 
+     */
     private function getArrayParts($val)
     {
         $fields = [];
@@ -309,7 +321,8 @@ class CriterionExtractor extends AbstractExtractor implements Extractor
 
                     $fields[] = $field;
                     $next = 'value';
-                } else if ($next == 'value') {
+                // @phpstan-ignore identical.alwaysTrue
+                } else if (strval($next) === 'value') {
                     $value = $this->getAllValue($v);
                     if ($this->isRaw($v))
                         return false;
@@ -327,6 +340,13 @@ class CriterionExtractor extends AbstractExtractor implements Extractor
         return array('fields' => $fields, 'operators' => $operators, 'values' => $values);
     }
 
+    /**
+     * 
+     * @param int $index 
+     * @param array $value 
+     * @param string $context 
+     * @return array{value: string, is_raw: bool} 
+     */
     public function getLeft(int $index, array $value, $context = CriterionContext::WHERE)
     {
         $fieldValue = '';
@@ -372,6 +392,14 @@ class CriterionExtractor extends AbstractExtractor implements Extractor
         return ['value' => $fieldValue, 'is_raw' => $isRaw];
     }
 
+    /**
+     * 
+     * @param mixed $index 
+     * @param mixed $value 
+     * @param mixed &$currIndex 
+     * @param string $context 
+     * @return array{value: string, has_negation: bool, is_raw: bool, value_type: mixed, is_const: null|bool} 
+     */
     public function getRight($index, $value, &$currIndex, $context = CriterionContext::WHERE)
     {
         $hasNegation = false;
@@ -450,6 +478,12 @@ class CriterionExtractor extends AbstractExtractor implements Extractor
         ];
     }
 
+    /**
+     * @param mixed $index 
+     * @param mixed $value 
+     * @param mixed &$currIndex 
+     * @return array{value: string[][], has_negation: bool, is_raw: bool[]} 
+     */
     private function getBetweenValue($index, $value, &$currIndex)
     {
         $hasNegation = false;
@@ -503,10 +537,14 @@ class CriterionExtractor extends AbstractExtractor implements Extractor
         return ['value' => $final, 'has_negation' => $hasNegation, 'is_raw' => $raws];
     }
 
+    /**
+     * @param mixed $val 
+     * @return string 
+     */
     private function getAllValue($val)
     {
+        $parts = [];
         $this->getExpressionParts([$val], $parts);
-
         return $this->mergeExpressionParts($parts);
     }
 }

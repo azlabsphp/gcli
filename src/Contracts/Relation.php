@@ -34,4 +34,7 @@ interface Relation extends HasModuleMetadata
      * Checks if the instance provides a -> * link.
      */
     public function multi(): bool;
+
+    /** returns string representation of the relation */
+    public function __toString(): string;
 }

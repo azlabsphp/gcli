@@ -18,7 +18,7 @@ use Drewlabs\GCli\Exceptions\IOException;
 class Writer
 {
     /**
-     * @var int|resource
+     * @var int|resource|null
      */
     private $handle;
 
@@ -68,7 +68,7 @@ class Writer
             return false;
         }
         $bytes = false;
-        if ($this->handle && @flock($this->handle, $operation)) {
+        if (@flock($this->handle, $operation)) {
             $bytes = @fwrite($this->handle, $data, $length);
             @flock($this->handle, \LOCK_UN);
         }

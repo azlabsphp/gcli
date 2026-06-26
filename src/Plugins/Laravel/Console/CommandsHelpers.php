@@ -22,15 +22,13 @@ use function Drewlabs\GCli\Proxy\ComponentsScriptWriter;
 class CommandsHelpers
 {
     /**
-     * @throws UnableToRetrieveMetadataException
-     *
      * @return string
      */
     public static function createService(string $namespace, string $basePath, ?string $model = null, ?string $class = null)
     {
         $class = null === $class ? 'Example' : $class;
         $name = Str::contains($class, '\\') ? Str::afterLast('\\', $class) : $class;
-        $class_name_space = sprintf('\\%s\\Services', static::getBaseNamespace($namespace) ?? 'App');
+        $class_name_space = sprintf('\\%s\\Services', static::getBaseNamespace($namespace));
         ComponentsScriptWriter($basePath)->write(
             Facade::buildServiceDefinition(
                 true,
@@ -52,10 +50,10 @@ class CommandsHelpers
     {
         $class = null === $class ? 'Example' : $class;
         $name = Str::contains($class, '\\') ? Str::afterLast('\\', $class) : $class;
-        $class_name_space = sprintf('\\%s\\Dto', static::getBaseNamespace($namespace) ?? 'App');
+        $class_name_space = sprintf('\\%s\\Dto', static::getBaseNamespace($namespace));
         ComponentsScriptWriter($basePath)->write(
             Facade::buildDtoObjectDefinition(
-                $attributes ?? [],
+                $attributes,
                 [],
                 $name,
                 $class_name_space,
@@ -75,12 +73,12 @@ class CommandsHelpers
     {
         $class = null === $class ? 'Example' : $class;
         $name = Str::contains($class, '\\') ? Str::afterLast('\\', $class) : $class;
-        $class_namespace = sprintf('\\%s\\Http\\ViewModels', static::getBaseNamespace($namespace) ?? 'App');
+        $class_namespace = sprintf('\\%s\\Http\\ViewModels', static::getBaseNamespace($namespace));
         ComponentsScriptWriter($basePath)->write(
             Facade::buildViewModelDefinition(
                 false,
-                $rules ?? [],
-                $updateRules ?? [],
+                $rules,
+                $updateRules,
                 $name,
                 $class_namespace,
                 null,

@@ -66,10 +66,7 @@ final class DtoConfig
      */
     public function setCasts(array $casts)
     {
-        if (method_exists($this->builder, 'setCasts')) {
-            $this->builder = $this->builder->setCasts($casts ?? []);
-        }
-
+        $this->builder = $this->builder->setCasts($casts);
         return $this;
     }
 

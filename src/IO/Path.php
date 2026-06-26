@@ -53,7 +53,7 @@ class Path
     public function isAbsolute(): bool
     {
         $path = $this->value;
-        if (('' === $path) || (null === $path)) {
+        if (('' === $path)) {
             return false;
         }
 
@@ -113,7 +113,7 @@ class Path
      */
     public function basename()
     {
-        if (($result = @pathinfo($this->value, \PATHINFO_BASENAME)) === false) {
+        if (($result = @pathinfo($this->value, \PATHINFO_BASENAME))) {
             throw IOException::metadata($this->value, error_get_last()['message'] ?? '', 'basename');
         }
 
@@ -127,7 +127,7 @@ class Path
      */
     public function dirname()
     {
-        if (($result = @pathinfo($this->value, \PATHINFO_DIRNAME)) === false) {
+        if (($result = @pathinfo($this->value, \PATHINFO_DIRNAME))) {
             throw IOException::metadata($this->value, error_get_last()['message'] ?? '', 'dirname');
         }
 
@@ -141,7 +141,7 @@ class Path
      */
     public function extension()
     {
-        if (($result = @pathinfo($this->value, \PATHINFO_EXTENSION)) === false) {
+        if (($result = @pathinfo($this->value, \PATHINFO_EXTENSION))) {
             throw IOException::metadata($this->value, error_get_last()['message'] ?? '', 'extension');
         }
 
@@ -155,7 +155,7 @@ class Path
      */
     public function filename()
     {
-        if (($result = @pathinfo($this->value, \PATHINFO_FILENAME)) === false) {
+        if (($result = @pathinfo($this->value, \PATHINFO_FILENAME))) {
             throw IOException::metadata($this->value, error_get_last()['message'] ?? '', 'filename');
         }
 
@@ -215,8 +215,9 @@ class Path
         if (!$this->exists()) {
             throw IOException::missing($this->value);
         }
-        if ('Windows' === !\PHP_OS_FAMILY) {
-            return symlink($this->value, $link);
+        if ('Windows' !== \PHP_OS_FAMILY) {
+            \symlink($this->value, $link);
+            return;
         }
 
         $mode = $this->isDirectory() ? 'J' : 'H';
@@ -247,7 +248,7 @@ class Path
     /**
      * Join list of paths to the current path.
      *
-     * @param string[] $paths
+     * @param string ...$paths
      *
      * @throws \RuntimeException
      *
@@ -258,7 +259,7 @@ class Path
         $output = null;
         $wasScheme = false;
 
-        $paths = array_merge([$this->value], $paths ?? []);
+        $paths = array_merge([$this->value], $paths);
 
         foreach ($paths as $path) {
             if ('' === $path) {

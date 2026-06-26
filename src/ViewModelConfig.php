@@ -84,6 +84,6 @@ final class ViewModelConfig
      */
     public function getUpdateRules(): array
     {
-        return $this->builder->getUpdateRules() ?? [];
+        return $this->builder->getUpdateRules();
     }
 }

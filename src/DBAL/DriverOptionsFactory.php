@@ -40,9 +40,9 @@ final class DriverOptionsFactory
         }
         $default_driver = $resolveFn('database.default') ?? 'pdo_sqlite';
         if (null !== ($db_driver = $options->get('driver'))) {
-            $driver = self::hasPrefix($db_driver, 'pdo') ? $db_driver : sprintf('pdo_%s', $db_driver);
+            $driver = static::hasPrefix($db_driver, 'pdo') ? $db_driver : sprintf('pdo_%s', $db_driver);
         } else {
-            $driver = self::hasPrefix($default_driver, 'pdo') ? $default_driver : sprintf('pdo_%s', $default_driver);
+            $driver = static::hasPrefix($default_driver, 'pdo') ? $default_driver : sprintf('pdo_%s', $default_driver);
         }
         $database = $options->get('dbname') ?? $resolveFn("database.connections.$default_driver.database");
         $port = $options->get('port') ?? $resolveFn("database.connections.$default_driver.port");

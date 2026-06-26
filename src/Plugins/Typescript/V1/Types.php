@@ -87,6 +87,7 @@ class Types
             $imports = [];
             $names = [];
             foreach ($this->type->getRelations() as $value) {
+                // @phpstan-ignore instanceof.alwaysTrue
                 if (!($value instanceof HasModuleMetadata)) {
                     continue;
                 }

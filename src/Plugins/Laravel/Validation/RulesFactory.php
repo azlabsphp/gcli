@@ -39,8 +39,14 @@ class RulesFactory implements ValidationRulesFactory
      */
     private function makeRule(AbstractColumn $column, string $table, ?string $primaryKey = null, $updates = false)
     {
-        $rules[] = !$column->required() ? Rules::NULLABLE : ($column->required() && $column->hasDefault() ?
-            Rules::NULLABLE : ($updates ? Rules::SOMETIMES : $this->makeRequireRule($column, $primaryKey)));
+        $rules = [];
+        if ($updates) {
+            $rules[] = Rules::SOMETIMES;
+        } else if ($column->required()) {
+            $rules[] = $column->hasDefault() ? Rules::NULLABLE : $this->makeRequireRule($column, $primaryKey);
+        } else {
+            $rules[] = Rules::NULLABLE;
+        }
 
         if ($column->name() === $primaryKey && $updates) {
             $rules[] = Rules::exists($table, $primaryKey);

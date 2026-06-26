@@ -49,21 +49,20 @@ final class Iterator implements \IteratorAggregate
     public function getIterator(): \Traversable
     {
         foreach ($this->tables as $table) {
-            $tableName = $table->getName();
-            // # region get table primary key columns
-            $tablePrimaryKey = $table->getPrimaryKey();
-            $primaryKeyColumns = $tablePrimaryKey ? $tablePrimaryKey->getColumns() : [];
-            $primaryKey = ($columnCount = \count($primaryKeyColumns)) <= 1 ? (1 === $columnCount ? $primaryKeyColumns[0] : null) : $primaryKeyColumns;
-            // # end region get table primary key columns
-            // #region column definition
+            $tableName = $table->getObjectName()->toString();
+
+            $tablePrimaryKey = $table->getPrimaryKeyConstraint();
+            $primaryKeyColumns = $tablePrimaryKey?->getColumnNames();
+            $primaryKey = ($columnCount = \count($primaryKeyColumns ?? [])) <= 1 ? (1 === $columnCount ? $primaryKeyColumns[0] : null) : $primaryKeyColumns;
+            
             $columns = Functional::compose(
                 static function ($table_name) use ($table) {
                     $factory = new ColumnsIteratorFactory();
 
                     return $factory->createIterator($table_name, new \ArrayIterator($table->getColumns()));
                 },
-                static function ($columns) use ($table) {
-                    return ForeignKeyConstraint::new($table->getForeignKeys())->bind($table->getName(), $columns);
+                static function ($columns) use ($table, $tableName) {
+                    return ForeignKeyConstraint::new($table->getForeignKeys())->bind($tableName, $columns);
                 },
                 static function ($columns) use ($table) {
                     return UniqueKeyConstraint::new($table->getIndexes())->bind($columns);
@@ -72,19 +71,18 @@ final class Iterator implements \IteratorAggregate
                     return array_values($columns);
                 }
             )($tableName);
-            // #endregion colum definition
-            // # Get table comment
+            
             $comment = $table->getComment();
-            // # Get unique primary key value - Cause Eloquent does not support composite keys
-            $key = \is_array($primaryKey) ? ($primaryKey[0] ?? null) : $primaryKey;
+
+            $key = \is_array($primaryKey) ? $primaryKey[0] : $primaryKey;
             // # Get unique primary key value
             $module = static::trimschema($tableName, $this->schema);
             yield new Table(
-                $key ?? null,
+                $key ? $key->toString() : null,
                 Str::camelize(Pluralizer::singular($module)),
                 $tableName,
                 $columns,
-                !empty($key) ? $table->getColumn($key)->getAutoincrement() : false,
+                !empty($key) ? $table->getColumn($key->toString())->getAutoincrement() : false,
                 $this->namespace,
                 $module,
                 $comment,

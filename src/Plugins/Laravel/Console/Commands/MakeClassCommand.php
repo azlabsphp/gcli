@@ -22,10 +22,9 @@ use function Drewlabs\GCli\Proxy\ComponentsScriptWriter;
 use function Drewlabs\GCli\Proxy\PHPScript;
 
 use Illuminate\Console\Command;
-use Illuminate\Container\Container;
 
 /**
- * @property \Illuminate\Contracts\Foundation\Application app
+ * @property \Illuminate\Contracts\Foundation\Application $app
  */
 class MakeClassCommand extends Command
 {
@@ -41,7 +40,7 @@ class MakeClassCommand extends Command
 
     public function __construct()
     {
-        $this->laravel = $this->getLaravel() ?? Container::getInstance();
+        $this->laravel = $this->getLaravel();
         parent::__construct();
     }
 
@@ -65,7 +64,7 @@ class MakeClassCommand extends Command
         ComponentsScriptWriter('')->write(PHPScript(
             $component->getName(),
             $component,
-            ComponentPath::new()->create($namespace ?? '\\App', $basePath)
+            ComponentPath::new()->create($namespace, $basePath)
         )->setNamespace($component->getNamespace()));
 
         $this->info("Class successfully generated\n");

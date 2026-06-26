@@ -25,14 +25,14 @@ trait ViewModelBuilder
     /**
      * List of rules to add to the view model.
      *
-     * @var array
+     * @var array|null
      */
     private $rules = [];
 
     /**
      * List of update rules to add to the view model.
      *
-     * @var array
+     * @var array|null
      */
     private $updateRules = [];
 
@@ -45,10 +45,7 @@ trait ViewModelBuilder
 
     public function setRules(array $rules = [])
     {
-        if (null !== $rules) {
-            $this->rules = $rules;
-        }
-
+        $this->rules = $rules;
         return $this;
     }
 
@@ -59,10 +56,7 @@ trait ViewModelBuilder
 
     public function setUpdateRules(array $rules = [])
     {
-        if (null !== $rules) {
-            $this->updateRules = $rules;
-        }
-
+        $this->updateRules = $rules;
         return $this;
     }
 

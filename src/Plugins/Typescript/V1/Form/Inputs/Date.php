@@ -43,7 +43,7 @@ class Date
         $this->module = $module;
         $this->property = $property;
         $this->camelize = $camelize;
-        $this->indent = $indent ?? '';
+        $this->indent = $indent;
         $this->index = $index;
     }
 

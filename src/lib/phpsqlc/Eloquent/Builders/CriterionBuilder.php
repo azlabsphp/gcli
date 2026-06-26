@@ -141,6 +141,11 @@ class CriterionBuilder extends AbstractBuilder implements Builder
         return false;
     }
 
+    /**
+     * @param mixed $part 
+     * @param mixed &$queryVal 
+     * @return void 
+     */
     private function buildGroup($part, &$queryVal)
     {
         if (in_array($part['se'], ['start', 'end'])) {

@@ -28,7 +28,7 @@ class SelectExtractor extends AbstractExtractor implements Extractor
     /**
      * select extractor class constructor
      * 
-     * @param array $extrator
+     * @param array $aggregators
      * 
      * @return void 
      */
@@ -61,21 +61,40 @@ class SelectExtractor extends AbstractExtractor implements Extractor
         return ['s_type' => SelectQueryTypes::OTHER, 'parts' => ['selected' => $parts, 'distinct' => $distinct, 'raws' => $raws]];
     }
 
+    /**
+     * @param mixed $value 
+     * @return bool 
+     */
     private function isAggregate($value)
     {
         return count($value) == 1 && $value[0]['expr_type'] == 'aggregate_function' && in_array(Expression::lowercase($value[0]['base_expr']), $this->aggregators);
     }
 
+    /**
+     * @param mixed $value 
+     * @return bool 
+     */
     private function isDistinct($value)
     {
         return count($value) > 0 && $value[0]['expr_type'] == 'reserved' && Expression::lowercase($value[0]['base_expr']) == 'distinct';
     }
 
+    /**
+     * @param mixed $value 
+     * @return bool 
+     */
     private function isCountTable($value)
     {
+        /** @var ?string */
+        $d = null;
         return count($value) == 1 && $value[0]['expr_type'] == 'aggregate_function' && Expression::lowercase($value[0]['base_expr']) == 'count' && $this->getFnParams($value[0], $d) === "*";
     }
 
+    /**
+     * @param mixed $value 
+     * @param mixed $distinct 
+     * @return array{suffix: string, column: string, alias: mixed, distinct: mixed} 
+     */
     private function extractAggregateParts($value, $distinct)
     {
         $fn_suffix = Expression::lowercase($value[0]['base_expr']);

@@ -27,7 +27,7 @@ class Columns
     private $camelize;
 
     /** @var string */
-    private $gridImportPath;
+    private $gridImportPath = '@azlabsjs/ngx-clr-smart-grid';
 
     /**
      * Class constructor.
@@ -46,11 +46,7 @@ class Columns
 
     public function __toString()
     {
-        $lines = [
-            sprintf('import { GridDetailColumnType, SearchableGridColumnType } from \'%s\';', $this->gridImportPath ?? '@azlabsjs/ngx-clr-smart-grid'),
-            '',
-        ];
-
+        $lines = [sprintf('import { GridDetailColumnType, SearchableGridColumnType } from \'%s\';', $this->gridImportPath), ''];
         $lines[] = (string) (new DatagridColumns($this->type, $this->camelize, $this->module));
         $lines[] = (string) (new DetailColumns($this->type, $this->camelize, $this->module));
 

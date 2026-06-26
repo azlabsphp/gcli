@@ -20,10 +20,8 @@ use function Drewlabs\GCli\Proxy\ComponentsScriptWriter;
 
 use Illuminate\Console\Command;
 
-use Illuminate\Container\Container;
-
 /**
- * @property \Illuminate\Contracts\Foundation\Application app
+ * @property \Illuminate\Contracts\Foundation\Application $app
  */
 class MakeDTOClassCommand extends Command
 {
@@ -41,7 +39,7 @@ class MakeDTOClassCommand extends Command
 
     public function __construct()
     {
-        $this->laravel = ($this->getLaravel() ?? Container::getInstance());
+        $this->laravel = $this->getLaravel();
         parent::__construct();
     }
 

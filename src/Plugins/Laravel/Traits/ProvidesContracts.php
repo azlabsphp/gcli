@@ -15,9 +15,10 @@ namespace Drewlabs\GCli\Plugins\Laravel\Traits;
 
 trait ProvidesContracts
 {
-    /** @var string[] */
+    /** @var string[]|null */
     private $contracts;
 
+    /** @param mixed ...$contracts */
     public function addContracts(...$contracts)
     {
         $this->contracts = array_unique(array_merge($this->contracts ?? [], $contracts));

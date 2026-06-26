@@ -27,11 +27,10 @@ use function Drewlabs\GCli\Proxy\MVCControllerBuilder;
 
 use Illuminate\Console\Command;
 
-use Illuminate\Container\Container;
 use Illuminate\Support\Pluralizer;
 
 /**
- * @property \Illuminate\Contracts\Foundation\Application app
+ * @property \Illuminate\Contracts\Foundation\Application $app
  */
 class MakeControllerCommand extends Command
 {
@@ -54,7 +53,7 @@ class MakeControllerCommand extends Command
     public function __construct()
     {
         parent::__construct();
-        $this->laravel = ($this->getLaravel() ?? Container::getInstance());
+        $this->laravel = $this->getLaravel();
     }
 
     public function handle()
@@ -90,7 +89,6 @@ class MakeControllerCommand extends Command
     }
 
     /**
-     * @param mixed $namespace
      * @param mixed $name
      * @param mixed $basePath
      * @param mixed $model
@@ -104,7 +102,7 @@ class MakeControllerCommand extends Command
      * @return void
      */
     public static function createComponents(
-        $namespace,
+        string $namespace,
         $name,
         $basePath,
         \Closure $pluralizer,
@@ -118,12 +116,12 @@ class MakeControllerCommand extends Command
         $modelClassPath = $model;
         $modelComponent = null;
         $modelName = Str::contains($modelClassPath, '\\') ? Str::afterLast('\\', $modelClassPath) : $modelClassPath;
-        $modelNamespace = sprintf('\\%s\\Models', CommandsHelpers::getBaseNamespace($namespace) ?? 'App');
+        $modelNamespace = sprintf('\\%s\\Models', CommandsHelpers::getBaseNamespace($namespace));
         if (null !== $model && !class_exists($model) && !class_exists(ORMModelBuilder::defaultClassPath($model))) {
             $modelComponent = Facade::createModelBuilder(
                 $pluralizer($modelName),
                 null,
-                $columns ?? [],
+                [],
                 $modelNamespace,
             );
             ComponentsScriptWriter($basePath)->write($modelComponent->build());
@@ -156,9 +154,9 @@ class MakeControllerCommand extends Command
                 $rulesFactory->createRules($definition, true)
             );
         } else {
-            $serviceClass = sprintf('%s\\%s', sprintf('\\%s\\Services', CommandsHelpers::getBaseNamespace($namespace) ?? 'App'), "{$modelName}Service");
-            $dtoClass = sprintf('%s\\%s', sprintf('\\%s\\Dto', CommandsHelpers::getBaseNamespace($namespace) ?? 'App'), "{$modelName}Dto");
-            $viewModelClass = sprintf('%s\\%s', sprintf('\\%s\\Http\\ViewModels', CommandsHelpers::getBaseNamespace($namespace) ?? 'App'), "{$modelName}ViewModel");
+            $serviceClass = sprintf('%s\\%s', sprintf('\\%s\\Services', CommandsHelpers::getBaseNamespace($namespace)), "{$modelName}Service");
+            $dtoClass = sprintf('%s\\%s', sprintf('\\%s\\Dto', CommandsHelpers::getBaseNamespace($namespace)), "{$modelName}Dto");
+            $viewModelClass = sprintf('%s\\%s', sprintf('\\%s\\Http\\ViewModels', CommandsHelpers::getBaseNamespace($namespace)), "{$modelName}ViewModel");
         }
         ComponentsScriptWriter($basePath)->write(
             Facade::buildController(

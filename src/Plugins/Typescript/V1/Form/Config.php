@@ -76,6 +76,7 @@ class Config
         if ($this->type instanceof HasRelations) {
             $names = [];
             foreach ($this->type->getRelations() as $value) {
+                // @phpstan-ignore instanceof.alwaysTrue
                 if (!($value instanceof HasModuleMetadata)) {
                     continue;
                 }

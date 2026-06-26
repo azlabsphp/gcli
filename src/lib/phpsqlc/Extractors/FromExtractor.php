@@ -12,6 +12,15 @@ namespace Drewlabs\PHPSQLC\Extractors;
  */
 class FromExtractor extends AbstractExtractor implements Extractor
 {
+    /** @var \Drewlabs\PHPSQLC\Options */
+    // @phpstan-ignore property.onlyWritten
+    private $options;
+
+    public function __construct(?\Drewlabs\PHPSQLC\Options $options = null)
+    {
+        $this->options = $options;
+    }
+
     public function extract(array $value, array $parsed = []): array
     {
         $parts = [];
@@ -20,7 +29,7 @@ class FromExtractor extends AbstractExtractor implements Extractor
             if (!isset($parts['table'])) {
                 $parts = $this->extractSingle($value);
             } else {
-                if (!$this->validJoin($val['join_type'])) { // such as natural join
+                if (!$this->validJoin($val['join_type'])) {
                     $join = [
                         'type' => $val['join_type'],
                         'table_expr' => $val['base_expr'],
@@ -29,15 +38,21 @@ class FromExtractor extends AbstractExtractor implements Extractor
                 }
             }
         }
-        
+
         return $parts;
     }
 
+    /**
+     * 
+     * @param array $value
+     * 
+     * @return array{table: mixed, is_raw: bool} 
+     */
     public function extractSingle($value)
     {
         $isRaw = $value[0]['expr_type'] != 'table';
         $table = $this->getWithAlias($value[0], $isRaw);
-        
+
         return ['table' => $table, 'is_raw' => $isRaw];
     }
 }

@@ -57,6 +57,13 @@ abstract class AbstractExtractor
         return in_array(Expression::lowercase($op), ['+', '-', '*', '/', '%']);
     }
 
+    /**
+     * check if operator is a comparison operator
+     * 
+     * @param mixed $operator 
+     * @param array $append 
+     * @return bool 
+     */
     protected function isComparisonOperator($operator, $append = [])
     {
         $simple_operators = ['>', '<', '=', '!=', '>=', '<=', '!<', '!>', '<>'];

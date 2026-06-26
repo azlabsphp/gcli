@@ -48,9 +48,9 @@ class Option
         $this->module = $module;
         $this->property = $property;
         $this->camelize = $camelize;
-        $this->indent = $indent ?? '';
+        $this->indent = $indent;
         $this->index = $index;
-        $this->optionType = $optionType ?? 'select';
+        $this->optionType = $optionType;
     }
 
     public function __toString(): string

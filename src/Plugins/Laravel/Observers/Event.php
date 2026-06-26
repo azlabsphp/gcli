@@ -39,7 +39,7 @@ final class Event
      *
      * @return void
      */
-    public function __construct(string $name, $params = null, ?string $namespace = 'App')
+    public function __construct(string $name, string|array $params = [], ?string $namespace = 'App')
     {
         $this->name = $name;
         $this->namespace = $namespace ?? 'App';
@@ -50,17 +50,15 @@ final class Event
             $this->namespace = $this->removeClassName($name);
         }
 
-        if (null !== $params) {
-            $params = \is_string($params) ? explode(',', $params) : (array) $params;
-            foreach ($params as $p) {
-                if ($p instanceof FunctionParameterInterface) {
-                    $this->params[] = $p;
-                    continue;
-                }
-                $p = trim((string) $p);
-                $pos = strpos($p, ':');
-                $this->params[] = new PHPConstructorParameter(trim(substr($p, 0, $pos)), trim(substr($p, $pos + 1)));
+        $params = \is_string($params) ? explode(',', $params) : (array) $params;
+        foreach ($params as $p) {
+            if ($p instanceof FunctionParameterInterface) {
+                $this->params[] = $p;
+                continue;
             }
+            $p = trim((string) $p);
+            $pos = strpos($p, ':');
+            $this->params[] = new PHPConstructorParameter(trim(substr($p, 0, $pos)), trim(substr($p, $pos + 1)));
         }
     }
 
@@ -99,7 +97,7 @@ final class Event
      */
     public function getParams(): array
     {
-        return $this->params ?? [];
+        return $this->params;
     }
 
     /**

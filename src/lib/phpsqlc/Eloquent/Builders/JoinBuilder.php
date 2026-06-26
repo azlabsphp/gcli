@@ -83,12 +83,7 @@ class JoinBuilder extends AbstractBuilder implements Builder
                             $qb .= $this->fnMerger($fnParts);
                             $qb .= '(';
 
-                            $qb .= Expression::quote($onClause['field'], $onClause['raw_field'])
-                                . ", " . Expression::quote($operators)
-                                . ", " . Expression::quote(
-                                    $onClause['value'],
-                                    !$onClause['const_value'] && $onClause['raw_value']
-                                );
+                            $qb .= Expression::quote($onClause['field']). ", " . Expression::quote($operators) . ", " . Expression::quote($onClause['value']); // , !$onClause['const_value'] && $onClause['raw_value']
 
                             $qb .= ')';
                         }

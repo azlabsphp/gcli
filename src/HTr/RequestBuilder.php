@@ -77,17 +77,14 @@ class RequestBuilder
 
     /**
      * Creates a request builder instance.
-     *
-     * @param mixed       $path
-     * @param string|null $prefix
      */
-    final public function __construct(string $path, string $method = 'GET', $prefix = null, ?string $name = null, ?string $description = null)
+    final public function __construct(string $path, string $method = 'GET', ?string $prefix = null, ?string $name = null, ?string $description = null)
     {
         $this->path = $path;
         $this->method = $method;
         $this->prefix = $prefix;
         $this->name = $name ?? $this->getNameFromPath($path);
-        $this->description = $description ?? $this->getDescriptionFromPath($path, $method ?? 'GET');
+        $this->description = $description ?? $this->getDescriptionFromPath($path, $method);
     }
 
     /**
@@ -168,14 +165,14 @@ class RequestBuilder
         $path .= null === $this->path ? '/' : "/$this->path";
         // #endregion Prepare request path
 
-        return $request->setParams($this->reqParams ?? [])
+        return $request->setParams($this->reqParams)
             ->setHeaders([
                 ['name' => 'Content-Type', 'value' => 'application/json'],
                 ['name' => 'Authorization', 'value' => 'Bearer [_bearerToken]'],
             ])
             ->setUrl(sprintf('[_host]%s', $path))
-            ->setCookies($this->reqCookies ?? [])
-            ->setTests(TestRunner::fromAttributes($this->tests ?? ['[status] eq 200']))
+            ->setCookies($this->reqCookies)
+            ->setTests(TestRunner::fromAttributes($this->tests))
             ->setMethod($this->method)
             ->setBody($this->reqBody)
             ->setId(RandomID::new()->__invoke())
@@ -186,14 +183,13 @@ class RequestBuilder
     /**
      * returns the request name.
      *
-     * @return string|null
+     * @return string
      */
     private function getNameFromPath(string $path)
     {
         $components = explode('/', ltrim($path, '/'));
-        $name = $components[0] ?? null;
-
-        return null !== $name ? str_replace(['-', '_'], ' ', $name) : $name;
+        $name = $components[0];
+        return $name ? str_replace(['-', '_'], ' ', $name) : $name;
     }
 
     /**

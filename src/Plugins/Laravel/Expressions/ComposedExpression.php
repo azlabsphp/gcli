@@ -145,6 +145,7 @@ final class ComposedExpression
                 throw new \LogicException('bad expression, ( character can only be located after another (');
             }
 
+            // @phpstan-ignore identical.alwaysTrue
             if ('(' === $char && (0 === \count($characters))) {
                 ++$offset;
                 continue;

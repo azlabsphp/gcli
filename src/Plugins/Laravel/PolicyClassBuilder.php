@@ -26,7 +26,7 @@ use Drewlabs\GCli\Plugins\Laravel\Traits\HasNamespaceAttribute;
 
 use function Drewlabs\GCli\Proxy\PHPScript;
 
-class PolicyClassBuilder implements AbstractBuilder
+final class PolicyClassBuilder implements AbstractBuilder
 {
     use HasNamespaceAttribute;
 
@@ -78,9 +78,8 @@ class PolicyClassBuilder implements AbstractBuilder
      * @param (string|null)|null $namespace
      * @param (string|null)|null $path
      *
-     * @throws InvalidArgumentException
-     * @throws RuntimeException
-     * @throws UnableToRetrieveMetadataException
+     * @throws \InvalidArgumentException
+     * @throws \RuntimeException
      *
      * @return void
      */
@@ -89,12 +88,12 @@ class PolicyClassBuilder implements AbstractBuilder
         ?string $namespace = null,
         ?string $path = null
     ) {
-        $this->setName($name ? (!Str::endsWith($name, 'Policy') ? Str::camelize($name).'Policy' : Str::camelize($name)) : self::__NAME__);
+        $this->setName($name ? (!Str::endsWith($name, 'Policy') ? Str::camelize($name).'Policy' : Str::camelize($name)) : static::__NAME__);
         // Set the component write path
-        $this->setWritePath($path ?? self::__PATH__);
+        $this->setWritePath($path ?? static::__PATH__);
 
         // Set the component namespace
-        $this->setNamespace($namespace ?? self::__NAMESPACE__);
+        $this->setNamespace($namespace ?? static::__NAMESPACE__);
     }
 
     public function withModel(string $classPath)
@@ -144,7 +143,7 @@ class PolicyClassBuilder implements AbstractBuilder
     public function build()
     {
         $component = PHPClass($this->name());
-        foreach ($this->classPaths ?? [] as $value) {
+        foreach ($this->classPaths as $value) {
             $component = $component->addClassPath($value);
         }
         $component
@@ -231,13 +230,13 @@ class PolicyClassBuilder implements AbstractBuilder
                     ->addLine('}')
                     ->addLine('return true')
             )
-            ->addToNamespace($this->namespace_ ?? self::__NAMESPACE__);
+            ->addToNamespace($this->package ?? static::__NAMESPACE__);
 
         // Returns the builded component
         return PHPScript(
             $component->getName(),
             $component,
-            ComponentPath::new()->create($this->namespace_ ?? self::__NAMESPACE__, $this->path_ ?? self::__PATH__)
+            ComponentPath::new()->create($this->package ?? static::__NAMESPACE__, $this->path ?? static::__PATH__)
         )->setNamespace($component->getNamespace());
     }
 }

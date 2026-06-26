@@ -18,10 +18,10 @@ final class QueryExpression
     /** @var string */
     private $query;
 
-    /** @var \Stringable */
+    /** @var ?\Stringable */
     private $changedExpression;
 
-    /** @var \Stringable */
+    /** @var ?\Stringable */
     private $condition;
 
     /**
@@ -117,10 +117,10 @@ final class QueryExpression
     public function __toString(): string
     {
         $compiler = new Compiler(new Builder(['facade' => 'DB::']));
-        $query = str_replace('DB::table(\'' . trim($this->table) . '\')', '$model->' . $this->table . '()', $compiler->compile(sprintf('FROM %s %s', $this->table, $this->query, false)));
+        $query = str_replace('DB::table(\'' . trim($this->table) . '\')', '$model->' . $this->table . '()', $compiler->compile(sprintf('FROM %s %s', $this->table, $this->query), false));
 
         return $this->condition ?
-            sprintf("if (%s%s) {\n    %s \n}", $this->changedExpression ?? '', $this->condition ? sprintf('%s%s', $this->changedExpression ? ' && ' : '', $this->condition) : '', $query)
+            sprintf("if (%s%s) {\n    %s \n}", $this->changedExpression ?? '', sprintf('%s%s', $this->changedExpression ? ' && ' : '', $this->condition), $query)
             : sprintf('%s', $query);
     }
 }

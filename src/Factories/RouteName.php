@@ -25,7 +25,7 @@ final class RouteName
      */
     public function createRouteName(string $controller)
     {
-        $controller = empty($controller) || is_null(null === $controller) ? 'TestsController' : $controller;
+        $controller = empty($controller) ? 'TestsController' : $controller;
         return Str::snakeCase(str_replace('Controller', '', $controller), '-');
     }
 }

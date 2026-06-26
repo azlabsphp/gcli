@@ -29,8 +29,6 @@ use Drewlabs\GCli\Plugins\Laravel\Observers\Event;
 use Drewlabs\GCli\Plugins\Laravel\Traits\HasNamespaceAttribute;
 
 use function Drewlabs\GCli\Proxy\PHPScript;
-
-use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
 
 final class EventBuilder implements AbstractBuilder
@@ -41,9 +39,6 @@ final class EventBuilder implements AbstractBuilder
     private const __NAMESPACE__ = 'App\\Events';
 
     /** @var string */
-    private const __NAME__ = 'ExampleEvent';
-
-    /** @var string */
     private const __PATH__ = 'app/Events/';
 
     /** @var FunctionParameterInterface[] */
@@ -51,10 +46,10 @@ final class EventBuilder implements AbstractBuilder
 
     public function __construct(Event $e, ?string $path = null)
     {
-        $this->setName($e->getName() ?? self::__NAME__);
-        $this->setNamespace($e->getNamespace() ?? self::__NAMESPACE__);
-        $this->setWritePath($path ?? self::__PATH__);
-        $this->properties = $e->getParams() ?? [];
+        $this->setName($e->getName());
+        $this->setNamespace($e->getNamespace());
+        $this->setWritePath($path ?? static::__PATH__);
+        $this->properties = $e->getParams();
     }
 
     public function build()
@@ -63,7 +58,7 @@ final class EventBuilder implements AbstractBuilder
         $component = PHPClass($this->name())
             ->withPromotedProperties()
             ->addConstructor($this->properties)
-            ->addToNamespace($this->namespace_ ?? self::__NAMESPACE__)
+            ->addToNamespace($this->package ?? static::__NAMESPACE__)
             ->asFinal();
 
         foreach ($this->properties as $property) {
@@ -73,9 +68,9 @@ final class EventBuilder implements AbstractBuilder
         $component = $component->addClassPath(SerializesModels::class)
             ->addTrait(SerializesModels::class);
 
-        if (class_exists(Dispatchable::class)) {
-            $component = $component->addClassPath(Dispatchable::class)
-                ->addTrait(Dispatchable::class);
+        if (class_exists('\Illuminate\Foundation\Events\Dispatchable')) {
+            $component = $component->addClassPath(\Illuminate\Foundation\Events\Dispatchable::class)
+                ->addTrait(\Illuminate\Foundation\Events\Dispatchable::class);
         }
 
         foreach ($this->properties as $property) {
@@ -91,7 +86,7 @@ final class EventBuilder implements AbstractBuilder
         return PHPScript(
             $component->getName(),
             $component,
-            ComponentPath::new()->create($this->namespace_ ?? self::__NAMESPACE__, $this->path_ ?? self::__PATH__)
+            ComponentPath::new()->create($this->package ?? static::__NAMESPACE__, $this->path ?? static::__PATH__)
         )->setNamespace($component->getNamespace());
     }
 }

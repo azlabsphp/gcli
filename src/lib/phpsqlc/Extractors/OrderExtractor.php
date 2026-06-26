@@ -12,8 +12,18 @@ namespace Drewlabs\PHPSQLC\Extractors;
  */
 class OrderExtractor extends AbstractExtractor implements Extractor
 {
+    /** @var \Drewlabs\PHPSQLC\Options */
+    // @phpstan-ignore property.onlyWritten
+    private $options;
+
+    public function __construct(?\Drewlabs\PHPSQLC\Options $options = null)
+    {
+        $this->options = $options;
+    }
+
     public function extract(array $value, array $parsed = []): array
     {
+        $partsTemp = [];
         $this->getExpressionParts($value, $partsTemp);
         $parts = [];
         foreach ($value as $k => $val) {

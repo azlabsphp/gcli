@@ -17,8 +17,13 @@ use Drewlabs\GCli\Contracts\Cacheable as AbstractCacheable;
 
 class CacheableTables implements AbstractCacheable
 {
+    /** @var array */
     private $tables;
+
+    /** @var string|null */
     private $namespace;
+
+    /** @var string|null */
     private $subNamespace;
 
     /**
@@ -33,7 +38,7 @@ class CacheableTables implements AbstractCacheable
 
     public function getTables()
     {
-        return $this->tables ?? [];
+        return $this->tables;
     }
 
     public function getNamespace()
@@ -59,7 +64,7 @@ class CacheableTables implements AbstractCacheable
     {
         $result = unserialize($value);
         if (!\is_array($result)) {
-            throw new \InvalidArgumentException('Serialized string is malformed');
+            throw new \InvalidArgumentException('serialized string is malformed');
         }
 
         return new self($result['tables'] ?? [], $result['namespace'] ?? null, $result['subNamespace']);

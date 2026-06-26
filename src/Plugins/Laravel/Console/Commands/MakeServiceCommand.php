@@ -23,7 +23,7 @@ use Illuminate\Console\Command;
 use Illuminate\Container\Container;
 
 /**
- * @property \Illuminate\Contracts\Foundation\Application app
+ * @property \Illuminate\Contracts\Foundation\Application $app
  */
 class MakeServiceCommand extends Command
 {
@@ -40,29 +40,20 @@ class MakeServiceCommand extends Command
 
     public function __construct()
     {
-        $this->laravel = ($this->getLaravel() ?? Container::getInstance());
+        $this->laravel = $this->getLaravel();
         parent::__construct();
     }
 
     public function handle()
     {
 
-        // Parameters initialization
         $name = $this->argument('name') ?? null;
-        $model = $this->option('model') ?
-            ORMModelBuilder::defaultClassPath($this->option('model')) :
-            null;
+        $model = $this->option('model') ? ORMModelBuilder::defaultClassPath($this->option('model')) : null;
         $namespace = $this->option('namespace') ?? '\\App\\Services';
         $basePath = $this->laravel->basePath($this->option('path') ?? 'app');
-        // # End of parameters initialization
-        ComponentsScriptWriter($basePath)->write(
-            Facade::buildServiceDefinition(
-                $this->option('asCRUD'),
-                $name,
-                $namespace,
-                $model
-            )
-        );
+
+        ComponentsScriptWriter($basePath)->write(Facade::buildServiceDefinition($this->option('asCRUD'),$name,$namespace,$model));
+
         $this->info("Service class successfully generated\n");
     }
 }

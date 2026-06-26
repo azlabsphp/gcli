@@ -97,7 +97,7 @@ class Through
      */
     public static function create(string $value)
     {
-        /** @var self */
+        /** @var static */
         $object = (new \ReflectionClass(__CLASS__))->newInstanceWithoutConstructor();
         $object->setTables($value);
 
@@ -205,7 +205,7 @@ class Through
         }
         $this->left = $parts[0];
         $this->intermediate = $parts[1];
-        $this->right = !str_contains($parts[2] ?? '', ':') ? $parts[2] : explode(':', $parts[2])[0];
-        $this->name = !str_contains($parts[2] ?? '', ':') ? null : (($name = explode(':', $parts[2])[1]) ? trim($name) : null);
+        $this->right = !str_contains($parts[2], ':') ? $parts[2] : explode(':', $parts[2])[0];
+        $this->name = !str_contains($parts[2], ':') ? null : (($name = explode(':', $parts[2])[1]) ? trim($name) : null);
     }
 }

@@ -20,7 +20,7 @@ interface SourceFileInterface extends Writable, Stringable
     /**
      * Set the source code namespace.
      *
-     * @return self
+     * @return static
      */
     public function setNamespace(string $namespace);
 
@@ -32,9 +32,9 @@ interface SourceFileInterface extends Writable, Stringable
     /**
      * Set the PHP headers linest.
      *
-     * @param string|string[] $headers
+     * @param mixed $headers
      *
-     * @return self
+     * @return static
      */
     public function setHeaders($headers);
 

@@ -24,10 +24,10 @@ use Illuminate\Console\Command;
 
 /**
  * @property \Illuminate\Contracts\Console\Application|\Illuminate\Contracts\Foundation\Application $laravel
- * @property mixed output
+ * @property mixed $output
  *
  * @method bool                   confirm($question, $default = false)
- * @method array|string|boo|null  option($key = null)
+ * @method array|string|bool|null  option($key = null)
  * @method string|array           choice($question, array $choices, $default = null, $attempts = null, $multiple = false)
  * @method string|array|bool|null option(string $key)
  * @method array                  options()
@@ -74,7 +74,7 @@ class MakeTsModuleCommand extends Command
      */
     public function handle()
     {
-        $options = new Options($this->options() ?? []);
+        $options = new Options($this->options());
         $excludes = array_merge($options->get('excludes', []) ?? [], ['migrations']);
         $tables = $options->get('tables', []);
         $plugin = new Plugin($options->get('output') ?? $this->laravel->publicPath('assets/lib'), (bool) $this->option('camelize'));
@@ -108,6 +108,7 @@ class MakeTsModuleCommand extends Command
 
         foreach ($dbConfig->getTables() as $value) {
             $tableType = $value->getType();
+            // @phpstan-ignore instanceof.alwaysTrue
             $plugin->generate($tableType, $tableType instanceof HasModuleMetadata ? $tableType->getModuleName() : null);
             $progress->advance();
         }

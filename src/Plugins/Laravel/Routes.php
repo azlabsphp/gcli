@@ -13,7 +13,6 @@ declare(strict_types=1);
 
 namespace Drewlabs\GCli\Plugins\Laravel;
 
-use Closure;
 use Drewlabs\Core\Helpers\Arr;
 use Drewlabs\Core\Helpers\Str;
 use Drewlabs\GCli\Cache\Cache;
@@ -21,7 +20,7 @@ use Drewlabs\GCli\Cache\CacheableRoutes;
 use Drewlabs\GCli\IO\Disk;
 use Drewlabs\GCli\RouteControllerConfig;
 
-class Routes
+final class Routes
 {
     /** @var string */
     const ROUTE_DEFINITION_START = "\n// Drewlabs Generated MVC Route Defnitions, Please Do not delete to avoid duplicates route definitions";
@@ -41,7 +40,7 @@ class Routes
     /**
      * Higher order function for building routes definitions based on route and controller name.
      *
-     * @return Closure&#Function#2bf2b6cd
+     * @return \Closure
      */
     public static function for(string $name, RouteControllerConfig $controller)
     {
@@ -49,7 +48,7 @@ class Routes
             $classPath = $controller->getClassPath();
             $namespace = $controller->getNamespace();
             if ($isLumen) {
-                $classPath = Str::contains($classPath, '\\') ? array_reverse(explode('\\', $classPath))[0] ?? $classPath : $classPath;
+                $classPath = Str::contains($classPath, '\\') ? array_reverse(explode('\\', $classPath))[0] : $classPath;
                 $classPath = !empty($namespace) ? sprintf('%s\\%s', $namespace, $classPath) : $classPath;
 
                 return [
@@ -64,13 +63,13 @@ class Routes
             $definitions = ['index' => "'/$name'", 'show' => "'/$name/{id}'", 'store' => "'/$name'", 'update' => "'/$name/{id}'", 'destroy' => "'/$name/{id}'"];
             foreach ($definitions as $method => $route) {
                 if (Str::contains($classPath, '\\') && class_exists($classPath)) {
-                    $lines[] = sprintf("Route::%s($route, [\\$classPath::class, '$method']);", self::HTTP_VERB_MAP[$method]);
+                    $lines[] = sprintf("Route::%s($route, [\\$classPath::class, '$method']);", static::HTTP_VERB_MAP[$method]);
                 } else {
-                    $classPath = Str::contains($classPath, '\\') ? array_reverse(explode('\\', $classPath))[0] ?? $classPath : $classPath;
+                    $classPath = Str::contains($classPath, '\\') ? array_reverse(explode('\\', $classPath))[0] : $classPath;
                     $classPath = !empty($namespace) ?
                         sprintf('%s\\%s', $namespace, $classPath) :
                         $classPath;
-                    $lines[] = sprintf("Route::%s($route, ['uses' => '%s@$method']);", self::HTTP_VERB_MAP[$method], $classPath);
+                    $lines[] = sprintf("Route::%s($route, ['uses' => '%s@$method']);", static::HTTP_VERB_MAP[$method], $classPath);
                 }
             }
 
@@ -81,7 +80,7 @@ class Routes
     /**
      * Write route configuration to disk.
      *
-     * @return Closure(bool $lumen, null|string $prefix = null, null|string $middleware = null, null|Closure $callback = null): void
+     * @return \Closure(bool, null|string, null|string, null|\Closure): void
      */
     public static function write(
         string $basePath,
@@ -98,19 +97,15 @@ class Routes
             $adapter = Disk::new($basePath);
             $output = '';
             [$before, $between, $after] = static::getRouteParts($lumen, $adapter, $filename, $partial);
-            // Write the content before to the output
             $output .= $before;
-            // Write route definition start
-            $output .= self::ROUTE_DEFINITION_START.\PHP_EOL;
-            // Write the existing route defintions
+            $output .= static::ROUTE_DEFINITION_START.\PHP_EOL;
             $output .= $between;
-            // Prepare the new routes script
             $groupRoutes = (null !== $prefix) || (null !== $middleware);
             if ($groupRoutes) {
                 $output .= $lumen ? static::createLumenGroup($prefix, $middleware) : static::createLaravelGroup($prefix, $middleware);
             }
             $definitions = Arr::map(
-                $definitions ?? [],
+                $definitions,
                 static function ($definition) use ($groupRoutes) {
                     return $groupRoutes ? array_map(static function ($line) {
                         return "\t$line";
@@ -125,7 +120,7 @@ class Routes
             if ((null !== $prefix) || (null !== $middleware)) {
                 $output .= '});';
             }
-            $output .= \PHP_EOL.self::ROUTE_DEFINITION_END;
+            $output .= \PHP_EOL.static::ROUTE_DEFINITION_END;
             $output .= $after;
             $adapter->write($filename, $output);
             // Call the callback
@@ -159,12 +154,11 @@ class Routes
     /**
      * Creates route group script part.
      *
-     * @param string          $prefix
-     * @param string[]|string $middleware
+     * @param string[]|string|null $middleware
      *
      * @return string
      */
-    private static function createGroupPart($prefix, $middleware)
+    private static function createGroupPart(?string $prefix, $middleware)
     {
         $list_to_list_string = static function ($values) {
             $strfn = static function ($v) {
@@ -210,13 +204,13 @@ class Routes
         }
         // Read the generated script start and end values
         if (
-            Str::contains($content, self::ROUTE_DEFINITION_START)
-            || Str::contains($content, self::ROUTE_DEFINITION_END)
+            Str::contains($content, static::ROUTE_DEFINITION_START)
+            || Str::contains($content, static::ROUTE_DEFINITION_END)
         ) {
             return [
-                Str::before(self::ROUTE_DEFINITION_START, $content),
-                $partial ? Str::before(self::ROUTE_DEFINITION_END, Str::after(self::ROUTE_DEFINITION_START, $content)) : '',
-                Str::after(self::ROUTE_DEFINITION_END, $content),
+                Str::before(static::ROUTE_DEFINITION_START, $content),
+                $partial ? Str::before(static::ROUTE_DEFINITION_END, Str::after(static::ROUTE_DEFINITION_START, $content)) : '',
+                Str::after(static::ROUTE_DEFINITION_END, $content),
             ];
         }
 

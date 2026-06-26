@@ -22,10 +22,10 @@ final class OutputExpression
     /** @var string */
     private $value;
 
-    /** @var \Stringable */
+    /** @var \Stringable|null */
     private $changedExpression;
 
-    /** @var \Stringable */
+    /** @var \Stringable|null */
     private $condition;
 
     /**
@@ -57,7 +57,6 @@ final class OutputExpression
         /** @var string|null */
         $value = null;
 
-        /** @var int */
         $pos = strlen($expr) - 1;
 
         if (str_contains($expr, 'CHANGED')) {
@@ -105,7 +104,7 @@ final class OutputExpression
     {
         $value = !str_ends_with(trim($this->value), ';') ? sprintf('%s;', $this->value) : $this->value;
         if ($this->condition) {
-            return sprintf("if (%s%s) {\n    %s \n}", $this->changedExpression ?? '', $this->condition ? sprintf('%s%s', $this->changedExpression ? ' && ' : '', $this->condition) : '', $value);
+            return sprintf("if (%s%s) {\n    %s \n}", $this->changedExpression ?? '', sprintf('%s%s', $this->changedExpression ? ' && ' : '', $this->condition), $value);
         }
         return sprintf('%s', $value);
     }

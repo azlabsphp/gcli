@@ -26,10 +26,10 @@ final class ExecExpression
     /** @var string[] */
     private $params = [];
 
-    /** @var \Stringable */
+    /** @var \Stringable|null */
     private $changedExpression;
 
-    /** @var \Stringable */
+    /** @var \Stringable|null */
     private $condition;
 
     /**
@@ -63,7 +63,6 @@ final class ExecExpression
         /** @var string|null */
         $callback = null;
 
-        /** @var int */
         $pos = strlen($expr) - 1;
 
         if (str_contains($expr, 'CHANGED')) {
@@ -100,6 +99,7 @@ final class ExecExpression
             $expr = substr($expr, 0, $pos);
         }
 
+        // @phpstan-ignore empty.expr
         if (empty($params = explode('WITH', $callback ?? ''))) {
             throw new \BadMethodCallException('exec expression not correctly formed, supported syntax is EXEC event_name WITH [id]:string, [name]:string IF property == value CHANGED [name]');
         }
@@ -114,7 +114,8 @@ final class ExecExpression
     public function __toString(): string
     {
         if ($this->condition) {
-            return sprintf("if (%s%s) {\n    %s \n}", $this->changedExpression ?? '', $this->condition ? sprintf('%s%s', $this->changedExpression ? ' && ' : '', $this->condition) : '', $this->createExpression($this->callback, $this->params));
+            $condition = sprintf('%s%s', $this->changedExpression ? ' && ' : '', $this->condition);
+            return sprintf("if (%s%s) {\n    %s \n}", $this->changedExpression ?? '', $condition, $this->createExpression($this->callback, $this->params));
         }
         return sprintf('%s', $this->createExpression($this->callback, $this->params));
     }

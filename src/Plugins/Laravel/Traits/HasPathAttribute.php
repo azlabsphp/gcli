@@ -15,18 +15,18 @@ namespace Drewlabs\GCli\Plugins\Laravel\Traits;
 
 trait HasPathAttribute
 {
-    /** @var string */
-    private $path_;
+    /** @var ?string */
+    private $path;
 
     public function setWritePath(string $path)
     {
-        $this->path_ = $path;
+        $this->path = $path;
 
         return $this;
     }
 
     public function getWritePath(): string
     {
-        return $this->path_ ?? '';
+        return $this->path;
     }
 }

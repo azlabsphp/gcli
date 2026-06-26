@@ -13,6 +13,7 @@ declare(strict_types=1);
 
 namespace Drewlabs\GCli\Proxy;
 
+use Drewlabs\CodeGenerator\Contracts\NamespaceComponent;
 use Drewlabs\CodeGenerator\Contracts\Stringable;
 use Drewlabs\GCli\Contracts\ORMModelDefinition;
 use Drewlabs\GCli\IO\ScriptWriter;
@@ -109,7 +110,7 @@ function DataTransfertClassBuilder(
  */
 function PHPScript(
     string $name,
-    Stringable $content,
+    NamespaceComponent&Stringable $content,
     string $path,
     string $extension = 'php'
 ) {

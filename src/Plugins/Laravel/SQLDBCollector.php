@@ -15,7 +15,8 @@ namespace Drewlabs\GCli\Plugins\Laravel;
 
 use Drewlabs\Core\Helpers\Str;
 use Drewlabs\GCli\Contracts\ForeignKeyConstraintDefinition as ForeignKey;
-use Drewlabs\GCli\Contracts\ORMModelDefinition;
+use Drewlabs\GCli\Contracts\ORMModelDefinition as Type;
+use Drewlabs\GCli\Contracts\HasModuleMetadata;
 use Drewlabs\GCli\Contracts\RulesFactory;
 use Drewlabs\GCli\DBAL\ProvidesTrimTableSchema;
 use Drewlabs\GCli\DBAL\R\Basic;
@@ -24,6 +25,7 @@ use Drewlabs\GCli\DBAL\R\Config\Through as ThroughConfig;
 use Drewlabs\GCli\DBAL\R\Through;
 use Drewlabs\GCli\DBAL\R\Types;
 use Illuminate\Support\Pluralizer;
+
 
 final class SQLDBCollector
 {
@@ -227,7 +229,7 @@ final class SQLDBCollector
     /**
      * Creates a db configuration containing the list of tables, foreign and unique keys.
      *
-     * @param \Traversable<ORMModelDefinition> $items
+     * @param \Traversable<Type&HasModuleMetadata> $items
      *
      * @return DBConfig
      */
@@ -276,8 +278,7 @@ final class SQLDBCollector
      */
     public function trimidsuffix(string $column)
     {
-        return self::suffixed($column, '_id') ?
-            substr($column ?? '', 0, \strlen($column ?? '') - \strlen('_id')) : $column;
+        return static::suffixed($column, '_id') ? substr($column, 0, \strlen($column) - \strlen('_id')) : $column;
     }
 
     /**
@@ -296,24 +297,23 @@ final class SQLDBCollector
         $manyToMany = $this->projectToMany($foreignKeys, $this->manyToMany);
         $ones = array_map(static function ($current) {
             return BasicConfig::create($current);
-        }, $this->toOnes ?? []);
+        }, $this->toOnes);
         $oneToMany = array_map(static function (string $current) {
             return BasicConfig::create($current);
-        }, $this->oneToMany ?? []);
+        }, $this->oneToMany);
         $manyThroughs = $this->projectTrhough($foreignKeys, $this->manyThroughs);
         $oneThroughs = $this->projectTrhough($foreignKeys, $this->oneThroughs);
 
         foreach ($values as $table => $tableConfig) {
             foreach ($foreignKeys as $foreign) {
-                if (null === ($localColumn = ($foreign->localColumns() ?? [])[0] ?? null)) {
+                if (null === ($localColumn = ($foreign->localColumns())[0] ?? null)) {
                     continue;
                 }
                 if (null === ($foreignColumn = $foreign->getForeignColumns()[0] ?? null)) {
                     continue;
                 }
                 if ($table === $foreign->getLocalTableName()) {
-                    $foreignTable = $foreign->getForeignTableName();
-                    if (null === $foreignTable) {
+                    if (!($foreignTable = $foreign->getForeignTableName())) {
                         continue;
                     }
                     if (null === ($foreignTableConfig = $values[$foreignTable] ?? null)) {
@@ -333,7 +333,7 @@ final class SQLDBCollector
                     }
 
                     $basic = new Basic(
-                        Str::camelize(!$isToMany ? ($result ? $result->getName() : Pluralizer::singular(self::trimschema($table, $this->schema))) : ($result ? $result->getName() : Pluralizer::plural(self::trimschema($table, $schema))), false),
+                        Str::camelize(!$isToMany ? ($result ? $result->getName() : Pluralizer::singular(static::trimschema($table, $this->schema))) : ($result ? $result->getName() : Pluralizer::plural(static::trimschema($table, $schema))), false),
                         $tableConfig->getModelConfig()->getClassPath(),
                         $foreignColumn,
                         $localColumn,
@@ -353,13 +353,8 @@ final class SQLDBCollector
                     $leftTable = $values[$foreignTable];
                     $rightTable = $values[$table];
 
-                    if (null !== ($rightDefinition = $rightTable->getType())) {
-                        $basic = $basic->withModuleName($rightDefinition->getModuleName());
-                    }
-
-                    if (null !== ($leftDefinition = $leftTable->getType())) {
-                        $reverse = $reverse->withModuleName($leftDefinition->getModuleName());
-                    }
+                    $basic = $basic->withModuleName($rightTable->getType()->getModuleName());
+                    $reverse = $reverse->withModuleName($leftTable->getType()->getModuleName());
 
                     $foreignTableConfig->addRelation($basic);
                     $tableConfig->addRelation($reverse);
@@ -385,7 +380,6 @@ final class SQLDBCollector
     /**
      * Creates a 1 -> t -> 1 or 1 -> t -> * relation instance.
      *
-     * @param mixed $items
      *
      * @throws \InvalidArgumentException
      *
@@ -420,8 +414,8 @@ final class SQLDBCollector
         }
 
         $name = Types::ONE_TO_ONE_THROUGH === $type ?
-            $through->getName() ?? Str::camelize(Pluralizer::singular(self::trimschema($through->rightTable(), $schema)), false) :
-            $through->getName() ?? Str::camelize(Pluralizer::plural(self::trimschema($through->rightTable(), $schema)), false);
+            $through->getName() ?? Str::camelize(Pluralizer::singular(static::trimschema($through->rightTable(), $schema)), false) :
+            $through->getName() ?? Str::camelize(Pluralizer::plural(static::trimschema($through->rightTable(), $schema)), false);
 
         $through = new Through(
             $name,
@@ -476,7 +470,7 @@ final class SQLDBCollector
         }
         $pivots[] = $throughtable;
         $through = new Through(
-            $match->getName() ?? Str::camelize(Pluralizer::plural(self::trimschema($match->rightTable(), $schema)), false),
+            $match->getName() ?? Str::camelize(Pluralizer::plural(static::trimschema($match->rightTable(), $schema)), false),
             Types::MANY_TO_MANY,
             $rightclasspath,
             $throughtable,
@@ -546,7 +540,7 @@ final class SQLDBCollector
             }
 
             return $instance;
-        }, $array ?? []);
+        }, $array);
     }
 
     /**

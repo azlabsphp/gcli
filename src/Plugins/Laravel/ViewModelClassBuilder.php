@@ -37,7 +37,7 @@ use function Drewlabs\GCli\Proxy\PHPScript;
 
 use Illuminate\Support\Pluralizer;
 
-class ViewModelClassBuilder implements AbstractBuilder
+final class ViewModelClassBuilder implements AbstractBuilder
 {
     use HasNamespaceAttribute;
     use ViewModelBuilder;
@@ -105,7 +105,7 @@ class ViewModelClassBuilder implements AbstractBuilder
     /** @var string */
     private $model;
 
-    /** @var string */
+    /** @var ?string */
     private $dtoPath;
 
     /**
@@ -130,11 +130,11 @@ class ViewModelClassBuilder implements AbstractBuilder
             (!Str::endsWith($name, 'ViewModel') ?
                 Str::camelize(Pluralizer::singular($name)) . 'ViewModel' :
                 Str::camelize(Pluralizer::singular($name))) :
-            self::DEFAULT_NAME);
+            static::DEFAULT_NAME);
         // Set the component write path
-        $this->setWritePath($path ?? self::DEFAULT_PATH);
+        $this->setWritePath($path ?? static::DEFAULT_PATH);
         // Set the component namespace
-        $this->setNamespace($namespace ?? self::DEFAULT_NAMESPACE);
+        $this->setNamespace($namespace ?? static::DEFAULT_NAMESPACE);
     }
 
     /**
@@ -175,7 +175,7 @@ class ViewModelClassBuilder implements AbstractBuilder
         /** @var Blueprint */
         $component = PHPClass($this->name())
             ->asFinal()
-            ->addToNamespace($this->namespace() ?? self::DEFAULT_NAMESPACE)
+            ->addToNamespace($this->namespace() ?? static::DEFAULT_NAMESPACE)
             ->addImplementation('AbstractViewModel')
             ->addMethod(PHPClassMethod(
                 'rules',
@@ -217,7 +217,7 @@ class ViewModelClassBuilder implements AbstractBuilder
                         'model class name'
                     )
                 )->addClassPath($this->modelPath)
-                ->addClassPath("Drewlabs\\Query\\PreparesFiltersBag")
+                    ->addClassPath("Drewlabs\\Query\\PreparesFiltersBag")
                     ->addMethod(PHPClassMethod('makeFilters', [PHPFunctionParameter('defaults', 'array', '[]')], 'array', 'public', ['creates a list of filters based on view model input & query parameters'])
                         ->addLine("return PreparesFiltersBag::new(\$this)->call(new \$this->model, \$defaults ?? [])"));
             }
@@ -292,28 +292,30 @@ class ViewModelClassBuilder implements AbstractBuilder
             )->addMethod(PHPClassMethod('getModel', [], 'string', 'public', 'returns the model class')->addLine('return $this->model'));
         }
 
-        // Add builder class
-        if (null !== $this->dtoPath && version_compare(\PHP_VERSION, '7.4') < 0) {
-            $component = $component->addMethod(
-                PHPClassMethod('useResourceBuilder', [PHPFunctionParameter('properties', 'array')], '\\' . \Closure::class, PHPTypesModifiers::PUBLIC)
-                    ->addLine('return function ($value) use ($properties) {')
-                    ->addLine(sprintf('return null !== $value ? %s::new($value)->addProperties($properties)->mergeHidden(array_merge($this->getExcludes(), $value->getHidden() ?? [])) : $value', $this->getClassNameFromPath($this->dtoPath)))
-                    ->addLine('})')
-            );
-        }
+        if ($this->dtoPath) {
+            // @phpstan-ignore smaller.alwaysFalse
+            if (intval(version_compare(\PHP_VERSION, '7.4')) < 0) {
+                $component = $component->addMethod(
+                    PHPClassMethod('useResourceBuilder', [PHPFunctionParameter('properties', 'array')], '\\' . \Closure::class, PHPTypesModifiers::PUBLIC)
+                        ->addLine('return function ($value) use ($properties) {')
+                        ->addLine(sprintf('return null !== $value ? %s::new($value)->addProperties($properties)->mergeHidden(array_merge($this->getExcludes(), $value->getHidden() ?? [])) : $value', $this->getClassNameFromPath($this->dtoPath)))
+                        ->addLine('})')
+                );
+            }
 
-        if (null !== $this->dtoPath && version_compare(\PHP_VERSION, '7.4') > 0) {
-            $component = $component->addMethod(
-                PHPClassMethod('useResourceBuilder', [PHPFunctionParameter('properties', 'array')], '\\' . \Closure::class, PHPTypesModifiers::PUBLIC)
-                    ->addLine(sprintf('return fn ($value) => null !== $value ? %s::new($value)->addProperties($properties)->mergeHidden(array_merge($this->getExcludes(), $value->getHidden() ?? [])) : $value', $this->getClassNameFromPath($this->dtoPath)))
-            );
+            if (version_compare(\PHP_VERSION, '7.4') > 0) {
+                $component = $component->addMethod(
+                    PHPClassMethod('useResourceBuilder', [PHPFunctionParameter('properties', 'array')], '\\' . \Closure::class, PHPTypesModifiers::PUBLIC)
+                        ->addLine(sprintf('return fn ($value) => null !== $value ? %s::new($value)->addProperties($properties)->mergeHidden(array_merge($this->getExcludes(), $value->getHidden() ?? [])) : $value', $this->getClassNameFromPath($this->dtoPath)))
+                );
+            }
         }
 
         // Returns the builded component
         return PHPScript(
             $component->getName(),
             $component,
-            ComponentPath::new()->create($this->namespace_ ?? self::DEFAULT_NAMESPACE, $this->path_ ?? self::DEFAULT_PATH)
+            ComponentPath::new()->create($this->package ?? static::DEFAULT_NAMESPACE, $this->path ?? static::DEFAULT_PATH)
         )->setNamespace($component->getNamespace());
     }
 
@@ -324,7 +326,7 @@ class ViewModelClassBuilder implements AbstractBuilder
             return $classname;
         }
 
-        return sprintf('%s%s%s', self::DEFAULT_NAMESPACE, '\\', $classname);
+        return sprintf('%s%s%s', static::DEFAULT_NAMESPACE, '\\', $classname);
     }
 
     private function getClassNameFromPath(string $name)
