@@ -18,8 +18,6 @@ use Drewlabs\GCli\Cache\Cache;
 use Drewlabs\GCli\Cache\CacheableTables;
 use Drewlabs\GCli\Console\Contracts\Progress;
 use Drewlabs\GCli\Contracts\ComponentBuilder as AbstractBuilder;
-use Drewlabs\GCli\Contracts\Pivotable;
-use Drewlabs\GCli\Contracts\ProvidesPropertyAccessors;
 use Drewlabs\GCli\Contracts\SourceFileInterface;
 use Drewlabs\GCli\Contracts\Writable;
 use Drewlabs\GCli\DBAL\R\Types;
@@ -125,18 +123,14 @@ final class Task
             $values = $dbConfig->getTables();
             $pivots = $dbConfig->getPivots();
 
-            // #region write tables to cache if caching is not disabled
             if (!$disableCache) {
                 Cache::new($cachePath)->dump(new CacheableTables(array_keys($values), $namespace, $subPackage));
             }
-            // #endregion write tables to cache if caching is not disabled
 
             /** @var Progress */
             $indicator = $onStartCallback($values);
-
-            // #region Create components models relations
             $requestBodyMap = new RouteRequestBodyMap();
-            // #endregion Create components models relations
+
             $routes = iterator_to_array((static function () use (
                 $camelize,
                 $values,
@@ -251,10 +245,7 @@ final class Task
                     $routePrefix,
                     $middleware,
                     $subPackage,
-                    // In case the generator is running for specific tables,
-                    // generated routes, consider appending the new table routes
-                    // to existing routes
-                )($routes, !empty($this->tables));
+                )($routes);
                 // Once the routes are ready, we invoke function to create htr requests
                 if ($createHTrProjectsCallback) {
                     $createHTrProjectsCallback($routes, $requestBodyMap, $routePrefix);
@@ -315,7 +306,7 @@ final class Task
      * @param (string|null)|null $middleware
      * @param (string|null)|null $subPackage
      *
-     * @return \Closure(array, bool): void
+     * @return \Closure(array): void
      */
     protected function writeRoutes(
         ?bool $disableCache,
@@ -327,7 +318,7 @@ final class Task
         ?string $middleware = null,
         ?string $subPackage = null
     ) {
-        return static function (array $routes = [], bool $partial = false) use (
+        return static function (array $routes = []) use (
             $disableCache,
             $cachePath,
             $lumen,
@@ -337,7 +328,7 @@ final class Task
             $middleware,
             $subPackage
         ) {
-            if (!$disableCache && !$partial) {
+            if (!$disableCache) {
                 // Get route definitions from cache
                 $cachedRoutes = $cachePath ? Routes::getCachedRoutes($cachePath) : null;
                 $routes = array_merge($routes, $cachedRoutes ? $cachedRoutes->getRoutes() : []);
@@ -347,7 +338,7 @@ final class Task
                 // Call the route definitions creator function
                 $definitions[$key] = Routes::for($key, $value)($lumen);
             }
-            Routes::write($routesDirectory, $definitions, $routingfilename, $partial)(
+            Routes::write($routesDirectory, $definitions, $routingfilename)(
                 $lumen,
                 $prefix,
                 $middleware,
