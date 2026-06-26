@@ -13,3 +13,4 @@ database.*
 input.json
 phpstan.*
 php-stan.*
+.gitignore
