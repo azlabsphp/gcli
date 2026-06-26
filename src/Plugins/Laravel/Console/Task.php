@@ -13,7 +13,6 @@ declare(strict_types=1);
 
 namespace Drewlabs\GCli\Plugins\Laravel\Console;
 
-use Closure;
 use Drewlabs\GCli\Cache\Cache;
 use Drewlabs\GCli\Cache\CacheableTables;
 use Drewlabs\GCli\Console\Contracts\Progress;
