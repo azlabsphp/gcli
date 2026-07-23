@@ -24,7 +24,7 @@ use Drewlabs\CodeGenerator\Types\PHPTypesModifiers;
 use Drewlabs\GCli\Contracts\ComponentBuilder as AbstractBuilder;
 
 use Drewlabs\GCli\Factories\ComponentPath;
-use Drewlabs\GCli\Plugins\Laravel\Observers\Event;
+use Drewlabs\GCli\Plugins\Laravel\Observers\EventExpression;
 use Drewlabs\GCli\Plugins\Laravel\Traits\HasNamespaceAttribute;
 
 use function Drewlabs\GCli\Proxy\PHPScript;
@@ -51,7 +51,7 @@ final class ServiceProviderBuilder implements AbstractBuilder
     /** @var string domain route file path. */
     private $routeFilePath;
 
-    /** @var Event[] */
+    /** @var EventExpression[] */
     private $events;
 
     /**
@@ -135,9 +135,10 @@ final class ServiceProviderBuilder implements AbstractBuilder
         }
 
         // Add event listeners
-        if ($this->events && !empty($this->events)) {
+        if (!empty($this->events ?? [])) {
             $events = [];
-            foreach ($this->events as $e) {
+            foreach ($this->events as $expression) {
+                $e = $expression->getEvent();
                 $events[ltrim($e->getClasspath(), '\\')] = [ltrim($e->getListener()->getClasspath(), '\\')];
             }
             $component = $component->addProperty(PHPClassProperty('listen', 'array', PHPTypesModifiers::PROTECTED, $events, ['event listener mappings for the application.']));

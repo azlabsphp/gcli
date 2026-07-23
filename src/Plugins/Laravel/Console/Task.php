@@ -277,8 +277,10 @@ final class Task
                 $message = [sprintf("Please add [\%s::class] to the list of application service providers.\n", $serviceProviderBuilder->getClassPath())];
             }
 
-            if (!empty($events = Observers::getInstance()->getEvents())) {
-                foreach ($events as $e) {
+            if (!empty($expressions = Observers::getInstance()->getEvents())) {
+                foreach ($expressions as $expression) {
+                    $e = $expression->getEvent();
+
                     if ($e->doesExists()) {
                         continue;
                     }

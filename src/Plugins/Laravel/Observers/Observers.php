@@ -21,7 +21,7 @@ final class Observers
     /** @var array<string,array<Observer>> */
     private $observers = [];
 
-    /** @var Event[] */
+    /** @var EventExpression[] */
     private $events = [];
 
     /** @constructor */
@@ -69,7 +69,7 @@ final class Observers
 
                     if (str_starts_with($expression, 'DISPATCH')) {
                         $e = EventExpression::create($expression, $namespace);
-                        $this->events[] = $e->getEvent();
+                        $this->events[] = $e;
                         $this->addObserver($name . '.' . $observer, $e);
                         continue;
                     }
@@ -111,7 +111,7 @@ final class Observers
     /**
      * returns the list of namespace events.
      *
-     * @return Event[]
+     * @return EventExpression[]
      */
     public function getEvents(): array
     {

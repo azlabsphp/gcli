@@ -182,6 +182,7 @@ final class EventExpression implements Observer
     public function getEvent(): Event
     {
         $params = empty($this->params) ? [new PHPConstructorParameter('model', $this->eventSource ? $this->eventSource->getClassPath() : null)] : $this->params;
+        print_r([get_class($this->eventSource ?? new \stdClass)], );
         return new Event($this->event, $params, $this->namespace);
     }
 
