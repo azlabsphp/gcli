@@ -218,7 +218,7 @@ final class ViewModelClassBuilder implements AbstractBuilder
                     )
                 )->addClassPath($this->modelPath)
                     ->addClassPath("Drewlabs\\Query\\PreparesFiltersBag")
-                    ->addMethod(PHPClassMethod('makeFilters', [PHPFunctionParameter('defaults', 'array', '[]')], 'array', 'public', ['creates a list of filters based on view model input & query parameters'])
+                    ->addMethod(PHPClassMethod('makeFilters', [PHPFunctionParameter('defaults', 'array', [])], 'array', 'public', ['creates a list of filters based on view model input & query parameters'])
                         ->addLine("return PreparesFiltersBag::new(\$this)->call(new \$this->model, \$defaults ?? [])"));
             }
 

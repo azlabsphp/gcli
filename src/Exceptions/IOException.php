@@ -13,8 +13,6 @@ declare(strict_types=1);
 
 namespace Drewlabs\GCli\Exceptions;
 
-use Exception;
-
 final class IOException extends \Exception
 {
     /**

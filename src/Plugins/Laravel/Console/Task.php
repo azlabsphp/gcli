@@ -117,6 +117,8 @@ final class Task
                 printf("\nTask Completed successfully...\n");
             };
 
+
+
             // Execute the runner
             // # Create the migrations runner
             $values = $dbConfig->getTables();

@@ -23,7 +23,7 @@ interface ComponentBuilder
     /**
      * Source code script path getter.
      */
-    public function getWritePath(): string;
+    public function getWritePath(): ?string;
 
     /**
      * Source code class path getter.

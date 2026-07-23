@@ -113,11 +113,12 @@ class Path
      */
     public function basename()
     {
+
         if (($result = @pathinfo($this->value, \PATHINFO_BASENAME))) {
-            throw IOException::metadata($this->value, error_get_last()['message'] ?? '', 'basename');
+            return $result;
         }
 
-        return $result;
+        throw IOException::metadata($this->value, error_get_last()['message'] ?? '', 'basename');
     }
 
     /**
@@ -127,11 +128,11 @@ class Path
      */
     public function dirname()
     {
-        if (($result = @pathinfo($this->value, \PATHINFO_DIRNAME))) {
-            throw IOException::metadata($this->value, error_get_last()['message'] ?? '', 'dirname');
+        if ($result = @pathinfo($this->value, \PATHINFO_DIRNAME)) {
+            return $result;
         }
 
-        return $result;
+        throw IOException::metadata($this->value, error_get_last()['message'] ?? '', 'dirname');
     }
 
     /**
@@ -141,11 +142,11 @@ class Path
      */
     public function extension()
     {
-        if (($result = @pathinfo($this->value, \PATHINFO_EXTENSION))) {
-            throw IOException::metadata($this->value, error_get_last()['message'] ?? '', 'extension');
+        if ($result = @pathinfo($this->value, \PATHINFO_EXTENSION)) {
+            return $result;
         }
 
-        return $result;
+        throw IOException::metadata($this->value, error_get_last()['message'] ?? '', 'extension');
     }
 
     /**
@@ -155,11 +156,11 @@ class Path
      */
     public function filename()
     {
-        if (($result = @pathinfo($this->value, \PATHINFO_FILENAME))) {
-            throw IOException::metadata($this->value, error_get_last()['message'] ?? '', 'filename');
+        if ($result = @pathinfo($this->value, \PATHINFO_FILENAME)) {
+            return $result;
         }
 
-        return $result;
+        throw IOException::metadata($this->value, error_get_last()['message'] ?? '', 'filename');
     }
 
     /**

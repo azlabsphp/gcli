@@ -51,6 +51,7 @@ final class DataTransfertClassBuilder implements AbstractBuilder
         'Drewlabs\\PHPValue\\Traits\\Castable',
         'Drewlabs\\PHPValue\\Traits\\ObjectAdapter',
         'Drewlabs\\PHPValue\\Contracts\\Adaptable',
+        'Drewlabs\\PHPValue\\Accessible',
         'Drewlabs\\PHPValue\\Contracts\\HiddenAware',
     ];
 
@@ -340,7 +341,7 @@ final class DataTransfertClassBuilder implements AbstractBuilder
         $comments = [];
         foreach ($properties as $key => $value) {
             $name = str_contains($value, ':') ? Str::before(':', $value) : $value;
-            $comments[] = '@property $' . Types::new($name)->toPHPType() . ' ' . ($camelize ? Str::camelize(trim($key), false) : $key);
+            $comments[] = '@property ' . Types::new($name)->toPHPType() . ' $' . ($camelize ? Str::camelize(trim($key), false) : $key);
         }
 
         return $comments;

@@ -25,7 +25,7 @@ trait HasPathAttribute
         return $this;
     }
 
-    public function getWritePath(): string
+    public function getWritePath(): ?string
     {
         return $this->path;
     }

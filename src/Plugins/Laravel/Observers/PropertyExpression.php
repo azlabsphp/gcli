@@ -49,13 +49,13 @@ final class PropertyExpression
     public function __toString(): string
     {
         $lcvalue = strtolower($this->value);
-        if ('now' === $lcvalue || 'now()' === $lcvalue || 'datetime' === $lcvalue || 'datetime()' === $lcvalue) {
-            return $this->createExpression($this->property, "date('Y-m-d H:i:s')");
-        }
+        // if ('now' === $lcvalue || 'now()' === $lcvalue || 'datetime' === $lcvalue || 'datetime()' === $lcvalue) {
+        //     return $this->createExpression($this->property, "date('Y-m-d H:i:s')");
+        // }
 
-        if ('date' === $lcvalue || 'date()' === $lcvalue) {
-            return $this->createExpression($this->property, "date('Y-m-d H:i:s')");
-        }
+        // if ('date' === $lcvalue || 'date()' === $lcvalue) {
+        //     return $this->createExpression($this->property, "date('Y-m-d')");
+        // }
 
         return $this->createExpression($this->property, $this->value);
     }
@@ -120,15 +120,18 @@ final class PropertyExpression
             $haystack = substr($haystack, 0, $pos);
         }
 
-        if (empty($params = preg_split("/\s+/", $setExpression ?? ''))) {
+        if (strlen(trim($setExpression ?? '')) === 0) {
             throw new \BadMethodCallException('SET expression not correctly formed, supported syntax is `SET property value IF NULL` or `SET property value IF property == value`');
         }
 
-        if (is_null($property)) {
-            $property = $params[0];
-        }
 
-        return new static($params[0], $params[1] ?? 'null', is_callable($changed) ? ($property ? call_user_func($changed, $property) : null) : $changed, is_callable($condition) ? ($property ? call_user_func($condition, $property) : null) : $condition);
+        $setExpression = trim($setExpression);
+        $spacePos = strpos($setExpression, ' ');
+        $propertyName =  $spacePos !== false ? trim(\mb_substr($setExpression, 0, $spacePos)) : $setExpression;
+        $propertyValue = $spacePos !== false ? \mb_substr($setExpression, $spacePos + 1) : 'null';
+        $property = is_null($property) ? $propertyName : $property;
+
+        return new static($propertyName, $propertyValue, is_callable($changed) ? ($property ? call_user_func($changed, $property) : null) : $changed, is_callable($condition) ? ($property ? call_user_func($condition, $property) : null) : $condition);
     }
 
     public static function new(string $format, $condition = null)
@@ -147,7 +150,8 @@ final class PropertyExpression
     private function createExpression(string $property, $value): string
     {
         $condition = null === $this->condition ? sprintf('is_null(%s)', Property::create($property)) : $this->condition;
-
-        return sprintf("if (%s%s) {\n    \$model->setRawPropertyValue('%s', %s); \n}\n", $this->changedExpression ?? '', sprintf('%s%s', $this->changedExpression ? ' && ' : '', $condition), new PropertyName($property), Property::create($value));
+        $condition = sprintf('%s%s', $this->changedExpression ? ' && ' : '', $condition);
+        
+        return sprintf("if (%s%s) {\n    \$model->setRawPropertyValue('%s', %s); \n}\n", $this->changedExpression ?? '', $condition, new PropertyName($property), Property::create($value));
     }
 }

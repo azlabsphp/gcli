@@ -71,8 +71,10 @@ final class Property
 
         /** @var int|bool */
         $start = false;
+
         /** @var int|bool */
         $end = false;
+        
         if (static::isplaceholder($expr, $start, $end) && is_int($start) && is_int($end)) {
             $name = trim(substr($expr, $start, $end - \strlen(substr($expr, 0, $start + 1)) + 2));
             $type = empty($type = trim(str_replace($name . ':', '', $expr))) || ($name === $type) ? 'mixed' : $type;
@@ -164,6 +166,7 @@ final class Property
         if ('date' === $lcvalue || 'date()' === $lcvalue) {
             $value = "date('Y-m-d')";
         }
+
 
         switch (strtolower($type)) {
             case 'float':
