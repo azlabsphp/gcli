@@ -416,6 +416,9 @@ final class ORMModelBuilder implements AbstractORMModelBuilder, AbstractBuilder,
             if ($observers = Observers::getInstance()->get(sprintf('%s.%s', $this->table, $value))) {
                 $boot->addLine(sprintf('parent::%s(function(self $model) {', $value));
                 foreach ($observers as $expression) {
+                    
+                    // set the current model builder as the event source of the expression
+                    $expression->setEventSource($this);
                     $items = array_map(static function ($item) {
                         return sprintf('    %s', $item);
                     }, explode(\PHP_EOL, (string) $expression));
@@ -430,6 +433,9 @@ final class ORMModelBuilder implements AbstractORMModelBuilder, AbstractBuilder,
             if ($observers = Observers::getInstance()->get(sprintf('%s.%s', static::trimschema($this->table, $this->schema), $value))) {
                 $boot->addLine(sprintf('parent::%s(function(self $model) {', $value));
                 foreach ($observers as $expression) {
+
+                    // set the current model builder as the event source of the expression
+                    $expression->setEventSource($this);
                     $items = array_map(static function ($item) {
                         return sprintf('    %s', $item);
                     }, explode(\PHP_EOL, (string) $expression));

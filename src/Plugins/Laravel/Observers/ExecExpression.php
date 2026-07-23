@@ -18,8 +18,10 @@ use Drewlabs\GCli\Plugins\Laravel\Expressions\LiteralExpression;
 use Drewlabs\GCli\Plugins\Laravel\Expressions\Property;
 use Drewlabs\GCli\Plugins\Laravel\Expressions\PropertyChangedExpression;
 
-final class ExecExpression
+final class ExecExpression implements Observer
 {
+    use HasEventSource;
+
     /** @var string */
     private $callback;
 

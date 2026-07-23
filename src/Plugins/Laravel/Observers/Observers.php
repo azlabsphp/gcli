@@ -18,7 +18,7 @@ final class Observers
     /** @var self */
     private static $instance;
 
-    /** @var array<string,array<\Stringable>> */
+    /** @var array<string,array<Observer>> */
     private $observers = [];
 
     /** @var Event[] */
@@ -101,7 +101,7 @@ final class Observers
     /**
      * returns the list of observers.
      *
-     * @return array<string, array<\Stringable>>
+     * @return array<string, array<Observer>>
      */
     public function getObservers()
     {
@@ -121,7 +121,7 @@ final class Observers
     /**
      * get an observer matching the provided name parameter.
      *
-     * @return \Stringable[]|null
+     * @return Observer[]|null
      */
     public function get(string $name)
     {

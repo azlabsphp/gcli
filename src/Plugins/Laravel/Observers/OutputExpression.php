@@ -17,8 +17,10 @@ use Drewlabs\GCli\Plugins\Laravel\Expressions\ComposedExpression;
 use Drewlabs\GCli\Plugins\Laravel\Expressions\LiteralExpression;
 use Drewlabs\GCli\Plugins\Laravel\Expressions\PropertyChangedExpression;
 
-final class OutputExpression
+final class OutputExpression implements Observer
 {
+    use HasEventSource;
+
     /** @var string */
     private $value;
 

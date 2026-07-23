@@ -9,8 +9,9 @@ use Drewlabs\PHPSQLC\Compiler;
 use Drewlabs\PHPSQLC\Eloquent\Builder;
 use LogicException;
 
-final class QueryExpression
+final class QueryExpression implements Observer
 {
+    use HasEventSource;
 
     /** @var string */
     private $table;

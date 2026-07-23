@@ -13,7 +13,7 @@ declare(strict_types=1);
 
 namespace Drewlabs\GCli\Contracts;
 
-interface ComponentBuilder
+interface ComponentBuilder extends Blueprint
 {
     /**
      * @return SourceFileInterface
@@ -26,14 +26,7 @@ interface ComponentBuilder
     public function getWritePath(): ?string;
 
     /**
-     * Source code class path getter.
-     *
-     * @return string
-     */
-    public function getClassPath();
-
-    /**
-     * Set the path where the component will be written to.
+     * set the path where the component will be written to.
      *
      * @return self
      */

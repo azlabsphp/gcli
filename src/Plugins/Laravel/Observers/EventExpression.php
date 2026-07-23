@@ -20,11 +20,20 @@ use Drewlabs\GCli\Plugins\Laravel\Expressions\LiteralExpression;
 use Drewlabs\GCli\Plugins\Laravel\Expressions\Property;
 use Drewlabs\GCli\Plugins\Laravel\Expressions\PropertyChangedExpression;
 use Drewlabs\GCli\Plugins\Laravel\Expressions\PropertyName;
+use Drewlabs\CodeGenerator\Contracts\FunctionParameterInterface;
 
-final class EventExpression
+final class EventExpression implements Observer
 {
-    /** @var Event */
+    use HasEventSource;
+
+    /** @var string */
     private $event;
+
+    /** @var FunctionParameterInterface[] */
+    private $params;
+
+    /** @var string */
+    private $namespace;
 
     /** @var \Stringable|null */
     private $condition = null;
@@ -86,25 +95,23 @@ final class EventExpression
             $variables[] = Property::create($p);
         }
 
-        // Use the model as parameter if event does not take any argument
-        // as on line 133, it will be passed as parameter to event call
-        if (empty($items)) {
-            $items = [new PHPConstructorParameter('model')];
-        }
-
         $this->variables = $variables;
         $this->condition = $condition;
         $this->changedExpression = $changedExpression;
-        $this->event = new Event($event, $items, $namespace);
+        $this->namespace = $namespace;
+        $this->event = $event;
+        $this->params = $items;
     }
 
     public function __toString(): string
     {
+        $event = $this->getEvent();
+
         if ($this->condition) {
             $condition = sprintf('%s%s', $this->changedExpression ? ' && ' : '', $this->condition);
-            return sprintf("if (%s%s) {\n    %s \n}", $this->changedExpression ?? '', $condition , $this->createExpression($this->event, $this->variables));
+            return sprintf("if (%s%s) {\n    %s \n}", $this->changedExpression ?? '', $condition , $this->createExpression($event, $this->variables));
         }
-        return sprintf('%s', $this->createExpression($this->event, $this->variables));
+        return sprintf('%s', $this->createExpression($event, $this->variables));
     }
 
     public static function create(string $haystack, string $namespace = 'App')
@@ -174,7 +181,8 @@ final class EventExpression
      */
     public function getEvent(): Event
     {
-        return $this->event;
+        $params = empty($this->params) ? [new PHPConstructorParameter('model', $this->eventSource ? $this->eventSource->getClassPath() : null)] : $this->params;
+        return new Event($this->event, $params, $this->namespace);
     }
 
     private function createExpression(Event $e, array $variables)

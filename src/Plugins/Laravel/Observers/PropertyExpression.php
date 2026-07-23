@@ -19,8 +19,10 @@ use Drewlabs\GCli\Plugins\Laravel\Expressions\Property;
 use Drewlabs\GCli\Plugins\Laravel\Expressions\PropertyChangedExpression;
 use Drewlabs\GCli\Plugins\Laravel\Expressions\PropertyName;
 
-final class PropertyExpression
+final class PropertyExpression implements Observer
 {
+    use HasEventSource;
+
     /** @var string */
     private $property;
 
