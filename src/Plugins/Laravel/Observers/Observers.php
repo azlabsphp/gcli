@@ -131,7 +131,7 @@ final class Observers
     /**
      * appends an expression to a model observer.
      *
-     * @param mixed $expression
+     * @param Observer $expression
      *
      * @return void
      */
