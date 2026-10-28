@@ -25,6 +25,8 @@ if (!function_exists('drewlabs_code_generator_is_running_lumen_app')) {
     /**
      * Return the default value of the given value.
      *
+     * @param mixed $callback
+     * 
      * @return mixed
      */
     function drewlabs_code_generator_is_running_lumen_app($callback)
@@ -60,7 +62,7 @@ if (!function_exists('config')) {
      * @param array|string|null $key
      * @param mixed             $default
      *
-     * @return mixed|Illuminate\Config\Repository
+     * @return mixed
      */
     function config($key = null, $default = null)
     {
@@ -72,7 +74,7 @@ if (!function_exists('config')) {
             return app('config')->set($key);
         }
 
-        return app('config')->get($key, $default);
+        return app('config')->get($key) ?? $default;
     }
 }
 

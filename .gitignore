@@ -14,3 +14,5 @@ input.json
 phpstan.*
 php-stan.*
 .gitignore
+/.phpunit.cache
+/.phpunit.result.cache

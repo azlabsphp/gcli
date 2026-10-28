@@ -9,12 +9,12 @@
         "drewlabs/laravel-query": "^0.4.0",
         "drewlabs/php-value": "^0.3.0",
         "drewlabs/validation": "^0.4.0",
-        "illuminate/console": "^11.41",
-        "illuminate/database": "^11.0|^12.0|^13.0",
-        "illuminate/events": "^11.0|^12.0|^13.0",
-        "illuminate/queue": "^11.0|^12.0|^13.0",
+        "illuminate/console": "^12|^13.0",
+        "illuminate/database": "^12.0|^13.0",
+        "illuminate/events": "^12.0|^13.0",
+        "illuminate/queue": "^12.0|^13.0",
         "phpstan/phpstan": "^2.1",
-        "phpunit/phpunit": "^10.0|^11.0"
+        "phpunit/phpunit": "^12.0|^13.0"
     },
     "license": "MIT",
     "autoload": {
@@ -46,11 +46,11 @@
     "minimum-stability": "stable",
     "prefer-stable": true,
     "require": {
-        "php": ">=7.4",
+        "php": ">=8.2",
         "drewlabs/code-generator": "^0.3.0",
         "drewlabs/core-helpers": "^0.4.0",
         "drewlabs/htr": "^0.2.0",
-        "greenlion/php-sql-parser": "^4.7"
+        "greenlion/php-sql-parser": "^4.7|^5.0"
     },
     "extra": {
         "laravel": {
